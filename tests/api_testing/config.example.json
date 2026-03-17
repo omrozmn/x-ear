@@ -1,0 +1,13 @@
+{
+  "base_url": "http://localhost:5003",
+  "openapi_file": "openapi.yaml",
+  "admin_email": "admin@xear.com",
+  "admin_password": "admin123",
+  "timeout": 15,
+  "connect_timeout": 5,
+  "max_retries": 3,
+  "output_report": null,
+  "failed_log": "failed_endpoints.txt",
+  "verbose": false,
+  "parallel": false
+}

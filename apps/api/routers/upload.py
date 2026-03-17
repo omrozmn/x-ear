@@ -6,13 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from typing import Optional
 from pydantic import BaseModel
 import logging
+from urllib.parse import quote
 
 from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +27,65 @@ class PresignedUploadRequest(BaseModel):
 
 from schemas.upload import PresignedUploadResponse, FileListResponse
 
+
+def _build_fallback_files(db: Session, tenant_id: str):
+    """Use OCR jobs and upload activity as a fallback listing source in dev."""
+    try:
+        from models.ocr_job import OCRJob
+        from models.user import ActivityLog
+    except Exception:
+        return []
+
+    files_by_key = {}
+
+    ocr_jobs = (
+        db.query(OCRJob)
+        .filter(OCRJob.tenant_id == tenant_id)
+        .order_by(OCRJob.created_at.desc())
+        .limit(200)
+        .all()
+    )
+    for job in ocr_jobs:
+        key = job.file_path
+        if not key or key in files_by_key:
+            continue
+        filename = key.split("/")[-1]
+        files_by_key[key] = {
+            "key": key,
+            "filename": filename,
+            "size": 0,
+            "last_modified": job.created_at.isoformat() if job.created_at else None,
+            "url": f"/api/ocr/jobs/{quote(str(job.id))}",
+        }
+
+    upload_logs = (
+        db.query(ActivityLog)
+        .filter(ActivityLog.tenant_id == tenant_id, ActivityLog.action == "file_upload_init")
+        .order_by(ActivityLog.created_at.desc())
+        .limit(200)
+        .all()
+    )
+    for log in upload_logs:
+        key = log.entity_id
+        if not key or key in files_by_key:
+            continue
+        files_by_key[key] = {
+            "key": key,
+            "filename": str(key).split("/")[-1],
+            "size": 0,
+            "last_modified": log.created_at.isoformat() if log.created_at else None,
+            "url": str(key),
+        }
+
+    return list(files_by_key.values())
+
 # --- Routes ---
 
 @router.post("/presigned", operation_id="createUploadPresigned", response_model=ResponseEnvelope[PresignedUploadResponse])
 def get_presigned_upload_url(
     request_data: PresignedUploadRequest,
     request: Request,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """
@@ -112,7 +164,7 @@ def get_presigned_upload_url(
 def list_files(
     folder: str = Query("uploads"),
     tenant_id: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """
@@ -122,21 +174,34 @@ def list_files(
         folder (str): Folder name (default: 'uploads')
     """
     try:
-        from services.s3_service import s3_service
-        
-        # Determine access.tenant_id for file listing
-        if access.tenant_id:
+        # Determine effective tenant scope for file listing.
+        if access.is_super_admin:
+            # Legacy admin uploads commonly live under "admin"; keep that as the
+            # default fallback instead of the JWT tenant_id ("system").
+            effective_tenant_id = tenant_id or (
+                access.tenant_id if access.tenant_id not in {None, "", "system"} else 'admin'
+            )
+        elif access.tenant_id:
             effective_tenant_id = access.tenant_id
-        elif access.is_super_admin:
-            # Super Admin can list from a specific tenant if provided
-            effective_tenant_id = access.tenant_id or 'admin'
         else:
             effective_tenant_id = 'public'
-        
-        files = s3_service.list_files(folder, str(effective_tenant_id))
+
+        files = []
+        try:
+            from services.s3_service import s3_service
+            files = s3_service.list_files(folder, str(effective_tenant_id))
+        except ImportError as e:
+            logger.warning(f"S3 service not available, using fallback files: {e}")
+        except Exception as e:
+            logger.warning(f"S3 file listing failed, using fallback files: {e}")
+
+        if not files:
+            files = _build_fallback_files(db, str(effective_tenant_id))
         
         return ResponseEnvelope(data=FileListResponse(files=files))
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing files: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -145,7 +210,7 @@ def list_files(
 def delete_file(
     key: str = Query(...),
     request: Request = None,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """

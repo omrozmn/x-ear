@@ -5,10 +5,8 @@ Tests creating, reading, updating, and deleting AI requests/logs.
 """
 
 import requests
-import json
 import uuid
 import sys
-from datetime import datetime
 
 BASE_URL = "http://localhost:5003"
 AI_API_URL = f"{BASE_URL}/api/ai"
@@ -57,7 +55,7 @@ def test_crud_operations():
         print("\n2. [READ] Checking System Status to verify persistence layer is active...")
         status_response = requests.get(f"{AI_API_URL}/status", timeout=10)
         if status_response.status_code == 200:
-            print(f"✅ System Status Read: OK")
+            print("✅ System Status Read: OK")
         else:
             print(f"❌ Read failed: {status_response.status_code}")
             return False

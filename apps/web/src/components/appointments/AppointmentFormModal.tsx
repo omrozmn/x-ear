@@ -54,8 +54,8 @@ interface AppointmentFormModalProps {
 
 // Time slots for dropdown (using native time input instead)
 // const TIME_SLOTS = [
-//   { value: '08:00', label: '08:00' },
-//   ... // See component - using native time input
+// { value: '08:00', label: '08:00' },
+// ... // See component - using native time input
 // ];
 
 const APPOINTMENT_TYPES = [
@@ -175,7 +175,7 @@ export function AppointmentFormModal({
             {isEditing ? i18next.t('modal.title_edit', { ns: 'appointments' }) : i18next.t('modal.title_create', { ns: 'appointments' })}
           </Text>
           {selectedDate && (
-            <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <Text className="text-sm text-muted-foreground mt-1">
               {format(selectedDate, 'dd MMMM yyyy, EEEE', { locale: tr })}
             </Text>
           )}
@@ -191,7 +191,7 @@ export function AppointmentFormModal({
           <VStack spacing="md">
             {/* Party Information */}
             <FormControl className="w-full">
-              <FormLabel className="text-gray-700 dark:text-gray-300">Hasta Arama *</FormLabel>
+              <FormLabel className="text-foreground">Hasta Arama *</FormLabel>
               <Controller
                 name="partyName"
                 control={control}
@@ -213,7 +213,7 @@ export function AppointmentFormModal({
             {/* Date and Time */}
             <HStack spacing="md" className="w-full">
               <FormControl className="flex-1">
-                <FormLabel className="text-gray-700 dark:text-gray-300">Tarih *</FormLabel>
+                <FormLabel className="text-foreground">Tarih *</FormLabel>
                 <Controller
                   name="date"
                   control={control}
@@ -229,7 +229,7 @@ export function AppointmentFormModal({
               </FormControl>
 
               <FormControl className="flex-1">
-                <FormLabel className="text-gray-700 dark:text-gray-300">Saat *</FormLabel>
+                <FormLabel className="text-foreground">Saat *</FormLabel>
                 <Controller
                   name="time"
                   control={control}
@@ -249,7 +249,7 @@ export function AppointmentFormModal({
             {/* Type, Duration and Branch */}
             <HStack spacing="md" className="w-full">
               <FormControl className="flex-1">
-                <FormLabel className="text-gray-700 dark:text-gray-300">Randevu Türü *</FormLabel>
+                <FormLabel className="text-foreground">Randevu Türü *</FormLabel>
                 <Controller
                   name="type"
                   control={control}
@@ -266,7 +266,7 @@ export function AppointmentFormModal({
               </FormControl>
 
               <FormControl className="flex-1">
-                <FormLabel className="text-gray-700 dark:text-gray-300">Süre</FormLabel>
+                <FormLabel className="text-foreground">Süre</FormLabel>
                 <Controller
                   name="duration"
                   control={control}
@@ -302,7 +302,7 @@ export function AppointmentFormModal({
             {/* Status (only for editing) */}
             {isEditing && (
               <FormControl className="w-full">
-                <FormLabel className="text-gray-700 dark:text-gray-300">Durum</FormLabel>
+                <FormLabel className="text-foreground">Durum</FormLabel>
                 <Controller
                   name="status"
                   control={control}
@@ -320,7 +320,7 @@ export function AppointmentFormModal({
 
             {/* Notes */}
             <FormControl className="w-full">
-              <FormLabel className="text-gray-700 dark:text-gray-300">Notlar</FormLabel>
+              <FormLabel className="text-foreground">Notlar</FormLabel>
               <Controller
                 name="notes"
                 control={control}
@@ -337,7 +337,7 @@ export function AppointmentFormModal({
           </VStack>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-slate-700">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-border dark:border-slate-700">
             <Button
               type="button"
               variant="outline"

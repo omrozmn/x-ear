@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/sgk_credentials.py
+# hypothesis_version: 6.151.9
+
+[400, '/sgk-credentials', 'getSgkCredentials', 'message', 'mesul_mudur_sifresi', 'mesul_mudur_tc', 'sgk-credentials', 'sgk_login', 'sgkcfg', 'tesis_kodu', 'tesis_sifresi', 'updateSgkCredentials']

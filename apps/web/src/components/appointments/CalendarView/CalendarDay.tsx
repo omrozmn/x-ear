@@ -95,22 +95,22 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       <div
         ref={setNodeRef}
         className={`
-          min-h-[80px] border-b border-gray-200 p-2 transition-colors
-          ${isOver ? 'bg-blue-50 border-blue-300' : ''}
-          ${isCurrentHour(slot.hour) ? 'bg-yellow-50' : ''}
-          hover:bg-gray-50 cursor-pointer
+          min-h-[80px] border-b border-border p-2 transition-colors
+          ${isOver ? 'bg-primary/10 border-blue-300' : ''}
+          ${isCurrentHour(slot.hour) ? 'bg-warning/10' : ''}
+          hover:bg-muted cursor-pointer
         `}
         onClick={() => onTimeSlotClick(selectedDate, slot.time)}
       >
         <div className="flex">
-          <div className="w-16 text-sm text-gray-600 font-medium">
+          <div className="w-16 text-sm text-muted-foreground font-medium">
             {slot.time}
           </div>
           <div className="flex-1 space-y-1">
             {slot.appointments.map((appointment) => (
               <div
                 key={appointment.id}
-                className="text-sm p-2 rounded bg-blue-50 border border-blue-200 cursor-pointer hover:bg-blue-100"
+                className="text-sm p-2 rounded bg-primary/10 border border-blue-200 cursor-pointer hover:bg-primary/10"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAppointmentClick(appointment);
@@ -119,7 +119,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
                 <div className="font-medium">
                   {appointment.partyName || 'Hasta bilgisi yok'}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   {appointment.time} ({appointment.duration} dk)
                 </div>
               </div>
@@ -133,7 +133,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"

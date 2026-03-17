@@ -2,7 +2,6 @@
 Audit Schemas - Pydantic models for ActivityLog domain
 """
 from typing import Optional, Any
-from datetime import datetime
 from pydantic import Field, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 

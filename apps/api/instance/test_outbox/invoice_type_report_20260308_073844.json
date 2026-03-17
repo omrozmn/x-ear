@@ -1,0 +1,236 @@
+{
+  "generated_at": "2026-03-08T07:38:44.656475",
+  "results": [
+    {
+      "test": "SATIS (Temel)",
+      "status": "SUCCESS",
+      "invoiceNo": "EAR2026000000023",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1772944653.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "EAR2026000000023",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-08-2026&guid=4f1367f4-c866-4d1d-bf75-0e94a4a80268.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "SATIS (Ticari)",
+      "status": "SUCCESS",
+      "invoiceNo": "EAR2026000000024",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1772944664.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "EAR2026000000024",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-08-2026&guid=c5589d00-79a7-4eec-8948-6ac86b81f56f.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "IADE",
+      "status": "ERROR",
+      "error": "400 Client Error: Bad Request for url: https://uygulama.edonustur.com/api/outEBelgeV2/SendDocument",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_IADE_1772944675.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      }
+    },
+    {
+      "test": "TEVKIFAT",
+      "status": "ERROR",
+      "error": "400 Client Error: Bad Request for url: https://uygulama.edonustur.com/api/outEBelgeV2/SendDocument",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_TEVKIFAT_1772944676.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      }
+    },
+    {
+      "test": "ISTISNA",
+      "status": "SUCCESS",
+      "invoiceNo": "EAR2026000000025",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_ISTISNA_1772944678.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": true,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "EAR2026000000025",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-08-2026&guid=f79fbc97-4fc5-419b-8c0d-81cdb10bba69.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "IHRACAT",
+      "status": "ERROR",
+      "error": "400 Client Error: Bad Request for url: https://uygulama.edonustur.com/api/outEBelgeV2/SendDocument",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_IHRACAT_1772944686.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": true,
+        "has_medical_refs": false
+      }
+    },
+    {
+      "test": "OZELMATRAH",
+      "status": "SUCCESS",
+      "invoiceNo": "EAR2026000000026",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_OZELMATRAH_1772944687.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "EAR2026000000026",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-08-2026&guid=b58a3bdb-a738-4e55-8896-cd073fcaa660.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "SGK",
+      "status": "ERROR",
+      "error": "400 Client Error: Bad Request for url: https://uygulama.edonustur.com/api/outEBelgeV2/SendDocument",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SGK_1772944698.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": false,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      }
+    },
+    {
+      "test": "TEVKIFAT (18)",
+      "status": "ERROR",
+      "error": "400 Client Error: Bad Request for url: https://uygulama.edonustur.com/api/outEBelgeV2/SendDocument",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_TEVKIFAT_1772944699.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      }
+    },
+    {
+      "test": "IHRACKAYITLI (27)",
+      "status": "SUCCESS",
+      "invoiceNo": "EAR2026000000027",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_IHRACKAYITLI_1772944700.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": true,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "EAR2026000000027",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-08-2026&guid=2c09657e-baf4-47a8-8f52-32e63c566ee8.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "TIBBI CIHAZ",
+      "status": "SUCCESS",
+      "invoiceNo": "EAR2026000000028",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1772944713.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": false,
+        "has_medical_refs": true
+      },
+      "provider_result": {
+        "invoiceNo": "EAR2026000000028",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-08-2026&guid=7d93a9b5-7aa8-4058-b6da-76393804143a.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    }
+  ]
+}

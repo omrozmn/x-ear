@@ -1,7 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { Modal, Button, Badge } from '@x-ear/ui-web';
 import { Edit, Package, History, Printer, Shield, Barcode } from 'lucide-react';
 import { InventoryItem } from '../../../types/inventory';
+import { getCategoryDisplay } from '../../../utils/category-mapping';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface ProductDetailsModalProps {
   isOpen: boolean;
@@ -18,6 +21,9 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   onEdit,
   onStockUpdate,
 }) => {
+  const { hasPermission } = usePermissions();
+  const { t } = useTranslation('inventory');
+  const canViewCost = hasPermission('sensitive.inventory.overview.cost.view');
   const [activeTab, setActiveTab] = useState<'details' | 'inventory' | 'history'>('details');
 
   if (!product) return null;
@@ -25,30 +31,30 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+        return 'bg-success/10 text-success';
       case 'low_stock':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300';
+        return 'bg-warning/10 text-yellow-800 dark:text-yellow-300';
       case 'out_of_stock':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
+        return 'bg-destructive/10 text-red-800 dark:text-red-300';
       case 'inactive':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-muted text-foreground';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-muted text-foreground';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case 'active':
-        return 'Aktif';
+        return t('status.active');
       case 'low_stock':
-        return 'Düşük Stok';
+        return t('status.low_stock');
       case 'out_of_stock':
-        return 'Stok Yok';
+        return t('status.out_of_stock');
       case 'inactive':
-        return 'Pasif';
+        return t('status.inactive');
       default:
-        return 'Bilinmiyor';
+        return t('status.active');
     }
   };
 
@@ -60,7 +66,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
       <!DOCTYPE html>
       <html class="dark">
         <head>
-          <title>Ürün Detayları - ${product.name}</title>
+          <title>{t('actions.view_details')} - ${product.name}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
@@ -78,7 +84,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         </head>
         <body>
           <div class="header">
-            <h1>Ürün Detayları</h1>
+            <h1>{t('actions.view_details')}</h1>
             <h2>${product.name}</h2>
           </div>
           <div class="details">
@@ -119,7 +125,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
               <div class="field">
                 <div class="label">Maliyet:</div>
-                <div class="value">₺${product.cost?.toLocaleString()}</div>
+                <div class="value">${canViewCost ? `₺${product.cost?.toLocaleString()}` : 'Bu rol icin gizli'}</div>
               </div>
               <div class="field">
                 <div class="label">Yeniden Sipariş Seviyesi:</div>
@@ -139,13 +145,13 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Ürün Detayları">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('actions.view_details')}>
       <div className="space-y-6 max-h-[80vh] overflow-y-auto">
         {/* Header with Actions */}
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{product.name}</h2>
-            <p className="text-gray-600 dark:text-gray-400">{product.brand} - {product.model || ''}</p>
+            <p className="text-muted-foreground">{product.brand} - {product.model || ''}</p>
             <Badge className={`mt-2 ${getStatusColor(product.status || 'available')}`}>
               {getStatusText(product.status || 'available')}
             </Badge>
@@ -181,15 +187,15 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setActiveTab('details')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'details'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border dark:hover:text-gray-200 dark:hover:border-gray-600'
                 }`}
             >
               Genel Bilgiler
@@ -199,8 +205,8 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               size="sm"
               onClick={() => setActiveTab('inventory')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'inventory'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border dark:hover:text-gray-200 dark:hover:border-gray-600'
                 }`}
             >
               Stok Bilgileri
@@ -210,8 +216,8 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               size="sm"
               onClick={() => setActiveTab('history')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border dark:hover:text-gray-200 dark:hover:border-gray-600'
                 }`}
             >
               Geçmiş
@@ -223,51 +229,51 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         {activeTab === 'details' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                   <Package className="w-5 h-5 mr-2" />
                   Ürün Bilgileri
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ürün Adı</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.product_name')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.name}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Marka</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.brand')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.brand}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.description')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.model || '-'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.category}</p>
+                    <label className="block text-sm font-medium text-foreground">{t('form.category')}</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{getCategoryDisplay(product.category)}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tip</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.description')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.type || '-'}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                   <Barcode className="w-5 h-5 mr-2" />
                   Tanımlama
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Barkod</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.barcode')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono">{product.barcode || '-'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SGK Kodu</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.product_code')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.sgkCode || '-'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tedarikçi</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.description')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.supplier || '-'}</p>
                   </div>
                 </div>
@@ -275,44 +281,44 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             </div>
 
             <div className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Fiyat Bilgileri</h3>
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">{t('pricing.title')}</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Satış Fiyatı</label>
-                    <p className="mt-1 text-lg font-semibold text-green-600 dark:text-green-400">₺{product.price?.toLocaleString()}</p>
+                    <label className="block text-sm font-medium text-foreground">{t('pricing.sale_price')}</label>
+                    <p className="mt-1 text-lg font-semibold text-success">₺{product.price?.toLocaleString()}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Maliyet</label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">₺{product.cost?.toLocaleString()}</p>
+                    <label className="block text-sm font-medium text-foreground">{t('pricing.cost_price')}</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{canViewCost ? `₺${product.cost?.toLocaleString()}` : 'Bu rol icin gizli'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kar Marjı</label>
+                    <label className="block text-sm font-medium text-foreground">{t('pricing.profit_margin')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                      {product.price && product.cost ? `%${(((product.price - product.cost) / product.cost) * 100).toFixed(1)}` : '-'}
+                      {canViewCost && product.price && product.cost ? `%${(((product.price - product.cost) / product.cost) * 100).toFixed(1)}` : 'Bu rol icin gizli'}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                   <Shield className="w-5 h-5 mr-2" />
                   Konum ve Diğer
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Konum</label>
+                    <label className="block text-sm font-medium text-foreground">{t('stock.location')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.location || '-'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kulak</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.description')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                       {product.ear === 'left' ? 'Sol' : product.ear === 'right' ? 'Sağ' : product.ear === 'both' ? 'Her İkisi' : '-'}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Garanti (Ay)</label>
+                    <label className="block text-sm font-medium text-foreground">{t('form.description')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100 flex items-center">
                       <Shield className="w-4 h-4 mr-1" />
                       {product.warranty || '-'}
@@ -326,19 +332,19 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             <div className="md:col-span-2 space-y-4">
               {product.description && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Açıklama</label>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{product.description}</p>
+                  <label className="block text-sm font-medium text-foreground mb-2">{t('form.description')}</label>
+                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-2xl">{product.description}</p>
                 </div>
               )}
 
               {product.features && product.features.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Özellikler</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">{t('form.description')}</label>
                   <div className="flex flex-wrap gap-2">
                     {product.features.map((feature, index) => (
                       <span
                         key={index}
-                        className="inline-flex px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 rounded-full"
+                        className="inline-flex px-3 py-1 text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-200 rounded-full"
                       >
                         {feature}
                       </span>
@@ -349,8 +355,8 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
               {product.notes && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notlar</label>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{product.notes}</p>
+                  <label className="block text-sm font-medium text-foreground mb-2">{t('form.notes')}</label>
+                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-2xl">{product.notes}</p>
                 </div>
               )}
             </div>
@@ -359,34 +365,34 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
         {activeTab === 'inventory' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Stok Durumu</h3>
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">{t('status.in_stock')}</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Mevcut Stok</span>
-                  <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{product.availableInventory}</span>
+                  <span className="text-sm font-medium text-foreground">{t('stock.current_stock')}</span>
+                  <span className="text-lg font-semibold text-primary">{product.availableInventory}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Toplam Stok</span>
+                  <span className="text-sm font-medium text-foreground">{t('stock.current_stock')}</span>
                   <span className="text-sm text-gray-900 dark:text-gray-100">{product.totalInventory}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Kullanılan</span>
+                  <span className="text-sm font-medium text-foreground">{t('form.description')}</span>
                   <span className="text-sm text-gray-900 dark:text-gray-100">{product.usedInventory}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Yeniden Sipariş Seviyesi</span>
-                  <span className="text-sm text-red-600 dark:text-red-400">{product.reorderLevel}</span>
+                  <span className="text-sm font-medium text-foreground">{t('stock.reorder_level')}</span>
+                  <span className="text-sm text-destructive">{product.reorderLevel}</span>
                 </div>
               </div>
 
               {/* Stock Progress Bar */}
               <div className="mt-4">
-                <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
-                  <span>Stok Durumu</span>
+                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                  <span>{t('status.in_stock')}</span>
                   <span>{Math.round((product.availableInventory / product.totalInventory) * 100)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-accent rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${product.availableInventory <= product.reorderLevel
                       ? 'bg-red-500'
@@ -400,26 +406,26 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                 <History className="w-5 h-5 mr-2" />
                 Tarihler
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oluşturulma</label>
+                  <label className="block text-sm font-medium text-foreground">{t('columns.created_at')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {product.createdAt ? new Date(product.createdAt).toLocaleDateString('tr-TR') : '-'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Son Güncelleme</label>
+                  <label className="block text-sm font-medium text-foreground">{t('columns.updated_at')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {product.lastUpdated ? new Date(product.lastUpdated).toLocaleDateString('tr-TR') : '-'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bakanlık Takibi</label>
+                  <label className="block text-sm font-medium text-foreground">{t('form.track_stock')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {product.isMinistryTracked ? 'Evet' : 'Hayır'}
                   </p>
@@ -430,11 +436,11 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         )}
 
         {activeTab === 'history' && (
-          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg text-center">
-            <Package className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Stok Geçmişi</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Stok hareketleri ve geçmiş kayıtları burada görüntülenecek.
+          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl text-center">
+            <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('stock.stock_history')}</h3>
+            <p className="text-muted-foreground">
+              {t('stock.stock_history')}
             </p>
           </div>
         )}

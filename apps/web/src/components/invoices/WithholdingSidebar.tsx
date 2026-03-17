@@ -63,7 +63,7 @@ export function WithholdingSidebar({
       />
 
       {/* Sidebar */}
-      <div className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-white shadow-2xl z-50 overflow-y-auto">
+      <div className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-card shadow-2xl z-50 overflow-y-auto">
         <form onSubmit={handleSubmit} className="h-full flex flex-col">
           {/* Header */}
           <div className="bg-orange-600 text-white px-6 py-4 flex items-center justify-between">
@@ -87,7 +87,7 @@ export function WithholdingSidebar({
             <div className="space-y-4">
               {/* Tevkifat Oranı */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Tevkifat İade Edilen Mal Oranı (%)
                 </label>
                 <Input
@@ -102,14 +102,14 @@ export function WithholdingSidebar({
                   placeholder="Örn: 50"
                   required
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   İade edilen mal için tevkifat oranını giriniz
                 </p>
               </div>
 
               {/* Tevkifatsız KDV Tutarı */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Tevkifatsız İade KDV Tutarı (TL)
                 </label>
                 <Input
@@ -124,14 +124,14 @@ export function WithholdingSidebar({
                   placeholder="0.00"
                   required
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Tevkifatsız KDV tutarını giriniz
                 </p>
               </div>
 
               {/* Hesaplanan Tevkifat KDV Tutarı */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Tevkifat İade KDV Tutarı (TL)
                 </label>
                 <Input
@@ -139,20 +139,20 @@ export function WithholdingSidebar({
                   step="0.01"
                   value={formData.withholdingAmount}
                   readOnly
-                  className="w-full bg-gray-50"
+                  className="w-full bg-muted"
                   placeholder="0.00"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Otomatik hesaplanır: (Oran × Tevkifatsız Tutar) / 100
                 </p>
               </div>
 
               {/* Hesaplama Özeti */}
               {formData.withholdingRate > 0 && formData.taxFreeAmount > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
                   <div className="flex items-start">
                     <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
-                    <div className="text-sm text-blue-700">
+                    <div className="text-sm text-primary">
                       <p className="font-medium mb-1">Hesaplama:</p>
                       <p>
                         {formData.withholdingRate}% × {formData.taxFreeAmount.toFixed(2)} TL = {' '}
@@ -164,14 +164,14 @@ export function WithholdingSidebar({
               )}
 
               {/* Uyarı */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="bg-warning/10 border border-yellow-200 rounded-2xl p-4">
                 <div className="flex">
                   <AlertTriangle className="text-yellow-400 mr-2 flex-shrink-0" size={18} />
                   <div className="text-sm text-yellow-700">
                     <p className="font-medium mb-1">Dikkat:</p>
                     <p>
                       Tevkifat iade bilgileri fatura satırına kaydedilecektir. 
-                      Bu bilgiler BirFatura üzerinden GİB'e gönderilecektir.
+                      Bu bilgiler GİB'e gönderilecektir.
                     </p>
                   </div>
                 </div>
@@ -180,19 +180,19 @@ export function WithholdingSidebar({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-3">
+          <div className="border-t border-border px-6 py-4 bg-muted flex justify-end gap-3">
             <Button
               type="button"
               onClick={onClose}
               variant="default"
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+              className="px-4 py-2 border border-border rounded-xl text-foreground hover:bg-muted"
             >
               İptal
             </Button>
             <Button
               type="submit"
               variant="default"
-              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+              className="px-4 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700"
             >
               Kaydet
             </Button>

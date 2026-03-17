@@ -16,7 +16,7 @@ export function usePartyDevices(partyId: string) {
   const fetchDevices = useCallback(async () => {
     if (!partyId) {
       setDevices([]);
-      return;
+      return [];
     }
 
     try {
@@ -87,10 +87,12 @@ export function usePartyDevices(partyId: string) {
       });
 
       setDevices(mappedDevices);
+      return mappedDevices;
     } catch (err) {
       console.error('Failed to fetch party devices:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch party devices'));
       setDevices([]);
+      return [];
     } finally {
       setLoading(false);
     }

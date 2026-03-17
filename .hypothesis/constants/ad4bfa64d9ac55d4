@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/communications.py
+# hypothesis_version: 6.151.9
+
+[100, 365, 400, 403, 404, 500, 1000000, '/api/communications', '/history', '/messages', '/messages/send-email', '/messages/send-sms', '/stats', '/templates', 'Communications', 'Party not found', 'Template not found', 'active', 'completed', 'createdAt', 'data', 'days', 'email', 'failed', 'from', 'history', 'is_system', 'message', 'messageType', 'meta', 'outbound', 'page', 'per_page', 'period', 'sent', 'sms', 'success', 'successRate', 'templates', 'timestamp', 'to', 'total', 'total_pages', 'true']

@@ -32,6 +32,6 @@
       "@x-ear/ui-web": ["../../packages/ui-web/src"]
     }
   },
-  "include": ["src", "../../packages/ui-web/src", "../../packages/core/src"],
+  "include": ["src", "../../packages/ui-web/src", "../../packages/core/src", "src/types"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -395,7 +395,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
   if (selectedInvoices.length === 0) {
     return (
       <div className={`bulk-operations-empty ${className}`}>
-        <p className="text-gray-500 text-center py-4">
+        <p className="text-muted-foreground text-center py-4">
           Toplu işlem yapmak için fatura seçiniz
         </p>
       </div>
@@ -405,14 +405,14 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
   return (
     <div className={`invoice-bulk-operations ${className}`}>
       {/* Selection Summary */}
-      <div className="selection-summary bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+      <div className="selection-summary bg-primary/10 border border-blue-200 rounded-2xl p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-medium text-blue-900">
             {statistics.count} fatura seçildi
           </h3>
           <Button
             onClick={onSelectionClear}
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="text-primary hover:text-blue-800 text-sm"
             variant='default'>
             Seçimi Temizle
           </Button>
@@ -420,13 +420,13 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <span className="text-gray-600">Toplam Tutar:</span>
+            <span className="text-muted-foreground">Toplam Tutar:</span>
             <div className="font-medium">₺{statistics.totalAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
           </div>
 
           {Object.entries(statistics.statusCounts).map(([status, count]) => (
             <div key={status}>
-              <span className="text-gray-600">{getStatusLabel(status)}:</span>
+              <span className="text-muted-foreground">{getStatusLabel(status)}:</span>
               <div className="font-medium">{count}</div>
             </div>
           ))}
@@ -485,7 +485,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
                 ? 'bg-red-600 text-white hover:bg-red-700'
                 : action.type === 'send_to_gib'
                   ? 'bg-purple-600 text-white hover:bg-purple-700'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'premium-gradient tactile-press text-white'
                 }`}
               variant='default'
               title={action.label}
@@ -503,12 +503,12 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
       </div>
       {/* Progress Indicator */}
       {state.isProcessing && (
-        <div className="progress-indicator bg-gray-50 border rounded-lg p-4 mb-4">
+        <div className="progress-indicator bg-muted border rounded-2xl p-4 mb-4">
           <div className="flex justify-between items-center mb-2">
             <span className="font-medium">{state.currentAction}</span>
-            <span className="text-sm text-gray-600">{Math.round(state.progress)}%</span>
+            <span className="text-sm text-muted-foreground">{Math.round(state.progress)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-accent rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${state.progress}%` }}
@@ -518,20 +518,20 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
       )}
       {/* Error Display */}
       {state.error && (
-        <div className="error-message bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <div className="error-message bg-destructive/10 border border-red-200 rounded-2xl p-4 mb-4">
           <h5 className="font-medium text-red-800 mb-1">Hata</h5>
-          <p className="text-red-700">{state.error}</p>
+          <p className="text-destructive">{state.error}</p>
         </div>
       )}
       {/* Results */}
       {state.results.length > 0 && (
         <div className="operation-results">
           <h4 className="font-medium mb-2">İşlem Sonuçları</h4>
-          <div className="results-list bg-gray-50 border rounded-lg p-4 max-h-96 overflow-auto">
+          <div className="results-list bg-muted border rounded-2xl p-4 max-h-96 overflow-auto">
             {state.results.map((result) => (
               <div
                 key={result.invoiceId}
-                className={`result-item flex justify-between items-center py-2 px-3 mb-2 rounded ${result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                className={`result-item flex justify-between items-center py-2 px-3 mb-2 rounded ${result.success ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800'
                   }`}
               >
                 <span className="font-medium">{result.invoiceNumber}</span>
@@ -542,7 +542,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
             ))}
           </div>
 
-          <div className="results-summary mt-2 text-sm text-gray-600">
+          <div className="results-summary mt-2 text-sm text-muted-foreground">
             Başarılı: {state.results.filter(r => r.success).length} /
             Başarısız: {state.results.filter(r => !r.success).length}
           </div>
@@ -551,13 +551,13 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
       {/* Confirmation Dialog */}
       {confirmationDialog.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-card rounded-2xl p-6 max-w-md w-full mx-4">
             <h3 className="font-medium text-lg mb-4">İşlemi Onayla</h3>
-            <p className="text-gray-700 mb-6">{confirmationDialog.message}</p>
+            <p className="text-foreground mb-6">{confirmationDialog.message}</p>
             <div className="flex justify-end gap-3">
               <Button
                 onClick={cancelAction}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                className="px-4 py-2 text-muted-foreground border border-border rounded hover:bg-muted"
                 variant='default'>
                 İptal
               </Button>

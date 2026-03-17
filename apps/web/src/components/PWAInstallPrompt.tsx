@@ -39,17 +39,17 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
   };
 
   return (
-    <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 z-50 ${className}`}>
+    <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-lg p-4 z-50 ${className}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-            <Smartphone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 bg-primary/10 rounded-2xl">
+            <Smartphone className="h-5 w-5 text-primary" />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white">
               Uygulamayı Yükle
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Daha iyi deneyim için
             </p>
           </div>
@@ -65,7 +65,7 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
       </div>
 
       <div className="space-y-3">
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-muted-foreground">
           <div className="flex items-center space-x-2 mb-2">
             <Monitor className="h-4 w-4" />
             <span>Masaüstü kısayolu</span>
@@ -140,17 +140,17 @@ export const PWAUpdatePrompt: React.FC<PWAUpdatePromptProps> = ({
   };
 
   return (
-    <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg shadow-lg p-4 z-50 ${className}`}>
+    <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-primary/10 border border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg p-4 z-50 ${className}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-            <Download className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 bg-primary/10 rounded-2xl">
+            <Download className="h-5 w-5 text-primary" />
           </div>
           <div>
             <h3 className="font-semibold text-blue-900 dark:text-blue-100">
               Güncelleme Mevcut
             </h3>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+            <p className="text-sm text-primary">
               Yeni özellikler ve iyileştirmeler
             </p>
           </div>
@@ -159,7 +159,7 @@ export const PWAUpdatePrompt: React.FC<PWAUpdatePromptProps> = ({
           variant="ghost"
           size="sm"
           onClick={handleClose}
-          className="p-1 h-auto text-blue-600 hover:text-blue-800"
+          className="p-1 h-auto text-primary hover:text-blue-800"
         >
           <X className="h-4 w-4" />
         </Button>

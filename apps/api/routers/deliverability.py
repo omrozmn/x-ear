@@ -4,12 +4,11 @@ Provides API endpoints for email deliverability monitoring and metrics.
 """
 
 import logging
-from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from core.dependencies import get_current_admin_user
 from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas import ResponseEnvelope
 from services.deliverability_metrics_service import get_deliverability_metrics_service
 from services.deliverability_alert_service import get_deliverability_alert_service
@@ -58,7 +57,7 @@ class TrendResponse(BaseModel):
 )
 async def get_deliverability_metrics(
     time_window_hours: int = Query(24, description="Time window in hours", ge=1, le=168),
-    access: UnifiedAccess = Depends(require_access("admin.deliverability.view")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[DeliverabilityMetricsResponse]:
     """
@@ -70,8 +69,6 @@ async def get_deliverability_metrics(
     - Spam complaint rate
     - Deliverability rate
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_deliverability_metrics_service(db)
     metrics = service.calculate_metrics(tenant_id, time_window_hours)
@@ -91,7 +88,7 @@ async def get_deliverability_metrics(
 )
 async def check_deliverability_alerts(
     time_window_hours: int = Query(1, description="Time window in hours", ge=1, le=24),
-    access: UnifiedAccess = Depends(require_access("admin.deliverability.view")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[AlertCheckResponse]:
     """
@@ -102,8 +99,6 @@ async def check_deliverability_alerts(
     - Spam rate > 0.1%
     - Deliverability rate < 95%
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_deliverability_metrics_service(db)
     result = service.check_alert_thresholds(tenant_id, time_window_hours)
@@ -112,7 +107,6 @@ async def check_deliverability_alerts(
     if result["should_alert"]:
         alert_service = get_deliverability_alert_service()
         alert_service.send_alert(
-            tenant_id=tenant_id,
             alerts=result["alerts"],
             metrics=result["metrics"]
         )
@@ -132,7 +126,7 @@ async def check_deliverability_alerts(
 )
 async def get_deliverability_trend(
     days: int = Query(7, description="Number of days", ge=1, le=30),
-    access: UnifiedAccess = Depends(require_access("admin.deliverability.view")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[TrendResponse]:
     """
@@ -140,8 +134,6 @@ async def get_deliverability_trend(
     
     Returns daily metrics for the specified number of days.
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_deliverability_metrics_service(db)
     trend = service.get_trend(tenant_id, days)
@@ -160,7 +152,7 @@ async def get_deliverability_trend(
     description="Store daily deliverability metrics snapshot"
 )
 async def create_deliverability_snapshot(
-    access: UnifiedAccess = Depends(require_access("admin.deliverability.manage")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[dict]:
     """
@@ -168,11 +160,9 @@ async def create_deliverability_snapshot(
     
     This should be called daily (e.g., via cron job) to store metrics history.
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_deliverability_metrics_service(db)
-    snapshot_id = service.store_daily_snapshot(tenant_id)
+    snapshot_id = service.store_daily_snapshot()
     
     return ResponseEnvelope(
         success=True,

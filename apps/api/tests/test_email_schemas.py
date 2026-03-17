@@ -14,12 +14,11 @@ from pydantic import ValidationError
 
 from schemas.email import (
     EmailStatus,
-    SMTPConfigBase,
-    SMTPConfigCreate,
-    SMTPConfigUpdate,
-    SMTPConfigResponse,
+    SmtpConfigBase,
+    SmtpConfigCreate,
+    SmtpConfigUpdate,
+    SmtpConfigResponse,
     SendTestEmailRequest,
-    SendTestEmailResponse,
     SendEmailRequest,
     SendEmailResponse,
     EmailLogResponse,
@@ -33,7 +32,7 @@ class TestSMTPConfigSchemas:
 
     def test_smtp_config_base_valid(self):
         """Test valid SMTP configuration."""
-        config = SMTPConfigBase(
+        config = SmtpConfigBase(
             host="smtp.example.com",
             port=465,
             username="user@example.com",
@@ -50,7 +49,7 @@ class TestSMTPConfigSchemas:
     def test_smtp_config_invalid_email_format(self):
         """Test invalid email format is rejected."""
         with pytest.raises(ValidationError) as exc_info:
-            SMTPConfigBase(
+            SmtpConfigBase(
                 host="smtp.example.com",
                 port=465,
                 username="user@example.com",
@@ -63,7 +62,7 @@ class TestSMTPConfigSchemas:
         """Test port range validation."""
         # Port too low
         with pytest.raises(ValidationError) as exc_info:
-            SMTPConfigBase(
+            SmtpConfigBase(
                 host="smtp.example.com",
                 port=0,  # Invalid
                 username="user@example.com",
@@ -74,7 +73,7 @@ class TestSMTPConfigSchemas:
 
         # Port too high
         with pytest.raises(ValidationError) as exc_info:
-            SMTPConfigBase(
+            SmtpConfigBase(
                 host="smtp.example.com",
                 port=65536,  # Invalid
                 username="user@example.com",
@@ -87,7 +86,7 @@ class TestSMTPConfigSchemas:
         """Test timeout range validation."""
         # Timeout too low
         with pytest.raises(ValidationError) as exc_info:
-            SMTPConfigBase(
+            SmtpConfigBase(
                 host="smtp.example.com",
                 port=465,
                 username="user@example.com",
@@ -99,7 +98,7 @@ class TestSMTPConfigSchemas:
 
         # Timeout too high
         with pytest.raises(ValidationError) as exc_info:
-            SMTPConfigBase(
+            SmtpConfigBase(
                 host="smtp.example.com",
                 port=465,
                 username="user@example.com",
@@ -111,7 +110,7 @@ class TestSMTPConfigSchemas:
 
     def test_smtp_config_create_with_password(self):
         """Test SMTP config creation includes password."""
-        config = SMTPConfigCreate(
+        config = SmtpConfigCreate(
             host="smtp.example.com",
             port=465,
             username="user@example.com",
@@ -123,7 +122,7 @@ class TestSMTPConfigSchemas:
 
     def test_smtp_config_update_optional_password(self):
         """Test SMTP config update has optional password."""
-        config = SMTPConfigUpdate(
+        config = SmtpConfigUpdate(
             host="smtp.example.com",
             port=465,
             username="user@example.com",
@@ -135,7 +134,7 @@ class TestSMTPConfigSchemas:
 
     def test_smtp_config_response_excludes_password(self):
         """Test password is never in response schema."""
-        config = SMTPConfigResponse(
+        config = SmtpConfigResponse(
             id="config-123",
             tenant_id="tenant-456",
             host="smtp.example.com",
@@ -157,7 +156,7 @@ class TestSMTPConfigSchemas:
 
     def test_smtp_config_camelcase_serialization(self):
         """Test camelCase field names in serialization."""
-        config = SMTPConfigResponse(
+        config = SmtpConfigResponse(
             id="config-123",
             tenant_id="tenant-456",
             host="smtp.example.com",

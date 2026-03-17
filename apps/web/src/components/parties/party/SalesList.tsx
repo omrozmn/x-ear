@@ -1,5 +1,6 @@
 import { DollarSign, MoreVertical, Eye, Edit, FileText, File } from 'lucide-react';
-import { Button, Dropdown } from '@x-ear/ui-web';
+import { Button, Dropdown, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import type { SaleRead } from '@/api/generated';
 import { ExtendedSaleRead } from '@/types/extended-sales';
 
@@ -33,8 +34,8 @@ export const SalesList: React.FC<SalesListProps> = ({
   if (filteredSales.length === 0) {
     return (
       <div className="text-center py-12" role="status">
-        <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
+        <h3 className="text-lg font-medium text-foreground mb-2">
           {sales.length === 0
             ? 'Henüz satış yapılmamış'
             : hasActiveFilters
@@ -42,7 +43,7 @@ export const SalesList: React.FC<SalesListProps> = ({
               : 'Henüz satış kaydı bulunmuyor'
           }
         </h3>
-        <p className="text-gray-500">
+        <p className="text-muted-foreground">
           {sales.length === 0
             ? 'Bu hastaya henüz satış işlemi gerçekleştirilmemiş.'
             : hasActiveFilters
@@ -63,8 +64,8 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (sale.devices && sale.devices.length > 0) {
       return sale.devices.map((d, index: number) => (
         <div key={index} className="mb-1">
-          <div className="font-medium text-gray-900">{d.name || d.model || 'Cihaz'}</div>
-          <div className="text-xs text-gray-600">Marka: {d.brand || '-'} | Model: {d.model || '-'}</div>
+          <div className="font-medium text-foreground">{d.name || d.model || 'Cihaz'}</div>
+          <div className="text-xs text-muted-foreground">Marka: {d.brand || '-'} | Model: {d.model || '-'}</div>
         </div>
       ));
     }
@@ -73,25 +74,40 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (sale.productId) {
       return (
         <div className="mb-1">
-          <div className="font-medium text-gray-900">Ürün ID: {sale.productId}</div>
-          <div className="text-xs text-gray-600">Envanter ürünü</div>
+          <div className="font-medium text-foreground">Ürün ID: {sale.productId}</div>
+          <div className="text-xs text-muted-foreground">Envanter ürünü</div>
         </div>
       );
     }
 
-    return <div className="text-gray-500 text-sm">Ürün bilgisi yok</div>;
+    return <div className="text-muted-foreground text-sm">Ürün bilgisi yok</div>;
   };
 
   const renderBarcodeSerialInfo = (sale: SaleRead) => {
     if (sale.devices && sale.devices.length > 0) {
-      const device = sale.devices[0];
-      const barcode = device.barcode || device.serialNumber || '-';
-      const serial = device.serialNumber || '-';
-
       return (
-        <div>
-          <div className="font-medium">{barcode}</div>
-          <div className="text-xs text-gray-600">{serial}</div>
+        <div className="space-y-1">
+          {sale.devices.map((device, index: number) => (
+            <div key={index} className="text-sm">
+              {device.barcode && (
+                <div className="font-mono text-xs bg-muted px-1 rounded inline-block mb-1">
+                  {device.barcode}
+                </div>
+              )}
+              {device.serialNumber && (
+                <div className="font-mono text-foreground">{device.serialNumber}</div>
+              )}
+              {device.serialNumberLeft && (
+                <div className="font-mono text-xs text-destructive">S: {device.serialNumberLeft}</div>
+              )}
+              {device.serialNumberRight && (
+                <div className="font-mono text-xs text-primary">L: {device.serialNumberRight}</div>
+              )}
+              {!device.barcode && !device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
+                <div className="text-xs text-muted-foreground">Seri yok</div>
+              )}
+            </div>
+          ))}
         </div>
       );
     }
@@ -101,7 +117,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       return (
         <div>
           <div className="font-medium">{sale.productId}</div>
-          <div className="text-xs text-gray-600">Ürün Kodu</div>
+          <div className="text-xs text-muted-foreground">Ürün Kodu</div>
         </div>
       );
     }
@@ -145,15 +161,15 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (paidAmount > 0 && remainingAmount > 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Kısmi Ödendi</span>;
     } else if (paidAmount > 0 && remainingAmount === 0) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>;
+      return <span className="px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">Ödendi</span>;
     }
 
     const badges: Record<string, React.ReactElement> = {
-      'paid': <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>,
-      'pending': <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Beklemede</span>,
+      'paid': <span className="px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">Ödendi</span>,
+      'pending': <span className="px-2 py-1 text-xs font-medium bg-warning/10 text-yellow-800 rounded-full">Beklemede</span>,
       'partial': <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Kısmi Ödendi</span>,
-      'cancelled': <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal edildi</span>,
-      'completed': <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Tamamlandı</span>
+      'cancelled': <span className="px-2 py-1 text-xs font-medium bg-destructive/10 text-red-800 rounded-full">İptal edildi</span>,
+      'completed': <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-blue-800 rounded-full">Tamamlandı</span>
     };
     return badges[status] || badges['pending'];
   };
@@ -199,136 +215,143 @@ export const SalesList: React.FC<SalesListProps> = ({
     return totalWithVat - paid;
   };
 
-  return (
-    <div className="relative">
-      <div className="overflow-x-auto" role="table" aria-label="Hasta satışları tablosu">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Satış ID/Tarih
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ürün/Hizmet
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Barkod/Seri No
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Liste Fiyatı
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                İndirim
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                KDV Dahil Toplam
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Alınan Ödeme
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Kalan Tutar
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Durum
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                İşlemler
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredSales.map((sale) => {
-              const extendedSale = sale as unknown as ExtendedSaleRead;
-              const paid = calculatePaidAmount(sale);
-              const remaining = calculateRemaining(sale);
-              const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
+  const salesColumns: Column<SaleRead>[] = [
+    {
+      key: '_saleId',
+      title: 'Satış ID/Tarih',
+      render: (_, sale) => (
+        <div className="text-sm text-foreground">
+          <div className="font-medium">{sale.id}</div>
+          <div className="text-xs text-muted-foreground">
+            {new Date(sale.saleDate || sale.createdAt || Date.now()).toLocaleDateString('tr-TR')}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: '_product',
+      title: 'Ürün/Hizmet',
+      render: (_, sale) => <div className="text-sm text-muted-foreground">{renderDevicesSummary(sale)}</div>,
+    },
+    {
+      key: '_barcode',
+      title: 'Barkod/Seri No',
+      render: (_, sale) => <div className="text-sm font-medium text-foreground">{renderBarcodeSerialInfo(sale)}</div>,
+    },
+    {
+      key: '_totalAmount',
+      title: 'Liste Fiyatı',
+      align: 'right',
+      render: (_, sale) => {
+        const extendedSale = sale as unknown as ExtendedSaleRead;
+        return <span className="text-sm font-semibold text-foreground">{formatCurrency(extendedSale.totalAmount || 0)}</span>;
+      },
+    },
+    {
+      key: '_discount',
+      title: 'İndirim',
+      align: 'right',
+      render: (_, sale) => {
+        const extendedSale = sale as unknown as ExtendedSaleRead;
+        return (
+          <span className="text-sm font-semibold text-destructive">
+            {extendedSale.discountAmount ? `-${formatCurrency(extendedSale.discountAmount)}` : formatCurrency(0)}
+          </span>
+        );
+      },
+    },
+    {
+      key: '_totalWithVat',
+      title: 'KDV Dahil Toplam',
+      align: 'right',
+      render: (_, sale) => (
+        <span className="text-sm font-semibold text-foreground">{formatCurrency(calculateTotalWithVat(sale))}</span>
+      ),
+    },
+    {
+      key: '_paid',
+      title: 'Alınan Ödeme',
+      align: 'right',
+      render: (_, sale) => {
+        const paid = calculatePaidAmount(sale);
+        return (
+          <div>
+            <div className="text-sm font-semibold text-success">{formatCurrency(paid)}</div>
+            <div className="text-xs text-muted-foreground">{renderPaymentMethods(sale)}</div>
+          </div>
+        );
+      },
+    },
+    {
+      key: '_remaining',
+      title: 'Kalan Tutar',
+      align: 'right',
+      render: (_, sale) => (
+        <span className="text-sm font-semibold text-orange-700">{formatCurrency(calculateRemaining(sale))}</span>
+      ),
+    },
+    {
+      key: 'status',
+      title: 'Durum',
+      align: 'center',
+      render: (_, sale) => {
+        const paid = calculatePaidAmount(sale);
+        const remaining = calculateRemaining(sale);
+        return renderStatusBadge(sale.status || 'pending', paid, remaining);
+      },
+    },
+    {
+      key: '_actions',
+      title: 'İşlemler',
+      align: 'center',
+      render: (_, sale) => (
+        <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+          <Dropdown
+            position="bottom-right"
+            trigger={
+              <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full border border-border">
+                <MoreVertical className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            }
+            items={[
+              {
+                label: (<><Eye className="inline mr-2 w-4 h-4 align-middle" /> Görüntüle Fatura</>),
+                value: 'view_invoice',
+                onClick: () => onViewInvoice(sale)
+              },
+              {
+                label: (<><FileText className="inline mr-2 w-4 h-4 align-middle" /> Fatura Oluştur</>),
+                value: 'create_invoice',
+                onClick: () => onCreateInvoice(sale)
+              },
+              {
+                label: (<><DollarSign className="inline mr-2 w-4 h-4 align-middle" /> Tahsilat Yap</>),
+                value: 'collect_payment',
+                onClick: () => onCollectPayment(sale)
+              },
+              {
+                label: (<><File className="inline mr-2 w-4 h-4 align-middle" /> Senet İşlemleri</>),
+                value: 'promissory_notes',
+                onClick: () => onManagePromissoryNotes(sale)
+              },
+              {
+                label: (<><Edit className="inline mr-2 w-4 h-4 align-middle" /> Taksit İşlemleri</>),
+                value: 'installments',
+                onClick: () => onManageInstallments(sale)
+              }
+            ]}
+          />
+        </div>
+      ),
+    },
+  ];
 
-              return (
-                <tr
-                  key={sale.id}
-                  className={`hover:bg-gray-50 ${paid > 0 && remaining > 0 ? 'bg-yellow-50' : ''} ${cancelledClass} cursor-pointer transition-colors`}
-                  onClick={() => onSaleClick(sale)}
-                  role="row"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="font-medium">{sale.id}</div>
-                    <div className="text-xs text-gray-600">
-                      {new Date(sale.saleDate || sale.createdAt || Date.now()).toLocaleDateString('tr-TR')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {renderDevicesSummary(sale)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {renderBarcodeSerialInfo(sale)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                    {formatCurrency(extendedSale.totalAmount || 0)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600">
-                    {extendedSale.discountAmount ? `-${formatCurrency(extendedSale.discountAmount)}` : formatCurrency(0)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                    {formatCurrency(calculateTotalWithVat(sale))}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-green-700">
-                    <div>{formatCurrency(paid)}</div>
-                    <div className="text-xs text-gray-600">{renderPaymentMethods(sale)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-orange-700">
-                    {formatCurrency(remaining)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {renderStatusBadge(sale.status || 'pending', paid, remaining)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center relative" onClick={(e) => e.stopPropagation()}>
-                    <Dropdown
-                      position="bottom-right"
-                      trigger={
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-8 h-8 p-0 rounded-full border border-gray-200"
-                        >
-                          <MoreVertical className="w-4 h-4 text-gray-600" />
-                        </Button>
-                      }
-                      items={[
-                        {
-                          label: (<><Eye className="inline mr-2 w-4 h-4 align-middle" /> Görüntüle Fatura</>),
-                          value: 'view_invoice',
-                          onClick: () => onViewInvoice(sale)
-                        },
-                        {
-                          label: (<><FileText className="inline mr-2 w-4 h-4 align-middle" /> Fatura Oluştur</>),
-                          value: 'create_invoice',
-                          onClick: () => onCreateInvoice(sale)
-                        },
-                        {
-                          label: (<><DollarSign className="inline mr-2 w-4 h-4 align-middle" /> Tahsilat Yap</>),
-                          value: 'collect_payment',
-                          onClick: () => onCollectPayment(sale)
-                        },
-                        {
-                          label: (<><File className="inline mr-2 w-4 h-4 align-middle" /> Senet İşlemleri</>),
-                          value: 'promissory_notes',
-                          onClick: () => onManagePromissoryNotes(sale)
-                        },
-                        {
-                          label: (<><Edit className="inline mr-2 w-4 h-4 align-middle" /> Taksit İşlemleri</>),
-                          value: 'installments',
-                          onClick: () => onManageInstallments(sale)
-                        }
-                      ]}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  return (
+    <DataTable<SaleRead>
+      data={filteredSales}
+      columns={salesColumns}
+      rowKey={(sale) => String(sale.id)}
+      onRowClick={onSaleClick}
+    />
   );
 };

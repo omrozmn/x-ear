@@ -6,13 +6,46 @@ import toast from 'react-hot-toast';
 import {
     useListAdminTenantSmsDocuments,
     useUpdateAdminTenantSmsDocumentStatus,
-    useCreateAdminTenantSmsDocumentSendEmail
+    useCreateAdminTenantSmsDocumentSendEmail,
+    listAdminTenantSmsDocumentDownload,
 } from '@/lib/api-client';
-import { adminApi } from '@/lib/apiMutator';
 
 interface SmsDocumentsTabProps {
     tenantId: string;
     onUpdate: () => void;
+}
+
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+            message?: string;
+        };
+    };
+}
+
+type SmsDocumentStatus = 'uploaded' | 'sent' | 'revision_requested' | 'approved';
+
+interface SmsDocument {
+    type: string;
+    url?: string;
+    filename?: string;
+    status?: SmsDocumentStatus;
+}
+
+interface SmsDocumentsResponse {
+    documents?: SmsDocument[];
+    documentsSubmitted?: boolean;
+    allDocumentsApproved?: boolean;
+}
+
+interface PreviewDownloadResponse {
+    data?: {
+        url?: string;
+    };
+    url?: string;
 }
 
 const DOCUMENT_LABELS: Record<string, string> = {
@@ -24,20 +57,27 @@ const DOCUMENT_LABELS: Record<string, string> = {
     signature_circular: 'İmza Sirküleri'
 };
 
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    const apiError = error as ApiErrorLike;
+    return apiError.response?.data?.error?.message || apiError.response?.data?.message || fallback;
+}
+
 export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) => {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [previewDoc, setPreviewDoc] = useState<{ type: string; url: string; filename: string } | null>(null);
+    const [revisionDialog, setRevisionDialog] = useState<{ docType: string; note: string } | null>(null);
+    const [confirmEmailDialog, setConfirmEmailDialog] = useState(false);
 
-    const { data: documentsData, isLoading, refetch } = useListAdminTenantSmsDocuments(tenantId, {
+    const { data: documentsData, isLoading, refetch } = useListAdminTenantSmsDocuments<SmsDocumentsResponse>(tenantId, {
         query: { enabled: !!tenantId }
     });
 
     const { mutateAsync: updateStatus } = useUpdateAdminTenantSmsDocumentStatus();
     const { mutateAsync: sendEmail } = useCreateAdminTenantSmsDocumentSendEmail();
 
-    const documents = (documentsData as any)?.data?.documents || [];
-    const documentsSubmitted = (documentsData as any)?.data?.documentsSubmitted || false;
-    const allDocumentsApproved = (documentsData as any)?.data?.allDocumentsApproved || false;
+    const documents = documentsData?.documents ?? [];
+    const documentsSubmitted = documentsData?.documentsSubmitted ?? false;
+    const allDocumentsApproved = documentsData?.allDocumentsApproved ?? false;
 
     const handleApprove = async (docType: string) => {
         setActionLoading(docType);
@@ -50,15 +90,21 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
             toast.success('Belge onaylandı');
             await refetch();
             onUpdate();
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Onaylama başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Onaylama başarısız'));
         } finally {
             setActionLoading(null);
         }
     };
 
     const handleRequestRevision = async (docType: string) => {
-        const note = prompt('Revizyon notu (opsiyonel):');
+        setRevisionDialog({ docType, note: '' });
+    };
+
+    const confirmRequestRevision = async () => {
+        if (!revisionDialog) return;
+        const { docType, note } = revisionDialog;
+        setRevisionDialog(null);
         setActionLoading(docType);
         try {
             await updateStatus({
@@ -69,46 +115,45 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
             toast.success('Revizyon istendi');
             await refetch();
             onUpdate();
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'İşlem başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'İşlem başarısız'));
         } finally {
             setActionLoading(null);
         }
     };
 
     const handleSendEmail = async () => {
-        if (!window.confirm('Tüm belgeleri e-posta ile göndermek istediğinize emin misiniz?')) return;
+        setConfirmEmailDialog(true);
+    };
+
+    const confirmSendEmail = async () => {
+        setConfirmEmailDialog(false);
         setActionLoading('send-email');
         try {
             await sendEmail({ tenantId });
             toast.success('E-posta gönderildi');
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'E-posta gönderilemedi');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'E-posta gönderilemedi'));
         } finally {
             setActionLoading(null);
         }
     };
 
     const handlePreview = (docType: string) => {
-        const doc = documents.find((d: any) => d.type === docType) as any;
+        const doc = documents.find((document) => document.type === docType);
         if (!doc) return;
 
-        // Admin uses different endpoint
-        // Admin uses different endpoint
-        adminApi<{ data: { url: string } }>({
-            url: `/api/admin/tenants/${tenantId}/sms-documents/${docType}/download`,
-            method: 'GET'
-        })
-            .then(data => {
-                const previewUrl = (data as any)?.data?.url || (data as any)?.url;
+        listAdminTenantSmsDocumentDownload(tenantId, docType)
+            .then((data) => {
+                const response = data as PreviewDownloadResponse;
+                const previewUrl = response.data?.url || response.url;
                 if (previewUrl) {
                     setPreviewDoc({ type: docType, url: previewUrl, filename: doc.filename || '' });
                 } else {
                     toast.error('Önizleme URL\'i alınamadı');
                 }
             })
-            .catch((err) => {
-                console.error('Preview error:', err);
+            .catch(() => {
                 toast.error('Önizleme açılamadı');
             });
     };
@@ -130,7 +175,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
 
     return (
         <div className="space-y-6 max-w-4xl">
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
                         <MessageSquare className="w-5 h-5 text-gray-500" />
@@ -140,7 +185,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                         <button
                             onClick={handleSendEmail}
                             disabled={actionLoading === 'send-email'}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded text-white premium-gradient tactile-press disabled:opacity-50"
                         >
                             <FileText className="w-4 h-4 mr-1.5" />
                             {actionLoading === 'send-email' ? 'Gönderiliyor...' : 'Belgeleri E-posta ile Gönder'}
@@ -155,8 +200,8 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {documents.map((doc: any) => (
-                            <div key={doc.type} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        {documents.map((doc) => (
+                            <div key={doc.type} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-200">
                                 <div className="flex-1">
                                     <div className="font-medium text-gray-900">{DOCUMENT_LABELS[doc.type] || doc.type}</div>
                                     <div className="text-sm text-gray-500 mt-1">{doc.filename}</div>
@@ -165,7 +210,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => handlePreview(doc.type)}
-                                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-2xl"
                                         title="Önizle"
                                     >
                                         <FileText className="w-4 h-4" />
@@ -195,7 +240,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                 )}
 
                 {allDocumentsApproved && (
-                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="mt-4 p-4 bg-green-50 rounded-2xl border border-green-200">
                         <div className="flex items-center gap-2 text-green-800">
                             <CheckCircle className="w-5 h-5" />
                             <p className="font-medium">Tüm belgeler onaylandı. SMS Başlıkları sekmesi tenant için aktif.</p>
@@ -209,17 +254,85 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                 <Dialog.Root open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
                     <Dialog.Portal>
                         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[90]" />
-                        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-4xl translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white shadow-2xl focus:outline-none z-[100] flex flex-col">
+                        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-4xl translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white shadow-2xl focus:outline-none z-[100] flex flex-col">
                             <div className="flex items-center justify-between p-4 border-b">
                                 <Dialog.Title className="text-lg font-semibold text-gray-900">
                                     Belge Önizleme: {previewDoc.filename}
                                 </Dialog.Title>
-                                <Dialog.Close className="p-2 hover:bg-gray-100 rounded-lg">
+                                <Dialog.Close className="p-2 hover:bg-gray-100 rounded-2xl">
                                     <XMarkIcon className="h-5 w-5" />
                                 </Dialog.Close>
                             </div>
                             <div className="flex-1 p-4 overflow-auto">
-                                <iframe src={previewDoc.url} className="w-full h-full border-0 rounded-lg min-h-[600px]" title="Document Preview" />
+                                <iframe src={previewDoc.url} className="w-full h-full border-0 rounded-2xl min-h-[600px]" title="Document Preview" />
+                            </div>
+                        </Dialog.Content>
+                    </Dialog.Portal>
+                </Dialog.Root>
+            )}
+
+            {/* Revision Note Dialog */}
+            {revisionDialog && (
+                <Dialog.Root open={!!revisionDialog} onOpenChange={() => setRevisionDialog(null)}>
+                    <Dialog.Portal>
+                        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[90]" />
+                        <Dialog.Content className="fixed left-[50%] top-[50%] w-full max-w-md translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white shadow-2xl focus:outline-none z-[100] p-6">
+                            <Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
+                                Revizyon Notu
+                            </Dialog.Title>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Belge için revizyon notu girin (opsiyonel):
+                            </p>
+                            <textarea
+                                value={revisionDialog.note}
+                                onChange={(e) => setRevisionDialog({ ...revisionDialog, note: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[100px]"
+                                placeholder="Revizyon nedeni..."
+                            />
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    onClick={() => setRevisionDialog(null)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-2xl hover:bg-gray-50"
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={confirmRequestRevision}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-2xl hover:bg-orange-700"
+                                >
+                                    Revizyon İste
+                                </button>
+                            </div>
+                        </Dialog.Content>
+                    </Dialog.Portal>
+                </Dialog.Root>
+            )}
+
+            {/* Email Confirmation Dialog */}
+            {confirmEmailDialog && (
+                <Dialog.Root open={confirmEmailDialog} onOpenChange={setConfirmEmailDialog}>
+                    <Dialog.Portal>
+                        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[90]" />
+                        <Dialog.Content className="fixed left-[50%] top-[50%] w-full max-w-md translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white shadow-2xl focus:outline-none z-[100] p-6">
+                            <Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
+                                E-posta Gönder
+                            </Dialog.Title>
+                            <p className="text-sm text-gray-600 mb-6">
+                                Tüm belgeleri e-posta ile göndermek istediğinize emin misiniz?
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setConfirmEmailDialog(false)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-2xl hover:bg-gray-50"
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={confirmSendEmail}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-2xl hover:bg-blue-700"
+                                >
+                                    Gönder
+                                </button>
                             </div>
                         </Dialog.Content>
                     </Dialog.Portal>

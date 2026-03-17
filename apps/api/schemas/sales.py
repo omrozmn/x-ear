@@ -1,8 +1,6 @@
-from typing import Optional, List, Union, Dict, Any
-from enum import Enum
+from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import Field, validator
-from decimal import Decimal
+from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # ==================== PAYMENT SCHEMAS ====================
@@ -21,6 +19,7 @@ class PaymentRecordBase(AppBaseModel):
 class PaymentRecordRead(IDMixin, TimestampMixin, PaymentRecordBase):
     sale_id: Optional[str] = Field(None, alias="saleId")
     party_id: Optional[str] = Field(None, alias="partyId")
+    party_name: Optional[str] = Field(None, alias="partyName")
 
 class PaymentRecordCreate(PaymentRecordBase):
     pass
@@ -46,9 +45,9 @@ class PaymentPlanBase(AppBaseModel):
 
 class PaymentPlanRead(IDMixin, TimestampMixin, PaymentPlanBase):
     sale_id: str = Field(..., alias="saleId")
-    plan_type: str = Field(..., alias="planType")
+    plan_type: Optional[str] = Field(None, alias="planType")  # Optional - not in DB model
     status: str = "active"
-    installments: List[PaymentInstallmentRead] = []
+    installments: Optional[List[PaymentInstallmentRead]] = []  # Optional - can be int in some responses
 
 class PaymentPlanCreate(AppBaseModel):
     plan_type: str = Field("installment", alias="planType") # 'installment' or 'custom'
@@ -179,6 +178,7 @@ class DeviceAssignmentRead(IDMixin, TimestampMixin, DeviceAssignmentBase):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     discount_type: Optional[str] = Field(None, alias="discountType")
     discount_value: Optional[float] = Field(None, alias="discountValue")
+    discount_percent: Optional[float] = Field(None, alias="discountPercent")  # Alias for discount_value (frontend compatibility)
     down_payment: Optional[float] = Field(0.0, alias="downPayment")  # From PaymentRecord (Flask parity)
     
     # Ear side alias (Flask parity)
@@ -221,9 +221,11 @@ class DeviceAssignmentUpdate(AppBaseModel):
     
     # Explicit overrides
     sale_price: Optional[float] = Field(None, alias="salePrice")
+    list_price: Optional[float] = Field(None, alias="listPrice")
     patient_payment: Optional[float] = Field(None, alias="patientPayment")
+    net_payable: Optional[float] = Field(None, alias="netPayable")
     sgk_reduction: Optional[float] = Field(None, alias="sgkReduction")
-    sgkSupport: Optional[float] = None # Alias
+    sgk_support: Optional[float] = Field(None, alias="sgkSupport")
     
     # Down payment
     down_payment: Optional[float] = Field(None, alias="downPayment")
@@ -270,6 +272,7 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     """Schema for reading a sale - matches Sale.to_dict() output"""
     party_id: str = Field(..., alias="partyId")
     product_id: Optional[str] = Field(None, alias="productId")
+    sales_owner_user_id: Optional[str] = Field(None, alias="salesOwnerUserId")
     tenant_id: Optional[str] = Field(None, alias="tenantId")
     branch_id: Optional[str] = Field(None, alias="branchId")
     
@@ -278,7 +281,43 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     notes: Optional[str] = None
     
+    # Financial fields
+    list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
+    actual_list_price_total: Optional[float] = Field(None, alias="actualListPriceTotal")  # ✅ NEW: Actual total (unit × count)
+    unit_list_price: Optional[float] = Field(None, alias="unitListPrice")  # ✅ NEW: Explicit unit price
+    total_amount: Optional[float] = Field(None, alias="totalAmount")
+    discount_amount: Optional[float] = Field(0.0, alias="discountAmount")
+    final_amount: Optional[float] = Field(None, alias="finalAmount")
+    paid_amount: Optional[float] = Field(0.0, alias="paidAmount")
+    sgk_coverage: Optional[float] = Field(0.0, alias="sgkCoverage")
+    patient_payment: Optional[float] = Field(None, alias="patientPayment")
+    
+    # KDV (VAT) fields
+    kdv_rate: Optional[float] = Field(20.0, alias="kdvRate")
+    kdv_amount: Optional[float] = Field(0.0, alias="kdvAmount")
+    
     remaining_amount: Optional[float] = Field(0.0, alias="remainingAmount")
+    
+    # Sale-level product fields (from first device for backwards compatibility)
+    product_name: Optional[str] = Field(None, alias="productName")
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    barcode: Optional[str] = None
+    serial_number: Optional[str] = Field(None, alias="serialNumber")
+    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
+    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
+    category: Optional[str] = None
+    list_price: Optional[float] = Field(None, alias="listPrice")
+    sale_price: Optional[float] = Field(None, alias="salePrice")
+    sgk_support: Optional[float] = Field(None, alias="sgkSupport")
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    discount_type: Optional[str] = Field(None, alias="discountType")
+    discount_value: Optional[float] = Field(None, alias="discountValue")
+    down_payment: Optional[float] = Field(None, alias="downPayment")
+    delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
+    payment_status: Optional[str] = Field(None, alias="paymentStatus")
+    invoice_status: Optional[str] = Field(None, alias="invoiceStatus")
+    net_payable: Optional[float] = Field(None, alias="netPayable")
 
     @model_validator(mode='before')
     @classmethod
@@ -329,12 +368,14 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
 class SaleCreate(AppBaseModel):
     party_id: str = Field(..., alias="partyId")
     product_id: str = Field(..., alias="productId")
+    sales_owner_user_id: Optional[str] = Field(None, alias="salesOwnerUserId")
     
     # Optional overrides
     sales_price: Optional[float] = Field(None, alias="salesPrice")
     quantity: int = Field(1)
     
     discount_type: Optional[str] = Field(None, alias="discountType")
+    discount_value: Optional[float] = Field(None, alias="discountValue")
     discount_amount: Optional[float] = Field(None, alias="discountAmount")
     
     payment_method: Optional[str] = Field("cash", alias="paymentMethod")
@@ -355,15 +396,29 @@ class SaleCreate(AppBaseModel):
     sale_date: Optional[datetime] = Field(None, alias="saleDate")
 
 class SaleUpdate(AppBaseModel):
+    sales_owner_user_id: Optional[str] = Field(None, alias="salesOwnerUserId")
+    total_amount: Optional[float] = Field(None, alias="totalAmount")
     list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
+    unit_list_price: Optional[float] = Field(None, alias="unitListPrice")  # ✅ NEW: Unit price field
     discount_amount: Optional[float] = Field(None, alias="discountAmount")
+    discount_type: Optional[str] = Field(None, alias="discountType")  # 'percentage', 'amount', 'none'
+    discount_value: Optional[float] = Field(None, alias="discountValue")  # Percentage value (e.g., 10 for 10%) or amount value
     sgk_coverage: Optional[float] = Field(None, alias="sgkCoverage")
     patient_payment: Optional[float] = Field(None, alias="patientPayment")
     final_amount: Optional[float] = Field(None, alias="finalAmount")
+    paid_amount: Optional[float] = Field(None, alias="paidAmount")
     
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     status: Optional[str] = None
     notes: Optional[str] = None
+    
+    # Device-specific fields (will update all device assignments)
+    ear: Optional[str] = None  # 'left', 'right', 'both' - will handle assignment creation/deletion
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
+    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
+    delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
+    report_status: Optional[str] = Field(None, alias="reportStatus")
 
 class SaleRecalcRequest(AppBaseModel):
     party_id: Optional[str] = Field(None, alias="partyId")
@@ -419,4 +474,3 @@ class PromissoryNoteRead(IDMixin, TimestampMixin, PromissoryNoteBase):
 class PromissoryNoteCollectionResponse(AppBaseModel):
     note: PromissoryNoteRead
     payment: PaymentRecordRead
-

@@ -66,6 +66,7 @@
     "react-hook-form": "^7.65.0",
     "react-hot-toast": "^2.6.0",
     "react-hotkeys-hook": "^5.2.1",
+    "react-is": "^18.2.0",
     "react-window": "^2.2.1",
     "recharts": "^3.5.0",
     "tailwind-merge": "^2.0.0",

@@ -337,7 +337,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
         {/* Header with Search Input and Controls */}
         <div className="flex items-center space-x-4 mb-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={filters.query}
               onChange={(e) => updateFilter('query', e.target.value)}
@@ -352,7 +352,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
               checked={filters.fuzzySearch}
               onChange={(e) => updateFilter('fuzzySearch', !!(e?.target?.checked))}
             />
-            <span className="text-sm text-gray-600">Fuzzy Search</span>
+            <span className="text-sm text-muted-foreground">Fuzzy Search</span>
           </div>
           
           {/* Saved Queries Button */}
@@ -404,7 +404,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
               Temizle
@@ -414,7 +414,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
 
         {/* Fuzzy Search Threshold */}
         {filters.fuzzySearch && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+          <div className="mb-4 p-3 bg-primary/10 rounded-2xl">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-blue-900">
                 Fuzzy Search Hassasiyeti: {Math.round(filters.fuzzyThreshold * 100)}%
@@ -429,7 +429,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
                 className="w-32"
               />
             </div>
-            <p className="text-xs text-blue-700 mt-1">
+            <p className="text-xs text-primary mt-1">
               Düşük değer: Daha esnek arama, Yüksek değer: Daha kesin arama
             </p>
           </div>
@@ -437,9 +437,9 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
 
         {/* Saved Queries Panel */}
         {showSavedQueries && (
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="mb-4 p-4 bg-muted rounded-2xl">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-gray-900">Kayıtlı Sorgular</h3>
+              <h3 className="font-medium text-foreground">Kayıtlı Sorgular</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -450,7 +450,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
             </div>
             
             {savedQueriesList.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">
+              <p className="text-sm text-muted-foreground text-center py-4">
                 Henüz kayıtlı sorgu yok
               </p>
             ) : (
@@ -458,10 +458,10 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
                 {savedQueriesList.map((query) => (
                   <div
                     key={query.id}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
+                    className={`flex items-center justify-between p-3 rounded-2xl border ${
                       selectedSavedQuery?.id === query.id 
-                        ? 'border-blue-300 bg-blue-50' 
-                        : 'border-gray-200 bg-white'
+                        ? 'border-blue-300 bg-primary/10' 
+                        : 'border-border bg-card'
                     }`}
                   >
                     <div className="flex-1 cursor-pointer" onClick={() => handleLoadSavedQuery(query)}>
@@ -475,9 +475,9 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
                         </Badge>
                       </div>
                       {query.description && (
-                        <p className="text-xs text-gray-600 mt-1">{query.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{query.description}</p>
                       )}
-                      <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                      <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
                         <span>"{query.query}"</span>
                         {query.lastUsed && (
                           <span className="flex items-center">
@@ -493,7 +493,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteSavedQuery(query.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -516,7 +516,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
         >
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Sorgu Adı *
               </label>
               <Input
@@ -527,7 +527,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Açıklama
               </label>
               <Textarea
@@ -543,12 +543,12 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
                 checked={saveQueryForm.isDefault}
                 onChange={(e) => setSaveQueryForm(prev => ({ ...prev, isDefault: e.target.checked }))}
               />
-              <span className="text-sm text-gray-700">Varsayılan sorgu olarak işaretle</span>
+              <span className="text-sm text-foreground">Varsayılan sorgu olarak işaretle</span>
             </div>
             
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Kaydedilecek Filtreler:</h4>
-              <div className="text-xs text-gray-600 space-y-1">
+            <div className="bg-muted p-3 rounded-2xl">
+              <h4 className="text-sm font-medium text-foreground mb-2">Kaydedilecek Filtreler:</h4>
+              <div className="text-xs text-muted-foreground space-y-1">
                 {filters.query && <div>• Arama: "{filters.query}"</div>}
                 {filters.segment && <div>• Segment: {filters.segment}</div>}
                 {filters.status && <div>• Durum: {filters.status}</div>}
@@ -573,7 +573,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
         </Modal>
 
         {/* Results Summary */}
-        <div className="flex items-center justify-between text-sm text-gray-600 mt-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground mt-4">
           <span>
             {filteredResults.length} hasta bulundu
             {parties.length !== filteredResults.length && ` (${parties.length} toplam)`}
@@ -581,7 +581,7 @@ export const PartyAdvancedSearch: React.FC<PartyAdvancedSearchProps> = ({
           {selectedSavedQuery && (
             <div className="flex items-center space-x-2">
               <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-blue-600">"{selectedSavedQuery.name}" sorgusu aktif</span>
+              <span className="text-primary">"{selectedSavedQuery.name}" sorgusu aktif</span>
             </div>
           )}
         </div>

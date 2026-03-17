@@ -3,7 +3,6 @@
 Script to apply optimistic locking and transaction decorators to PUT endpoints
 """
 
-import os
 import re
 import sys
 from pathlib import Path
@@ -166,7 +165,7 @@ def process_file(file_path):
     endpoints = find_put_endpoints(content)
     
     if not endpoints:
-        print(f"  No PUT endpoints found")
+        print("  No PUT endpoints found")
         return
     
     print(f"  Found {len(endpoints)} PUT endpoints")

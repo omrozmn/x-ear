@@ -128,6 +128,7 @@ export interface Invoice {
   // Legacy customer fields (some services use customer* names)
   customerId?: string;
   customerName?: string;
+  customerTaxId?: string;
   customerTaxNumber?: string;
   /**
    * Legacy customer address field.
@@ -207,6 +208,7 @@ export interface Invoice {
   shipmentInfo?: ShipmentInfoData;
   bankInfo?: BankInfoData;
   paymentTerms?: PaymentTermsData;
+  profileDetails?: SpecialProfileDetailsData;
   issueTime?: string; // HH:mm format
   isTechnologySupport?: boolean;
   isMedicalDevice?: boolean;
@@ -363,6 +365,7 @@ export interface CreateInvoiceData {
   // Legacy customer fields
   customerId?: string;
   customerName?: string;
+  customerTaxId?: string;
   customerTaxNumber?: string;
   /**
    * Legacy customer address field.
@@ -411,6 +414,8 @@ export interface CreateInvoiceData {
 
   // Birfatura & Specialized Data
   taxOffice?: string;
+  receiverTag?: string;
+  senderTag?: string;
   returnReferenceNumber?: string;
   returnReferenceDate?: string;
   metadata?: Record<string, unknown>;
@@ -419,6 +424,7 @@ export interface CreateInvoiceData {
   exportDetails?: ExportDetailsData;
   medicalDeviceData?: MedicalDeviceData;
   withholdingData?: WithholdingData;
+  profileDetails?: SpecialProfileDetailsData;
 }
 
 export interface UpdateInvoiceData extends Partial<CreateInvoiceData> {
@@ -437,6 +443,7 @@ export interface InvoiceFormData {
   customerId?: string;
   customerName?: string;
   governmentPayingCustomer?: boolean;
+  customerTaxId?: string;
   customerTaxNumber?: string;
   partyPhone?: string;
   partyTcNumber?: string;
@@ -484,6 +491,8 @@ export interface InvoiceFormData {
 
   // UI helper fields
   customerLabel?: string;
+  receiverTag?: string;
+  senderTag?: string;
 
   // Legacy/extended fields used by validation and various flows
   scenario?: InvoiceScenario | string;
@@ -634,6 +643,7 @@ export interface WithholdingData {
   taxFreeAmount: number;
   withholdingType?: 'partial' | 'full';
   withholdingCode?: string;
+  code?: string;
 }
 
 export interface WithholdingCalculation {
@@ -657,6 +667,10 @@ export interface DeliveryInfo {
   deliveryReference?: string;
   carrierName?: string;
   trackingNumber?: string;
+  receiverName?: string;
+  createLinkedDocument?: boolean;
+  linkedInvoiceType?: string;
+  linkedScenario?: string;
 }
 
 export interface InternetSalesInfo {
@@ -737,9 +751,37 @@ export interface ShipmentInfoData {
   trackingNumber?: string;
 }
 
+export interface SpecialProfileDetailsData {
+  systemType?: 'EFATURA' | 'EARSIV' | 'EIRSALIYE';
+  profileId?: string;
+  accommodationStartDate?: string;
+  accommodationEndDate?: string;
+  hotelRegistrationNo?: string;
+  guestCount?: number;
+  chargeStartDate?: string;
+  chargeEndDate?: string;
+  stationCode?: string;
+  plateNumber?: string;
+  energyAmount?: number;
+  passengerName?: string;
+  passengerPassportNo?: string;
+  passengerNationality?: string;
+  taxRepresentativeName?: string;
+  taxRepresentativeTaxId?: string;
+  taxRepresentativeLabel?: string;
+  refundBankIban?: string;
+  otvCode?: string;
+  otvRate?: number;
+  otvAmount?: number;
+  patientName?: string;
+  patientTaxId?: string;
+}
+
 // Bank Info (Banka Bilgileri)
 export interface BankInfoData {
+  useCompanyDefaults?: boolean;
   bankName?: string;
+  accountHolder?: string;
   accountNumber?: string;
   iban?: string;
   swiftCode?: string;
@@ -751,6 +793,7 @@ export interface PaymentTermsData {
   paymentDays?: number;
   earlyPaymentDiscount?: number;
   latePaymentPenalty?: number;
+  dueDate?: string;
 }
 
 // Line Withholding (Satır Bazında Tevkifat)
@@ -797,6 +840,11 @@ export interface SGKInvoiceData {
   paymentAmount?: number;
   paymentDate?: string;
   paymentDescription?: string;
+
+  // Tutarsal Bilgiler (Katılım Payları)
+  kpv10Amount?: number;
+  kpv20Amount?: number;
+  tahsilEdilenKp?: number;
 
   // SGK Özel Alanlar
   sgkInstitutionCode?: string;

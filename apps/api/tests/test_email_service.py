@@ -9,7 +9,7 @@ tenant context cleanup, and audit logging.
 import pytest
 import asyncio
 from datetime import datetime, timezone
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
+from unittest.mock import Mock, AsyncMock, patch
 from hypothesis import given, strategies as st, settings, HealthCheck
 from aiosmtplib.errors import (
     SMTPAuthenticationError,
@@ -25,7 +25,6 @@ EmailService = email_service_module.EmailService
 from services.smtp_config_service import SMTPConfigService
 from services.email_template_service import EmailTemplateService
 from core.models.email import SMTPEmailLog
-from utils.exceptions import SMTPError
 
 
 # Fixtures
@@ -90,7 +89,9 @@ def test_queue_email_creates_log_entry(mock_db, mock_smtp_config_service, mock_t
     mock_db.add = Mock()
     mock_db.flush = Mock()
     
-    with patch.object(email_service_module, 'SMTPEmailLog', return_value=mock_log):
+    with patch('services.unsubscribe_service.UnsubscribeService.is_unsubscribed', return_value=False), \
+         patch('services.rate_limit_service.RateLimitService.check_rate_limit', return_value=(True, "", None)), \
+         patch.object(email_service_module, 'SMTPEmailLog', return_value=mock_log):
         # Act
         email_log_id = email_service.queue_email(
             scenario="password_reset",
@@ -360,6 +361,8 @@ async def test_exponential_backoff_delays(mock_db, mock_smtp_config_service, moc
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_123"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Mock SMTP to fail 3 times, then succeed on 4th attempt
@@ -439,6 +442,8 @@ async def test_connection_timeout_handling_with_retries(mock_db, mock_smtp_confi
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_456"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Mock SMTP to timeout twice, then succeed
@@ -512,6 +517,8 @@ async def test_authentication_failure_no_retry(mock_db, mock_smtp_config_service
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_789"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Mock SMTP to fail with authentication error
@@ -676,7 +683,7 @@ async def test_multipart_message_structure(email_service):
     # Assert 8: Verify message headers
     assert message["Subject"] == subject, f"Subject should be '{subject}', got '{message['Subject']}'"
     assert message["To"] == recipient, f"To should be '{recipient}', got '{message['To']}'"
-    assert message["From"] == f"X-Ear CRM <noreply@example.com>", \
+    assert message["From"] == "X-Ear CRM <noreply@example.com>", \
         f"From should include name and email, got '{message['From']}'"
     assert message["Date"] is not None, "Date header should be set"
     assert message["Message-ID"] is not None, "Message-ID header should be set"
@@ -949,6 +956,8 @@ async def test_property_retry_behavior_for_retryable_errors(error_type, success_
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_123"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Map error types to exceptions
@@ -1110,6 +1119,8 @@ async def test_property_no_retry_for_permanent_errors(error_type):
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_123"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Map error types to exceptions (all permanent/non-retryable)
@@ -1132,21 +1143,25 @@ async def test_property_no_retry_for_permanent_errors(error_type):
     def mock_get_db_generator():
         yield mock_db
     
+    mock_bounce_service = Mock()
+    mock_bounce_service.is_blacklisted = Mock(return_value=False)
+    mock_bounce_service.process_bounce = Mock()
+
     with patch('services.email_service.SMTP', return_value=mock_smtp):
         with patch('services.email_service.get_db', return_value=mock_get_db_generator()):
-            with patch('asyncio.sleep', new_callable=AsyncMock) as mock_sleep:
-                # Act - execute the background task
-                # Access the underlying unwrapped function to bypass decorator validation
-                unwrapped_func = email_service.send_email_task.__wrapped__
-                await unwrapped_func(
-                    email_service,
-                    tenant_id="tenant_123",
-                    email_log_id="log_123",
-                    scenario="password_reset",
-                    recipient="user@example.com",
-                    variables={"user_name": "Test User", "reset_link": "https://example.com"},
-                    language="tr"
-                )
+            with patch('services.bounce_handler_service.get_bounce_handler_service', return_value=mock_bounce_service):
+                with patch('asyncio.sleep', new_callable=AsyncMock) as mock_sleep:
+                    # Act - execute the background task
+                    unwrapped_func = email_service.send_email_task.__wrapped__
+                    await unwrapped_func(
+                        email_service,
+                        tenant_id="tenant_123",
+                        email_log_id="log_123",
+                        scenario="password_reset",
+                        recipient="user@example.com",
+                        variables={"user_name": "Test User", "reset_link": "https://example.com"},
+                        language="tr"
+                    )
     
     # Assert 1: Only ONE send attempt (no retries)
     assert mock_smtp.send_message.call_count == 1, \
@@ -1230,6 +1245,8 @@ async def test_property_retry_count_logging(success_on_attempt):
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_123"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Mock SMTP behavior - fail until success_on_attempt
@@ -1485,6 +1502,8 @@ async def test_property_successful_send_logging(scenario, recipient, subject, ht
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_123"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Mock successful SMTP send
@@ -1546,7 +1565,7 @@ async def test_property_successful_send_logging(scenario, recipient, subject, ht
     # Assert 7: body_preview is populated (first 500 chars)
     expected_preview = text_body[:500]
     assert mock_log.body_preview == expected_preview, \
-        f"body_preview should be first 500 chars of text body"
+        "body_preview should be first 500 chars of text body"
     
     # Assert 8: retry_count is 0 for first-attempt success
     assert mock_log.retry_count == 0, \
@@ -1627,6 +1646,8 @@ async def test_property_failed_send_logging(scenario, recipient, error_type):
     # Mock email log
     mock_log = Mock(spec=SMTPEmailLog)
     mock_log.id = "log_123"
+    mock_log.is_promotional = False
+    mock_log.unsubscribe_token = None
     mock_db.get.return_value = mock_log
     
     # Map error types to exceptions and expected behavior
@@ -1675,18 +1696,21 @@ async def test_property_failed_send_logging(scenario, recipient, error_type):
     def mock_get_db_generator():
         yield mock_db
     
+    mock_bounce_service = Mock()
+    mock_bounce_service.is_blacklisted = Mock(return_value=False)
+    mock_bounce_service.process_bounce = Mock()
+
     with patch('services.email_service.SMTP', return_value=mock_smtp):
         with patch('services.email_service.get_db', return_value=mock_get_db_generator()):
-            with patch('asyncio.sleep', new_callable=AsyncMock):
-                # Act - execute the background task
-                # Access the underlying unwrapped function to bypass decorator validation
-                unwrapped_func = email_service.send_email_task.__wrapped__
-                await unwrapped_func(
-                    email_service,
-                    tenant_id="tenant_123",
-                    email_log_id="log_123",
-                    scenario=scenario,
-                    recipient=recipient,
+            with patch('services.bounce_handler_service.get_bounce_handler_service', return_value=mock_bounce_service):
+                with patch('asyncio.sleep', new_callable=AsyncMock):
+                    unwrapped_func = email_service.send_email_task.__wrapped__
+                    await unwrapped_func(
+                        email_service,
+                        tenant_id="tenant_123",
+                        email_log_id="log_123",
+                        scenario=scenario,
+                        recipient=recipient,
                     variables={"user_name": "Test User", "reset_link": "https://example.com"},
                     language="tr"
                 )

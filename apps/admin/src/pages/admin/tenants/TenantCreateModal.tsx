@@ -1,38 +1,86 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useCreateAdminTenant } from '@/lib/api-client';
 import toast from 'react-hot-toast';
-import { PRODUCT_REGISTRY } from '@/config/productRegistry';
+import { PRODUCT_REGISTRY, getSectorForProduct } from '@/config/productRegistry';
+import { adminApi } from '@/api/orval-mutator';
+import { getCountryConfig } from '@/config/countryRegistry';
 
 interface TenantCreateModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
+type TenantStatus = 'trial' | 'active';
+
+interface CountryData {
+    code: string;
+    name: string;
+    enabled: boolean;
+    creatable: boolean;
+}
+
+interface TenantCreateFormData {
+    name: string;
+    owner_email: string;
+    status: TenantStatus;
+    product_code: string;
+    country_code: string;
+}
+
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+        };
+    };
+}
+
+function useCreatableCountries() {
+    return useQuery({
+        queryKey: ['/api/admin/countries/creatable'],
+        queryFn: async () => {
+            const response = await adminApi<{ countries: CountryData[] }>({
+                url: '/admin/countries',
+                method: 'GET',
+            });
+            const raw = response as Record<string, unknown>;
+            const countries = Array.isArray(raw.countries) ? raw.countries as CountryData[] : Array.isArray(raw) ? raw as CountryData[] : [];
+            return countries.filter(c => c.enabled && c.creatable);
+        },
+    });
+}
+
 export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) => {
     const queryClient = useQueryClient();
     const { mutateAsync: createTenant, isPending } = useCreateAdminTenant();
+    const { data: creatableCountries } = useCreatableCountries();
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<TenantCreateFormData>({
         name: '',
         owner_email: '',
         status: 'trial',
-        product_code: 'xear_hearing'
+        product_code: 'xear_hearing',
+        country_code: 'TR'
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const payload = {
+                name: formData.name,
+                ownerEmail: formData.owner_email,
+                status: formData.status,
+                product_code: formData.product_code,
+                sector: getSectorForProduct(formData.product_code),
+                countryCode: formData.country_code,
+            };
             await createTenant({
-                data: {
-                    name: formData.name,
-                    ownerEmail: formData.owner_email,
-                    status: formData.status as any,
-                    // @ts-ignore - product_code is added in backend
-                    product_code: formData.product_code
-                }
+                data: payload
             });
             toast.success('Abone başarıyla oluşturuldu');
             queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
@@ -42,10 +90,12 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                 name: '',
                 owner_email: '',
                 status: 'trial',
-                product_code: 'xear_hearing'
+                product_code: 'xear_hearing',
+                country_code: 'TR'
             });
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Oluşturma başarısız');
+        } catch (error: unknown) {
+            const apiError = error as ApiErrorLike;
+            toast.error(apiError.response?.data?.error?.message || 'Oluşturma başarısız');
         }
     };
 
@@ -55,7 +105,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow z-40" />
-                <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white shadow-2xl focus:outline-none data-[state=open]:animate-contentShow z-50 flex flex-col">
+                <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white shadow-2xl focus:outline-none data-[state=open]:animate-contentShow z-50 flex flex-col">
                     <div className="flex justify-between items-center p-6 border-b">
                         <Dialog.Title className="text-xl font-bold text-gray-900">
                             Yeni Abone Ekle
@@ -66,6 +116,11 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                             </button>
                         </Dialog.Close>
                     </div>
+                    
+                    {/* Add Description to fix Radix UI warning */}
+                    <Dialog.Description className="sr-only">
+                        Yeni bir abone (klinik/organizasyon) oluşturmak için formu doldurun.
+                    </Dialog.Description>
 
                     <div className="p-6">
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,7 +130,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
                             </div>
@@ -86,7 +141,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                     type="email"
                                     value={formData.owner_email}
                                     onChange={e => setFormData({ ...formData, owner_email: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
                             </div>
@@ -96,10 +151,10 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                 <select
                                     value={formData.product_code}
                                     onChange={e => setFormData({ ...formData, product_code: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     {Object.entries(PRODUCT_REGISTRY)
-                                        .filter(([_, config]) => config.enabled && config.creatable)
+                                        .filter(([, config]) => config.enabled && config.creatable)
                                         .map(([key, config]) => (
                                             <option key={key} value={key}>{config.name}</option>
                                         ))
@@ -109,11 +164,32 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                             </div>
 
                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Ülke</label>
+                                <select
+                                    value={formData.country_code}
+                                    onChange={e => setFormData({ ...formData, country_code: e.target.value })}
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                >
+                                    {creatableCountries && creatableCountries.length > 0 ? (
+                                        creatableCountries.map((c) => {
+                                            const config = getCountryConfig(c.code);
+                                            return (
+                                                <option key={c.code} value={c.code}>{config.flag} {c.name} ({c.code})</option>
+                                            );
+                                        })
+                                    ) : (
+                                        <option value="TR">{getCountryConfig('TR').flag} Turkey (TR)</option>
+                                    )}
+                                </select>
+                                <p className="mt-1 text-xs text-gray-500">Varsayılan: Turkey</p>
+                            </div>
+
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">Başlangıç Durumu</label>
                                 <select
                                     value={formData.status}
-                                    onChange={e => setFormData({ ...formData, status: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    onChange={e => setFormData({ ...formData, status: e.target.value as TenantStatus })}
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     <option value="trial">Deneme (Trial)</option>
                                     <option value="active">Aktif</option>
@@ -124,14 +200,14 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="mr-3 inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
+                                    className="mr-3 inline-flex justify-center rounded-xl border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
                                 >
                                     İptal
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isPending}
-                                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                                    className="inline-flex justify-center rounded-xl border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                                 >
                                     {isPending ? 'Oluşturuluyor...' : 'Oluştur'}
                                 </button>

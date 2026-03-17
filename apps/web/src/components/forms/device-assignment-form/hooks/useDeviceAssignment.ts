@@ -202,7 +202,7 @@ export const useDeviceAssignment = ({
       try {
         const response = await listInventory({
           category: 'hearing_aid',
-          per_page: 100
+          per_page: 200
         });
 
         // Extract data array from response
@@ -238,6 +238,7 @@ export const useDeviceAssignment = ({
           
           return {
             id: String(inventoryItem.id || ''),
+            name: String(inventoryItem.name || ''),
             brand: String(inventoryItem.brand || ''),
             model: String(inventoryItem.model || ''),
             price: Number(inventoryItem.price || 0),
@@ -289,6 +290,7 @@ export const useDeviceAssignment = ({
 
             const syntheticDevice: DeviceInventoryItem = {
               id: assignment.deviceId,
+              name: `${brand || ''} ${model || ''}`.trim() || 'Bilinmiyor',
               brand: brand || 'Bilinmiyor',
               model: model || 'Bilinmiyor',
               price: assignment.listPrice || 0,
@@ -324,6 +326,7 @@ export const useDeviceAssignment = ({
     return availableDevices.filter(device =>
       device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       device.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (device.barcode && device.barcode.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [searchTerm, availableDevices]);
@@ -488,7 +491,7 @@ export const useDeviceAssignment = ({
       // Payment method is only required if downPayment is entered
       const downPayment = formData.downPayment || 0;
       if (downPayment > 0 && !formData.paymentMethod) {
-        newErrors.paymentMethod = 'Peşinat girildiğinde ödeme yöntemi seçimi zorunludur';
+        newErrors.paymentMethod = 'Ön ödeme girildiğinde ödeme yöntemi seçimi zorunludur';
       }
     }
 

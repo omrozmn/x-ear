@@ -1,9 +1,11 @@
 # Inventory Model for X-Ear CRM
 # Manages product inventory, stock levels, and serial numbers
 
+from sqlalchemy import Column, Boolean, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import json
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 def now_utc():
@@ -79,51 +81,58 @@ class InventoryItem(BaseModel, TenantScopedMixin):
 
     __table_args__ = {'extend_existing': True}
 
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     # tenant_id is now inherited from TenantScopedMixin
-    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
-    name = db.Column(db.String(200), nullable=False)
-    brand = db.Column(db.String(100), nullable=False)
-    model = db.Column(db.String(100))
-    category = db.Column(db.String(50), nullable=False)  # hearing_aid, aksesuar, pil, bakim
-    barcode = db.Column(db.String(100), unique=True, nullable=True)
-    stock_code = db.Column(db.String(100), unique=True, nullable=True)  # Stock/SKU code
-    supplier = db.Column(db.String(200))
-    unit = db.Column(db.String(50), default='adet')  # Unit type (adet, metre, litre, etc.)
-    description = db.Column(db.Text)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
+    name = Column(String(200), nullable=False)
+    brand = Column(String(100), nullable=True)
+    model = Column(String(100))
+    category = Column(String(50), nullable=False)  # hearing_aid, aksesuar, pil, bakim
+    barcode = Column(String(100), unique=True, nullable=True)
+    stock_code = Column(String(100), unique=True, nullable=True)  # Stock/SKU code
+    supplier = Column(String(200))
+    unit = Column(String(50), default='adet')  # Unit type (adet, metre, litre, etc.)
+    package_quantity = Column(Integer, nullable=True)  # Number of items per package (e.g., 6 batteries per pack)
+    description = Column(Text)
     
     # Inventory tracking
-    available_inventory = db.Column(db.Integer, default=0, nullable=False)
-    total_inventory = db.Column(db.Integer, default=0, nullable=False)
-    used_inventory = db.Column(db.Integer, default=0, nullable=False)
-    on_trial = db.Column(db.Integer, default=0, nullable=False)
-    reorder_level = db.Column(db.Integer, default=5, nullable=False)
+    available_inventory = Column(Integer, default=0, nullable=False)
+    total_inventory = Column(Integer, default=0, nullable=False)
+    used_inventory = Column(Integer, default=0, nullable=False)
+    on_trial = Column(Integer, default=0, nullable=False)
+    reorder_level = Column(Integer, default=5, nullable=False)
     
     # Serial numbers (JSON array for hearing aids)
-    available_serials = db.Column(db.Text)  # JSON array of available serial numbers
+    available_serials = Column(Text)  # JSON array of available serial numbers
     
     # Pricing
-    price = db.Column(db.Float, nullable=False, default=0.0)
-    cost = db.Column(db.Float, default=0.0)  # Cost/purchase price
+    price = Column(Float, nullable=False, default=0.0)
+    cost = Column(Float, default=0.0)  # Cost/purchase price
     # VAT/KDV rate stored as percentage (e.g. 20 for 20%)
     # Stored as 'kdv_rate' in DB for consistency with previous migrations and schema
-    kdv_rate = db.Column('kdv_rate', db.Float, default=20.0)
+    kdv_rate = Column('kdv_rate', Float, default=20.0)
     # Whether the stored price and cost include VAT (KDV) already
-    price_includes_kdv = db.Column('price_includes_kdv', db.Boolean, default=False)
-    cost_includes_kdv = db.Column('cost_includes_kdv', db.Boolean, default=False)
+    price_includes_kdv = Column('price_includes_kdv', Boolean, default=False)
+    cost_includes_kdv = Column('cost_includes_kdv', Boolean, default=False)
     
     # Features (JSON array for all product types)
-    features = db.Column(db.Text)  # JSON array of product features
+    features = Column(Text)  # JSON array of product features
     
     # Hearing aid specific fields
-    direction = db.Column(db.String(10))  # left, right, both (for hearing aids)
-    ear = db.Column(db.String(10))  # Alias for direction (backward compatibility)
+    direction = Column(String(10))  # left, right, both (for hearing aids)
+    ear = Column(String(10))  # Alias for direction (backward compatibility)
+
+    # Technical specifications for hearing aid recommendation engine
+    max_output_spl = Column(Integer, nullable=True)  # Maximum output in dB SPL
+    max_gain = Column(Integer, nullable=True)  # Maximum gain in dB
+    fitting_range_min = Column(Integer, nullable=True)  # Minimum hearing loss in dB HL
+    fitting_range_max = Column(Integer, nullable=True)  # Maximum hearing loss in dB HL
     
     # Warranty
-    warranty = db.Column(db.Integer, default=0)  # warranty in months
+    warranty = Column(Integer, default=0)  # warranty in months
     
     # Relationships
-    movements = db.relationship('StockMovement', back_populates='inventory', lazy='dynamic', cascade='all, delete-orphan')
+    movements = relationship('StockMovement', back_populates='inventory', lazy='dynamic', cascade='all, delete-orphan')
 
     # Timestamps inherited from BaseModel
 
@@ -160,6 +169,7 @@ class InventoryItem(BaseModel, TenantScopedMixin):
             'stockCode': self.stock_code,
             'supplier': self.supplier,
             'unit': self.unit,
+            'packageQuantity': self.package_quantity,
             'description': self.description,
             'availableInventory': self.available_inventory,
             'totalInventory': self.total_inventory,
@@ -183,6 +193,10 @@ class InventoryItem(BaseModel, TenantScopedMixin):
             'cost': self.cost,
             'direction': self.direction or self.ear,
             'ear': self.ear or self.direction,
+            'maxOutputSpl': self.max_output_spl,
+            'maxGain': self.max_gain,
+            'fittingRangeMin': self.fitting_range_min,
+            'fittingRangeMax': self.fitting_range_max,
             'warranty': self.warranty,
             'createdAt': self.created_at.isoformat() if self.created_at else None,
             'updatedAt': self.updated_at.isoformat() if self.updated_at else None
@@ -210,6 +224,7 @@ class InventoryItem(BaseModel, TenantScopedMixin):
         
         inventory.supplier = data.get('supplier', '')
         inventory.unit = data.get('unit', 'adet')
+        inventory.package_quantity = data.get('packageQuantity') or data.get('package_quantity')
         inventory.description = data.get('description', '')
         
         # Inventory levels - support both new and legacy field names
@@ -264,6 +279,16 @@ class InventoryItem(BaseModel, TenantScopedMixin):
         # Direction/ear
         inventory.direction = data.get('direction') or data.get('ear')
         inventory.ear = data.get('ear') or data.get('direction')
+
+        # Technical specs
+        if 'maxOutputSpl' in data:
+            inventory.max_output_spl = data.get('maxOutputSpl')
+        if 'maxGain' in data:
+            inventory.max_gain = data.get('maxGain')
+        if 'fittingRangeMin' in data:
+            inventory.fitting_range_min = data.get('fittingRangeMin')
+        if 'fittingRangeMax' in data:
+            inventory.fitting_range_max = data.get('fittingRangeMax')
         
         # Warranty
         inventory.warranty = data.get('warranty', 0)
@@ -288,7 +313,12 @@ class InventoryItem(BaseModel, TenantScopedMixin):
         self.kdv_rate = value
 
     def add_serial_number(self, serial_number):
-        """Add a serial number to available serials"""
+        """Add a serial number to available serials
+        
+        IMPORTANT: Serial numbers are for tracking purposes only.
+        They do NOT affect inventory quantities.
+        User can add 10 items but only provide 3 serial numbers - that's valid.
+        """
         serials = []
         if self.available_serials:
             try:
@@ -300,13 +330,18 @@ class InventoryItem(BaseModel, TenantScopedMixin):
         if serial_number not in serials:
             serials.append(serial_number)
             self.available_serials = json.dumps(serials)
-            self.available_inventory = len(serials)
-            self.total_inventory = max((self.total_inventory or 0), self.available_inventory)
+            # ✅ DO NOT modify inventory quantities based on serial numbers!
+            # Inventory quantity is set by user explicitly, serial numbers are optional tracking data
             return True
         return False
 
     def remove_serial_number(self, serial_number):
-        """Remove a serial number from available serials (when assigned to patient)"""
+        """Remove a serial number from available serials (when assigned to patient)
+        
+        IMPORTANT: Removing a serial number does NOT affect inventory quantities.
+        Inventory is managed separately via update_inventory() method.
+        This only removes the serial from tracking list.
+        """
         serials = []
         if self.available_serials:
             try:
@@ -318,8 +353,9 @@ class InventoryItem(BaseModel, TenantScopedMixin):
         if serial_number in serials:
             serials.remove(serial_number)
             self.available_serials = json.dumps(serials) if serials else None
-            self.available_inventory = len(serials)
-            self.used_inventory += 1
+            # ✅ DO NOT modify inventory quantities based on serial numbers!
+            # Inventory quantity changes should be done via update_inventory() method
+            # Serial numbers are just for tracking, not for quantity management
             return True
         return False
 

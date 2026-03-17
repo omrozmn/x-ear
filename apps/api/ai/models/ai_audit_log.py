@@ -13,12 +13,11 @@ Requirements:
 This model is APPEND-ONLY. Records cannot be updated or deleted.
 """
 
-from datetime import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean, Index
+from sqlalchemy import Column, String, Text, DateTime, Integer, Index
 from sqlalchemy.dialects.postgresql import JSONB
 
 from database import Base, now_utc

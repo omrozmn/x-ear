@@ -44,7 +44,7 @@ import { customInstance } from '../../orval-mutator';
  * @summary Autocomplete
  */
 export const autocompleteApiAiComposerAutocompleteGet = (
-    params: AutocompleteApiAiComposerAutocompleteGetParams,
+    params?: AutocompleteApiAiComposerAutocompleteGetParams,
  signal?: AbortSignal
 ) => {
       
@@ -66,7 +66,7 @@ export const getAutocompleteApiAiComposerAutocompleteGetQueryKey = (params?: Aut
     }
 
     
-export const getAutocompleteApiAiComposerAutocompleteGetQueryOptions = <TData = Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError = void | HTTPValidationError>(params: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>>, }
+export const getAutocompleteApiAiComposerAutocompleteGetQueryOptions = <TData = Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError = void | HTTPValidationError>(params?: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -89,7 +89,7 @@ export type AutocompleteApiAiComposerAutocompleteGetQueryError = void | HTTPVali
 
 
 export function useAutocompleteApiAiComposerAutocompleteGet<TData = Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError = void | HTTPValidationError>(
- params: AutocompleteApiAiComposerAutocompleteGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>> & Pick<
+ params: undefined |  AutocompleteApiAiComposerAutocompleteGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>,
           TError,
@@ -99,7 +99,7 @@ export function useAutocompleteApiAiComposerAutocompleteGet<TData = Awaited<Retu
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAutocompleteApiAiComposerAutocompleteGet<TData = Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError = void | HTTPValidationError>(
- params: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>> & Pick<
+ params?: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>,
           TError,
@@ -109,7 +109,7 @@ export function useAutocompleteApiAiComposerAutocompleteGet<TData = Awaited<Retu
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAutocompleteApiAiComposerAutocompleteGet<TData = Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError = void | HTTPValidationError>(
- params: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>>, }
+ params?: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -117,7 +117,7 @@ export function useAutocompleteApiAiComposerAutocompleteGet<TData = Awaited<Retu
  */
 
 export function useAutocompleteApiAiComposerAutocompleteGet<TData = Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError = void | HTTPValidationError>(
- params: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>>, }
+ params?: AutocompleteApiAiComposerAutocompleteGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autocompleteApiAiComposerAutocompleteGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 

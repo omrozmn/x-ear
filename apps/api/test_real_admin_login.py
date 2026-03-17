@@ -23,12 +23,12 @@ with app.app_context():
             # Decode token to see identity
             import jwt
             decoded = jwt.decode(token, options={"verify_signature": False})
-            print(f'\nDecoded token:')
+            print('\nDecoded token:')
             print(f'  Identity (sub): {decoded.get("sub")}')
             print(f'  Claims: {json.dumps({k:v for k,v in decoded.items() if k != "sub"}, indent=4)}')
             
             # Test /api/users/me endpoint
-            print(f'\n--- Testing /api/users/me endpoint ---')
+            print('\n--- Testing /api/users/me endpoint ---')
             me_response = client.get('/api/users/me', 
                 headers={'Authorization': f'Bearer {token}'}
             )

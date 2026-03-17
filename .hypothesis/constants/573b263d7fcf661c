@@ -1,4 +1,0 @@
-# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/category.py
-# hypothesis_version: 6.150.2
-
-[100, 'categories', 'created_at', 'id', 'name', 'updated_at']

@@ -15,9 +15,10 @@
  * Requirements: 2 (AI Chat Widget), 8 (Graceful Degradation), 17 (Phase A Banner)
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useAIChat } from './hooks/useAIChat';
 import { useComposerStore } from '../stores/composerStore';
+import { useAuth } from '../contexts/useAuth';
 import { useAIStatus } from './hooks/useAIStatus';
 import { AIStatusIndicator } from './components/AIStatusIndicator';
 import { PhaseABanner } from './components/PhaseABanner';
@@ -222,13 +223,18 @@ export function AIChatWidget({
   onOpen,
   onClose,
 }: AIChatWidgetProps): React.ReactElement | null {
+  // Authentication check
+  const { isAuthenticated } = useAuth();
+
   // State
   const { isVisible: isOpen, setVisible: setIsOpen } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Hooks
-  const { data: status, isLoading: isStatusLoading } = useAIStatus();
+  // Only fetch AI status if user is authenticated to prevent 401 on login page
+  const { data: status, isLoading: isStatusLoading } = useAIStatus({ enabled: isAuthenticated });
+
   const {
     messages,
     sendMessage,
@@ -238,7 +244,7 @@ export function AIChatWidget({
 
   const {
     mode, selectedAction: currentAction, currentSlot, slots,
-    updateSlot, nextSlot, reset, executionResult, isDryRun
+    updateSlot, nextSlot, reset, executionResult
   } = useComposerStore();
 
   // Derived state
@@ -246,6 +252,12 @@ export function AIChatWidget({
   const isEnabled = status?.enabled ?? false;
   const isPhaseA = status?.phase?.currentPhase === 'A';
   const positionClasses = POSITION_CLASSES[position];
+
+  useEffect(() => {
+    if (defaultOpen) {
+      setIsOpen(true);
+    }
+  }, [defaultOpen, setIsOpen]);
 
   // Get unavailable reason
   const getUnavailableReason = useCallback((): string | undefined => {
@@ -290,7 +302,7 @@ export function AIChatWidget({
   const handleClose = useCallback(() => {
     setIsOpen(false);
     onClose?.();
-  }, [onClose]);
+  }, [onClose, setIsOpen]);
 
   /**
    * Handle sending a message
@@ -300,7 +312,7 @@ export function AIChatWidget({
       await sendMessage(message);
     } catch (error) {
       // Error is handled by useAIChat hook and displayed in chat
-      console.error('[AIChatWidget] Send error:', error);
+      if (import.meta.env.DEV) console.error('[AIChatWidget] Send error:', error);
     }
   }, [sendMessage]);
 
@@ -316,7 +328,7 @@ export function AIChatWidget({
   // ==========================================================================
   // Don't render if AI is disabled entirely
   // ==========================================================================
-  if (!isStatusLoading && !isEnabled) {
+  if (!isAuthenticated || (!isStatusLoading && !isEnabled)) {
     return null;
   }
 
@@ -358,7 +370,7 @@ export function AIChatWidget({
           className={`
             fixed ${positionClasses.window}
             w-96 h-[500px] max-h-[80vh]
-            bg-white rounded-lg shadow-2xl
+            bg-white rounded-2xl shadow-2xl
             flex flex-col
             border border-gray-200
             transform transition-all duration-200
@@ -422,7 +434,7 @@ export function AIChatWidget({
 
             {/* Conversational Slot Filling */}
             {isOpen && mode === 'slot_filling' && currentAction && currentSlot && (
-              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 animate-in fade-in slide-in-from-left-2">
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 animate-in fade-in slide-in-from-left-2">
                 <p className="text-sm font-medium text-blue-900 mb-2">{currentSlot.prompt}</p>
 
                 {/* Simplified Slot UI for Chat - reusing logic from Overlay */}
@@ -473,14 +485,13 @@ export function AIChatWidget({
 
             {/* Confirmation in Chat */}
             {isOpen && mode === 'confirmation' && currentAction && (
-              <div className="bg-purple-50 border border-purple-100 rounded-lg p-3 animate-in fade-in slide-in-from-left-2">
+              <div className="bg-purple-50 border border-purple-100 rounded-2xl p-3 animate-in fade-in slide-in-from-left-2">
                 <p className="text-sm font-bold text-purple-900 mb-1">İşlemi Onaylıyor musunuz?</p>
                 <p className="text-xs text-purple-700 mb-2">{currentAction.name} - {Object.keys(slots).length} parametre hazır.</p>
                 <div className="flex gap-2">
                   <button data-allow-raw="true"
                     onClick={() => {
                       // Execute handoff or direct execution
-                      console.log('Confirmed in Chat');
                       // For now just reset or execute if possible
                       reset();
                     }}
@@ -500,7 +511,7 @@ export function AIChatWidget({
 
             {/* Execution/Dry-run Result in Chat */}
             {isOpen && executionResult && (
-              <div className={`mt-2 p-3 rounded-lg border animate-in slide-in-from-bottom-2 ${executionResult.status === 'success' ? 'bg-green-50 border-green-100 text-green-900' :
+              <div className={`mt-2 p-3 rounded-2xl border animate-in slide-in-from-bottom-2 ${executionResult.status === 'success' ? 'bg-green-50 border-green-100 text-green-900' :
                 executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
                   'bg-red-50 border-red-100 text-red-900'
                 }`}>

@@ -12,14 +12,12 @@ Requirements:
 """
 
 import pytest
-from hypothesis import given, strategies as st, settings, assume
+from hypothesis import given, strategies as st, settings
 from uuid import uuid4
 
 from ai.middleware.rate_limiter import (
     RateLimiter,
-    RateLimitResult,
     rate_limit,
-    get_rate_limiter,
     reset_rate_limiter,
 )
 from ai.config import AIRateLimitError, AIConfig

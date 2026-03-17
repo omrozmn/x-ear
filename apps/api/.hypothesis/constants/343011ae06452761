@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/sgk_tools.py
+# hypothesis_version: 6.151.9
+
+['1.0.0', 'EFATURA', 'NOT_SET', 'SGK', 'TEMELFATURA', 'Tenant not found', 'action', 'amount', 'ay', 'db', 'default', 'dosyaNo', 'dosya_referans_no', 'draft', 'invoiceId', 'invoice_integration', 'invoices.write', 'mukellefAdi', 'mukellefKodu', 'mukellef_kodu', 'number', 'period', 'periodEnd', 'periodStart', 'previewUrl', 'quantity', 'reference', 'sgkData', 'status', 'string', 'summary', 'tenant_id', 'total_amount', 'unit', 'İŞİTME CİHAZI']

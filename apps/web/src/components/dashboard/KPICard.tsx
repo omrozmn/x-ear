@@ -16,17 +16,17 @@ interface KPICardProps {
 
 const colorClasses = {
   blue: {
-    bg: 'bg-blue-100 dark:bg-blue-900/20',
-    icon: 'text-blue-600 dark:text-blue-400',
-    trend: 'text-blue-600 dark:text-blue-400'
+    bg: 'bg-primary/10',
+    icon: 'text-primary',
+    trend: 'text-primary'
   },
   green: {
-    bg: 'bg-green-100 dark:bg-green-900/20',
-    icon: 'text-green-600 dark:text-green-400',
-    trend: 'text-green-600 dark:text-green-400'
+    bg: 'bg-success/10',
+    icon: 'text-success',
+    trend: 'text-success'
   },
   yellow: {
-    bg: 'bg-yellow-100 dark:bg-yellow-900/20',
+    bg: 'bg-warning/10',
     icon: 'text-yellow-600 dark:text-yellow-400',
     trend: 'text-yellow-600 dark:text-yellow-400'
   },
@@ -36,9 +36,9 @@ const colorClasses = {
     trend: 'text-purple-600 dark:text-purple-400'
   },
   red: {
-    bg: 'bg-red-100 dark:bg-red-900/20',
-    icon: 'text-red-600 dark:text-red-400',
-    trend: 'text-red-600 dark:text-red-400'
+    bg: 'bg-destructive/10',
+    icon: 'text-destructive',
+    trend: 'text-destructive'
   }
 };
 
@@ -55,18 +55,19 @@ export const KPICard: React.FC<KPICardProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-none border dark:border border-transparent dark:border-gray-700 p-6 hover:shadow-lg transition-shadow ${onClick ? 'cursor-pointer' : ''
+      className={`bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl shadow-sm border border-border/50/50 p-6 hover:shadow-lg transition-all duration-300 ${onClick ? 'cursor-pointer hover:bg-white/80 dark:hover:bg-gray-800/80' : ''
         } ${className}`}
       onClick={onClick}
+      data-testid="kpi-card"
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
           {trend && (
             <div className="flex items-center mt-2">
               <svg
-                className={`w-4 h-4 mr-1 ${trend.direction === 'up' ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'
+                className={`w-4 h-4 mr-1 ${trend.direction === 'up' ? 'text-success' : 'text-destructive'
                   }`}
                 fill="none"
                 stroke="currentColor"
@@ -82,14 +83,14 @@ export const KPICard: React.FC<KPICardProps> = ({
                   }
                 />
               </svg>
-              <span className={`text-sm ${trend.direction === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+              <span className={`text-sm ${trend.direction === 'up' ? 'text-success' : 'text-destructive'
                 }`}>
                 {trend.value}
               </span>
             </div>
           )}
         </div>
-        <div className={`p-3 ${colors.bg} rounded-lg`}>
+        <div className={`p-3 ${colors.bg} rounded-2xl`}>
           <Icon className={`w-6 h-6 ${colors.icon}`} />
         </div>
       </div>

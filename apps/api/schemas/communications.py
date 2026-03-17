@@ -3,8 +3,7 @@ Communication Schemas for X-Ear CRM
 """
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import Field, ConfigDict, BaseModel
-from pydantic.alias_generators import to_camel
+from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 class EmailLogRead(AppBaseModel, IDMixin, TimestampMixin):

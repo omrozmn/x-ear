@@ -6,6 +6,9 @@ import {
     useCreatePoCommissionInstallmentOptions
 } from '@/api/client/payments.client';
 import { CreditCard, AlertTriangle, ShieldCheck, Check, TrendingDown } from 'lucide-react';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { useIsMobile } from '@/hooks/useBreakpoint';
+import { MobilePosPage } from './pos/MobilePosPage';
 
 interface InitPaymentPayload {
     amount: number;
@@ -35,6 +38,14 @@ interface InstallmentOption {
 import { useTranslation } from 'react-i18next';
 
 export default function PosPage() {
+    const isMobile = useIsMobile();
+
+    if (isMobile) return <MobilePosPage />;
+
+    return <DesktopPosPage />;
+}
+
+function DesktopPosPage() {
     const { t } = useTranslation(['finance', 'common']);
     const [iframeUrl, setIframeUrl] = useState<string | null>(null);
     const [result, setResult] = useState<'success' | 'fail' | null>(null);
@@ -156,7 +167,7 @@ export default function PosPage() {
                     <h2 className="text-xl font-bold">{t('pos.secure_payment_title')}</h2>
                     <Button variant="ghost" onClick={() => setIframeUrl(null)}>{t('pos.cancel_return')}</Button>
                 </div>
-                <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden relative">
+                <div className="flex-1 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-sm overflow-hidden relative">
                     <iframe
                         src={iframeUrl}
                         className="absolute inset-0 w-full h-full"
@@ -173,18 +184,16 @@ export default function PosPage() {
 
     return (
         <div className="max-w-4xl mx-auto py-8 px-4">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <CreditCard className="w-8 h-8 text-blue-600 dark:text-blue-500" />
-                    {t('pos.title')}
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">
-                    {t('pos.description')}
-                </p>
-            </div>
+            <DesktopPageHeader
+                className="mb-8"
+                title={t('pos.title')}
+                description={t('pos.description')}
+                icon={<CreditCard className="w-6 h-6" />}
+                eyebrow={{ tr: 'POS', en: 'POS' }}
+            />
 
             {result === 'success' && (
-                <div className="mb-6 bg-green-50 border border-green-200 dark:bg-green-900/30 dark:border-green-800 p-4 rounded-lg flex items-center gap-3 text-green-800 dark:text-green-300">
+                <div className="mb-6 bg-success/10 border border-green-200 dark:border-green-800 p-4 rounded-2xl flex items-center gap-3 text-success">
                     <ShieldCheck className="w-6 h-6" />
                     <div>
                         <p className="font-bold">{t('pos.payment_success_title')}</p>
@@ -205,7 +214,7 @@ export default function PosPage() {
             )}
 
             {errorMessage && (
-                <div className="mb-6 bg-red-50 border border-red-200 dark:bg-red-900/30 dark:border-red-800 p-4 rounded-lg flex items-center gap-3 text-red-800 dark:text-red-300">
+                <div className="mb-6 bg-destructive/10 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-800 dark:text-red-300">
                     <AlertTriangle className="w-6 h-6" />
                     <div>
                         <p className="font-bold">{t('pos.error_title')}</p>
@@ -217,35 +226,35 @@ export default function PosPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Payment Form */}
                 <div className="lg:col-span-2 space-y-6">
-                    <Card className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                    <Card className="p-6 bg-white dark:bg-gray-800 border-border">
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-foreground mb-1">
                                         {t('pos.customer_name_optional')}
                                     </label>
                                     <Input
                                         {...register('partyName')}
                                         placeholder={t('pos.customer_name_placeholder')}
-                                        className="h-11 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                                        className="h-11 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-border"
                                     />
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <p className="text-xs text-muted-foreground mt-1">
                                         {t('pos.customer_name_help')}
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-foreground mb-1">
                                         {t('pos.note_desc')}
                                     </label>
                                     <Input
                                         {...register('description')}
                                         placeholder={t('pos.note_placeholder')}
-                                        className="h-11 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                                        className="h-11 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-border"
                                     />
                                 </div>
                             </div>
 
-                            <div className="p-6 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 flex flex-col items-center justify-center">
+                            <div className="p-6 bg-primary/10 rounded-xl border border-blue-100 dark:border-blue-900/30 flex flex-col items-center justify-center">
                                 <label className="text-blue-800 dark:text-blue-300 text-sm font-medium mb-2">
                                     {t('pos.amount_label')}
                                 </label>
@@ -259,17 +268,17 @@ export default function PosPage() {
                                             required: t('pos.amount_required'),
                                             min: { value: 1, message: t('pos.amount_min') }
                                         })}
-                                        className="w-full bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 rounded-lg py-3 pl-10 pr-4 text-2xl font-bold text-blue-900 dark:text-blue-100 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 focus:border-blue-400 dark:focus:border-blue-500 outline-none text-center transition-all"
+                                        className="w-full bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 rounded-2xl py-3 pl-10 pr-4 text-2xl font-bold text-blue-900 dark:text-blue-100 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 focus:border-blue-400 dark:focus:border-blue-500 outline-none text-center transition-all"
                                         placeholder="0.00"
                                     />
                                 </div>
-                                {errors.amount && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.amount.message as string}</p>}
+                                {errors.amount && <p className="text-destructive text-sm mt-1">{errors.amount.message as string}</p>}
                             </div>
 
                             {/* Installment Options */}
                             {installmentOptions.length > 0 && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                    <label className="block text-sm font-medium text-foreground mb-3">
                                         {t('pos.installment_options')}
                                     </label>
 
@@ -280,14 +289,14 @@ export default function PosPage() {
                                                 key={option.installment_count}
                                                 type="button"
                                                 onClick={() => setSelectedInstallment(option.installment_count)}
-                                                className={`relative p-4 rounded-lg border-2 transition-all text-left ${selectedInstallment === option.installment_count
-                                                    ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-md'
-                                                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 bg-white dark:bg-gray-800'
+                                                className={`relative p-4 rounded-2xl border-2 transition-all text-left ${selectedInstallment === option.installment_count
+                                                    ? 'border-blue-600 dark:border-blue-500 bg-primary/10 shadow-md'
+                                                    : 'border-border hover:border-blue-300 dark:hover:border-blue-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 bg-white dark:bg-gray-800'
                                                     }`}
                                             >
                                                 {selectedInstallment === option.installment_count && (
                                                     <div className="absolute top-2 right-2">
-                                                        <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                                        <Check className="w-5 h-5 text-primary" />
                                                     </div>
                                                 )}
 
@@ -296,17 +305,17 @@ export default function PosPage() {
                                                 </div>
 
                                                 {option.installment_count > 1 && option.monthly_payment && (
-                                                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                                    <div className="text-xs text-muted-foreground mb-2">
                                                         {option.monthly_payment?.toFixed(2)} ₺ x {option.installment_count}
                                                     </div>
                                                 )}
 
-                                                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                                                     <TrendingDown className="w-3 h-3" />
                                                     {t('pos.commission')}: %{option.commission_rate}
                                                 </div>
 
-                                                <div className="text-sm font-bold text-green-600 dark:text-green-400">
+                                                <div className="text-sm font-bold text-success">
                                                     →{option.net_amount?.toFixed(2) ?? '0.00'} ₺
                                                 </div>
                                             </button>
@@ -314,7 +323,7 @@ export default function PosPage() {
                                     </div>
 
                                     {loadingInstallments && (
-                                        <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                        <div className="text-center text-sm text-muted-foreground mt-2">
                                             {t('pos.calculating')}
                                         </div>
                                     )}
@@ -324,25 +333,25 @@ export default function PosPage() {
                             {/* Summary Box */}
                             {selectedOption && (
                                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-xl border-2 border-green-200 dark:border-green-800">
-                                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t('pos.summary_title')}</div>
+                                    <div className="text-sm text-muted-foreground mb-1">{t('pos.summary_title')}</div>
                                     <div className="grid grid-cols-2 gap-4 mt-3">
                                         <div>
-                                            <div className="text-xs text-gray-600 dark:text-gray-400">{t('pos.collected_from_customer')}:</div>
+                                            <div className="text-xs text-muted-foreground">{t('pos.collected_from_customer')}:</div>
                                             <div className="text-lg font-bold text-gray-900 dark:text-white">
                                                 {selectedOption.gross_amount?.toFixed(2) ?? '0.00'} ₺
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-xs text-gray-600 dark:text-gray-400">{t('pos.commission')}:</div>
-                                            <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                                            <div className="text-xs text-muted-foreground">{t('pos.commission')}:</div>
+                                            <div className="text-lg font-bold text-destructive">
                                                 -{selectedOption.commission_amount?.toFixed(2) ?? '0.00'} ₺
                                             </div>
                                         </div>
                                     </div>
                                     <div className="border-t border-green-300 dark:border-green-700 my-3"></div>
                                     <div>
-                                        <div className="text-xs text-gray-600 dark:text-gray-400">{t('pos.net_to_account')}:</div>
-                                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                        <div className="text-xs text-muted-foreground">{t('pos.net_to_account')}:</div>
+                                        <div className="text-2xl font-bold text-success">
                                             {selectedOption.net_amount?.toFixed(2) ?? '0.00'} ₺
                                         </div>
                                     </div>
@@ -357,8 +366,8 @@ export default function PosPage() {
                                 {isPending ? t('pos.starting') : t('pos.start_payment_btn')}
                             </Button>
 
-                            <div className="flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500">
-                                <ShieldCheck className="w-4 h-4 text-green-500 dark:text-green-400" />
+                            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                                <ShieldCheck className="w-4 h-4 text-success" />
                                 <span>{t('pos.ssl_secure')}</span>
                             </div>
                         </form>
@@ -367,7 +376,7 @@ export default function PosPage() {
 
                 {/* Info Sidebar */}
                 <div className="space-y-6">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4">
+                    <div className="bg-primary/10 border border-blue-100 dark:border-blue-800 rounded-xl p-4">
                         <h3 className="text-sm font-bold text-blue-900 dark:text-blue-100 mb-2">{t('pos.info_title')}</h3>
                         <p className="text-sm text-blue-800 dark:text-blue-200">
                             {t('pos.info_desc')}

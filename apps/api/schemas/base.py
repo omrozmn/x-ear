@@ -51,6 +51,9 @@ class ResponseMeta(AppBaseModel):
 
     model_config = ConfigDict(extra='allow')
 
+# Alias for backward compatibility
+PaginationInfo = ResponseMeta
+
 class ResponseEnvelope(AppBaseModel, Generic[T]):
     """
     Standard response envelope for all API responses.
@@ -61,13 +64,34 @@ class ResponseEnvelope(AppBaseModel, Generic[T]):
     message: Optional[str] = None
     error: Optional[object] = None
     meta: Optional[ResponseMeta] = None
-    request_id: Optional[str] = None
+    request_id: Optional[str] = Field(None, alias="requestId")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @field_serializer('timestamp', when_used='json')
     def serialize_timestamp(self, value: datetime) -> str:
         """Serialize timestamp to ISO format string."""
         return value.isoformat()
+    
+    @classmethod
+    def create_success(cls, data: T = None, message: str = None, meta: ResponseMeta = None) -> "ResponseEnvelope[T]":
+        """Create a success response envelope."""
+        return cls(
+            success=True,
+            data=data,
+            message=message,
+            meta=meta
+        )
+    
+    @classmethod
+    def create_error(cls, message: str, error: object = None, meta: ResponseMeta = None) -> "ResponseEnvelope[T]":
+        """Create an error response envelope."""
+        return cls(
+            success=False,
+            message=message,
+            error=error,
+            meta=meta,
+            data=None
+        )
 
 
 class ApiError(AppBaseModel):

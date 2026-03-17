@@ -1,70 +1,121 @@
-import { test, expect } from '../fixtures/fixtures';
+import { test, expect } from '@playwright/test';
+import { WebPartyListPage } from '../../pom/web/party-list.page';
+import { WebPartyDetailPage } from '../../pom/web/party-detail.page';
+import { testUsers } from '../../fixtures/users';
 
-test.describe('Party Detail Page', () => {
+/**
+ * Party Detail Tests - Phase 3.3.12-3.3.16
+ */
+test.describe('Party Detail', () => {
+  
+  test.beforeEach(async ({ page }) => {
+    // Login first
+    await page.goto('/login');
+    await page.fill('[data-testid="login-identifier-input"]', testUsers.admin.email);
+    await page.fill('[data-testid="login-password-input"]', testUsers.admin.password);
+    await page.click('[data-testid="login-submit-button"]');
+    await page.waitForURL(/\/(dashboard|parties)$/);
+  });
 
-    test('should display parties list', async ({ tenantPage }) => {
-        await tenantPage.goto('/parties');
-        await tenantPage.waitForLoadState('networkidle');
+  /**
+   * 3.3.12 - Party detail page loads
+   */
+  test('3.3.12: Party detail page loads', async ({ page }) => {
+    const partyPage = new WebPartyListPage(page);
+    await partyPage.goto();
+    
+    // Wait for table to load
+    await partyPage.partyTable.waitFor({ state: 'visible' });
+    
+    // Click first party
+    const firstParty = partyPage.tableRows.first();
+    const partyName = await firstParty.locator('td').first().textContent();
+    
+    await firstParty.locator('a, button').first().click();
+    
+    // Verify detail page
+    const detailPage = new WebPartyDetailPage(page);
+    await detailPage.isLoaded();
+    await expect(detailPage.partyName).toBeVisible();
+  });
 
-        // Verify page loads
-        const heading = tenantPage.locator('h1, h2, h3, [role="heading"]').first();
-        await expect(heading).toBeVisible({ timeout: 10000 });
-    });
+  /**
+   * 3.3.13 - Party detail tabs
+   */
+  test('3.3.13: Party detail tabs work correctly', async ({ page }) => {
+    const detailPage = new WebPartyDetailPage(page);
+    
+    // Navigate to a party detail (assuming partyId exists)
+    await detailPage.goto('test-party-id');
+    await detailPage.isLoaded();
+    
+    // Test Info tab
+    await detailPage.goToInfoTab();
+    
+    // Test Sales tab
+    await detailPage.goToSalesTab();
+    await expect(detailPage.salesTable).toBeVisible();
+    
+    // Test Appointments tab
+    await detailPage.goToAppointmentsTab();
+    await expect(detailPage.appointmentsTable).toBeVisible();
+    
+    // Test Notes tab
+    await detailPage.goToNotesTab();
+    await expect(detailPage.notesList).toBeVisible();
+  });
 
-    test('should navigate to party detail', async ({ tenantPage }) => {
-        await tenantPage.goto('/parties');
-        await tenantPage.waitForLoadState('networkidle');
+  /**
+   * 3.3.14 - Edit party from detail
+   */
+  test('3.3.14: Edit party from detail page', async ({ page }) => {
+    const detailPage = new WebPartyDetailPage(page);
+    await detailPage.goto('test-party-id');
+    await detailPage.isLoaded();
+    
+    // Click edit button
+    await detailPage.editParty();
+    
+    // Verify edit modal opens
+    const editModal = page.locator('[data-testid="party-edit-modal"]');
+    await expect(editModal).toBeVisible();
+  });
 
-        // Wait for any phone verification modal to disappear or close it
-        const phoneModal = tenantPage.locator('text="Telefon Doğrulama"');
-        const hasModal = await phoneModal.isVisible({ timeout: 2000 }).catch(() => false);
-        
-        if (hasModal) {
-            // Try to verify with test OTP to close modal
-            const otpInput = tenantPage.locator('input[type="text"][maxlength="6"]');
-            if (await otpInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-                await otpInput.fill('123456');
-                await tenantPage.click('button:has-text("Doğrula")');
-                // Wait for modal to close
-                await tenantPage.waitForTimeout(2000);
-            }
-        }
+  /**
+   * 3.3.15 - Sale history in party detail
+   */
+  test('3.3.15: View sale history in party detail', async ({ page }) => {
+    const detailPage = new WebPartyDetailPage(page);
+    await detailPage.goto('test-party-id');
+    await detailPage.isLoaded();
+    
+    // Go to sales tab
+    await detailPage.goToSalesTab();
+    
+    // Verify sales table visible
+    await expect(detailPage.salesTable).toBeVisible();
+    
+    // Get sales count
+    const count = await detailPage.getSalesCount();
+    expect(count).toBeGreaterThanOrEqual(0);
+  });
 
-        // Click on first party if available
-        const firstItem = tenantPage.locator('table tbody tr, [class*="item"], [class*="card"]').first();
-        const hasItems = await firstItem.isVisible({ timeout: 5000 }).catch(() => false);
-
-        if (hasItems) {
-            await firstItem.click({ force: true }); // Force click to bypass any overlays
-            await tenantPage.waitForLoadState('networkidle');
-
-            // Verify detail page or modal loaded
-            const detailContent = tenantPage.locator('[class*="detail"], [class*="party"], [class*="modal"], main').first();
-            await expect(detailContent).toBeVisible({ timeout: 10000 });
-        } else {
-            expect(true).toBeTruthy();
-        }
-    });
-
-    test('should show party information tabs', async ({ tenantPage }) => {
-        await tenantPage.goto('/parties');
-        await tenantPage.waitForLoadState('networkidle');
-
-        // Look for tabs like "Bilgiler", "İşlemler", "Notlar"
-        const tabs = tenantPage.locator('[role="tab"], button').filter({
-            hasText: /Bilgi|İşlem|Not|Randevu|Fatura|Info|Transactions|Notes/i
-        });
-        const hasTabs = await tabs.count() > 0;
-
-        expect(hasTabs || true).toBeTruthy();
-    });
-
-    test('should have action buttons', async ({ tenantPage }) => {
-        await tenantPage.goto('/parties');
-        await tenantPage.waitForLoadState('networkidle');
-
-        // Look for action buttons
-        const newButton = tenantPage.getByRole('button', { name: /Yeni|Ekle|Düzenle/i }).first();
-        await expect(newButton).toBeVisible({ timeout: 5000 });
-    });
+  /**
+   * 3.3.16 - Appointment history in party detail
+   */
+  test('3.3.16: View appointment history in party detail', async ({ page }) => {
+    const detailPage = new WebPartyDetailPage(page);
+    await detailPage.goto('test-party-id');
+    await detailPage.isLoaded();
+    
+    // Go to appointments tab
+    await detailPage.goToAppointmentsTab();
+    
+    // Verify appointments table visible
+    await expect(detailPage.appointmentsTable).toBeVisible();
+    
+    // Get appointments count
+    const count = await detailPage.getAppointmentsCount();
+    expect(count).toBeGreaterThanOrEqual(0);
+  });
 });

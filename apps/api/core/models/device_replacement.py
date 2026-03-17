@@ -1,23 +1,24 @@
-from .base import db, BaseModel
+from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, String, Text
+from sqlalchemy.orm import relationship
+from .base import BaseModel
 from .mixins import TenantScopedMixin
-from datetime import datetime
 import json
 
 class DeviceReplacement(BaseModel, TenantScopedMixin):
     __tablename__ = 'device_replacements'
     
-    id = db.Column(db.String(50), primary_key=True)
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    old_device_id = db.Column(db.String(50), db.ForeignKey('devices.id'), nullable=False)
-    new_inventory_id = db.Column(db.String(50), nullable=False)
+    id = Column(String(50), primary_key=True)
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
+    old_device_id = Column(String(50), ForeignKey('devices.id'), nullable=False)
+    new_inventory_id = Column(String(50), nullable=False)
     # tenant_id is now inherited from TenantScopedMixin
-    old_device_info = db.Column(db.Text)
-    new_device_info = db.Column(db.Text)
-    status = db.Column(db.String(50), default='pending_invoice')  # pending_invoice, invoice_created, completed
+    old_device_info = Column(Text)
+    new_device_info = Column(Text)
+    status = Column(String(50), default='pending_invoice')  # pending_invoice, invoice_created, completed
     # Timestamps inherited from BaseModel
     
     # Relationships
-    return_invoice = db.relationship('ReturnInvoice', backref='replacement', uselist=False, cascade='all, delete-orphan')
+    return_invoice = relationship('ReturnInvoice', backref='replacement', uselist=False, cascade='all, delete-orphan')
     
     def to_dict(self):
         result = {
@@ -50,17 +51,17 @@ class DeviceReplacement(BaseModel, TenantScopedMixin):
 class ReturnInvoice(BaseModel, TenantScopedMixin):
     __tablename__ = 'return_invoices'
     
-    id = db.Column(db.String(50), primary_key=True)
-    replacement_id = db.Column(db.String(50), db.ForeignKey('device_replacements.id'), nullable=False)
+    id = Column(String(50), primary_key=True)
+    replacement_id = Column(String(50), ForeignKey('device_replacements.id'), nullable=False)
     # tenant_id is now inherited from TenantScopedMixin
-    invoice_number = db.Column(db.String(100), nullable=False)
-    supplier_name = db.Column(db.String(255))
-    supplier_invoice_id = db.Column(db.String(50))
-    supplier_invoice_number = db.Column(db.String(100))
-    supplier_invoice_date = db.Column(db.Date)
-    invoice_note = db.Column(db.Text)
-    gib_sent = db.Column(db.Boolean, default=False)
-    gib_sent_date = db.Column(db.DateTime)
+    invoice_number = Column(String(100), nullable=False)
+    supplier_name = Column(String(255))
+    supplier_invoice_id = Column(String(50))
+    supplier_invoice_number = Column(String(100))
+    supplier_invoice_date = Column(Date)
+    invoice_note = Column(Text)
+    gib_sent = Column(Boolean, default=False)
+    gib_sent_date = Column(DateTime)
     # Timestamps inherited from BaseModel
     
     def to_dict(self):

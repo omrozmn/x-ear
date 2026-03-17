@@ -4,10 +4,12 @@ Payment records and promissory notes management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pydantic import BaseModel, Field
 import logging
+import json
+import uuid
 
 from sqlalchemy.orm import Session
 
@@ -17,10 +19,11 @@ from schemas.sales import PaymentRecordRead
 from models.sales import Sale, PaymentRecord
 from models.promissory_note import PromissoryNote
 from core.models.party import Party
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
+from models.user import ActivityLog
 from schemas.sales import (
-    PaymentRecordRead, PromissoryNoteRead,
+    PromissoryNoteRead,
     PromissoryNoteCollectionResponse
 )
 
@@ -114,7 +117,7 @@ class CollectPaymentRequest(BaseModel):
 @router.post("/payment-records", operation_id="createPaymentRecords", status_code=201, response_model=ResponseEnvelope[PaymentRecordRead])
 def create_payment_record(
     payment_in: PaymentRecordCreate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Create a new payment record"""
@@ -168,6 +171,26 @@ def create_payment_record(
                 
                 db_session.add(sale)
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=access.tenant_id,
+            user_id=access.user_id,
+            action='payment_record_created',
+            entity_type='party',
+            entity_id=payment_in.party_id,
+            details=json.dumps({
+                "title": "Tahsilat kaydedildi",
+                "description": f"{float(payment_in.amount):.2f} TL tahsilat kaydedildi",
+                "amount": float(payment_in.amount),
+                "payment_type": payment_in.payment_type,
+                "payment_method": payment_in.payment_method,
+                "reference_number": payment_in.reference_number,
+                "payment_date": payment_in.payment_date,
+            }),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         db_session.refresh(payment)  # Refresh to get all fields after commit
         logger.info(f"Payment record created: {payment.id}")
@@ -183,19 +206,37 @@ def create_payment_record(
 
 @router.get("/payment-records", operation_id="listPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def list_payment_records(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
-    access: UnifiedAccess = Depends(require_access()),
+    sale_id: Optional[str] = Query(None, alias="saleId"),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """List all payment records for the tenant"""
     try:
         query = tenant_scoped_query(access, PaymentRecord, db_session)
+        
+        if sale_id:
+            query = query.filter_by(sale_id=sale_id)
+            
         total = query.count()
         payment_records = query.order_by(PaymentRecord.payment_date.desc()).offset((page - 1) * per_page).limit(per_page).all()
         
+        # Collect unique party_ids and resolve names in one query
+        party_ids = {r.party_id for r in payment_records if r.party_id}
+        party_name_map: dict[str, str] = {}
+        if party_ids:
+            parties = db_session.query(Party.id, Party.first_name, Party.last_name).filter(Party.id.in_(party_ids)).all()
+            party_name_map = {p.id: f"{p.first_name or ''} {p.last_name or ''}".strip() for p in parties}
+        
+        data = []
+        for record in payment_records:
+            d = PaymentRecordRead.model_validate(record).model_dump(by_alias=True)
+            d["partyName"] = party_name_map.get(record.party_id, "")
+            data.append(d)
+        
         return ResponseEnvelope(
-            data=[PaymentRecordRead.model_validate(record).model_dump(by_alias=True) for record in payment_records],
+            data=data,
             meta={
                 "total": total,
                 "page": page,
@@ -210,9 +251,9 @@ def list_payment_records(
 @router.get("/parties/{party_id}/payment-records", operation_id="listPartyPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def get_party_payment_records(
     party_id: str,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """Get all payment records for a party"""
@@ -240,7 +281,7 @@ def get_party_payment_records(
 def update_payment_record(
     record_id: str,
     payment_in: PaymentRecordUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Update a payment record"""
@@ -277,7 +318,7 @@ def update_payment_record(
 def get_party_promissory_notes(
     party_id: str,
     sale_id: Optional[str] = Query(None, alias="sale_id"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """Get all promissory notes for a party"""
@@ -289,9 +330,9 @@ def get_party_promissory_notes(
         
         notes = query.order_by(PromissoryNote.due_date.asc()).all()
         
-        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        # Use Pydantic schema for type-safe serialization
         return ResponseEnvelope(
-            data=[serialize_promissory_note(note) for note in notes],
+            data=[PromissoryNoteRead.model_validate(note) for note in notes],
             meta={"count": len(notes)}
         )
     except Exception as e:
@@ -301,7 +342,7 @@ def get_party_promissory_notes(
 @router.post("/promissory-notes", operation_id="createPromissoryNotes", status_code=201, response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def create_promissory_notes(
     notes_in: PromissoryNotesCreate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Create multiple promissory notes"""
@@ -358,6 +399,18 @@ def create_promissory_notes(
             db_session.add(note)
             created_notes.append(note)
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=access.tenant_id,
+            user_id=access.user_id,
+            action='promissory_notes_created',
+            entity_type='party',
+            entity_id=notes_in.party_id,
+            details=json.dumps({"title": "Senet oluşturuldu"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         # Refresh all notes to get updated fields after commit
@@ -380,7 +433,7 @@ def create_promissory_notes(
 def update_promissory_note(
     note_id: str,
     note_in: PromissoryNoteUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Update a promissory note"""
@@ -417,7 +470,7 @@ def update_promissory_note(
 def collect_promissory_note(
     note_id: str,
     collect_in: CollectPaymentRequest,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Collect payment for a promissory note"""
@@ -498,6 +551,18 @@ def collect_promissory_note(
                 
                 db_session.add(sale)
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=access.tenant_id,
+            user_id=access.user_id,
+            action='promissory_note_collected',
+            entity_type='party',
+            entity_id=note.party_id,
+            details=json.dumps({"title": "Senet tahsil edildi", "note_id": note_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         db_session.refresh(note)  # Refresh to get all fields after commit
         db_session.refresh(payment)  # Refresh to get all fields after commit
@@ -521,7 +586,7 @@ def collect_promissory_note(
 @router.get("/sales/{sale_id}/promissory-notes", operation_id="listSalePromissoryNotes", response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def get_sale_promissory_notes(
     sale_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """Get all promissory notes for a specific sale"""

@@ -1,12 +1,13 @@
 # API Key Model
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, Integer, String, Text
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 import secrets
 
 class ApiKey(BaseModel, TenantScopedMixin):
     __tablename__ = 'api_keys'
 
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -16,24 +17,24 @@ class ApiKey(BaseModel, TenantScopedMixin):
             self.generate_key()
             
     # Key management
-    name = db.Column(db.String(100), nullable=False)
-    key_prefix = db.Column(db.String(10), nullable=False)
-    key_hash = db.Column(db.String(255), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    key_prefix = Column(String(10), nullable=False)
+    key_hash = Column(String(255), nullable=False, index=True)
     
     # Ownership
     # tenant_id is now inherited from TenantScopedMixin
-    created_by = db.Column(db.String(50), db.ForeignKey('users.id'))
+    created_by = Column(String(50), ForeignKey('users.id'))
     
     # Permissions (scopes)
-    scopes = db.Column(db.Text)  # Comma-separated scopes: "read:patients,write:appointments"
+    scopes = Column(Text)  # Comma-separated scopes: "read:patients,write:appointments"
     
     # Status
-    is_active = db.Column(db.Boolean, default=True)
-    expires_at = db.Column(db.DateTime)
-    last_used_at = db.Column(db.DateTime)
+    is_active = Column(Boolean, default=True)
+    expires_at = Column(DateTime)
+    last_used_at = Column(DateTime)
     
     # Rate limiting
-    rate_limit = db.Column(db.Integer, default=1000)  # Requests per hour
+    rate_limit = Column(Integer, default=1000)  # Requests per hour
     
     # Transient field for displaying the key once upon creation
     _plain_key = None

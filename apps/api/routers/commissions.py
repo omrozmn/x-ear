@@ -4,14 +4,12 @@ Handles affiliate commission ledger operations (migrated from routes_flask_archi
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 import logging
 
 from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
-from models.commission_ledger import CommissionLedger
 from services.commission_service import CommissionService
 # Assuming dependencies like user/admin might be needed in future, but Flask legacy didn't show explicit auth decorators
 # We will just port the logic as-is, maybe adding basic auth if needed.
@@ -75,12 +73,15 @@ def update_commission_status(
 
 @router.get("/by-affiliate", operation_id="listCommissionByAffiliate")
 def get_commissions_by_affiliate(
-    affiliate_id: int,
+    affiliate_id: Optional[int] = Query(None),
     access: UnifiedAccess = Depends(require_access(admin_only=True)),
     db: Session = Depends(get_db)
 ):
     """Get commissions for an affiliate"""
     try:
+        if not affiliate_id:
+            # Return empty list if no affiliate_id provided
+            return []
         commissions = CommissionService.get_commissions_by_affiliate(db, affiliate_id)
         return [{
             "id": c.id, 
@@ -96,12 +97,14 @@ def get_commissions_by_affiliate(
 
 @router.get("/audit", operation_id="listCommissionAudit")
 def audit_trail(
-    commission_id: int,
+    commission_id: Optional[int] = Query(None),
     access: UnifiedAccess = Depends(require_access(admin_only=True)),
     db: Session = Depends(get_db)
 ):
     """Get audit trail for a commission"""
     try:
+        if not commission_id:
+            raise HTTPException(status_code=400, detail="commission_id is required")
         commission = CommissionService.audit_trail(db, commission_id)
         if not commission:
             raise HTTPException(status_code=404, detail="Commission not found")

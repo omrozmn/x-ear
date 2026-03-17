@@ -18,6 +18,7 @@
         "reports": "Raporlar",
         "automation": "Otomasyon",
         "communication": "İletişim",
+        "invoice_normalizer": "Muhasebe",
         "settings": {
             "main": "Ayarlar",
             "general": "Genel",

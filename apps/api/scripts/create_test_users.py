@@ -56,13 +56,13 @@ def create_test_users():
                 )
                 unverified_user.set_password('testpass123')
                 db.add(unverified_user)
-                print(f"✅ Created user: unverified_phone_user (phone: 5551234567, verified: False)")
+                print("✅ Created user: unverified_phone_user (phone: 5551234567, verified: False)")
             else:
                 # Update existing user
                 unverified_user.phone = '5551234567'
                 unverified_user.is_phone_verified = False
                 unverified_user.set_password('testpass123')
-                print(f"✅ Updated user: unverified_phone_user")
+                print("✅ Updated user: unverified_phone_user")
             
             # 2. User without phone number
             no_phone_user = db.query(User).filter_by(username='no_phone_user').first()
@@ -80,13 +80,13 @@ def create_test_users():
                 )
                 no_phone_user.set_password('testpass123')
                 db.add(no_phone_user)
-                print(f"✅ Created user: no_phone_user (phone: None)")
+                print("✅ Created user: no_phone_user (phone: None)")
             else:
                 # Update existing user
                 no_phone_user.phone = None
                 no_phone_user.is_phone_verified = False
                 no_phone_user.set_password('testpass123')
-                print(f"✅ Updated user: no_phone_user")
+                print("✅ Updated user: no_phone_user")
             
             # 3. User for invalid credentials test (valid user to test wrong password)
             invalid_user = db.query(User).filter_by(username='invalid_user').first()
@@ -104,10 +104,10 @@ def create_test_users():
                 )
                 invalid_user.set_password('correctpassword')
                 db.add(invalid_user)
-                print(f"✅ Created user: invalid_user (for testing wrong password)")
+                print("✅ Created user: invalid_user (for testing wrong password)")
             else:
                 invalid_user.set_password('correctpassword')
-                print(f"✅ Updated user: invalid_user")
+                print("✅ Updated user: invalid_user")
             
             # 4. Regular test user with verified phone
             testuser = db.query(User).filter_by(username='testuser').first()
@@ -125,11 +125,11 @@ def create_test_users():
                 )
                 testuser.set_password('testpass123')
                 db.add(testuser)
-                print(f"✅ Created user: testuser (phone verified)")
+                print("✅ Created user: testuser (phone verified)")
             else:
                 testuser.is_phone_verified = True
                 testuser.set_password('testpass123')
-                print(f"✅ Updated user: testuser")
+                print("✅ Updated user: testuser")
             
             db.commit()
             
@@ -137,10 +137,10 @@ def create_test_users():
             print("✅ Test users created successfully!")
             print("="*60)
             print("\nTest Users:")
-            print(f"1. unverified_phone_user / testpass123 (phone: 5551234567, verified: False)")
-            print(f"2. no_phone_user / testpass123 (phone: None)")
-            print(f"3. invalid_user / correctpassword (for wrong password test)")
-            print(f"4. testuser / testpass123 (phone verified)")
+            print("1. unverified_phone_user / testpass123 (phone: 5551234567, verified: False)")
+            print("2. no_phone_user / testpass123 (phone: None)")
+            print("3. invalid_user / correctpassword (for wrong password test)")
+            print("4. testuser / testpass123 (phone verified)")
             print(f"\nTenant ID: {test_tenant.id}")
             print("="*60)
     

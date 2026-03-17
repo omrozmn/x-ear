@@ -1,37 +1,60 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     AlertTriangle,
     RefreshCw,
     Loader2,
+    TrendingUp,
+    CreditCard,
     Wallet,
-    Calendar,
-    Phone,
-    ArrowRight,
-    TrendingDown
+    Filter,
+    Phone
 } from 'lucide-react';
-import { Button } from '@x-ear/ui-web';
-import { unwrapObject, unwrapArray } from '../../../utils/response-unwrap';
+import { Button, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
+import { unwrapObject, unwrapPaginated } from '../../../utils/response-unwrap';
 import {
     useListReportRemainingPayments,
     useListReportCashflowSummary
 } from '@/api/client/reports.client';
 import { FilterState } from '../types';
-import type { RemainingPaymentItem } from '@/api/generated/schemas';
+import type { RemainingPaymentItem, ResponseMeta } from '@/api/generated/schemas';
+import { TabExportButton } from '../components/TabExportButton';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 interface RemainingPaymentsTabProps {
     filters: FilterState;
 }
 
 export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
-    // We don't filter remaining payments by date usually, as debt is cumulative
-    // But we might want to see payments due within the date range
-    const { data: remainingData, isLoading, error, refetch } = useListReportRemainingPayments({
-        min_amount: 1 // Filter out zero debts
-    });
+    const { t } = useTranslation('payments');
+    const { hasPermission } = usePermissions();
+    const canViewFinancials = hasPermission('sensitive.reports.remaining.financials.view');
+    const canViewContact = hasPermission('sensitive.parties.list.contact.view');
+    const [page, setPage] = useState(1);
+    const [minAmount, setMinAmount] = useState(0);
+    const reportParams = {
+        page,
+        per_page: 20,
+        min_amount: minAmount,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
 
-    const { data: cashflowData } = useListReportCashflowSummary({
-        days: filters.days
-    });
+    // Using Orval-generated hooks for reports API
+    const { data: paymentsData, isLoading, error, refetch } = useListReportRemainingPayments(
+        reportParams
+    );
+
+    const { data: cashflowData } = useListReportCashflowSummary(
+        {
+            days: filters.days,
+            branch_id: filters.branch,
+            startDate: filters.dateRange.start || undefined,
+            endDate: filters.dateRange.end || undefined
+        } as never
+    );
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('tr-TR', {
@@ -41,10 +64,14 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
         }).format(amount);
     };
 
+    const formatProtectedCurrency = (amount: number) => (
+        canViewFinancials ? formatCurrency(amount) : t('hiddenForRole', 'Bu rol icin gizli')
+    );
+
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -53,145 +80,184 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">{t('loadError', 'Veriler yüklenirken hata oluştu')}</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
-                    Tekrar Dene
+                    {t('retry', 'Tekrar Dene')}
                 </Button>
             </div>
         );
     }
 
-    const remainingPayments = unwrapArray<RemainingPaymentItem>(remainingData);
+    const { data: payments, meta } = unwrapPaginated<RemainingPaymentItem>(paymentsData);
+    const typedMeta = meta as ResponseMeta | undefined;
+    const summary = meta?.summary as { totalRemaining?: number; totalPaid?: number; totalParties?: number } | undefined;
+    const cashflow = unwrapObject<{ totalRevenue?: number; totalExpenses?: number; netCash?: number }>(cashflowData);
 
-    // Calculate totals
-    const totalReceivable = remainingPayments.reduce((sum, item) => sum + (item.remainingAmount || 0), 0);
-    const totalOverdue = remainingPayments.reduce((sum, item) => {
-        if (item.dueDate && new Date(item.dueDate) < new Date()) {
-            return sum + (item.remainingAmount || 0);
-        }
-        return sum;
-    }, 0);
-
-    // Group by due date status
-    const overduePayments = remainingPayments.filter(item => item.dueDate && new Date(item.dueDate) < new Date());
-    const upcomingPayments = remainingPayments.filter(item => item.dueDate && new Date(item.dueDate) >= new Date());
-    const noDatePayments = remainingPayments.filter(item => !item.dueDate);
+    const remainingPaymentColumns: Column<RemainingPaymentItem>[] = [
+        {
+            key: 'partyName',
+            title: t('columns.patient', 'Hasta'),
+            render: (_, party) => (
+                <div>
+                    <p className="font-medium">{party.partyName}</p>
+                    {canViewContact && party.phone && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Phone className="w-3 h-3" /> {party.phone}
+                        </p>
+                    )}
+                    {!canViewContact && (
+                        <p className="text-xs text-amber-600">{t('contactHidden', 'Iletisim bilgisi gizli')}</p>
+                    )}
+                </div>
+            ),
+        },
+        {
+            key: 'saleCount',
+            title: t('columns.saleCount', 'Satış Sayısı'),
+            align: 'center',
+            render: (_, party) => (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted text-foreground">
+                    {party.saleCount}
+                </span>
+            ),
+        },
+        {
+            key: 'totalAmount',
+            title: t('columns.totalAmount', 'Toplam Tutar'),
+            align: 'right',
+            render: (_, party) => <span>{formatProtectedCurrency(party.totalAmount)}</span>,
+        },
+        {
+            key: 'paidAmount',
+            title: t('columns.paid', 'Ödenen'),
+            align: 'right',
+            render: (_, party) => <span className="text-success">{formatProtectedCurrency(party.paidAmount)}</span>,
+        },
+        {
+            key: 'remainingAmount',
+            title: t('columns.remaining', 'Kalan'),
+            align: 'right',
+            render: (_, party) => <span className="font-bold text-destructive">{formatProtectedCurrency(party.remainingAmount)}</span>,
+        },
+    ];
 
     return (
         <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Kalan Ödemeler ve Alacaklar</h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">{t('remainingPayments.title', 'Kalan Ödemeler & Kasa Özeti')}</h3>
+                <TabExportButton filename="kalan-odemeler" rows={payments as unknown as Array<Record<string, unknown>>} />
+            </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                            <Wallet className="w-6 h-6" />
+            {/* Cashflow Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/40 rounded-xl p-5 border border-green-200 dark:border-green-800">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-green-500 p-3 rounded-xl">
+                            <TrendingUp className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Toplam Alacak</p>
-                            <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalReceivable)}</h4>
+                            <p className="text-sm text-success">{t('remainingPayments.totalRevenue', 'Toplam Gelir')}</p>
+                            <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                {formatProtectedCurrency(cashflow?.totalRevenue || 0)}
+                            </p>
+                            <p className="text-xs text-success">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
-                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">{remainingPayments.length} hasta borçlu</p>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
-                            <TrendingDown className="w-6 h-6" />
+                <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/40 rounded-xl p-5 border border-red-200 dark:border-red-800">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-red-500 p-3 rounded-xl">
+                            <CreditCard className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Vadesi Geçen Alacaklar</p>
-                            <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalOverdue)}</h4>
+                            <p className="text-sm text-destructive">{t('remainingPayments.totalExpense', 'Toplam Gider')}</p>
+                            <p className="text-2xl font-bold text-red-900 dark:text-red-100">
+                                {formatProtectedCurrency(cashflow?.totalExpenses || 0)}
+                            </p>
+                            <p className="text-xs text-destructive">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
-                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                            className="bg-red-500 h-2 rounded-full"
-                            style={{ width: `${totalReceivable > 0 ? (totalOverdue / totalReceivable) * 100 : 0}%` }}
-                        ></div>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/40 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-blue-500 p-3 rounded-xl">
+                            <Wallet className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-primary">{t('remainingPayments.netCash', 'Net Nakit')}</p>
+                            <p className={`text-2xl font-bold ${(cashflow?.netCash || 0) >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
+                                {formatProtectedCurrency(cashflow?.netCash || 0)}
+                            </p>
+                            <p className="text-xs text-primary">{filters.dateRange.start} - {filters.dateRange.end}</p>
+                        </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Toplam alacağın %{totalReceivable > 0 ? ((totalOverdue / totalReceivable) * 100).toFixed(1) : 0}'i</p>
                 </div>
             </div>
 
-            {/* Lists */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Overdue List */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/10">
-                        <h4 className="text-md font-medium text-red-700 dark:text-red-400 flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4" />
-                            Gecikmiş Ödemeler
-                        </h4>
+            {/* Remaining Payments Summary */}
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-900/40 rounded-xl p-5 border border-orange-200 dark:border-orange-800">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-orange-500 p-3 rounded-xl">
+                            <AlertTriangle className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-orange-600 dark:text-orange-400">{t('remainingPayments.totalToCollect', 'Tahsil Edilecek Toplam')}</p>
+                            <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">
+                                {formatProtectedCurrency(summary?.totalRemaining || 0)}
+                            </p>
+                        </div>
                     </div>
-                    <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
-                        {overduePayments.length > 0 ? (
-                            overduePayments.map((item) => (
-                                <div key={item.salesId} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <p className="font-medium text-gray-900 dark:text-white">{item.partyName}</p>
-                                        <p className="font-semibold text-red-600">{formatCurrency(item.remainingAmount)}</p>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="w-3 h-3" />
-                                            <span>Vade: {item.dueDate ? new Date(item.dueDate).toLocaleDateString('tr-TR') : '-'}</span>
-                                        </div>
-                                        {item.daysOverdue && (
-                                            <span className="text-red-500 font-medium">{item.daysOverdue} gün gecikti</span>
-                                        )}
-                                    </div>
-                                    {item.phone && (
-                                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
-                                            <Phone className="w-3 h-3" />
-                                            {item.phone}
-                                        </div>
-                                    )}
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-center text-gray-500 py-8">Gecikmiş ödeme bulunmuyor</p>
-                        )}
+                    <div className="text-right">
+                        <p className="text-sm text-orange-600 dark:text-orange-400">{t('remainingPayments.debtorCount', 'Borçlu Hasta Sayısı')}</p>
+                        <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{summary?.totalParties || 0}</p>
                     </div>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-4">
+                <div className="flex items-center gap-4">
+                    <Filter className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                        <label className="text-xs text-muted-foreground block mb-1">{t('remainingPayments.minAmount', 'Minimum Tutar')}</label>
+                        <Select
+                            className="px-3 py-1.5 text-sm"
+                            value={String(minAmount)}
+                            onChange={(e) => { setMinAmount(Number(e.target.value)); setPage(1); }}
+                            options={[
+                                { value: "0", label: t('all', 'Tümü') },
+                                { value: "1000", label: "1.000 ₺ ve üzeri" },
+                                { value: "5000", label: "5.000 ₺ ve üzeri" },
+                                { value: "10000", label: "10.000 ₺ ve üzeri" },
+                                { value: "25000", label: "25.000 ₺ ve üzeri" }
+                            ]}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Parties with Remaining Payments */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border overflow-hidden">
+                <div className="px-6 py-4 border-b border-border">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white">{t('remainingPayments.patientList', 'Kalan Ödemeler - Hasta Listesi')}</h4>
+                    <p className="text-sm text-muted-foreground">{t('remainingPayments.patientsWithBalance', 'Ödemesi kalan hastalar')}</p>
                 </div>
 
-                {/* Upcoming List */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h4 className="text-md font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            Yaklaşan Ödemeler
-                        </h4>
-                    </div>
-                    <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
-                        {upcomingPayments.length > 0 ? (
-                            upcomingPayments.map((item) => (
-                                <div key={item.salesId} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <p className="font-medium text-gray-900 dark:text-white">{item.partyName}</p>
-                                        <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(item.remainingAmount)}</p>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="w-3 h-3" />
-                                            <span>Vade: {item.dueDate ? new Date(item.dueDate).toLocaleDateString('tr-TR') : '-'}</span>
-                                        </div>
-                                        {item.daysUntilDue !== undefined && (
-                                            <span className="text-blue-600 font-medium">{item.daysUntilDue} gün kaldı</span>
-                                        )}
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-center text-gray-500 py-8">Yaklaşan ödeme bulunmuyor</p>
-                        )}
-                    </div>
-                </div>
+                <DataTable<RemainingPaymentItem>
+                    data={payments}
+                    columns={remainingPaymentColumns}
+                    rowKey="partyId"
+                    emptyText={t('remainingPayments.noPatients', 'Ödemesi kalan hasta bulunamadı')}
+                    pagination={typedMeta && (typedMeta.total ?? 0) > 0 ? {
+                        current: page,
+                        pageSize: 20,
+                        total: typedMeta.total ?? 0,
+                        onChange: (p) => { setPage(p); },
+                    } : undefined}
+                />
             </div>
         </div>
     );

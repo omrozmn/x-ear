@@ -1,18 +1,19 @@
-from .base import db, BaseModel, gen_id
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, ForeignKey, String, Text
+from .base import BaseModel, gen_id
+from sqlalchemy.orm import relationship, backref
 
 
 class App(BaseModel):
     __tablename__ = 'apps'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('app'))
-    name = db.Column(db.String(150), nullable=False)
-    slug = db.Column(db.String(80), nullable=False, unique=True)
-    description = db.Column(db.Text, nullable=True)
+    id = Column(String(50), primary_key=True, default=lambda: gen_id('app'))
+    name = Column(String(150), nullable=False)
+    slug = Column(String(80), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
 
     # Owner is a user id reference (nullable during creation)
-    owner_user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=True)
-    owner = relationship('User', backref=db.backref('owned_apps', lazy='dynamic'))
+    owner_user_id = Column(String(50), ForeignKey('users.id'), nullable=True)
+    owner = relationship('User', backref=backref('owned_apps', lazy='dynamic'))
 
     def to_dict(self):
         base = self.to_dict_base()

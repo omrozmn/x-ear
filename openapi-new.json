@@ -1,5 +1,19 @@
+{"timestamp": "2026-01-27T17:34:19.009282+00:00", "level": "ERROR", "logger": "services.encryption_service", "message": "SMTP_ENCRYPTION_KEY environment variable is required. Generate a key using: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""}
 Traceback (most recent call last):
   File "<string>", line 1, in <module>
-    import sys; sys.path.insert(0, 'apps/api'); from app import app; import json; print(json.dumps(app.openapi(), indent=2))
-                                                ^^^^^^^^^^^^^^^^^^^
-ModuleNotFoundError: No module named 'app'
+    import sys; sys.path.insert(0, 'x-ear/apps/api'); from main import app; import json; schema = app.openapi(); print(json.dumps(schema, indent=2))
+                                                      ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 245, in <module>
+    from routers import parties, auth, users
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/__init__.py", line 86, in <module>
+    from . import smtp_config
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/smtp_config.py", line 34, in <module>
+    from services.email_service import EmailService
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/email_service.py", line 799, in <module>
+    email_service = get_email_service()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/email_service.py", line 791, in get_email_service
+    encryption_service = EncryptionService()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/encryption_service.py", line 61, in __init__
+    raise ConfigurationError(error_msg)
+utils.exceptions.ConfigurationError: SMTP_ENCRYPTION_KEY environment variable is required. Generate a key using: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py

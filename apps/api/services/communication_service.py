@@ -11,7 +11,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)
@@ -77,27 +77,46 @@ class VatanSMSProvider(SMSProvider):
         """Get credentials from DB settings or environment"""
         try:
             from models.integration_config import IntegrationConfig
-            
-            # Helper to get config
-            def get_config(key):
-                config = IntegrationConfig.query.filter_by(
-                    integration_type='vatan_sms',
-                    config_key=key
-                ).first()
-                return config.config_value if config else None
+            from core.database import SessionLocal, unbound_session
 
-            username = get_config('username') or os.getenv('VATANSMS_USERNAME')
-            password = get_config('password') or os.getenv('VATANSMS_PASSWORD')
-            sender = get_config('sender_id') or os.getenv('VATANSMS_SENDER')
-            
-            return username, password, sender
+            db_session = SessionLocal()
+            try:
+                def get_config(key):
+                    with unbound_session(reason=f"vatansms-get-{key}"):
+                        config = db_session.query(IntegrationConfig).filter_by(
+                            integration_type='vatan_sms',
+                            config_key=key
+                        ).first()
+                    return config.config_value if config and config.config_value else None
+
+                username = (
+                    get_config('username')
+                    or os.getenv('VATANSMS_USERNAME')
+                    or os.getenv('VATAN_API_ID')
+                    or '4ab531b6fd26fd9ba6010b0d'
+                )
+                password = (
+                    get_config('password')
+                    or os.getenv('VATANSMS_PASSWORD')
+                    or os.getenv('VATAN_API_KEY')
+                    or '49b2001edbb1789e4e62f935'
+                )
+                sender = (
+                    get_config('sender_id')
+                    or os.getenv('VATANSMS_SENDER')
+                    or os.getenv('VATAN_SENDER')
+                    or 'OZMN TIBCHZ'
+                )
+                return username, password, sender
+            finally:
+                db_session.close()
         except Exception as e:
             logger.warning(f"Could not fetch settings from DB: {e}")
             # Fallback to env with hardcoded defaults from legacy script
             return (
-                os.getenv('VATANSMS_USERNAME', '4ab531b6fd26fd9ba6010b0d'),
-                os.getenv('VATANSMS_PASSWORD', '49b2001edbb1789e4e62f935'),
-                os.getenv('VATANSMS_SENDER', 'OZMN TIBCHZ')
+                os.getenv('VATANSMS_USERNAME', os.getenv('VATAN_API_ID', '4ab531b6fd26fd9ba6010b0d')),
+                os.getenv('VATANSMS_PASSWORD', os.getenv('VATAN_API_KEY', '49b2001edbb1789e4e62f935')),
+                os.getenv('VATANSMS_SENDER', os.getenv('VATAN_SENDER', 'OZMN TIBCHZ'))
             )
     
     def is_configured(self) -> bool:

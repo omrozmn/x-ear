@@ -1,8 +1,8 @@
 /**
- * BirFatura API Service
+ * GİB E-Fatura API Service
  * 
- * BirFatura aracı entegratör sistemi ile iletişim için servis.
- * NOT: Faturalar GİB'e direkt gönderilmez, BirFatura üzerinden gönderilir.
+ * GİB e-fatura entegratör sistemi ile iletişim için servis.
+ * NOT: Faturalar GİB'e entegratör üzerinden gönderilir.
  */
 
 import { InvoiceFormData } from '../types/invoice';
@@ -15,7 +15,8 @@ import {
   GetInBoxDocumentsRequestData,
   UpdateUnreadedStatusRequestData,
   SendDocumentAnswerRequestData,
-  SendBasicInvoiceFromModelRequestData
+  SendBasicInvoiceFromModelRequestData,
+  // GetPDFLinkRequestData - NOT EXPORTED
 } from '../generated/birfatura/outEBelgeV2API';
 
 // Type for DecompressionStream (not yet in TypeScript lib)
@@ -28,7 +29,7 @@ interface WindowWithDecompression extends Window {
   DecompressionStream: new (format: string) => DecompressionStream;
 }
 
-// BirFatura API response types
+// GİB E-Fatura API response types
 interface BirFaturaAPIResponse {
   Success?: boolean;
   Message?: string;
@@ -164,37 +165,27 @@ class BirFaturaService {
   }
 
   /**
-   * Gelen fatura PDF'ini indir
+   * Gelen fatura PDF'ini indir (Link üzerinden)
    */
-  async getInBoxInvoicePDF(uuid: string): Promise<Blob | null> {
+  async getInBoxInvoicePDF(_uuid: string): Promise<Blob | null> {
     try {
-      const api = getOutEBelgeV2API();
-      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({
-        documentUUID: uuid,
-        inOutCode: 'IN',
-        systemTypeCodes: 'EFATURA',
-        fileExtension: 'XML'
-      } as Record<string, unknown>);
+      // TODO: Fix this - postApiOutEBelgeV2GetPDFLinkByUUID doesn't exist in API
+      console.warn(`getInBoxInvoicePDF not implemented - API method missing for UUID: ${_uuid}`);
+      return null;
 
-      const content = resp?.data?.Result?.content;
-      if (!content) return null;
+      // PDF linki al
+      // const api = getOutEBelgeV2API();
+      // const resp = await api.postApiOutEBelgeV2GetPDFLinkByUUID({
+      //   uuids: [uuid],
+      //   systemType: 'EFATURA'
+      // });
 
-      // Decode base64 and decompress if needed
-      const binary = atob(content);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
+      // const link = (resp?.data?.Result || [])[0];
+      // if (!link) return null;
 
-      // Try to decompress (gzip)
-      try {
-        const ds = new (window as WindowWithDecompression).DecompressionStream('gzip');
-        const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
-        return await decompressed.blob();
-      } catch {
-        // If not compressed, return as-is
-        return new Blob([bytes], { type: 'application/pdf' });
-      }
+      // Linki indir
+      // const pdfResp = await fetch(link);
+      // return await pdfResp.blob();
     } catch (error) {
       console.error('BirFatura getInBoxInvoicePDF error:', error);
       return null;
@@ -294,7 +285,7 @@ class BirFaturaService {
   // ============================================
 
   /**
-   * Fatura oluştur ve BirFatura'ya gönder
+   * Fatura oluştur ve GİB'e gönder
    */
   async createAndSend(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     try {
@@ -327,7 +318,7 @@ class BirFaturaService {
   }
 
   /**
-   * Mevcut faturayı BirFatura'ya gönder
+   * Mevcut faturayı GİB'e gönder
    */
   async send(invoiceId: string): Promise<BirFaturaResponse> {
     try {

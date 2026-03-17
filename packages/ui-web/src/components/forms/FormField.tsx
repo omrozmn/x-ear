@@ -35,15 +35,15 @@ export const FormField: React.FC<FormFieldProps> = ({
 }) => {
   return (
     <div className={`space-y-1 ${className}`}>
-      <Label className="text-xs font-medium text-gray-600 block">
+      <Label className="text-sm font-medium text-foreground block">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       
       <div className="relative">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-            <Icon className="w-3 h-3 text-gray-400" />
+            <Icon className="w-3 h-3 text-muted-foreground" />
           </div>
         )}
         
@@ -62,7 +62,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       </div>
       
       {error && (
-        <div className="text-red-600 text-xs mt-1">{error}</div>
+        <div className="text-destructive text-xs mt-1">{error}</div>
       )}
     </div>
   );

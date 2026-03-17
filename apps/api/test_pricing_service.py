@@ -1,4 +1,3 @@
-import pytest
 from backend.services.pricing import (
     calculate_device_pricing,
     calculate_payment_plan,

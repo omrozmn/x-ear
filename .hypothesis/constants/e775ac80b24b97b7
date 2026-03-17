@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/conversation_memory.py
+# hypothesis_version: 6.151.9
+
+[3600, 'aiResponse', 'ai_response', 'entities', 'intentType', 'intent_type', 'redis', 'timestamp', 'userMessage', 'user_message']

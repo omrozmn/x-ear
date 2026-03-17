@@ -10,31 +10,83 @@ import { Button, Input, Textarea } from '@x-ear/ui-web';
 import {
     useListAdminSmPackages,
     useCreateAdminSmPackages,
-    useUpdateAdminSmPackage
+    useUpdateAdminSmPackage,
+    type DetailedSmsPackageRead,
+    type ListAdminSmPackagesParams,
+    type ResponseEnvelopeListDetailedSmsPackageRead,
+    type SmsPackageCreate,
+    type SmsPackageUpdate,
 } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '../../components/ui/Pagination';
+import { useAdminResponsive } from '../../hooks/useAdminResponsive';
+import { unwrapArray, unwrapData } from '@/lib/orval-response';
+
+interface PackagePagination {
+    total?: number;
+    totalPages?: number;
+}
+
+interface PackageFormData {
+    name: string;
+    description: string;
+    smsCount: number;
+    price: number;
+    currency: string;
+    isActive: boolean;
+}
+
+function getPackages(data: ResponseEnvelopeListDetailedSmsPackageRead | undefined): DetailedSmsPackageRead[] {
+    return unwrapArray<DetailedSmsPackageRead>(data);
+}
+
+function getPagination(data: ResponseEnvelopeListDetailedSmsPackageRead | undefined): PackagePagination {
+    const payload = unwrapData<Record<string, unknown>>(data);
+    const metaSource = payload && typeof payload === 'object' && 'meta' in payload ? payload.meta : undefined;
+    const meta = typeof metaSource === 'object' && metaSource !== null ? metaSource as Record<string, unknown> : undefined;
+    return {
+        total: typeof meta?.total === 'number' ? meta.total : 0,
+        totalPages: typeof meta?.totalPages === 'number' ? meta.totalPages : 1,
+    };
+}
+
+function toFormData(pkg?: DetailedSmsPackageRead | null): PackageFormData {
+    return {
+        name: pkg?.name ?? '',
+        description: pkg?.description ?? '',
+        smsCount: pkg?.smsCount ?? 1000,
+        price: typeof pkg?.price === 'number' ? pkg.price : Number(pkg?.price ?? 0),
+        currency: 'TRY',
+        isActive: pkg?.isActive ?? true,
+    };
+}
 
 export default function SMSPackagesPage() {
+    const { isMobile } = useAdminResponsive();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingPkg, setEditingPkg] = useState<any>(null);
+    const [editingPkg, setEditingPkg] = useState<DetailedSmsPackageRead | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const packageParams: ListAdminSmPackagesParams = { page, limit };
 
-    const { data: packagesData, isLoading, refetch } = useListAdminSmPackages({ page, limit } as any);
+    const { data: packagesData, isLoading, refetch } = useListAdminSmPackages(packageParams);
 
     const createMutation = useCreateAdminSmPackages();
     const updateMutation = useUpdateAdminSmPackage();
 
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        smsCount: 1000,
-        price: 0,
-        currency: 'TRY',
-        isActive: true
+    const [formData, setFormData] = useState<PackageFormData>(toFormData());
+    const packages = getPackages(packagesData).filter((pkg) => {
+        const query = searchTerm.trim().toLowerCase();
+        if (!query) {
+            return true;
+        }
+
+        return [pkg.name, pkg.description || '', String(pkg.smsCount || ''), String(pkg.price || '')]
+            .some((value) => value.toLowerCase().includes(query));
     });
+    const pagination = getPagination(packagesData);
 
     const handleSave = async () => {
         if (!formData.name || formData.smsCount <= 0 || formData.price < 0) {
@@ -43,96 +95,99 @@ export default function SMSPackagesPage() {
         }
 
         try {
+            const payload: SmsPackageCreate = {
+                name: formData.name,
+                description: formData.description,
+                smsCount: formData.smsCount,
+                price: formData.price,
+                currency: formData.currency,
+                isActive: formData.isActive,
+            };
+
             if (editingPkg) {
+                const updatePayload: SmsPackageUpdate = payload;
                 await updateMutation.mutateAsync({
                     packageId: editingPkg.id,
-                    data: {
-                        name: formData.name,
-                        description: formData.description,
-                        smsCount: formData.smsCount,
-                        price: formData.price,
-                        isActive: formData.isActive
-                    }
+                    data: updatePayload
                 });
                 toast.success('Paket güncellendi');
             } else {
                 await createMutation.mutateAsync({
-                    data: formData
+                    data: payload
                 });
                 toast.success('Paket oluşturuldu');
             }
 
             setIsCreateOpen(false);
             setEditingPkg(null);
-            setFormData({ name: '', description: '', smsCount: 1000, price: 0, currency: 'TRY', isActive: true });
+            setFormData(toFormData());
             refetch();
-        } catch (error) {
+        } catch {
             toast.error('İşlem başarısız');
-            console.error(error);
         }
     };
 
-    const openEdit = (pkg: any) => {
+    const openEdit = (pkg: DetailedSmsPackageRead) => {
         setEditingPkg(pkg);
-        setFormData({
-            name: pkg.name,
-            description: pkg.description || '',
-            smsCount: pkg.smsCount,
-            price: pkg.price,
-            currency: pkg.currency,
-            isActive: pkg.isActive
-        });
+        setFormData(toFormData(pkg));
         setIsCreateOpen(true);
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6 max-w-7xl mx-auto'}>
+            <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">SMS Paketleri</h1>
-                    <p className="text-gray-500">Satışa sunulan SMS paketlerini yönetin</p>
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>SMS Paketleri</h1>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">Satışa sunulan SMS paketlerini yönetin</p>
                 </div>
-                <Button onClick={() => { setEditingPkg(null); setIsCreateOpen(true); }}>
+                <Button onClick={() => { setEditingPkg(null); setIsCreateOpen(true); }} className="touch-feedback">
                     <Plus className="w-4 h-4 mr-2" />
-                    Yeni Paket
+                    {!isMobile && 'Yeni Paket'}
                 </Button>
             </div>
+            <div className="mb-6 max-w-md">
+                <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Paket adı, açıklama, adet veya fiyat ara..."
+                />
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
                 {isLoading ? (
-                    <div className="col-span-3 flex justify-center p-8"><Loader2 className="animate-spin" /></div>
+                    <div className="col-span-3 flex justify-center p-8"><Loader2 className="animate-spin text-gray-400 dark:text-gray-500" /></div>
                 ) : (
-                    (packagesData as any)?.data?.map((pkg: any) => (
-                        <div key={pkg.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative group">
+                    packages.map((pkg) => (
+                        <div key={pkg.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 relative group">
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="ghost" size="sm" onClick={() => openEdit(pkg)}>
+                                <Button variant="ghost" size="sm" onClick={() => openEdit(pkg)} className="touch-feedback">
                                     <Edit2 className="w-4 h-4" />
                                 </Button>
                             </div>
 
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600">
+                                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400">
                                     <Package className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">{pkg.name}</h3>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${pkg.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                                    <h3 className="font-bold text-gray-900 dark:text-white">{pkg.name}</h3>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${pkg.isActive ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
                                         {pkg.isActive ? 'Aktif' : 'Pasif'}
                                     </span>
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-500 mb-6 min-h-[40px]">{pkg.description}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 min-h-[40px]">{pkg.description}</p>
 
-                            <div className="flex justify-between items-end border-t pt-4">
+                            <div className="flex justify-between items-end border-t dark:border-gray-700 pt-4">
                                 <div>
-                                    <span className="text-xs text-gray-500 block">SMS Adedi</span>
-                                    <span className="font-bold text-lg">{(pkg.smsCount || 0).toLocaleString()}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 block">SMS Adedi</span>
+                                    <span className="font-bold text-lg text-gray-900 dark:text-white">{(pkg.smsCount || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-xs text-gray-500 block">Fiyat</span>
-                                    <span className="font-bold text-xl text-indigo-600">
-                                        {(pkg.price || 0).toLocaleString('tr-TR', { style: 'currency', currency: pkg.currency || 'TRY' })}
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 block">Fiyat</span>
+                                    <span className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
+                                        {Number(pkg.price || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
                                     </span>
                                 </div>
                             </div>
@@ -142,8 +197,8 @@ export default function SMSPackagesPage() {
             </div>
             <Pagination
                 currentPage={page}
-                totalPages={(packagesData as any)?.pagination?.totalPages || 1}
-                totalItems={(packagesData as any)?.pagination?.total || 0}
+                totalPages={pagination.totalPages ?? 1}
+                totalItems={pagination.total ?? 0}
                 itemsPerPage={limit}
                 onPageChange={setPage}
                 onItemsPerPageChange={setLimit}

@@ -19,11 +19,11 @@ Requirements:
 
 import logging
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Header
-from sqlalchemy import and_, func
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -31,7 +31,6 @@ from core.models.email import SMTPEmailLog
 from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.email import (
-    EmailLogListRequest,
     EmailLogListResponse,
     EmailLogResponse,
     SendEmailRequest,
@@ -41,8 +40,7 @@ from services.email_service import EmailService
 from services.email_template_service import EmailTemplateService
 from services.encryption_service import EncryptionService
 from services.smtp_config_service import SMTPConfigService
-from datetime import timedelta, timezone
-
+from datetime import timedelta
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Email Logs"])
@@ -352,7 +350,7 @@ async def send_manual_email(
                 if existing:
                     email_ids.append(existing.id)
                     logger.info(
-                        f"Duplicate manual email request detected",
+                        "Duplicate manual email request detected",
                         extra={
                             "tenant_id": tenant_id,
                             "recipient": recipient,

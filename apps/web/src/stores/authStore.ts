@@ -83,7 +83,7 @@ interface AuthActions {
   sendOtp: (phone: string) => Promise<void>;
   forgotPassword: (phone: string) => Promise<void>;
   verifyResetOtp: (phone: string, otp: string) => Promise<void>;
-  resetPassword: (phone: string, otp: string, newPassword: string) => Promise<void>;
+  resetPassword: (phone: string, otp: string, newPassword: string, captchaToken?: string) => Promise<void>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
   initializeAuth: () => Promise<void>;
@@ -97,6 +97,8 @@ interface LoginCredentials {
 }
 
 type AuthStore = AuthState & AuthActions;
+
+const normalizeRole = (role?: string | null): string => (role || 'user').trim().toLowerCase();
 
 export const useAuthStore = create<AuthStore>()(
   persist(
@@ -116,6 +118,10 @@ export const useAuthStore = create<AuthStore>()(
 
       // Actions
       setAuth: (user: AuthStateUser, token: string, refreshToken?: string | null) => {
+        // CRITICAL: Set tokens in TokenManager FIRST (single source of truth)
+        tokenManager.setTokens(token, refreshToken);
+
+        // Then update Zustand state (which will persist via middleware)
         set({
           user,
           token,
@@ -124,8 +130,17 @@ export const useAuthStore = create<AuthStore>()(
           error: null,
         });
 
-        // Use TokenManager for token storage (single source of truth)
-        tokenManager.setTokens(token, refreshToken);
+        // DEBUG: Verify tokens were written to both storages
+        console.log('[authStore.setAuth] Tokens stored:', {
+          zustandToken: token.substring(0, 30) + '...',
+          zustandRefresh: refreshToken?.substring(0, 30) + '...',
+          tokenManagerHasToken: !!tokenManager.accessToken,
+          tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
+          // Verify localStorage has both keys
+          canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
+          canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
+          zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
+        });
 
         // Check subscription after auth set
         get().checkSubscription();
@@ -136,6 +151,10 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       clearAuth: () => {
+        // CRITICAL: Clear TokenManager FIRST (single source of truth)
+        tokenManager.clearTokens();
+
+        // Then clear Zustand state
         set({
           user: null,
           token: null,
@@ -146,15 +165,21 @@ export const useAuthStore = create<AuthStore>()(
           subscription: null,
         });
 
-        // Use TokenManager to clear all tokens (single source of truth)
-        tokenManager.clearTokens();
-
         // Clear tenant ID separately (not managed by TokenManager)
         try {
           localStorage.removeItem(CURRENT_TENANT_ID);
         } catch (e) {
           // ignore storage errors
         }
+
+        // DEBUG: Verify all tokens were cleared
+        console.log('[authStore.clearAuth] Tokens cleared:', {
+          tokenManagerHasToken: !!tokenManager.accessToken,
+          tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
+          canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
+          canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
+          zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
+        });
       },
 
       setLoading: (loading: boolean) => {
@@ -169,7 +194,7 @@ export const useAuthStore = create<AuthStore>()(
         try {
           // Skip subscription check for admin users - they don't have tenant subscriptions
           const { user } = get();
-          if (user?.role === 'super_admin' || user?.role === 'admin') {
+          if (normalizeRole(user?.role) === 'super_admin') {
             return;
           }
 
@@ -217,6 +242,7 @@ export const useAuthStore = create<AuthStore>()(
 
             // Map AuthUserRead to AuthStateUser and handle missing fields
             if (accessToken && userData) {
+              const normalizedRole = normalizeRole(userData.role);
               const name = (userData.firstName && userData.lastName)
                 ? `${userData.firstName} ${userData.lastName}`.trim()
                 : (userData.username || '');
@@ -225,8 +251,9 @@ export const useAuthStore = create<AuthStore>()(
                 ...userData,
                 firstName: userData.firstName || '',
                 lastName: userData.lastName || '',
+                role: normalizedRole,
                 name,
-                is_super_admin: userData.role === 'super_admin' || userData.role === 'admin',
+                is_super_admin: normalizedRole === 'super_admin',
                 isPhoneVerified: !requiresPhoneVerification
               } as AuthStateUser;
 
@@ -288,11 +315,15 @@ export const useAuthStore = create<AuthStore>()(
               tokenManager.setTokens(newToken, refreshToken || null);
 
               // Check subscription
-              await checkSubscription();
+              try {
+                await checkSubscription();
+              } catch (subscriptionError) {
+                console.error('Subscription check after OTP verification failed:', subscriptionError);
+              }
 
               // Trigger lazy services that need auth (don't await, fire-and-forget)
               // Skip for admin users who don't have tenant context
-              if (user.role !== 'super_admin' && user.role !== 'admin') {
+              if (normalizeRole(user.role) !== 'super_admin') {
                 try {
                   const { appointmentService } = await import('../services/appointment.service');
                   appointmentService.triggerServerSync();
@@ -570,7 +601,7 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      resetPassword: async (phone: string, otp: string, newPassword: string) => {
+      resetPassword: async (phone: string, otp: string, newPassword: string, captchaToken?: string) => {
         const { setLoading, setError } = get();
 
         try {
@@ -581,7 +612,8 @@ export const useAuthStore = create<AuthStore>()(
           const data = await resetPasswordApi({
             identifier: phone,
             otp: otp,
-            newPassword: newPassword
+            newPassword: newPassword,
+            ...(captchaToken && { captchaToken })
           });
 
           if (data?.success) {
@@ -706,13 +738,13 @@ export const useAuthStore = create<AuthStore>()(
                 name: (userData.firstName && userData.lastName)
                   ? `${userData.firstName} ${userData.lastName}`.trim()
                   : (userData.username || ''),
-                role: userData.role || 'user',
+                role: normalizeRole(userData.role),
                 phone: userData.phone,
                 tenantId: userData.tenantId,
                 isPhoneVerified,
                 isImpersonating,
                 realUserEmail,
-                is_super_admin: userData.role === 'super_admin',
+                is_super_admin: normalizeRole(userData.role) === 'super_admin',
                 effectiveTenantId: payload?.effective_tenant_id,
                 tenantName: (payload?.is_impersonating_tenant ? userData.tenantName : undefined),
                 isImpersonatingTenant: payload?.is_impersonating_tenant
@@ -741,7 +773,7 @@ export const useAuthStore = create<AuthStore>()(
               await checkSubscription();
 
               // Trigger lazy services that need auth (skip for admins)
-              if (transformedUser.role !== 'super_admin' && transformedUser.role !== 'admin') {
+              if (normalizeRole(transformedUser.role) !== 'super_admin') {
                 try {
                   const { appointmentService } = await import('../services/appointment.service');
                   appointmentService.triggerServerSync();
@@ -802,7 +834,7 @@ export const useAuthStore = create<AuthStore>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
         subscription: state.subscription,
-        error: state.error, // Include error in persistence
+        // NEVER persist error - it should be cleared on page reload
       }),
     }
   )

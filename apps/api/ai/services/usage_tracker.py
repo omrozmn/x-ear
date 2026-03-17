@@ -14,14 +14,16 @@ and quota bypass under concurrent load.
 """
 
 from dataclasses import dataclass
-from datetime import date, datetime
-from typing import Optional, Any
-from enum import Enum
+from datetime import date
+from typing import Optional
 from threading import Lock
 from collections import defaultdict
+import logging
 
 from ai.config import AIConfig, AIQuotaExceededError
-from ai.models.ai_usage import AIUsage, UsageType
+from ai.models.ai_usage import UsageType, AIUsage
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -139,41 +141,69 @@ class UsageTracker:
         request_count: int = 1,
         tokens_input: int = 0,
         tokens_output: int = 0,
+        db=None,
     ) -> UsageRecord:
         """
         Atomically increment usage counters.
-        
-        This method uses atomic operations to prevent race conditions.
-        
+
+        When a DB session is provided, uses PostgreSQL UPSERT for true atomic
+        increment (Requirement 29.1). Falls back to in-memory for testing.
+
         Args:
             tenant_id: The tenant identifier
             usage_type: Type of usage
             request_count: Number of requests to add
             tokens_input: Input tokens to add
             tokens_output: Output tokens to add
-            
-        Returns:
-            Updated UsageRecord
+            db: Optional SQLAlchemy session for DB-backed tracking
         """
         today = date.today()
+
+        # DB-backed atomic increment (production path)
+        if db is not None:
+            try:
+                quota = self._quotas.get((tenant_id, usage_type.value)) or self._default_quota
+                AIUsage.increment_usage_atomic(
+                    session=db,
+                    tenant_id=tenant_id,
+                    usage_type=usage_type,
+                    request_count=request_count,
+                    tokens_input=tokens_input,
+                    tokens_output=tokens_output,
+                    quota_limit=quota,
+                )
+                db.commit()
+                # Read back current state
+                has_quota, current, limit = AIUsage.check_quota(db, tenant_id, usage_type)
+                return UsageRecord(
+                    tenant_id=tenant_id,
+                    usage_type=usage_type,
+                    usage_date=today,
+                    request_count=current or 0,
+                    token_count_input=0,
+                    token_count_output=0,
+                    quota_limit=limit,
+                    quota_exceeded=not has_quota,
+                )
+            except Exception as e:
+                logger.warning(f"DB usage tracking failed, falling back to in-memory: {e}")
+                db.rollback()
+
+        # In-memory fallback (testing/development)
         key = (tenant_id, today, usage_type.value)
-        
+
         with self._lock:
-            # Atomic increment
             self._request_counters[key] += request_count
             self._token_input_counters[key] += tokens_input
             self._token_output_counters[key] += tokens_output
-            
-            # Get current values
+
             current_requests = self._request_counters[key]
             current_input = self._token_input_counters[key]
             current_output = self._token_output_counters[key]
-            
-            # Get quota
             quota = self._quotas.get((tenant_id, usage_type.value))
-        
+
         quota_exceeded = quota is not None and current_requests > quota
-        
+
         return UsageRecord(
             tenant_id=tenant_id,
             usage_type=usage_type,
@@ -273,66 +303,55 @@ class UsageTracker:
         self,
         tenant_id: str,
         usage_type: UsageType,
+        db=None,
     ) -> tuple[bool, Optional[int], Optional[int]]:
         """
         Check if tenant has remaining quota.
-        
-        Args:
-            tenant_id: The tenant identifier
-            usage_type: Type of usage to check
-            
-        Returns:
-            Tuple of (has_quota, current_usage, quota_limit)
-            has_quota is True if quota is not exceeded or unlimited
+
+        When a DB session is provided, uses the DB for authoritative quota check.
         """
+        if db is not None:
+            try:
+                return AIUsage.check_quota(db, tenant_id, usage_type)
+            except Exception as e:
+                logger.warning(f"DB quota check failed, falling back to in-memory: {e}")
+
         record = self.get_usage(tenant_id, usage_type)
-        
+
         if record.quota_limit is None:
             return (True, record.request_count, None)
-        
+
         has_quota = record.request_count < record.quota_limit
         return (has_quota, record.request_count, record.quota_limit)
-    
+
     def acquire_quota(
         self,
         tenant_id: str,
         usage_type: UsageType,
         tokens_input: int = 0,
         tokens_output: int = 0,
+        db=None,
     ) -> UsageRecord:
         """
-        Check quota and increment usage if allowed.
-        
-        This is the main entry point for quota-controlled operations.
-        
-        Args:
-            tenant_id: The tenant identifier
-            usage_type: Type of usage
-            tokens_input: Input tokens to track
-            tokens_output: Output tokens to track
-            
-        Returns:
-            Updated UsageRecord
-            
-        Raises:
-            AIQuotaExceededError: If quota is exceeded
+        Atomically check quota and increment usage.
+
+        Uses DB-backed atomic UPSERT when db session is provided (Req 29.1).
         """
-        # Check quota first
-        has_quota, current, limit = self.check_quota(tenant_id, usage_type)
-        
+        has_quota, current, limit = self.check_quota(tenant_id, usage_type, db=db)
+
         if not has_quota:
             raise AIQuotaExceededError(
                 f"AI quota exceeded for {usage_type.value}. "
                 f"Current: {current}, Limit: {limit}"
             )
-        
-        # Increment usage
+
         return self.increment_usage(
             tenant_id=tenant_id,
             usage_type=usage_type,
             request_count=1,
             tokens_input=tokens_input,
             tokens_output=tokens_output,
+            db=db,
         )
     
     def clear_tenant(self, tenant_id: str) -> None:

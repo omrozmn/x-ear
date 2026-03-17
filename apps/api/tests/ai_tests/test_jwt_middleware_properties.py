@@ -25,7 +25,6 @@ Properties:
 import os
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch, MagicMock
 from hypothesis import given, strategies as st, settings, HealthCheck
 from jose import jwt
 
@@ -475,12 +474,12 @@ class TestExcludedPaths:
         app = FastAPI()
         app.add_middleware(AIAuthMiddleware)
         
-        @app.get("/ai/status")
+        @app.get("/ai/health")
         async def status():
             return {"status": "ok"}
         
         client = TestClient(app)
-        response = client.get("/ai/status")
+        response = client.get("/ai/health")
         
         # Should succeed without auth
         assert response.status_code == 200

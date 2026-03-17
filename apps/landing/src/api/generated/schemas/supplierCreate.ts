@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { SupplierCreateTenantId } from './supplierCreateTenantId';
 import type { SupplierCreateName } from './supplierCreateName';
 import type { SupplierCreateCode } from './supplierCreateCode';
 import type { SupplierCreateContactName } from './supplierCreateContactName';
@@ -22,6 +23,8 @@ import type { SupplierCreateNotes } from './supplierCreateNotes';
  * Schema for creating a supplier
  */
 export interface SupplierCreate {
+  /** Owner tenant ID */
+  tenantId?: SupplierCreateTenantId;
   /** Frontend alias for companyName */
   name?: SupplierCreateName;
   /** Frontend alias for companyCode */

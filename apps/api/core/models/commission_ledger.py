@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, DateTime, func
 from sqlalchemy.orm import relationship
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 

@@ -7,7 +7,7 @@ import boto3
 from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)

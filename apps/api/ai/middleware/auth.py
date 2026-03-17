@@ -111,7 +111,7 @@ class AIAuthMiddleware:
         self.app = app
         self.ai_path_prefix = ai_path_prefix
         self.exclude_paths = exclude_paths or [
-            "/ai/status",  # Status endpoint may not require auth
+            # "/ai/status",  # Status endpoint now requires auth for tenant context
             "/ai/health",  # Health check may not require auth
         ]
     
@@ -141,9 +141,13 @@ class AIAuthMiddleware:
             if path.startswith(exclude_path):
                 await self.app(scope, receive, send)
                 return
-        
         # Create Request object to access headers
         request = Request(scope, receive)
+        
+        # Skip OPTIONS requests to allow CORS preflight to succeed
+        if request.method == "OPTIONS":
+            await self.app(scope, receive, send)
+            return
         
         # Extract Authorization header
         auth_header = request.headers.get("Authorization")

@@ -18,14 +18,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 import sys
 import os
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
 from faker import Faker
 import uuid
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from app import app
 from models.base import db, gen_id
-from models.user import User
 from models.tenant import Tenant
 from models.campaign import Campaign
 from models.production_order import ProductionOrder 

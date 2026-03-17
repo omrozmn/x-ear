@@ -1,4 +1,4 @@
-/* Safe Area Utilities */
+/* Safe Area Padding Utilities */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -12,16 +12,52 @@
   padding-right: env(safe-area-inset-right);
 }
 
-.safe-area-inset-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Hide scrollbar but allow functionality */
+/* Scrollbar Hiding */
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Premium Mobile Cards & Touch Targets */
+@media (max-width: 768px) {
+  /* Ensure minimum hit area for interactive elements */
+  button, a, input, select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Increase base font size for better readability on mobile */
+  html {
+    font-size: 16px;
+  }
+
+  /* Optimize modal for mobile - Full screen or drawer behavior */
+  .modal-mobile-fullscreen {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+
+  /* Glassmorphism utility for mobile overlays */
+  .mobile-glass {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
+  .dark .mobile-glass {
+    background: rgba(17, 24, 39, 0.8) !important;
+  }
+}
+
+/* Smooth transitions for mobile layout changes */
+.layout-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

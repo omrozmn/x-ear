@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/email_deliverability.py
+# hypothesis_version: 6.151.9
+
+[0.0, 100, 255, 500, 'EmailLog', 'action_plan_hash', 'approval', 'approvals', 'bounce', 'bounce_type', 'bounces', 'complaint', 'complaint_type', 'complaints', 'created_at', 'date', 'date_begin', 'dmarc', 'dmarc_report', 'domain', 'email_approval', 'email_bounce', 'email_complaint', 'email_logs.id', 'email_unsubscribe', 'exclude_properties', 'is_blacklisted', 'ix_email_bounce_type', 'metrics', 'pending', 'recipient', 'requested_at', 'risk_level', 'scenario', 'status', 'tenant_id', 'unsub', 'unsubscribe_token', 'updated_at']

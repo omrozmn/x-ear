@@ -73,13 +73,13 @@ export const FloatingActionButton: React.FC<FABProps> = ({
                                 className="flex items-center gap-3 group animate-in slide-in-from-bottom-4 fade-in duration-200"
                                 style={{ animationDelay: `${index * 50}ms` }}
                             >
-                                <span className="bg-white px-3 py-2 rounded-lg shadow-lg text-sm font-medium text-gray-900 whitespace-nowrap">
+                                <span className="bg-card px-3 py-2 rounded-2xl shadow-lg text-sm font-medium text-foreground whitespace-nowrap">
                                     {action.label}
                                 </span>
 
                                 <div className={cn(
                                     "h-12 w-12 rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-95",
-                                    action.color || "bg-white text-gray-700"
+                                    action.color || "bg-card text-foreground"
                                 )}>
                                     {action.icon}
                                 </div>
@@ -93,8 +93,8 @@ export const FloatingActionButton: React.FC<FABProps> = ({
                     data-allow-raw="true"
                     onClick={handleMainClick}
                     className={cn(
-                        "h-14 w-14 rounded-full bg-primary-600 text-white shadow-lg flex items-center justify-center",
-                        "hover:bg-primary-700 active:bg-primary-800 transition-all duration-200",
+                        "h-14 w-14 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center",
+                        "hover:bg-blue-700 active:bg-blue-800 transition-all duration-200",
                         isExpanded && "rotate-45 bg-gray-700 hover:bg-gray-800"
                     )}
                 >

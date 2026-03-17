@@ -25,8 +25,8 @@ export const useInventory = (): UseInventoryResult => {
       setError(null);
 
       const response = await listInventory({
-        category: 'hearing_aid', // Focus on hearing aids for sales
-        search: undefined,
+        category: 'hearing_aid',
+        per_page: 200,
         low_stock: false
       });
 

@@ -1,131 +1,139 @@
-import { parseISO, format } from 'date-fns';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import type { ActivityLogRead } from '@/api/generated/schemas';
 
-// Create a readable, modern single-sentence activity formatter (Turkish)
-export function formatActivitySentence(act: ActivityLogRead | Record<string, unknown>): string {
-  // Use wrapper for safe access
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const safeAct: any = act;
+type ActivityLike = ActivityLogRead | Record<string, unknown>;
 
-  // Accept various timestamp keys
-  const ts = safeAct?.createdAt || safeAct?.created_at || safeAct?.timestamp || safeAct?.date || safeAct?.time || null;
-  let timeStr = '';
-  if (ts) {
-    try {
-      const d = typeof ts === 'string' ? parseISO(ts) : new Date(ts);
-      timeStr = format(d, "d MMM, HH:mm", { locale: tr });
-    } catch (e) {
-      timeStr = String(ts);
-    }
+function readValue(activity: ActivityLike, key: string): unknown {
+  return (activity as Record<string, unknown>)[key];
+}
+
+function getNestedRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
+}
+
+function getActivityDate(activity: ActivityLike): Date | null {
+  const rawValue =
+    readValue(activity, 'createdAt')
+    ?? readValue(activity, 'created_at')
+    ?? readValue(activity, 'timestamp')
+    ?? readValue(activity, 'date')
+    ?? readValue(activity, 'time');
+
+  if (!rawValue) return null;
+
+  try {
+    if (typeof rawValue === 'string') return parseISO(rawValue);
+    return new Date(rawValue as string | number | Date);
+  } catch {
+    return null;
   }
+}
 
-  // Use userName or fullName from backend if available (populated by to_dict_with_user)
-  const user = safeAct?.userName || safeAct?.fullName || safeAct?.user?.fullName || safeAct?.user?.username || safeAct?.user || safeAct?.userId || 'Sistem';
+function resolveUser(activity: ActivityLike): string {
+  const userRecord = getNestedRecord(readValue(activity, 'user'));
+  return String(
+    readValue(activity, 'userName')
+    ?? readValue(activity, 'fullName')
+    ?? userRecord?.fullName
+    ?? userRecord?.username
+    ?? readValue(activity, 'userId')
+    ?? 'Sistem',
+  );
+}
 
-  // Clean up raw action
-  const rawAction = (safeAct?.action || safeAct?.type || safeAct?.message || '').toString();
+function resolveAction(activity: ActivityLike): string {
+  return String(
+    readValue(activity, 'action')
+    ?? readValue(activity, 'type')
+    ?? readValue(activity, 'message')
+    ?? '',
+  );
+}
 
-  // Try to parse dot notation (e.g. auth.login -> entity=auth, verb=login)
-  let derivedVerb = rawAction;
-  let derivedEntity = '';
+function resolvePartyName(activity: ActivityLike): string {
+  const dataRecord = getNestedRecord(readValue(activity, 'data'));
+  const partyName = readValue(activity, 'partyName') ?? dataRecord?.partyName;
+  return typeof partyName === 'string' ? partyName.trim() : '';
+}
 
-  if (rawAction.includes('.')) {
-    const parts = rawAction.split('.');
-    if (parts.length >= 2) {
-      derivedVerb = parts[parts.length - 1]; // last part is usually verb
-      derivedEntity = parts[parts.length - 2]; // second to last is entity
-    }
-  }
+export function formatActivityTimeAgo(activity: ActivityLike): string {
+  const date = getActivityDate(activity);
+  if (!date || Number.isNaN(date.getTime())) return 'Az once';
+  return formatDistanceToNow(date, { addSuffix: true, locale: tr });
+}
 
-  // Map verbs to Turkish
+export function formatActivityTimestamp(activity: ActivityLike): string {
+  const date = getActivityDate(activity);
+  if (!date || Number.isNaN(date.getTime())) return 'Zaman bilgisi yok';
+  return format(date, 'd MMMM, HH:mm', { locale: tr });
+}
+
+export function formatActivitySentence(activity: ActivityLike): string {
+  const user = resolveUser(activity);
+  const action = resolveAction(activity);
+  const explicitMessage = readValue(activity, 'message');
+  const entityType = String(readValue(activity, 'entityType') ?? readValue(activity, 'entity') ?? '');
+  const entityId = String(readValue(activity, 'entityId') ?? '');
+  const partyName = resolvePartyName(activity);
+
+  const parts = action.includes('.') ? action.split('.') : [];
+  const derivedEntity = parts.length >= 2 ? parts[parts.length - 2] : entityType;
+  const derivedVerb = parts.length >= 2 ? parts[parts.length - 1] : action;
+
+  const entityMap: Record<string, string> = {
+    party: 'hasta',
+    device: 'cihaz',
+    sale: 'satis',
+    appointment: 'randevu',
+    invoice: 'fatura',
+    inventory: 'envanter kaydi',
+    report: 'rapor',
+    payment: 'odeme',
+    cash: 'kasa kaydi',
+  };
+
   const verbMap: Record<string, string> = {
-    create: 'oluşturdu',
-    created: 'oluşturdu',
-    update: 'güncelledi',
-    updated: 'güncelledi',
+    create: 'olusturdu',
+    created: 'olusturdu',
+    update: 'guncelledi',
+    updated: 'guncelledi',
     delete: 'sildi',
     deleted: 'sildi',
-    login: 'giriş yaptı',
-    logout: 'çıkış yaptı',
-    view: 'görüntüledi',
+    login: 'sisteme giris yapti',
+    logout: 'sistemden cikis yapti',
+    view: 'goruntuledi',
     list: 'listeledi',
-    export: 'dışa aktardı',
-    import: 'içe aktardı',
-    assign: 'atadı',
-    assigned: 'atandı',
-    complete: 'tamamladı',
-    completed: 'tamamlandı',
+    export: 'disa aktardi',
+    import: 'ice aktardi',
+    assign: 'atadi',
+    assigned: 'atama yapti',
+    complete: 'tamamladi',
+    completed: 'tamamladi',
     cancel: 'iptal etti',
-    cancelled: 'iptal edildi',
-    sent: 'gönderdi',
-    pay: 'ödeme aldı',
-    paid: 'ödendi',
-    success: 'başarılı oldu',
-    failed: 'başarısız oldu'
+    cancelled: 'iptal etti',
+    sent: 'gonderdi',
+    pay: 'odeme aldi',
+    paid: 'odeme tamamladi',
+    alma: 'alma bildirimi olusturdu',
+    verme: 'verme bildirimi olusturdu',
   };
 
-  // Map entities to Turkish (optional)
-  const entityMap: Record<string, string> = {
-    party: 'Hasta',
-    device: 'Cihaz',
-    sale: 'Satış',
-    appointment: 'Randevu',
-    invoice: 'Fatura',
-    auth: 'Sistem',
-    user: 'Kullanıcı',
-    inventory: 'Stok',
-    report: 'Rapor'
-  };
+  if (action === 'auth.login') return `${user} sisteme giris yapti.`;
+  if (action === 'auth.logout') return `${user} sistemden cikis yapti.`;
 
-  const cleanVerb = derivedVerb.toLowerCase();
-  const verb = verbMap[cleanVerb] || cleanVerb;
+  const entityLabel = entityMap[(entityType || derivedEntity).toLowerCase()] || (entityType || derivedEntity || 'kayit');
+  const verbLabel =
+    verbMap[derivedVerb.toLowerCase()]
+    || (typeof explicitMessage === 'string' && explicitMessage.trim())
+    || 'islem gerceklestirdi';
 
-  // Use provided entity type or derived one
-  const entityType = safeAct?.entityType || safeAct?.entity || derivedEntity || '';
-  // Translate entity type if possible
-  const displayEntityType = entityMap[entityType.toLowerCase()] || entityType;
+  const sentence = [user, entityLabel, verbLabel]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
 
-  const entityId = safeAct?.entityId || '';
-  const partyName = safeAct?.partyName || safeAct?.data?.partyName;
-  const message = safeAct?.message;
-
-  // Construct sentence
-  // Format: [Time] — [User] [Entity] [Verb] ([ID])
-  // Or if message exists and is human readable, use it.
-
-  let content = '';
-
-  // logic to avoid redundancy: if action is 'auth.login', entity is 'auth', user is 'User'.
-  // We want "User sisteme giriş yaptı."
-
-  if (rawAction === 'auth.login') {
-    content = `${user} sisteme giriş yaptı.`;
-  } else if (rawAction === 'auth.logout') {
-    content = `${user} sistemden çıkış yaptı.`;
-  } else {
-    // Generic construction
-    // "Omer (User) randevu (Appointment) oluşturdu."
-
-    const parts: string[] = [];
-    parts.push(user); // Subject
-
-    if (displayEntityType && displayEntityType.toLowerCase() !== 'sistem') {
-      parts.push(displayEntityType); // Object
-    }
-
-    parts.push(verb); // Verb
-
-    if (partyName) {
-      parts.push(`- ${partyName}`);
-    } else if (entityId) {
-      parts.push(`(#${entityId})`);
-    } else if (message && message !== rawAction) {
-      parts.push(`- ${message}`);
-    }
-
-    content = parts.join(' ') + '.';
-  }
-
-  return `${timeStr} — ${content}`;
+  if (partyName) return `${sentence} (${partyName}).`;
+  if (entityId) return `${sentence} (#${entityId}).`;
+  return `${sentence}.`;
 }

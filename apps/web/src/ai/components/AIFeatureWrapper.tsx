@@ -4,16 +4,11 @@ import { useAIContext } from '../hooks/useAIContext';
 import type { AICapability } from '../types/ai.types';
 import {
   checkAIAvailability,
-  getUnavailableMessage,
   type AIUnavailableReason,
-  type AIAvailabilityResult,
 } from '../utils/aiAvailability';
 import { getStatusIcon, getStatusColors } from './helpers';
 
-// Re-export utilities for backward compatibility
-// Note: This triggers react-refresh warning but is intentional for backward compatibility
-// These utilities are also available from '../utils/aiAvailability'
-export { checkAIAvailability, getUnavailableMessage, type AIUnavailableReason, type AIAvailabilityResult };
+// Note: Utilities removed for Fast Refresh compatibility. Imports are now handled directly from source.
 
 /**
  * Props for AIFeatureWrapper component
@@ -78,7 +73,7 @@ export interface AIFeatureWrapperProps {
 function DefaultLoadingFallback(): React.ReactElement {
   return (
     <div
-      className="flex items-center justify-center p-4 text-gray-500"
+      className="flex items-center justify-center p-4 text-muted-foreground"
       role="status"
       aria-label="AI durumu kontrol ediliyor"
     >
@@ -126,7 +121,7 @@ function DefaultUnavailableFallback({
 
   return (
     <div
-      className={`flex items-center gap-3 p-4 ${bgColor} ${borderColor} border rounded-lg`}
+      className={`flex items-center gap-3 p-4 ${bgColor} ${borderColor} border rounded-2xl`}
       role="alert"
     >
       {/* Icon */}
@@ -162,40 +157,40 @@ function DefaultUnavailableFallback({
  * ```tsx
  * // Basic usage - checks general AI availability
  * <AIFeatureWrapper>
- *   <AIChatWidget />
+ * <AIChatWidget />
  * </AIFeatureWrapper>
  * 
  * // With capability check
  * <AIFeatureWrapper capability="chat">
- *   <AIChatWidget />
+ * <AIChatWidget />
  * </AIFeatureWrapper>
  * 
  * // With custom fallback
  * <AIFeatureWrapper 
- *   capability="actions"
- *   fallback={<p>AI aksiyonları şu anda kullanılamıyor.</p>}
+ * capability="actions"
+ * fallback={<p>AI aksiyonları şu anda kullanılamıyor.</p>}
  * >
- *   <AIActionPanel />
+ * <AIActionPanel />
  * </AIFeatureWrapper>
  * 
  * // With function fallback for dynamic content
  * <AIFeatureWrapper 
- *   capability="ocr"
- *   fallback={(reason, message) => (
- *     <CustomFallback reason={reason} message={message} />
- *   )}
+ * capability="ocr"
+ * fallback={(reason, message) => (
+ * <CustomFallback reason={reason} message={message} />
+ * )}
  * >
- *   <OCRScanner />
+ * <OCRScanner />
  * </AIFeatureWrapper>
  * 
  * // Hide completely when unavailable
  * <AIFeatureWrapper capability="chat" hideWhenUnavailable>
- *   <AIChatButton />
+ * <AIChatButton />
  * </AIFeatureWrapper>
  * 
  * // With party context requirement
  * <AIFeatureWrapper capability="actions" requirePartyContext>
- *   <PartyAIActions />
+ * <PartyAIActions />
  * </AIFeatureWrapper>
  * ```
  */
@@ -230,11 +225,13 @@ export function AIFeatureWrapper({
     );
   }, [status, isLoading, isError, capability, role, isContextValid, partyId, requirePartyContext]);
 
-  // Call onUnavailable callback when AI becomes unavailable
+  // Call onUnavailable callback when AI becomes unavailable (fire only once per transition)
+  const prevAvailableRef = React.useRef(availability.available);
   React.useEffect(() => {
-    if (!availability.available && availability.reason !== 'loading') {
+    if (prevAvailableRef.current && !availability.available && availability.reason !== 'loading') {
       onUnavailable?.(availability.reason, availability.message);
     }
+    prevAvailableRef.current = availability.available;
   }, [availability.available, availability.reason, availability.message, onUnavailable]);
 
   // Handle loading state
@@ -277,13 +274,7 @@ export function AIFeatureWrapper({
   );
 }
 
-// =============================================================================
-// Re-export hook for backward compatibility
-// Note: This triggers react-refresh warning but is intentional for backward compatibility
-// Hook is also available from '../hooks/useAIFeatureAvailability'
-// =============================================================================
-
-export { useAIFeatureAvailability } from '../hooks/useAIFeatureAvailability';
+// Note: Hook removed for Fast Refresh compatibility. Imports are now handled directly from source.
 
 // =============================================================================
 // Default Export

@@ -2,7 +2,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { Toaster } from 'react-hot-toast';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { AuthProvider } from './components/AuthProvider';
+import { SectorProvider } from './contexts/SectorContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalErrorProvider } from './components/GlobalErrorHandler';
 import { ToastProvider } from '@x-ear/ui-web';
@@ -13,7 +15,10 @@ import { routeTree } from './routeTree.gen';
 import './api/orval-mutator';
 
 // Create a new router instance
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  basepath: import.meta.env.BASE_URL.replace(/\/$/, '') || undefined,
+});
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -60,23 +65,40 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <GlobalErrorProvider>
-            <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-              <AuthProvider>
-                <RouterProvider router={router} />
-                <PhoneVerificationModal />
-                <Toaster position="top-right" />
-                <ReactQueryDevtools initialIsOpen={false} />
-              </AuthProvider>
-            </ThemeProvider>
-          </GlobalErrorProvider>
-        </ToastProvider>
-      </QueryClientProvider>
+      <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <GlobalErrorProvider>
+              <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+                <AuthProvider>
+                  <SectorProvider>
+                  <RouterProvider router={router} />
+                  <PhoneVerificationModal />
+                  <Toaster 
+                    position="top-right" 
+                    data-testid="toast-notifications"
+                    containerStyle={{
+                      zIndex: 99999,
+                    }}
+                    toastOptions={{
+                      style: {
+                        zIndex: 99999,
+                      },
+                      className: 'z-[99999]',
+                    }}
+                  />
+                  <ReactQueryDevtools initialIsOpen={false} />
+                  </SectorProvider>
+                </AuthProvider>
+              </ThemeProvider>
+            </GlobalErrorProvider>
+          </ToastProvider>
+        </QueryClientProvider>
+      </GoogleReCaptchaProvider>
     </ErrorBoundary>
   );
 }

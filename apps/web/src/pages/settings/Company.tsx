@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Building2,
   Upload,
@@ -10,21 +10,30 @@ import {
   Stamp,
   Loader2,
 } from 'lucide-react';
-import { Button, Input, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Textarea, Autocomplete } from '@x-ear/ui-web';
+import type { AutocompleteOption } from '@x-ear/ui-web';
+import citiesData from '../../data/cities.json';
 import toast from 'react-hot-toast';
 import { companyService, CompanyInfo } from '../../services/company.service';
 import { useAuthStore } from '../../stores/authStore';
+import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
+type CityData = {
+  name: string;
+  districts: string[];
+};
 
 interface AssetUploadProps {
   type: 'logo' | 'stamp' | 'signature';
   label: string;
   description: string;
   currentUrl?: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement;
   onUpload: (file: File) => Promise<void>;
   onDelete: () => Promise<void>;
   isUploading: boolean;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 const AssetUpload: React.FC<AssetUploadProps> = ({
@@ -36,26 +45,56 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
   onDelete,
   isUploading,
   disabled = false,
+  compact = false,
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (currentUrl) {
-      setPreview(companyService.getAssetUrl(currentUrl) || null);
-    } else {
-      setPreview(null);
-    }
-  }, [currentUrl]);
+    let revokedUrl: string | null = null;
+    let isCancelled = false;
+
+    const loadPreview = async () => {
+      if (!currentUrl) {
+        setPreview(null);
+        return;
+      }
+
+      try {
+        const objectUrl = await companyService.getAssetObjectUrl(currentUrl);
+        if (isCancelled) {
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        revokedUrl = objectUrl || null;
+        setPreview(objectUrl || null);
+      } catch (error) {
+        console.error(`Failed to load asset preview for ${label}:`, error);
+        if (!isCancelled) {
+          setPreview(null);
+        }
+      }
+    };
+
+    void loadPreview();
+
+    return () => {
+      isCancelled = true;
+      if (revokedUrl) {
+        URL.revokeObjectURL(revokedUrl);
+      }
+    };
+  }, [currentUrl, label]);
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      toast.error('Sadece resim dosyaları yükleyebilirsiniz');
+      toast.error(t('onlyImages', 'Sadece resim dosyaları yükleyebilirsiniz'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır');
+      toast.error(t('fileSizeLimit', 'Dosya boyutu 5MB\'dan küçük olmalıdır'));
       return;
     }
 
@@ -113,14 +152,14 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
-          {icon}
+    <div className={`bg-white dark:bg-gray-800 ${compact ? 'rounded-2xl p-3 sm:p-4' : 'rounded-3xl p-5 sm:p-6'} shadow-sm border border-border premium-shadow transition-all hover:shadow-md`}>
+      <div className={`flex items-center gap-3 ${compact ? 'mb-3' : 'mb-5'}`}>
+        <div className={`${compact ? 'p-2 rounded-xl' : 'p-3 rounded-2xl'} bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400`}>
+          {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: compact ? 'w-5 h-5' : 'w-6 h-6' })}
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white">{label}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+          <h3 className={`${compact ? 'text-sm' : 'text-base sm:text-lg'} font-bold text-gray-900 dark:text-white`}>{label}</h3>
+          <p className={`${compact ? 'text-[11px]' : 'text-xs sm:text-sm'} text-muted-foreground`}>{description}</p>
         </div>
       </div>
 
@@ -134,33 +173,33 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
       />
 
       {preview ? (
-        <div className="relative group">
+        <div className="relative group overflow-hidden rounded-2xl border border-border">
           <img
             src={preview}
             alt={label}
-            className="w-full h-40 object-contain bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+            className={`w-full ${compact ? 'h-28 sm:h-32 p-3' : 'h-44 sm:h-48 p-4'} object-contain bg-gray-50/50 dark:bg-gray-900/50`}
           />
           {!disabled && (
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-4">
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px] flex items-center justify-center gap-3">
               <Button
                 onClick={handleClick}
                 variant="secondary"
-                className="p-2 rounded-full !w-auto !h-auto"
+                className="p-3 rounded-xl !w-auto !h-auto bg-card/90 hover:bg-card shadow-xl"
                 disabled={isUploading}
               >
                 {isUploading ? (
-                  <Loader2 className="w-5 h-5 text-gray-700 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
                 ) : (
-                  <Upload className="w-5 h-5 text-gray-700" />
+                  <Upload className="w-5 h-5 text-indigo-600" />
                 )}
               </Button>
               <Button
                 onClick={handleDelete}
                 variant="danger"
-                className="p-2 rounded-full !w-auto !h-auto bg-white hover:bg-red-50 border-none"
+                className="p-3 rounded-xl !w-auto !h-auto bg-red-500 hover:bg-red-600 border-none shadow-xl"
                 disabled={isUploading}
               >
-                <Trash2 className="w-5 h-5 text-red-600" />
+                <Trash2 className="w-5 h-5 text-white" />
               </Button>
             </div>
           )}
@@ -172,24 +211,26 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`
-            border-2 border-dashed rounded-lg p-8 text-center transition-colors
+            border-2 border-dashed rounded-2xl ${compact ? 'p-6' : 'p-10'} text-center transition-all duration-300
             ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
             ${isDragging
-              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-              : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500'
+              ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/30 ring-4 ring-indigo-500/10'
+              : 'border-border hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-muted/50 dark:hover:bg-gray-800/50'
             }
             ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
           `}
         >
           {isUploading ? (
-            <Loader2 className="w-10 h-10 mx-auto text-indigo-500 animate-spin" />
+            <Loader2 className={`${compact ? 'w-9 h-9' : 'w-12 h-12'} mx-auto text-indigo-500 animate-spin`} />
           ) : (
-            <Upload className="w-10 h-10 mx-auto text-gray-400 mb-3" />
+            <div className={`bg-muted/80 ${compact ? 'w-12 h-12 rounded-xl mb-3' : 'w-16 h-16 rounded-2xl mb-4'} flex items-center justify-center mx-auto group-hover:scale-110 transition-transform`}>
+              <Upload className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} text-muted-foreground`} />
+            </div>
           )}
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {isDragging ? 'Dosyayı bırakın...' : 'Dosya yüklemek için tıklayın veya sürükleyin'}
+          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-foreground`}>
+            {isDragging ? t('dropHere', 'Hemen Bırakın') : t('selectOrDragImage', 'Görsel Seçin veya Sürükleyin')}
           </p>
-          <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF (max 5MB)</p>
+          <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-muted-foreground mt-2`}>Maximum 5MB • PNG, JPG, WEBP</p>
         </div>
       )}
     </div>
@@ -197,6 +238,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
 };
 
 export default function CompanySettings() {
+  const { t } = useTranslation('settings_extra');
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -205,7 +247,33 @@ export default function CompanySettings() {
   const [formData, setFormData] = useState<CompanyInfo>({});
   const [hasChanges, setHasChanges] = useState(false);
 
-  const isTenantAdmin = user?.role === 'tenant_admin';
+  // City options for dropdown
+  const cityOptions = useMemo<AutocompleteOption[]>(() => {
+    return citiesData.cities.map(city => ({
+      id: city.name,
+      value: city.name,
+      label: city.name
+    }));
+  }, []);
+
+  // District options based on selected city
+  const districtOptions = useMemo<AutocompleteOption[]>(() => {
+    if (!formData.city) return [];
+    const selectedCity = citiesData.cities.find((c: CityData) => c.name === formData.city);
+    if (!selectedCity) return [];
+    return selectedCity.districts.map((district: string) => ({
+      id: district,
+      value: district,
+      label: district
+    }));
+  }, [formData.city]);
+
+  // CRITICAL FIX: Check if user can edit (tenant_admin OR impersonating tenant)
+  // When admin impersonates tenant, they should have full edit rights
+  const isTenantAdmin =
+    user?.role === 'tenant_admin' ||
+    user?.role === 'super_admin' ||
+    user?.isImpersonatingTenant === true;
 
   useEffect(() => {
     loadCompanyInfo();
@@ -219,7 +287,7 @@ export default function CompanySettings() {
       setFormData(data.companyInfo || {});
     } catch (error) {
       console.error('Failed to load company info:', error);
-      toast.error('Firma bilgileri yüklenemedi');
+      toast.error(t('companyInfoLoadFailed', 'Firma bilgileri yüklenemedi'));
     } finally {
       setLoading(false);
     }
@@ -232,20 +300,22 @@ export default function CompanySettings() {
 
   const handleSave = async () => {
     if (!isTenantAdmin) {
-      toast.error('Sadece Tenant Admin firma bilgilerini güncelleyebilir');
+      toast.error(t('onlyTenantAdminCanUpdate', 'Sadece Tenant Admin firma bilgilerini güncelleyebilir'));
       return;
     }
 
     try {
       setSaving(true);
+      console.log('💾 Saving company info:', formData);
       const updated = await companyService.updateCompanyInfo(formData);
+      console.log('✅ Company info saved:', updated);
       // setCompanyData(updated);
       setFormData(updated.companyInfo || {});
       setHasChanges(false);
-      toast.success('Firma bilgileri kaydedildi');
+      toast.success(t('companyInfoSaved', 'Firma bilgileri kaydedildi'));
     } catch (error: unknown) {
-      console.error('Failed to save company info:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Firma bilgileri kaydedilemedi';
+      console.error('❌ Failed to save company info:', error);
+      const errorMessage = error instanceof Error ? error.message : t('companyInfoSaveFailed', 'Firma bilgileri kaydedilemedi');
       toast.error(errorMessage);
     } finally {
       setSaving(false);
@@ -254,7 +324,7 @@ export default function CompanySettings() {
 
   const handleAssetUpload = async (type: 'logo' | 'stamp' | 'signature', file: File) => {
     if (!isTenantAdmin) {
-      toast.error('Sadece Tenant Admin dosya yükleyebilir');
+      toast.error(t('onlyTenantAdminCanUpload', 'Sadece Tenant Admin dosya yükleyebilir'));
       return;
     }
 
@@ -266,7 +336,7 @@ export default function CompanySettings() {
       toast.success(`${type === 'logo' ? 'Logo' : type === 'stamp' ? 'Kaşe' : 'İmza'} yüklendi`);
     } catch (error: unknown) {
       console.error(`Failed to upload ${type}:`, error);
-      const errorMessage = error instanceof Error ? error.message : 'Dosya yüklenemedi';
+      const errorMessage = error instanceof Error ? error.message : t('fileUploadFailed', 'Dosya yüklenemedi');
       toast.error(errorMessage);
     } finally {
       setUploadingAsset(null);
@@ -275,7 +345,7 @@ export default function CompanySettings() {
 
   const handleAssetDelete = async (type: 'logo' | 'stamp' | 'signature') => {
     if (!isTenantAdmin) {
-      toast.error('Sadece Tenant Admin dosya silebilir');
+      toast.error(t('onlyTenantAdminCanDelete', 'Sadece Tenant Admin dosya silebilir'));
       return;
     }
 
@@ -290,7 +360,7 @@ export default function CompanySettings() {
       toast.success(`${type === 'logo' ? 'Logo' : type === 'stamp' ? 'Kaşe' : 'İmza'} silindi`);
     } catch (error: unknown) {
       console.error(`Failed to delete ${type}:`, error);
-      const errorMessage = error instanceof Error ? error.message : 'Dosya silinemedi';
+      const errorMessage = error instanceof Error ? error.message : t('fileDeleteFailed', 'Dosya silinemedi');
       toast.error(errorMessage);
     } finally {
       setUploadingAsset(null);
@@ -299,334 +369,417 @@ export default function CompanySettings() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="p-12 flex flex-col items-center justify-center space-y-4">
+        <div className="relative">
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600" />
+          <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-indigo-100 dark:border-indigo-900/30 -z-10" />
+        </div>
+        <p className="text-muted-foreground animate-pulse font-medium">Firma Bilgileri Yükleniyor...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <Building2 className="w-7 h-7 text-indigo-600" />
-            Firma Ayarları
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Firma bilgilerinizi ve fatura görsellerini yönetin
-          </p>
-        </div>
-        {hasChanges && isTenantAdmin && (
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            loading={saving}
-            variant="primary"
-            className="flex items-center"
-          >
-            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-          </Button>
-        )}
-      </div>
+    <div className="pb-24 sm:pb-0 space-y-8">
+      {/* Dynamic Save Action Bar */}
+      {hasChanges && isTenantAdmin && (
+        <>
+          {/* Desktop Sticky Header */}
+          <div className="hidden sm:flex justify-between items-center p-4 sticky top-0 z-[60] glass-morphism rounded-2xl mb-6 shadow-xl border border-white/20 dark:border-white/5 backdrop-blur-xl">
+            <div className="flex items-center gap-3 pl-2">
+              <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-lg ring-4 ring-indigo-500/20">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900 dark:text-white">Kaydedilmemiş Değişiklikler</h4>
+                <p className="text-xs text-muted-foreground">Yaptığınız değişiklikler henüz kaydedilmedi.</p>
+              </div>
+            </div>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              loading={saving}
+              variant="primary"
+              className="flex items-center premium-gradient hover:scale-[1.02] active:scale-[0.98] transition-all px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-500/30 border-none"
+            >
+              {saving ? t('saving', 'Kaydediliyor...') : t('saveChanges', 'Değişiklikleri Kaydet')}
+            </Button>
+          </div>
+
+          {/* Mobile Bottom Floating Bar */}
+          <div className="sm:hidden fixed bottom-6 left-4 right-4 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
+            <div className="bg-gray-900/90 dark:bg-gray-800/95 backdrop-blur-xl rounded-3xl p-4 shadow-2xl shadow-black/40 border border-white/10">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-white font-bold text-sm">Değişiklikleri Kaydet</p>
+                  <p className="text-muted-foreground text-[10px]">Unutmadan firma bilgilerini güncelleyin.</p>
+                </div>
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  loading={saving}
+                  variant="primary"
+                  className="flex-shrink-0 !w-auto h-12 px-6 rounded-2xl premium-gradient border-none font-bold text-sm shadow-xl"
+                >
+                  {saving ? '...' : t('save', 'Kaydet')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {!isTenantAdmin && (
-        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
-          <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            Firma bilgilerini sadece Tenant Admin düzenleyebilir. Sadece görüntüleme modundasınız.
-          </p>
+        <div className="p-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-3xl flex items-start gap-4">
+          <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-2xl">
+            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <p className="font-bold text-amber-900 dark:text-amber-100 text-base">{t('viewMode', 'Görüntüleme Modu')}</p>
+            <p className="text-sm text-amber-700/80 dark:text-amber-300/80 mt-1">
+              Bu sayfadaki bilgileri düzenleme yetkiniz bulunmamaktadır.
+            </p>
+          </div>
         </div>
       )}
 
       {/* Company Assets Section */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Fatura Görselleri
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Bu görseller faturalarınızda ve PDF çıktılarında görüntülenecektir.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="space-y-6">
+        <div className="flex items-end justify-between px-2">
+          <div>
+            <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-100 tracking-tight">{t('invoiceImages', 'Fatura Görselleri')}</h2>
+            <p className="text-indigo-700/70 dark:text-indigo-300/70 font-medium">Logonuz, imzanız ve kaşeniz fatura tasarımında yer alır.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
           <AssetUpload
             type="logo"
             label="Firma Logosu"
-            description="Faturanın üst kısmında görünür"
+            description="Faturanın üst kısmında konumlanır"
             currentUrl={formData.logoUrl}
-            icon={<ImageIcon className="w-5 h-5" />}
+            icon={<ImageIcon />}
             onUpload={(file) => handleAssetUpload('logo', file)}
             onDelete={() => handleAssetDelete('logo')}
             isUploading={uploadingAsset === 'logo'}
+            disabled={!isTenantAdmin}
+            compact
           />
           <AssetUpload
             type="stamp"
-            label="Kaşe"
-            description="Faturanın alt kısmında görünür"
+            label="Resmi Kaşe"
+            description="E-Fatura alt onayı için gereklidir"
             currentUrl={formData.stampUrl}
-            icon={<Stamp className="w-5 h-5" />}
+            icon={<Stamp />}
             onUpload={(file) => handleAssetUpload('stamp', file)}
             onDelete={() => handleAssetDelete('stamp')}
             isUploading={uploadingAsset === 'stamp'}
+            disabled={!isTenantAdmin}
+            compact
           />
           <AssetUpload
             type="signature"
-            label="İmza"
-            description="Kaşe yanında görünür"
+            label="Yetkili İmzası"
+            description="Kaşe ile birlikte faturada görünür"
             currentUrl={formData.signatureUrl}
-            icon={<FileSignature className="w-5 h-5" />}
+            icon={<FileSignature />}
             onUpload={(file) => handleAssetUpload('signature', file)}
             onDelete={() => handleAssetDelete('signature')}
             isUploading={uploadingAsset === 'signature'}
+            disabled={!isTenantAdmin}
+            compact
           />
         </div>
-      </div>
+      </section>
 
-      {/* Company Info Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          Firma Bilgileri
-        </h2>
+      {/* Company Info Form - Professional Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Temel Bilgiler Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-border overflow-hidden premium-shadow flex flex-col">
+          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-border">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-indigo-900 dark:text-indigo-100 tracking-tight">Kurumsal Kimlik</h3>
+                <p className="text-sm text-muted-foreground font-medium">Unvan ve vergi mükellefiyeti</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-8 space-y-8 flex-1">
+            <Input
+              label="Resmi Firma Unvanı"
+              type="text"
+              value={formData.name || ''}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              disabled={!isTenantAdmin}
+              placeholder="Tam ticari unvanınızı girin"
+              fullWidth
+              className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+            />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-              Temel Bilgiler
-            </h3>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Firma Unvanı
-              </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <Input
+                label="Vergi Numarası (VKN)"
                 type="text"
-                value={formData.name || ''}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                value={formData.taxId || ''}
+                onChange={(e) => handleInputChange('taxId', e.target.value)}
                 disabled={!isTenantAdmin}
-                placeholder="Örnek Firma Ltd. Şti."
+                placeholder="10 Haneli VKN"
+                fullWidth
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 transition-all font-medium"
+              />
+              <Input
+                label="Vergi Dairesi"
+                type="text"
+                value={formData.taxOffice || ''}
+                onChange={(e) => handleInputChange('taxOffice', e.target.value)}
+                disabled={!isTenantAdmin}
+                placeholder="Daire ismini yazın"
+                fullWidth
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 transition-all font-medium"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* İletişim Bilgileri Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-border overflow-hidden premium-shadow flex flex-col">
+          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-border">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-sky-600 flex items-center justify-center text-white shadow-lg shadow-sky-600/20">
+                <FileSignature className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-sky-900 dark:text-sky-100 tracking-tight">İletişim Kanalları</h3>
+                <p className="text-sm text-muted-foreground font-medium">Müşteri ve resmi kurum iletişim bilgileri</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-8 space-y-6 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <Input
+                label="Telefon Numarası"
+                type="tel"
+                value={formData.phone || ''}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                disabled={!isTenantAdmin}
+                placeholder="+90 212 --- -- --"
+                fullWidth
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
+              />
+              <Input
+                label="Faks Numarası"
+                type="tel"
+                value={formData.fax || ''}
+                onChange={(e) => handleInputChange('fax', e.target.value)}
+                disabled={!isTenantAdmin}
+                placeholder="+90 212 --- -- --"
+                fullWidth
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  VKN / TCKN
-                </label>
-                <Input
-                  type="text"
-                  value={formData.taxId || ''}
-                  onChange={(e) => handleInputChange('taxId', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  placeholder="1234567890"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Vergi Dairesi
-                </label>
-                <Input
-                  type="text"
-                  value={formData.taxOffice || ''}
-                  onChange={(e) => handleInputChange('taxOffice', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  placeholder="Kadıköy V.D."
-                />
-              </div>
-            </div>
+            <Input
+              label="Resmi E-Posta Adresi"
+              type="email"
+              value={formData.email || ''}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              disabled={!isTenantAdmin}
+              placeholder="kurumsal@firma.com"
+              fullWidth
+              className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Adres
-              </label>
-              <Textarea
-                value={formData.address || ''}
-                onChange={(e) => handleInputChange('address', e.target.value)}
+            <Input
+              label="Web Sitesi"
+              type="url"
+              value={formData.website || ''}
+              onChange={(e) => handleInputChange('website', e.target.value)}
+              disabled={!isTenantAdmin}
+              placeholder="https://www.firmaniz.com"
+              fullWidth
+              className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
+            />
+          </div>
+        </div>
+
+        {/* Adres Bilgileri Card - Full Width Span */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-border overflow-hidden premium-shadow">
+          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-border">
+            <h3 className="text-xl font-black text-cyan-900 dark:text-cyan-100 tracking-tight">Merkez Adres</h3>
+            <p className="text-sm text-cyan-700/70 dark:text-cyan-300/70 font-medium">Operasyon merkezi ve yasal adres detayları</p>
+          </div>
+          <div className="p-8 space-y-8">
+            <Textarea
+              label="Açık Adres"
+              value={formData.address || ''}
+              onChange={(e) => handleInputChange('address', e.target.value)}
+              disabled={!isTenantAdmin}
+              rows={3}
+              placeholder="Mahalle, Sokak, No, Kat/Daire bilgilerini detaylıca girin..."
+              fullWidth
+              className="rounded-2xl bg-gray-50/50 border-border dark:bg-gray-900/50 focus:ring-4 focus:ring-indigo-500/10 font-medium"
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <Autocomplete
+                label="İl"
+                options={cityOptions}
+                value={cityOptions.find(c => c.value === formData.city) || null}
+                onChange={(option) => {
+                  handleInputChange('city', option?.value || '');
+                  setFormData(prev => ({ ...prev, district: '' }));
+                }}
+                placeholder="Şehir Seç"
+                allowClear
+                className="rounded-2xl h-14"
                 disabled={!isTenantAdmin}
-                rows={2}
-                placeholder="Cadde No: 123, Kat: 4"
+              />
+              <Autocomplete
+                label="İlçe"
+                options={districtOptions}
+                value={districtOptions.find((d) => d.value === formData.district) || null}
+                onChange={(option) => handleInputChange('district', option?.value || '')}
+                placeholder={formData.city ? 'İlçe Seç' : 'Önce İl Seçin'}
+                className="rounded-2xl h-14"
+                disabled={!isTenantAdmin || !formData.city}
+                allowClear
+              />
+              <Input
+                label="Posta Kodu"
+                type="text"
+                value={formData.postalCode || ''}
+                onChange={(e) => handleInputChange('postalCode', e.target.value)}
+                disabled={!isTenantAdmin}
+                placeholder="34000"
+                fullWidth
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
               />
             </div>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-3 gap-4">
+        {/* SGK & Finansal Bilgiler Grid */}
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
+          {/* SGK Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-indigo-100 dark:border-indigo-900/50 overflow-hidden premium-shadow ring-1 ring-indigo-500/10">
+            <div className="p-8 bg-indigo-50/50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-900/50">
+              <h3 className="text-xl font-black text-indigo-900 dark:text-indigo-100 tracking-tight">SGK Regülasyon</h3>
+              <p className="text-sm text-indigo-700/70 dark:text-indigo-300/70 font-medium">Medula faturası ve kurum onayı için gerekli</p>
+            </div>
+            <div className="p-8 space-y-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  İlçe
-                </label>
-                <Input
-                  type="text"
-                  value={formData.district || ''}
-                  onChange={(e) => handleInputChange('district', e.target.value)}
+                <label className="block text-sm font-bold text-foreground mb-2 ml-1">İşletme Tipi</label>
+                <select
+                  data-allow-raw="true"
+                  value={formData.companyType || ''}
+                  onChange={(e) => handleInputChange('companyType', e.target.value)}
                   disabled={!isTenantAdmin}
-                  placeholder="Kadıköy"
-                />
+                  className="w-full h-14 px-5 border border-border rounded-2xl bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none outline-none"
+                >
+                  <option value="">İşletme Tipini Belirleyin</option>
+                  <option value="hearing_center">İşitme Merkezi</option>
+                  <option value="pharmacy">Eczane</option>
+                  <option value="hospital">Hastane</option>
+                  <option value="optical">Optik</option>
+                  <option value="medical">Medikal</option>
+                  <option value="other">Diğer Ticari İşletme</option>
+                </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  İl
-                </label>
+
+              <div className="grid grid-cols-1 gap-6">
                 <Input
+                  label="SGK Mükellef Kodu"
                   type="text"
-                  value={formData.city || ''}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  value={formData.sgkMukellefKodu || ''}
+                  onChange={(e) => handleInputChange('sgkMukellefKodu', e.target.value)}
                   disabled={!isTenantAdmin}
-                  placeholder="İstanbul"
+                  placeholder="Resmi SGK Kodunuz"
+                  fullWidth
+                  className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Posta Kodu
-                </label>
                 <Input
+                  label="SGK Mükellef Adı (Kısa Unvan)"
                   type="text"
-                  value={formData.postalCode || ''}
-                  onChange={(e) => handleInputChange('postalCode', e.target.value)}
+                  value={formData.sgkMukellefAdi || ''}
+                  onChange={(e) => handleInputChange('sgkMukellefAdi', e.target.value)}
                   disabled={!isTenantAdmin}
-                  placeholder="34000"
+                  placeholder="Faturalarda görünecek isim"
+                  fullWidth
+                  className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
                 />
               </div>
             </div>
           </div>
 
-          {/* Contact & SGK Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-              İletişim ve SGK Bilgileri
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Telefon
-                </label>
-                <Input
-                  type="tel"
-                  value={formData.phone || ''}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  placeholder="0216 123 45 67"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Faks
-                </label>
-                <Input
-                  type="tel"
-                  value={formData.fax || ''}
-                  onChange={(e) => handleInputChange('fax', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  placeholder="0216 123 45 68"
-                />
-              </div>
+          {/* Banka Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-emerald-100 dark:border-emerald-900/50 overflow-hidden premium-shadow ring-1 ring-emerald-500/10">
+            <div className="p-8 bg-emerald-50/50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/50">
+              <h3 className="text-xl font-black text-emerald-900 dark:text-emerald-100 tracking-tight">Finansal Transfer</h3>
+              <p className="text-sm text-emerald-700/70 dark:text-emerald-300/70 font-medium">Havaleler için resmi banka hesap bilgileriniz</p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                E-posta
-              </label>
+            <div className="p-8 space-y-8">
               <Input
-                type="email"
-                value={formData.email || ''}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                label="Merkez Banka Adı"
+                type="text"
+                value={formData.bankName || ''}
+                onChange={(e) => handleInputChange('bankName', e.target.value)}
                 disabled={!isTenantAdmin}
-                placeholder="info@firma.com"
+                placeholder="Örn: Garanti BBVA, Ziraat Bankası"
+                fullWidth
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Web Sitesi
-              </label>
               <Input
-                type="url"
-                value={formData.website || ''}
-                onChange={(e) => handleInputChange('website', e.target.value)}
+                label="Resmi IBAN Adresi"
+                type="text"
+                value={formData.iban || ''}
+                onChange={(e) => handleInputChange('iban', e.target.value)}
                 disabled={!isTenantAdmin}
-                placeholder="https://www.firma.com"
+                placeholder="TR 00 --- --- ---"
+                fullWidth
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-bold font-mono tracking-wider"
               />
-            </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mb-3">
-                SGK Bilgileri
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    SGK Mükellef Kodu
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.sgkMukellefKodu || ''}
-                    onChange={(e) => handleInputChange('sgkMukellefKodu', e.target.value)}
-                    disabled={!isTenantAdmin}
-                    placeholder="1234567"
-                  />
+              <div className="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600">
+                  <CheckCircle className="w-5 h-5" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    SGK Mükellef Adı
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.sgkMukellefAdi || ''}
-                    onChange={(e) => handleInputChange('sgkMukellefAdi', e.target.value)}
-                    disabled={!isTenantAdmin}
-                    placeholder="Firma SGK Adı"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-3">
-                Banka Bilgileri
-              </h4>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Banka Adı
-                </label>
-                <Input
-                  type="text"
-                  value={formData.bankName || ''}
-                  onChange={(e) => handleInputChange('bankName', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  placeholder="Banka Adı"
-                />
-              </div>
-              <div className="mt-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  IBAN
-                </label>
-                <Input
-                  type="text"
-                  value={formData.iban || ''}
-                  onChange={(e) => handleInputChange('iban', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  className="font-mono"
-                  placeholder="TR00 0000 0000 0000 0000 0000 00"
-                />
+                <p className="text-xs text-emerald-800 dark:text-emerald-200 font-bold leading-tight">
+                  Bu hesap bilgileri düzenlediğiniz faturaların üzerinde otomatik olarak yer alır.
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Save Button (bottom) */}
+        {/* Action Button Segment */}
         {hasChanges && isTenantAdmin && (
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+          <div className="lg:col-span-2 mt-4 text-center">
             <Button
               onClick={handleSave}
               disabled={saving}
               loading={saving}
               variant="success"
-              className="flex items-center"
+              className="w-full sm:w-2/3 h-16 rounded-3xl premium-gradient border-none font-black text-lg shadow-2xl shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+              Değişiklikleri Güvenle Kaydet
             </Button>
           </div>
         )}
       </div>
+
+      {/* Language / Region Setting */}
+      <footer className="mt-12 bg-gray-900 dark:bg-gray-950 rounded-[2.5rem] p-10 flex flex-col sm:flex-row items-center justify-between gap-8 text-white shadow-2xl">
+        <div className="text-center sm:text-left">
+          <h2 className="text-2xl font-black mb-2">{t('regionalSettings', 'Bölgesel Ayarlar')}</h2>
+          <p className="text-muted-foreground font-medium font-medium">Uygulama dilini buradan güncelleyebilirsiniz.</p>
+        </div>
+        <div className="bg-card/10 backdrop-blur-md p-2 rounded-[2rem] w-full sm:w-auto">
+          <LanguageSwitcher className="!justify-center" />
+        </div>
+      </footer>
     </div>
   );
 }

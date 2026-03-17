@@ -1,0 +1,499 @@
+{
+  "generated_at": "2026-03-09T14:18:38.855247",
+  "results": [
+    {
+      "test": "SATIS (Temel)",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026661411278",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055010.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026661411278",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=914bc6d7-e5ed-4a63-88be-180ae165bed2.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "SATIS (Ticari)",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026974323152",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055015.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026974323152",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=19f315fd-c442-4481-a346-5ec8ae6da749.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "IADE",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026263327083",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_IADE_1773055021.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026263327083",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=c82a2673-9117-420a-9c34-05be88eb48c8.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "TEVKIFAT",
+      "status": "SUCCESS",
+      "invoiceNo": "TEV2026007524669",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_TEVKIFAT_1773055029.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": true,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TEV2026007524669",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=12-31-2025&guid=32f6a929-15c7-4bde-9c35-9cedf118cd27.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "ISTISNA",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026401518607",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_ISTISNA_1773055036.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": true,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026401518607",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=596b8a78-4cda-43ef-a782-2bfa9f023680.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "IHRACAT",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026324967497",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_IHRACAT_1773055041.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": true,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026324967497",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=a03d206b-758c-4ce6-a2fa-da6399802417.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "OZELMATRAH",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026161604244",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_OZELMATRAH_1773055046.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026161604244",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=864078bf-410a-4c32-ad2b-98dcab06dc4a.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "SGK",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026930249869",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SGK_1773055053.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": false,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026930249869",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=5ed56f00-5e04-480b-9cfa-7c734b8b7571.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "TEVKIFAT (18)",
+      "status": "SUCCESS",
+      "invoiceNo": "TEV2026873255268",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_TEVKIFAT_1773055060.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": true,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TEV2026873255268",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=12-31-2025&guid=64a75490-e583-4edd-93c5-ac0d86457ead.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "IHRACKAYITLI (27)",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026402537250",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_IHRACKAYITLI_1773055066.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": true,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026402537250",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=4cd2dc36-e83c-46d1-816b-8153db48f7b9.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "EARSIV",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026437365450",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055071.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026437365450",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=5a74fc75-fb01-40ee-b965-7116b249d76d.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "HKS",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026604478423",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055076.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026604478423",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=f2a42daa-fa27-42a6-91f0-bc25c19b4294.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "SARJ",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026676051612",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SARJ_1773055080.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026676051612",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=9929032f-12d0-48a2-98dc-d11dcad706cc.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "YOLCU BERABERI",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026138104358",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055086.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026138104358",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=73e236d8-3902-4d47-812e-915524662e7f.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "SEVK",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026185885548",
+      "message": "Doküman alındı ve kaydedildi. GİB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SEVK_1773055092.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": true,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026185885548",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=2&tarih=03-09-2026&guid=115ba16a-dc6e-473a-9e1e-a502aa1518d5.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve kaydedildi. GİB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "SARJANLIK",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026316191826",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SARJANLIK_1773055096.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026316191826",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=9f967720-0c52-46a8-a36a-893c3fe23034.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "OTV",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026081253207",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055100.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026081253207",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=9fefbade-9b30-4384-b26a-b6f7a9001146.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "HASTANE",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026466777207",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055105.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026466777207",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=037fc758-e014-4056-bfd6-083c21212003.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "TIBBI CIHAZ",
+      "status": "SUCCESS",
+      "invoiceNo": "TST2026079566584",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1773055111.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": true,
+        "has_delivery": false,
+        "has_medical_refs": true
+      },
+      "provider_result": {
+        "invoiceNo": "TST2026079566584",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-09-2026&guid=2add99b5-1f65-4f4f-ae52-8c0d322f2108.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    }
+  ]
+}

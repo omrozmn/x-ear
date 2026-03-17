@@ -1,7 +1,5 @@
-import json
 from app import app
 from models.inventory import InventoryItem
-from .conftest import db_session
 from models.base import db
 
 

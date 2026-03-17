@@ -363,7 +363,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
       name: field.id,
       value: fieldValue,
       disabled,
-      className: `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${hasError ? 'border-red-500' : 'border-gray-300'
+      className: `w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring ${hasError ? 'border-red-500' : 'border-border'
         }`,
       placeholder: field.placeholder,
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -417,7 +417,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
             name={field.id}
             checked={!!fieldValue}
             disabled={disabled}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-primary bg-muted border-border rounded focus:ring-ring"
             onChange={(e) => handleFieldChange(section.name, field.id, e.target.checked)}
           />
         );
@@ -434,15 +434,15 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
 
     return (
       <div key={field.id} className="mb-4">
-        <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={field.id} className="block text-sm font-medium text-foreground mb-1">
           {field.label}
-          {field.required && <span className="text-red-500 ml-1">*</span>}
+          {field.required && <span className="text-destructive ml-1">*</span>}
         </label>
 
         {field.type === 'checkbox' ? (
           <div className="flex items-center">
             {fieldElement}
-            <label htmlFor={field.id} className="ml-2 text-sm text-gray-700">
+            <label htmlFor={field.id} className="ml-2 text-sm text-foreground">
               {field.label}
             </label>
           </div>
@@ -451,11 +451,11 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         )}
 
         {field.helpText && (
-          <p className="mt-1 text-xs text-gray-500">{field.helpText}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{field.helpText}</p>
         )}
 
         {hasError && (
-          <p className="mt-1 text-xs text-red-500">{errors[fieldKey]}</p>
+          <p className="mt-1 text-xs text-destructive">{errors[fieldKey]}</p>
         )}
       </div>
     );
@@ -476,11 +476,11 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className={`space-y-6 ${className}`}>
       {/* Invoice Type Selection */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Fatura Tipi</h3>
+      <div className="bg-card p-6 rounded-2xl shadow-sm border">
+        <h3 className="text-lg font-medium text-foreground mb-4">Fatura Tipi</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Object.entries(INVOICE_FORM_SCHEMA.invoiceTypes).map(([key, config]) => (
-            <label key={key} className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <label key={key} className="flex items-center p-3 border rounded-2xl cursor-pointer hover:bg-muted">
               <Input
                 type="radio"
                 name="invoiceType"
@@ -488,12 +488,12 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
                 checked={formData.invoiceType === key}
                 onChange={(e) => handleInvoiceTypeChange(e.target.value)}
                 disabled={disabled}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-primary bg-muted border-border focus:ring-ring"
               />
               <div className="ml-3">
-                <div className="text-sm font-medium text-gray-900">{config.name}</div>
+                <div className="text-sm font-medium text-foreground">{config.name}</div>
                 {config.description && (
-                  <div className="text-xs text-gray-500">{config.description}</div>
+                  <div className="text-xs text-muted-foreground">{config.description}</div>
                 )}
               </div>
             </label>
@@ -501,13 +501,13 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         </div>
       </div>
       {/* Scenario Selection */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Senaryo</h3>
+      <div className="bg-card p-6 rounded-2xl shadow-sm border">
+        <h3 className="text-lg font-medium text-foreground mb-4">Senaryo</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(INVOICE_FORM_SCHEMA.scenarios)
             .filter(([, scenario]) => scenario.applicableTypes.includes(formData.invoiceType))
             .map(([key, scenario]) => (
-              <label key={key} className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+              <label key={key} className="flex items-center p-3 border rounded-2xl cursor-pointer hover:bg-muted">
                 <Input
                   type="radio"
                   name="scenario"
@@ -515,12 +515,12 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
                   checked={formData.scenario === key}
                   onChange={(e) => handleFieldChange('', 'scenario', e.target.value)}
                   disabled={disabled}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                  className="w-4 h-4 text-primary bg-muted border-border focus:ring-ring"
                 />
                 <div className="ml-3">
-                  <div className="text-sm font-medium text-gray-900">{scenario.name}</div>
+                  <div className="text-sm font-medium text-foreground">{scenario.name}</div>
                   {scenario.description && (
-                    <div className="text-xs text-gray-500">{scenario.description}</div>
+                    <div className="text-xs text-muted-foreground">{scenario.description}</div>
                   )}
                 </div>
               </label>
@@ -529,47 +529,47 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
       </div>
       {/* Dynamic Sections */}
       {visibleSections.map(section => (
-        <div key={section.name} className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">{section.title}</h3>
+        <div key={section.name} className="bg-card p-6 rounded-2xl shadow-sm border">
+          <h3 className="text-lg font-medium text-foreground mb-4">{section.title}</h3>
           {section.description && (
-            <p className="text-sm text-gray-600 mb-4">{section.description}</p>
+            <p className="text-sm text-muted-foreground mb-4">{section.description}</p>
           )}
 
           {section.name === 'items' ? (
             // Special handling for items section
             (<div className="space-y-4">
               {items.map((item, index) => (
-                <div key={item.id} className="p-4 border rounded-lg bg-gray-50">
+                <div key={item.id} className="p-4 border rounded-2xl bg-muted">
                   <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Açıklama <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Açıklama <span className="text-destructive">*</span>
                       </label>
                       <Input
                         type="text"
                         value={item.description}
                         onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Ürün/hizmet açıklaması"
                         disabled={disabled}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Miktar <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Miktar <span className="text-destructive">*</span>
                       </label>
                       <Input
                         type="number"
                         min="1"
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 1)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                         disabled={disabled}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Birim Fiyat <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Birim Fiyat <span className="text-destructive">*</span>
                       </label>
                       <Input
                         type="number"
@@ -577,7 +577,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
                         step="0.01"
                         value={item.unitPrice}
                         onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                         disabled={disabled}
                       />
                     </div>
@@ -598,10 +598,10 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
                     </div>
                     <div className="flex items-end">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-foreground mb-1">
                           Toplam
                         </label>
-                        <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-right">
+                        <div className="px-3 py-2 bg-muted border border-border rounded-xl text-right">
                           {InvoiceValidationUtils.formatTurkishCurrency(item.total)}
                         </div>
                       </div>
@@ -609,7 +609,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
                         <Button
                           type="button"
                           onClick={() => removeItem(index)}
-                          className="ml-2 p-2 text-red-600 hover:text-red-800 focus:outline-none"
+                          className="ml-2 p-2 text-destructive hover:text-red-800 focus:outline-none"
                           disabled={disabled}
                           variant='default'>
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -624,16 +624,16 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
               <Button
                 type="button"
                 onClick={addItem}
-                className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 border-2 border-dashed border-border rounded-2xl text-muted-foreground hover:border-gray-400 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={disabled}
                 variant='default'>
                 + Yeni Kalem Ekle
               </Button>
               {errors.items && (
-                <p className="text-sm text-red-500">{errors.items}</p>
+                <p className="text-sm text-destructive">{errors.items}</p>
               )}
               {/* Totals */}
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <div className="mt-6 p-4 bg-muted rounded-2xl">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Ara Toplam:</span>
@@ -663,7 +663,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         <Button
           type="submit"
           disabled={disabled || Object.keys(errors).length > 0}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
           variant='default'>
           Fatura Oluştur
         </Button>

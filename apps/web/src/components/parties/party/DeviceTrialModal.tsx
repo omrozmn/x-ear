@@ -366,14 +366,14 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
     <Modal open={open} onClose={onClose} title={trial ? 'Deneme Düzenle' : 'Yeni Deneme Başlat'}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Device Information */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+        <div className="bg-muted p-4 rounded-2xl">
+          <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
             <FileText className="w-4 h-4 mr-2" />
             Cihaz Bilgileri
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Marka *
               </label>
               <Input
@@ -385,7 +385,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Model *
               </label>
               <Input
@@ -397,7 +397,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Seri Numarası
               </label>
               <Input
@@ -411,14 +411,14 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
         </div>
 
         {/* Trial Period */}
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+        <div className="bg-primary/10 p-4 rounded-2xl">
+          <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
             Deneme Süresi
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Başlangıç Tarihi *
               </label>
               <Input
@@ -430,7 +430,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Bitiş Tarihi *
               </label>
               <Input
@@ -443,7 +443,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
             </div>
             {formData.status === 'active' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Uzatma Tarihi
                 </label>
                 <Input
@@ -457,7 +457,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
             )}
           </div>
           {getTrialDuration() > 0 && (
-            <div className="mt-3 p-2 bg-blue-100 rounded text-sm text-blue-800">
+            <div className="mt-3 p-2 bg-primary/10 rounded text-sm text-blue-800">
               <Clock className="w-4 h-4 inline mr-1" />
               Deneme süresi: {getTrialDuration()} gün
             </div>
@@ -465,14 +465,14 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
         </div>
 
         {/* Pricing */}
-        <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+        <div className="bg-success/10 p-4 rounded-2xl">
+          <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
             <DollarSign className="w-4 h-4 mr-2" />
             Fiyatlandırma
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Deneme Ücreti (₺)
               </label>
               <Input
@@ -487,7 +487,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 SGK Şeması
               </label>
               <Select
@@ -509,7 +509,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 İndirim Türü
               </label>
               <Select
@@ -524,7 +524,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 İndirim Değeri
               </label>
               <Input
@@ -542,34 +542,34 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
           </div>
           
           {/* Net Price Display */}
-          <div className="mt-4 p-3 bg-white rounded border">
+          <div className="mt-4 p-3 bg-card rounded border">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Deneme Ücreti:</span>
+                <span className="text-sm text-muted-foreground">Deneme Ücreti:</span>
                 <span className="text-sm">₺{formData.trialPrice?.toFixed(2) || '0.00'}</span>
               </div>
               {formData.discountType !== 'none' && (formData.discountValue || 0) > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-muted-foreground">
                     İndirim ({formData.discountType === 'percentage' ? `${formData.discountValue}%` : `₺${formData.discountValue?.toFixed(2)}`}):
                   </span>
-                  <span className="text-sm text-red-600">
+                  <span className="text-sm text-destructive">
                     -₺{(formData.trialPrice || 0) - calculateNetTrialPrice() + getSGKSupportAmount(formData.sgkScheme).toFixed(2)}
                   </span>
                 </div>
               )}
               {getSGKSupportAmount(formData.sgkScheme) > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">SGK Desteği:</span>
-                  <span className="text-sm text-green-600">
+                  <span className="text-sm text-muted-foreground">SGK Desteği:</span>
+                  <span className="text-sm text-success">
                     -₺{getSGKSupportAmount(formData.sgkScheme).toFixed(2)}
                   </span>
                 </div>
               )}
-              <hr className="border-gray-200" />
+              <hr className="border-border" />
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Net Ödenecek:</span>
-                <span className="text-lg font-bold text-green-600">
+                <span className="text-sm font-medium text-foreground">Net Ödenecek:</span>
+                <span className="text-lg font-bold text-success">
                   ₺{calculateNetTrialPrice().toFixed(2)}
                 </span>
               </div>
@@ -579,24 +579,24 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
 
         {/* Trial Extensions */}
         {formData.extensions && formData.extensions.length > 0 && (
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+          <div className="bg-orange-50 p-4 rounded-2xl">
+            <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
               <RotateCcw className="w-4 h-4 mr-2" />
               Deneme Uzatmaları
             </h3>
             <div className="space-y-2">
               {formData.extensions.map((extension, index) => (
-                <div key={extension.id} className="bg-white p-3 rounded border">
+                <div key={extension.id} className="bg-card p-3 rounded border">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         Uzatma {index + 1}: {extension.extendedFrom} → {extension.extendedTo}
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">
+                      <div className="text-sm text-muted-foreground mt-1">
                         Sebep: {extension.reason}
                       </div>
                       {extension.notes && (
-                        <div className="text-sm text-gray-500 mt-1">
+                        <div className="text-sm text-muted-foreground mt-1">
                           Not: {extension.notes}
                         </div>
                       )}
@@ -610,9 +610,9 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
 
         {/* Add Extension Form */}
         {formData.status === 'active' && (
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-primary/10 p-4 rounded-2xl">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-900 flex items-center">
+              <h3 className="text-sm font-medium text-foreground flex items-center">
                 <Plus className="w-4 h-4 mr-2" />
                 Deneme Uzatma
               </h3>
@@ -630,7 +630,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Yeni Bitiş Tarihi *
                     </label>
                     <Input
@@ -642,7 +642,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Uzatma Sebebi *
                     </label>
                     <Select
@@ -661,7 +661,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Notlar
                   </label>
                   <Textarea
@@ -673,7 +673,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
                   />
                 </div>
                 {errors.extension && (
-                  <p className="text-sm text-red-600">{errors.extension}</p>
+                  <p className="text-sm text-destructive">{errors.extension}</p>
                 )}
                 <div className="flex justify-end">
                   <Button
@@ -691,33 +691,33 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
         )}
 
         {/* Trial Summary */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+        <div className="bg-muted p-4 rounded-2xl">
+          <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
             <TrendingUp className="w-4 h-4 mr-2" />
             Deneme Özeti
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-            <div className="bg-white p-3 rounded border">
-              <div className="text-2xl font-bold text-blue-600">{getTrialDuration()}</div>
-              <div className="text-sm text-gray-600">Toplam Gün</div>
+            <div className="bg-card p-3 rounded border">
+              <div className="text-2xl font-bold text-primary">{getTrialDuration()}</div>
+              <div className="text-sm text-muted-foreground">Toplam Gün</div>
             </div>
-            <div className="bg-white p-3 rounded border">
-              <div className={`text-2xl font-bold ${getDaysRemaining() > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="bg-card p-3 rounded border">
+              <div className={`text-2xl font-bold ${getDaysRemaining() > 0 ? 'text-success' : 'text-destructive'}`}>
                 {getDaysRemaining()}
               </div>
-              <div className="text-sm text-gray-600">Kalan Gün</div>
+              <div className="text-sm text-muted-foreground">Kalan Gün</div>
             </div>
-            <div className="bg-white p-3 rounded border">
+            <div className="bg-card p-3 rounded border">
               <div className="text-2xl font-bold text-purple-600">{formData.extensions?.length || 0}</div>
-              <div className="text-sm text-gray-600">Uzatma</div>
+              <div className="text-sm text-muted-foreground">Uzatma</div>
             </div>
-            <div className="bg-white p-3 rounded border">
-              <div className="text-2xl font-bold text-green-600">₺{getSGKSupportAmount(formData.sgkScheme).toFixed(2)}</div>
-              <div className="text-sm text-gray-600">SGK Desteği</div>
+            <div className="bg-card p-3 rounded border">
+              <div className="text-2xl font-bold text-success">₺{getSGKSupportAmount(formData.sgkScheme).toFixed(2)}</div>
+              <div className="text-sm text-muted-foreground">SGK Desteği</div>
             </div>
-            <div className="bg-white p-3 rounded border">
-              <div className="text-2xl font-bold text-green-600">₺{calculateNetTrialPrice().toFixed(2)}</div>
-              <div className="text-sm text-gray-600">Net Ödeme</div>
+            <div className="bg-card p-3 rounded border">
+              <div className="text-2xl font-bold text-success">₺{calculateNetTrialPrice().toFixed(2)}</div>
+              <div className="text-sm text-muted-foreground">Net Ödeme</div>
             </div>
           </div>
         </div>
@@ -761,7 +761,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Notlar
           </label>
           <Textarea
@@ -775,10 +775,10 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
 
         {/* Error Display */}
         {errors.submit && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <div className="p-3 bg-destructive/10 border border-red-200 rounded-xl">
             <div className="flex items-center">
-              <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
-              <span className="text-sm text-red-700">{errors.submit}</span>
+              <AlertCircle className="w-4 h-4 text-destructive mr-2" />
+              <span className="text-sm text-destructive">{errors.submit}</span>
             </div>
           </div>
         )}

@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers/test-utils';
+import { login } from '../../helpers/auth.helper';
 
 test('Simple Login Test', async ({ request }) => {
     console.log('Starting simple login test...');
     try {
-        const tokens = await login(request, '+905551234567', '123456');
+        const tokens = await login(request, 'admin@x-ear.com', 'password123');
         console.log('Login successful!', tokens);
         expect(tokens.accessToken).toBeTruthy();
     } catch (e) {

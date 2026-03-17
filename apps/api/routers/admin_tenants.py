@@ -3,7 +3,7 @@ FastAPI Admin Tenants Router - Migrated from Flask routes/admin_tenants.py
 Handles tenant/organization management for admin panel
 """
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional, List, Dict, Any
+from typing import Optional
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 import logging
@@ -13,17 +13,17 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from schemas.base import ResponseEnvelope
-from models.admin_user import AdminUser
 from models.tenant import Tenant, TenantStatus
 from models.user import User
 from models.plan import Plan
-from models.plan import Plan
 from models.addon import AddOn
 from schemas.tenants import TenantCreate, TenantUpdate, TenantRead, TenantStatus
-from schemas.users import UserRead, UserListResponse, UserResponse
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from schemas.users import UserListResponse, UserResponse
+from middleware.unified_access import UnifiedAccess, require_admin
+from core.dependencies import get_current_admin_user
 from database import get_db
 from core.models.enums import ProductCode
+from core.models.country import Country
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,8 @@ class UpdateDocumentStatusRequest(BaseModel):
 @router.get("", operation_id="listAdminTenants")
 def list_tenants(
     page: int = 1,
-    limit: int = 20,
+    perPage: int = 20,  # Changed from 'limit' to match frontend convention
+    limit: Optional[int] = None,  # Keep for backward compatibility
     status: str = "",
     search: str = "",
     product_code: Optional[ProductCode] = None,
@@ -80,6 +81,9 @@ def list_tenants(
 ):
     """List all tenants"""
     try:
+        # Use perPage if provided, otherwise fall back to limit
+        page_size = perPage if perPage else (limit if limit else 20)
+        
         query = db_session.query(Tenant).filter(Tenant.deleted_at.is_(None))
         
         if status:
@@ -89,12 +93,13 @@ def list_tenants(
         if search:
             query = query.filter(
                 (Tenant.name.ilike(f'%{search}%')) |
-                (Tenant.owner_email.ilike(f'%{search}%'))
+                (Tenant.owner_email.ilike(f'%{search}%')) |
+                (Tenant.billing_email.ilike(f'%{search}%'))
             )
         
         query = query.order_by(Tenant.created_at.desc())
         total = query.count()
-        tenants = query.offset((page - 1) * limit).limit(limit).all()
+        tenants = query.offset((page - 1) * page_size).limit(page_size).all()
         
         # Get user counts
         tenant_ids = [t.id for t in tenants]
@@ -114,7 +119,7 @@ def list_tenants(
         
         return ResponseEnvelope(data={
             "tenants": tenants_list,
-            "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
+            "pagination": {"page": page, "perPage": page_size, "total": total, "totalPages": (total + page_size - 1) // page_size}
         })
     except Exception as e:
         logger.error(f"List tenants error: {e}")
@@ -124,26 +129,60 @@ def list_tenants(
 def create_tenant(
     request_data: TenantCreate,
     db_session: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_admin())
+    admin_user=Depends(get_current_admin_user)
 ):
     """Create tenant"""
     try:
+        # Country validation
+        country_code = getattr(request_data, 'country_code', None) or 'TR'
+        country = db_session.get(Country, country_code)
+        if country and not (country.enabled and country.creatable):
+            raise HTTPException(
+                status_code=400,
+                detail={"message": f"Country '{country_code}' is not available for new tenants", "code": "COUNTRY_NOT_AVAILABLE"}
+            )
+
         tenant = Tenant(
             id=str(uuid.uuid4()),
             name=request_data.name,
             slug=request_data.slug or Tenant.generate_slug(request_data.name),
             description=request_data.description,
             owner_email=request_data.owner_email,
-            billing_email=request_data.billing_email or request_data.owner_email,
+            billing_email=request_data.billing_email or request_data.owner_email or request_data.email or "billing@example.com",
             status=getattr(request_data.status, 'value', request_data.status) if request_data.status else TenantStatus.TRIAL.value,
             current_plan=request_data.current_plan,
             max_users=request_data.max_users,
             current_users=request_data.current_users,
             company_info=request_data.company_info,
             settings=request_data.settings,
-            product_code=getattr(request_data.product_code, 'value', request_data.product_code) if request_data.product_code else ProductCode.XEAR_HEARING.value
+            product_code=getattr(request_data.product_code, 'value', request_data.product_code) if request_data.product_code else ProductCode.XEAR_HEARING.value,
+            country_code=country_code,
         )
         db_session.add(tenant)
+        db_session.flush()
+
+        # Auto-create tenant admin user from owner_email
+        owner_email = request_data.owner_email or request_data.email
+        if owner_email:
+            existing_user = db_session.query(User).filter_by(email=owner_email).first()
+            if not existing_user:
+                import secrets
+                tenant_admin = User(
+                    email=owner_email,
+                    username=owner_email.split('@')[0],
+                    first_name=request_data.name,
+                    last_name="Admin",
+                    role="tenant_admin",
+                    tenant_id=tenant.id,
+                    is_active=True,
+                )
+                # Generate a random initial password - tenant admin should reset via email
+                tenant_admin.set_password(secrets.token_urlsafe(16))
+                db_session.add(tenant_admin)
+                tenant.current_users = 1
+            else:
+                logger.info(f"User with email {owner_email} already exists, skipping auto-creation")
+
         db_session.commit()
         db_session.refresh(tenant)
 
@@ -154,7 +193,7 @@ def create_tenant(
         logger.error(f"Create tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{tenant_id}", operation_id="getAdminTenant")
+@router.get("/{tenant_id}", operation_id="getAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def get_tenant(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -165,7 +204,7 @@ def get_tenant(
     if not tenant or tenant.deleted_at:
         raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
     # Use Pydantic schema for type-safe serialization (NO to_dict())
-    return ResponseEnvelope(data={"tenant": TenantRead.model_validate(tenant).model_dump(by_alias=True)})
+    return ResponseEnvelope(data=TenantRead.model_validate(tenant).model_dump(by_alias=True))
 
 @router.put("/{tenant_id}", operation_id="updateAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def update_tenant(
@@ -219,20 +258,36 @@ def delete_tenant(
         logger.error(f"Delete tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers", response_model=ResponseEnvelope[UserListResponse])
+@router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers")
 def get_tenant_users(
     tenant_id: str,
+    page: int = 1,
+    limit: int = 10,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
-    """Get users for a specific tenant"""
+    """Get users for a specific tenant with server-side pagination"""
     tenant = db_session.get(Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
-    
-    users = db_session.query(User).filter_by(tenant_id=tenant_id).all()
-    
-    return ResponseEnvelope(data=UserListResponse(users=users))
+
+    query = db_session.query(User).filter_by(tenant_id=tenant_id).order_by(User.created_at.desc())
+    total = query.count()
+    users = query.offset((page - 1) * limit).limit(limit).all()
+
+    from schemas.users import UserRead as UserReadSchema
+    users_data = [UserReadSchema.model_validate(u).model_dump(by_alias=True) for u in users]
+
+    return ResponseEnvelope(data={
+        "users": users_data,
+        "total": total,
+        "pagination": {
+            "page": page,
+            "perPage": limit,
+            "total": total,
+            "totalPages": (total + limit - 1) // limit
+        }
+    })
 
 @router.post("/{tenant_id}/users", operation_id="createAdminTenantUsers", response_model=ResponseEnvelope[UserResponse])
 def create_tenant_user(
@@ -570,9 +625,7 @@ def get_tenant_sms_documents(
         logger.error(f"Get tenant SMS documents error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-from fastapi.responses import Response
 import os
-
 @router.get("/{tenant_id}/sms-documents/{document_type}/download", operation_id="listAdminTenantSmsDocumentDownload")
 def download_tenant_sms_document(
     tenant_id: str,
@@ -672,15 +725,14 @@ def update_tenant_sms_document_status(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/{tenant_id}/sms-documents/send-email", operation_id="createAdminTenantSmsDocumentSendEmail")
-def send_tenant_sms_documents_email(
+async def send_tenant_sms_documents_email(
     tenant_id: str,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
     """Send all approved SMS documents via email - Flask parity"""
     try:
-        from models.sms_integration import SMSProviderConfig
-        from services.email_service import email_service
+        from core.models.sms_integration import SMSProviderConfig
         
         tenant = db_session.get(Tenant, tenant_id)
         if not tenant or tenant.deleted_at:
@@ -702,10 +754,40 @@ def send_tenant_sms_documents_email(
         
         # Prepare email body
         subject = f"SMS Başvuru Belgeleri - {tenant.name}"
-        body = f"""
+        body_html = f"""
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <h2>SMS Başvuru Belgeleri</h2>
+    <p>Merhaba,</p>
+    <p><strong>{tenant.name}</strong> firması için SMS başvuru belgelerini aşağıda bulabilirsiniz.</p>
+    
+    <h3>Firma Bilgileri:</h3>
+    <ul>
+        <li><strong>Firma Adı:</strong> {tenant.name}</li>
+        <li><strong>Yönetici Email:</strong> {tenant.owner_email}</li>
+        <li><strong>API Username:</strong> {config.api_username}</li>
+    </ul>
+    
+    <h3>Belgeler:</h3>
+    <ul>
+"""
+        for doc in docs:
+            body_html += f"        <li>{doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})</li>\n"
+        
+        body_html += """
+    </ul>
+    
+    <p>İyi çalışmalar.</p>
+</body>
+</html>
+"""
+        
+        body_text = f"""
+SMS Başvuru Belgeleri
+
 Merhaba,
 
-{tenant.name} firması için SMS başvuru belgelerini ekte bulabilirsiniz.
+{tenant.name} firması için SMS başvuru belgelerini aşağıda bulabilirsiniz.
 
 Firma Bilgileri:
 - Firma Adı: {tenant.name}
@@ -715,11 +797,11 @@ Firma Bilgileri:
 Belgeler:
 """
         for doc in docs:
-            body += f"\n- {doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})"
+            body_text += f"- {doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})\n"
         
-        body += "\n\nİyi çalışmalar."
+        body_text += "\nİyi çalışmalar."
         
-        # Send email
+        # Send email using SMTP directly (simpler for admin operations)
         is_dev = os.getenv('ENVIRONMENT', 'production') == 'development'
         
         if is_dev:
@@ -730,7 +812,7 @@ Belgeler:
             logger.info(f"To: {config.documents_email}")
             logger.info(f"Subject: {subject}")
             logger.info("-" * 80)
-            logger.info(f"Body: {body}")
+            logger.info(f"Body: {body_text}")
             logger.info("=" * 80)
             
             return ResponseEnvelope(data={
@@ -740,26 +822,134 @@ Belgeler:
                 'attachments': len(docs)
             })
         else:
-            # Production mode - send real email
-            success = email_service.send_email(
-                to=config.documents_email,
-                subject=subject,
-                body_html=f"<html><body><pre>{body}</pre></body></html>",
-                body_text=body
-            )
+            # Production mode - send real email via SMTP
+            from services.email_service import get_email_service
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.text import MIMEText
+            from email.utils import formatdate, make_msgid
+            import aiosmtplib
             
-            if success:
-                logger.info(f"SMS documents email sent to {config.documents_email} for tenant {tenant_id}")
-                return ResponseEnvelope(data={
-                    'message': 'E-posta başarıyla gönderildi',
-                    'simulated': False,
-                    'recipient': config.documents_email,
-                    'attachments': len(docs)
-                })
-            else:
-                raise HTTPException(status_code=500, detail={"message": "E-posta gönderilemedi", "code": "MAIL_FAILED"})
+            email_service = get_email_service(db_session)
+            
+            # Get SMTP config for tenant
+            smtp_config = email_service.smtp_config_service.get_config_with_decrypted_password(tenant_id)
+            
+            # Create message
+            message = MIMEMultipart("alternative")
+            message["From"] = f"{smtp_config['from_name']} <{smtp_config['from_email']}>"
+            message["To"] = config.documents_email
+            message["Subject"] = subject
+            message["Date"] = formatdate(localtime=True)
+            message["Message-ID"] = make_msgid()
+            
+            message.attach(MIMEText(body_text, "plain", "utf-8"))
+            message.attach(MIMEText(body_html, "html", "utf-8"))
+            
+            # Send via SMTP
+            async with aiosmtplib.SMTP(
+                hostname=smtp_config["host"],
+                port=smtp_config["port"],
+                use_tls=smtp_config["use_ssl"],
+                timeout=smtp_config["timeout"]
+            ) as smtp:
+                if smtp_config["use_tls"] and not smtp_config["use_ssl"]:
+                    await smtp.starttls()
+                
+                await smtp.login(smtp_config["username"], smtp_config["password"])
+                await smtp.send_message(message)
+            
+            logger.info(f"SMS documents email sent to {config.documents_email} for tenant {tenant_id}")
+            return ResponseEnvelope(data={
+                'message': 'E-posta başarıyla gönderildi',
+                'simulated': False,
+                'recipient': config.documents_email,
+                'attachments': len(docs)
+            })
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Send SMS documents email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Party Management (Tenant-specific) ---
+
+@router.get("/{tenant_id}/parties", operation_id="listAdminTenantParties")
+def list_tenant_parties(
+    tenant_id: str,
+    page: int = 1,
+    per_page: int = 50,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """List parties for a specific tenant (admin operation)"""
+    try:
+        logger.info(f"[ADMIN_TENANTS] list_tenant_parties called: tenant_id={tenant_id}, page={page}, per_page={per_page}")
+        from schemas.parties import PartyRead
+        from core.models.party import Party
+        
+        # Verify tenant exists
+        tenant = db_session.get(Tenant, tenant_id)
+        if not tenant or tenant.deleted_at:
+            logger.warning(f"[ADMIN_TENANTS] Tenant not found: {tenant_id}")
+            raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
+        
+        logger.info(f"[ADMIN_TENANTS] Tenant found: {tenant.name}")
+        query = db_session.query(Party).filter_by(tenant_id=tenant_id).order_by(Party.created_at.desc())
+        total = query.count()
+        logger.info(f"[ADMIN_TENANTS] Found {total} parties for tenant {tenant_id}")
+        parties = query.offset((page - 1) * per_page).limit(per_page).all()
+        
+        parties_data = [PartyRead.model_validate(p).model_dump(by_alias=True) for p in parties]
+        
+        logger.info(f"[ADMIN_TENANTS] Returning {len(parties_data)} parties")
+        return ResponseEnvelope(data={
+            "parties": parties_data,
+            "pagination": {
+                "page": page,
+                "perPage": per_page,
+                "total": total,
+                "totalPages": (total + per_page - 1) // per_page
+            }
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[ADMIN_TENANTS] Error in list_tenant_parties: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Sales Management (Tenant-specific) ---
+
+@router.get("/{tenant_id}/sales", operation_id="listAdminTenantSales")
+def list_tenant_sales(
+    tenant_id: str,
+    page: int = 1,
+    per_page: int = 50,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """List sales for a specific tenant (admin operation)"""
+    from schemas.sales import SaleRead
+    from core.models.sales import Sale
+    
+    # Verify tenant exists
+    tenant = db_session.get(Tenant, tenant_id)
+    if not tenant or tenant.deleted_at:
+        raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
+    
+    query = db_session.query(Sale).filter_by(tenant_id=tenant_id).order_by(Sale.created_at.desc())
+    total = query.count()
+    sales = query.offset((page - 1) * per_page).limit(per_page).all()
+    
+    sales_data = [SaleRead.model_validate(s).model_dump(by_alias=True) for s in sales]
+    
+    return ResponseEnvelope(data={
+        "sales": sales_data,
+        "pagination": {
+            "page": page,
+            "perPage": per_page,
+            "total": total,
+            "totalPages": (total + per_page - 1) // per_page
+        }
+    })

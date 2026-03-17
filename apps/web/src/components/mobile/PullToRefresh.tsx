@@ -129,7 +129,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
                                 </div>
                             )
                         )}
-                        <span className="text-xs font-medium text-gray-600">
+                        <span className="text-xs font-medium text-muted-foreground">
                             {isRefreshing ? 'Yenileniyor...' : pullDistance >= threshold ? 'Bırak' : 'Çek'}
                         </span>
                     </div>

@@ -16,6 +16,7 @@ interface ModalProps {
   customFooter?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  'data-testid'?: string;
 }
 
 const sizeClasses = {
@@ -40,6 +41,7 @@ export const Modal: React.FC<ModalProps> = ({
   customFooter,
   children,
   className = '',
+  'data-testid': testId,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -98,11 +100,11 @@ export const Modal: React.FC<ModalProps> = ({
       const focusableElements = modalRef.current?.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
-      
+
       if (focusableElements && focusableElements.length > 0) {
         const firstElement = focusableElements[0] as HTMLElement;
         const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-        
+
         if (event.shiftKey && document.activeElement === firstElement) {
           event.preventDefault();
           lastElement.focus();
@@ -158,11 +160,12 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           ref={modalRef}
           className={`
-            inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full
+            inline-block align-bottom bg-white dark:bg-gray-800 rounded-3xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full
             ${sizeClasses[size]}
             ${className}
           `}
           onKeyDown={handleKeyDown}
+          data-testid={testId}
         >
           {/* Header */}
           {(title || closable) && (

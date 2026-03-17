@@ -24,16 +24,13 @@ _api_dir = _current_file.parent.parent.parent
 if str(_api_dir) not in sys.path:
     sys.path.insert(0, str(_api_dir))
 
-import pytest
-from hypothesis import given, strategies as st, settings, assume
+from hypothesis import given, strategies as st, settings
 
 from ai.utils.pii_redactor import (
     PIIRedactor,
     PIIType,
     PHIType,
-    RedactionResult,
     redact_text,
-    detect_pii_phi,
     redact_for_logging,
 )
 

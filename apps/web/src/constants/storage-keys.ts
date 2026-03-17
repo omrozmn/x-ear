@@ -108,6 +108,9 @@ export const CUSTOM_RECORD_TYPES = 'x-ear.cashflow.customRecordTypes@v1'
 export const LAST_LOGIN_CREDENTIALS = 'x-ear.auth.lastLogin@v1'
 export const AUTH_TOKEN_TIMESTAMP = 'x-ear.auth.tokenTimestamp@v1'
 export const PHASE_A_BANNER_DISMISSED = 'x-ear.ui.phaseABannerDismissed@v1'
+export const ONBOARDING_PURCHASES_DISMISSED = 'x-ear.ui.onboardingPurchasesDismissed@v1'
+export const ONBOARDING_INCOMING_INVOICES_DISMISSED = 'x-ear.ui.onboardingIncomingInvoicesDismissed@v1'
+export const ONBOARDING_OUTGOING_INVOICES_DISMISSED = 'x-ear.ui.onboardingOutgoingInvoicesDismissed@v1'
 export const SAVED_VIEWS = 'x-ear.parties.savedViews@v1' // Legacy: xear_saved_views
 export const OCR_DYNAMIC_NAMES = 'x-ear.ocr.dynamicNames@v1' // Legacy: ocrDynamicNames
 export const CURRENT_USER = 'x-ear.auth.currentUser@v1' // Legacy: currentUser, currentUserId
@@ -191,6 +194,9 @@ export const ALL_STORAGE_KEYS = [
   LAST_LOGIN_CREDENTIALS,
   AUTH_TOKEN_TIMESTAMP,
   PHASE_A_BANNER_DISMISSED,
+  ONBOARDING_PURCHASES_DISMISSED,
+  ONBOARDING_INCOMING_INVOICES_DISMISSED,
+  ONBOARDING_OUTGOING_INVOICES_DISMISSED,
   SAVED_VIEWS,
   OCR_DYNAMIC_NAMES,
   CURRENT_USER,

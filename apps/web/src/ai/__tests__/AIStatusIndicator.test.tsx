@@ -12,11 +12,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import {
-  AIStatusIndicator,
-  getStatusType,
-  getDetailedStatusLabel,
-} from '../components/AIStatusIndicator';
+import { AIStatusIndicator } from '../components/AIStatusIndicator';
+import { getStatusType, getDetailedStatusLabel } from '../utils/aiStatusHelpers';
 import type { AIStatus } from '../types/ai.types';
 
 // Helper to create mock AIStatus
@@ -192,7 +189,7 @@ describe('AIStatusIndicator', () => {
     it('should render with default props', () => {
       const status = createMockStatus();
       render(<AIStatusIndicator status={status} />);
-      
+
       const indicator = screen.getByRole('status');
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveAttribute('aria-label', 'AI durumu: Aktif');
@@ -201,20 +198,20 @@ describe('AIStatusIndicator', () => {
     it('should render with showLabel', () => {
       const status = createMockStatus();
       render(<AIStatusIndicator status={status} showLabel />);
-      
+
       expect(screen.getByText('Aktif')).toBeInTheDocument();
     });
 
     it('should render unknown state when status is null', () => {
       render(<AIStatusIndicator status={null} showLabel />);
-      
+
       expect(screen.getByText('Bilinmiyor')).toBeInTheDocument();
     });
 
     it('should apply custom className', () => {
       const status = createMockStatus();
       render(<AIStatusIndicator status={status} className="custom-class" />);
-      
+
       const indicator = screen.getByRole('status');
       expect(indicator).toHaveClass('custom-class');
     });
@@ -227,7 +224,7 @@ describe('AIStatusIndicator', () => {
     it('should render small size', () => {
       const status = createMockStatus();
       render(<AIStatusIndicator status={status} size="sm" showLabel />);
-      
+
       const label = screen.getByText('Aktif');
       expect(label).toHaveClass('text-xs');
     });
@@ -235,7 +232,7 @@ describe('AIStatusIndicator', () => {
     it('should render medium size (default)', () => {
       const status = createMockStatus();
       render(<AIStatusIndicator status={status} size="md" showLabel />);
-      
+
       const label = screen.getByText('Aktif');
       expect(label).toHaveClass('text-sm');
     });
@@ -243,7 +240,7 @@ describe('AIStatusIndicator', () => {
     it('should render large size', () => {
       const status = createMockStatus();
       render(<AIStatusIndicator status={status} size="lg" showLabel />);
-      
+
       const label = screen.getByText('Aktif');
       expect(label).toHaveClass('text-base');
     });

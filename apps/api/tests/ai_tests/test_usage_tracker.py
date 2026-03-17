@@ -15,12 +15,9 @@ from hypothesis import given, strategies as st, settings
 from uuid import uuid4
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Barrier
-import time
 
 from ai.services.usage_tracker import (
     UsageTracker,
-    UsageRecord,
-    UsageSummary,
     get_usage_tracker,
     reset_usage_tracker,
     track_usage,

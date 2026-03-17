@@ -3,8 +3,10 @@ Admin User model for admin panel authentication
 """
 from datetime import datetime
 from enum import Enum
+from sqlalchemy import String, Boolean, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
 from werkzeug.security import generate_password_hash, check_password_hash
-from models.base import db
+from core.models.base import Base
 
 class AdminRole(str, Enum):
     """Legacy admin roles - will be replaced by AdminRoleModel"""
@@ -13,22 +15,22 @@ class AdminRole(str, Enum):
     FINANCE = "finance"
     CONTENT = "content"
 
-class AdminUser(db.Model):
+class AdminUser(Base):
     """Admin user model for admin panel"""
     __tablename__ = 'admin_users'
     
-    id = db.Column(db.String(36), primary_key=True)
-    email = db.Column(db.String(255), nullable=False, unique=True, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
-    first_name = db.Column(db.String(100))
-    last_name = db.Column(db.String(100))
-    role = db.Column(db.String(50), nullable=False, default=AdminRole.SUPPORT.value)  # Legacy field
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    mfa_enabled = db.Column(db.Boolean, default=False)
-    mfa_secret = db.Column(db.String(100))
-    last_login = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    first_name: Mapped[str | None] = mapped_column(String(100))
+    last_name: Mapped[str | None] = mapped_column(String(100))
+    role: Mapped[str] = mapped_column(String(50), nullable=False, default=AdminRole.SUPPORT.value)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    mfa_secret: Mapped[str | None] = mapped_column(String(100))
+    last_login: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Note: admin_roles relationship is defined in AdminRoleModel via backref
     

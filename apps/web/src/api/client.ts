@@ -60,7 +60,7 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  public async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const token = tokenManager.accessToken;
 
@@ -68,6 +68,13 @@ class ApiClient {
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
+
+    // Add X-Tenant-ID header for multi-tenant operations
+    const tenantId = tokenManager.getTenantId();
+    if (tenantId) {
+      headers.set('X-Tenant-ID', tenantId);
+    }
+
     if (!(options.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json');
     }

@@ -11,12 +11,12 @@ import re
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope, ApiError
-from schemas.roles import RoleRead, RoleCreate as SchemaRoleCreate, RoleUpdate as SchemaRoleUpdate
+from schemas.roles import RoleRead
 from models.role import Role
 from models.permission import Permission
 from models.user import User
 
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)
@@ -86,6 +86,11 @@ def create_role(
 ):
     """Create a new role"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        
+        # Roles are typically system-wide, but we validate tenant context exists
+        _ = get_effective_tenant_id(access, allow_system=True)
+        
         if not role_in.name:
             raise HTTPException(
                 status_code=400,

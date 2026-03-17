@@ -6,6 +6,7 @@ from typing import Optional
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.integration_config import IntegrationConfig
 from models.notification_template import NotificationTemplate
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -30,8 +31,8 @@ async def get_integrations(
 ):
     """Get all integrations"""
     try:
-        configs = db.query(IntegrationConfig).all()
-        
+        with unbound_session(reason="admin-cross-tenant"):
+            configs = db.query(IntegrationConfig).all()
         integrations = {}
         for config in configs:
             if config.integration_type not in integrations:
@@ -40,7 +41,7 @@ async def get_integrations(
         
         return ResponseEnvelope(data={
             "integrations": integrations,
-            "available": ["vatan_sms", "birfatura"]
+            "available": ["vatan_sms", "birfatura", "telegram"]
         })
     except Exception as e:
         logger.error(f"Get integrations error: {e}")
@@ -60,6 +61,11 @@ class BirfaturaConfigUpdate(BaseModel):
     appApiKey: Optional[str] = ""
     appSecretKey: Optional[str] = ""
     emailTemplate: Optional[dict] = None
+
+class TelegramConfigUpdate(BaseModel):
+    botToken: Optional[str] = ""
+    chatId: Optional[str] = ""
+    isActive: Optional[bool] = False
 
 @router.post("/init-db", operation_id="createAdminIntegrationInitDb", response_model=ResponseEnvelope)
 async def init_db(
@@ -81,8 +87,13 @@ async def get_vatan_sms_config(
 ):
     """Get VatanSMS integration configuration"""
     try:
-        def get_config(key):
-            return db.query(IntegrationConfig).filter_by(
+        with unbound_session(reason="admin-cross-tenant"):
+            # For platform-level configs, use "system" tenant_id if admin has no tenant
+            config_tenant_id = access.tenant_id or "system"
+        
+            def get_config(key):
+                return db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="vatan_sms", config_key=key
             ).first()
         
@@ -116,14 +127,20 @@ async def update_vatan_sms_config(
 ):
     """Update VatanSMS integration configuration"""
     try:
-        def update_or_create(key, value, description):
-            config = db.query(IntegrationConfig).filter_by(
+        with unbound_session(reason="admin-cross-tenant"):
+            # For platform-level configs, use "system" tenant_id if admin has no tenant
+            config_tenant_id = access.tenant_id or "system"
+        
+            def update_or_create(key, value, description):
+                config = db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="vatan_sms", config_key=key
             ).first()
             if config:
                 config.config_value = value
             else:
                 config = IntegrationConfig(
+                    tenant_id=config_tenant_id,
                     integration_type="vatan_sms",
                     config_key=key,
                     config_value=value,
@@ -151,8 +168,13 @@ async def get_birfatura_config(
 ):
     """Get BirFatura integration configuration"""
     try:
-        def get_config(key):
-            return db.query(IntegrationConfig).filter_by(
+        with unbound_session(reason="admin-cross-tenant"):
+            # For platform-level configs, use "system" tenant_id if admin has no tenant
+            config_tenant_id = access.tenant_id or "system"
+        
+            def get_config(key):
+                return db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="birfatura", config_key=key
             ).first()
         
@@ -184,14 +206,20 @@ async def update_birfatura_config(
 ):
     """Update BirFatura integration configuration"""
     try:
-        def update_or_create(key, value, description):
-            config = db.query(IntegrationConfig).filter_by(
+        with unbound_session(reason="admin-cross-tenant"):
+            # For platform-level configs, use "system" tenant_id if admin has no tenant
+            config_tenant_id = access.tenant_id or "system"
+        
+            def update_or_create(key, value, description):
+                config = db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="birfatura", config_key=key
             ).first()
             if config:
                 config.config_value = value
             else:
                 config = IntegrationConfig(
+                    tenant_id=config_tenant_id,
                     integration_type="birfatura",
                     config_key=key,
                     config_value=value,
@@ -209,4 +237,74 @@ async def update_birfatura_config(
     except Exception as e:
         db.rollback()
         logger.error(f"Update BirFatura config error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/telegram/config", operation_id="listAdminIntegrationTelegramConfig", response_model=IntegrationDetailResponse)
+async def get_telegram_config(
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("integrations.read", admin_only=True))
+):
+    """Get Telegram integration configuration"""
+    try:
+        with unbound_session(reason="admin-cross-tenant"):
+            # For platform-level configs, use "system" tenant_id if admin has no tenant
+            config_tenant_id = access.tenant_id or "system"
+        
+            def get_config(key):
+                return db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
+                integration_type="telegram", config_key=key
+            ).first()
+        
+        bot_token = get_config("bot_token")
+        chat_id = get_config("chat_id")
+        is_active = get_config("is_active")
+        
+        return ResponseEnvelope(data={
+            "botToken": bot_token.config_value if bot_token else "",
+            "chatId": chat_id.config_value if chat_id else "",
+            "isActive": is_active.config_value == "true" if is_active else False
+        })
+    except Exception as e:
+        logger.error(f"Get Telegram config error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/telegram/config", operation_id="updateAdminIntegrationTelegramConfig", response_model=ResponseEnvelope)
+async def update_telegram_config(
+    data: TelegramConfigUpdate,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("integrations.manage", admin_only=True))
+):
+    """Update Telegram integration configuration"""
+    try:
+        with unbound_session(reason="admin-cross-tenant"):
+            # For platform-level configs, use "system" tenant_id if admin has no tenant
+            config_tenant_id = access.tenant_id or "system"
+        
+            def update_or_create(key, value, description):
+                config = db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
+                integration_type="telegram", config_key=key
+            ).first()
+            if config:
+                config.config_value = value
+            else:
+                config = IntegrationConfig(
+                    tenant_id=config_tenant_id,
+                    integration_type="telegram",
+                    config_key=key,
+                    config_value=value,
+                    description=description
+                )
+                db.add(config)
+        
+        update_or_create("bot_token", data.botToken, "Telegram Bot Token")
+        update_or_create("chat_id", data.chatId, "Telegram Chat ID")
+        update_or_create("is_active", "true" if data.isActive else "false", "Telegram Active Status")
+        
+        db.commit()
+        return ResponseEnvelope(message="Telegram configuration updated successfully")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Update Telegram config error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,12 +1,13 @@
 # Marketplace Integration Models
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 from sqlalchemy.orm import relationship
 
 class MarketplaceIntegration(BaseModel, TenantScopedMixin):
     __tablename__ = 'marketplace_integrations'
     
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -15,25 +16,25 @@ class MarketplaceIntegration(BaseModel, TenantScopedMixin):
             
     # tenant_id is now inherited from TenantScopedMixin
     
-    platform = db.Column(db.String(50), nullable=False) # trendyol, hepsiburada, n11, amazon
-    name = db.Column(db.String(100)) # "My Trendyol Store"
+    platform = Column(String(50), nullable=False) # trendyol, hepsiburada, n11, amazon
+    name = Column(String(100)) # "My Trendyol Store"
     
     # Credentials
-    api_key = db.Column(db.String(255))
-    api_secret = db.Column(db.String(255))
-    seller_id = db.Column(db.String(100))
-    other_params = db.Column(db.Text) # JSON for extra params
+    api_key = Column(String(255))
+    api_secret = Column(String(255))
+    seller_id = Column(String(100))
+    other_params = Column(Text) # JSON for extra params
     
-    is_active = db.Column(db.Boolean, default=True)
+    is_active = Column(Boolean, default=True)
     
     # Sync settings
-    sync_stock = db.Column(db.Boolean, default=True)
-    sync_prices = db.Column(db.Boolean, default=True)
-    sync_orders = db.Column(db.Boolean, default=True)
+    sync_stock = Column(Boolean, default=True)
+    sync_prices = Column(Boolean, default=True)
+    sync_orders = Column(Boolean, default=True)
     
-    last_sync_at = db.Column(db.DateTime)
-    status = db.Column(db.String(20), default='connected') # connected, error, disconnected
-    error_message = db.Column(db.Text)
+    last_sync_at = Column(DateTime)
+    status = Column(String(20), default='connected') # connected, error, disconnected
+    error_message = Column(Text)
     
     products = relationship('MarketplaceProduct', backref='integration', lazy='dynamic')
 
@@ -58,7 +59,7 @@ class MarketplaceIntegration(BaseModel, TenantScopedMixin):
 class MarketplaceProduct(BaseModel, TenantScopedMixin):
     __tablename__ = 'marketplace_products'
     
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -66,18 +67,18 @@ class MarketplaceProduct(BaseModel, TenantScopedMixin):
             self.id = gen_id("mkp")
             
     # tenant_id is now inherited from TenantScopedMixin
-    integration_id = db.Column(db.String(50), db.ForeignKey('marketplace_integrations.id'), nullable=False)
+    integration_id = Column(String(50), ForeignKey('marketplace_integrations.id'), nullable=False)
     
-    local_product_type = db.Column(db.String(20)) # device, accessory
-    local_product_id = db.Column(db.String(50))
+    local_product_type = Column(String(20)) # device, accessory
+    local_product_id = Column(String(50))
     
-    remote_product_id = db.Column(db.String(100)) # Platform's product ID
-    remote_sku = db.Column(db.String(100))
-    remote_price = db.Column(db.Numeric(12, 2))
-    remote_stock = db.Column(db.Integer)
+    remote_product_id = Column(String(100)) # Platform's product ID
+    remote_sku = Column(String(100))
+    remote_price = Column(Numeric(12, 2))
+    remote_stock = Column(Integer)
     
-    is_synced = db.Column(db.Boolean, default=True)
-    last_sync_at = db.Column(db.DateTime)
+    is_synced = Column(Boolean, default=True)
+    last_sync_at = Column(DateTime)
     
     def to_dict(self):
         base_dict = self.to_dict_base()

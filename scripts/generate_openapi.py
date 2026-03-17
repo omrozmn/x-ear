@@ -3,7 +3,6 @@ import yaml
 import os
 import re
 import glob
-import sys
 from typing import Set, Tuple, List, Dict
 
 class BlueprintResolver:
@@ -143,7 +142,7 @@ class OpenAPIGenerator:
                 })
 
     def generate_report(self):
-        print(f"--- Analysis Report ---")
+        print("--- Analysis Report ---")
         print(f"Existing OpenAPI Endpoints: {len(self.existing_endpoints)}")
         print(f"Found Backend Routes: {len(self.found_routes)}")
         

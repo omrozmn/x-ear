@@ -13,22 +13,45 @@ import {
   ChevronDown,
   ChevronRight,
   X,
+  BarChart3,
+  ShoppingCart,
+  CreditCard,
+  PlusCircle,
+  PanelTop,
+  FileSpreadsheet,
+  ShieldCheck,
+  Briefcase,
 } from 'lucide-react';
+import { useBreakpoints } from '../../hooks/useMediaQuery';
 
 interface MenuItem {
   id: string;
   label: string;
   icon: React.ReactNode;
   href?: string;
+  activePatterns?: string[];
+  exactMatch?: boolean;
   children?: MenuItem[];
   badge?: string | number;
+  requiredFeature?: string;
+  /** Module ID — item hidden if module disabled for current sector */
+  requiredModule?: string;
 }
 
 interface SidebarProps {
-  isOpen?: boolean;
-  onClose?: () => void;
+  isOpen: boolean;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  onClose: () => void;
   currentPath?: string;
-  className?: string;
+  isMobile?: boolean;
+  isTablet?: boolean;
+  isDesktop?: boolean;
+  onNavigate?: (href: string) => void;
+  enabledFeatures?: Record<string, boolean>;
+  visibleItemIds?: string[];
+  /** Set of enabled module IDs for current sector (from SectorContext) */
+  enabledModules?: string[];
 }
 
 const menuItems: MenuItem[] = [
@@ -36,14 +59,14 @@ const menuItems: MenuItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: <Home className="w-5 h-5" />,
-    href: '/dashboard',
+    href: '/',
+    exactMatch: true,
   },
   {
     id: 'patients',
     label: 'Hastalar',
     icon: <Users className="w-5 h-5" />,
-    href: '/patients',
-    badge: '12',
+    href: '/parties',
   },
   {
     id: 'appointments',
@@ -64,118 +87,254 @@ const menuItems: MenuItem[] = [
     href: '/suppliers',
   },
   {
-    id: 'cashflow',
-    label: 'Nakit Akışı',
+    id: 'sales',
+    label: 'Satışlar',
+    icon: <ShoppingCart className="w-5 h-5" />,
+    href: '/sales',
+  },
+  {
+    id: 'purchases',
+    label: 'Alışlar',
+    icon: <CreditCard className="w-5 h-5" />,
+    href: '/purchases',
+  },
+  {
+    id: 'uts',
+    label: 'UTS',
+    icon: <ShieldCheck className="w-5 h-5" />,
+    href: '/uts',
+    requiredModule: 'uts',
+  },
+  {
+    id: 'payments',
+    label: 'Ödemeler',
     icon: <DollarSign className="w-5 h-5" />,
-    href: '/cashflow',
+    href: '/invoices/payments',
+  },
+  {
+    id: 'personnel',
+    label: 'Personel',
+    icon: <Briefcase className="w-5 h-5" />,
+    href: '/personnel',
   },
   {
     id: 'campaigns',
     label: 'Kampanyalar',
     icon: <Megaphone className="w-5 h-5" />,
     href: '/campaigns',
+    requiredFeature: 'campaigns',
+  },
+  {
+    id: 'website-builder',
+    label: 'Web Sitesi',
+    icon: <PanelTop className="w-5 h-5" />,
+    href: '/web-management',
+    requiredFeature: 'website_builder',
   },
   {
     id: 'invoices',
     label: 'Faturalar',
     icon: <FileText className="w-5 h-5" />,
+    requiredFeature: 'invoices',
     children: [
+      {
+        id: 'outgoing-invoices',
+        label: 'Giden Faturalar',
+        icon: <FileText className="w-4 h-4" />,
+        href: '/invoices',
+        exactMatch: true,
+      },
+      {
+        id: 'incoming-invoices',
+        label: 'Gelen Faturalar',
+        icon: <FileText className="w-4 h-4" />,
+        href: '/invoices/incoming',
+        activePatterns: ['/invoices/incoming', '/invoices/purchases'],
+      },
+      {
+        id: 'proformas',
+        label: 'Proformalar',
+        icon: <FileText className="w-4 h-4" />,
+        href: '/invoices?tab=proformas',
+        exactMatch: true,
+      },
+      {
+        id: 'invoice-summary',
+        label: 'Fatura Özeti',
+        icon: <BarChart3 className="w-4 h-4" />,
+        href: '/invoices/summary',
+      },
       {
         id: 'new-invoice',
         label: 'Yeni Fatura',
-        icon: <FileText className="w-4 h-4" />,
+        icon: <PlusCircle className="w-4 h-4" />,
         href: '/invoices/new',
-      },
-      {
-        id: 'invoice-list',
-        label: 'Fatura Listesi',
-        icon: <FileText className="w-4 h-4" />,
-        href: '/invoices',
       },
     ],
   },
   {
     id: 'sgk-reports',
-    label: 'SGK Raporları',
+    label: 'SGK',
     icon: <Activity className="w-5 h-5" />,
+    requiredFeature: 'sgk',
+    requiredModule: 'sgk',
     children: [
       {
         id: 'sgk-upload',
         label: 'SGK Yükleme',
         icon: <Activity className="w-4 h-4" />,
-        href: '/sgk/upload',
+        href: '/sgk',
+        exactMatch: true,
       },
       {
         id: 'sgk-reports-list',
         label: 'Rapor Listesi',
         icon: <Activity className="w-4 h-4" />,
-        href: '/sgk/reports',
+        href: '/sgk/downloads',
       },
     ],
   },
   {
     id: 'reports',
     label: 'Raporlar',
-    icon: <FileText className="w-5 h-5" />,
+    icon: <BarChart3 className="w-5 h-5" />,
+    activePatterns: ['/reports', '/cashflow'],
+    requiredFeature: 'reports',
     children: [
       {
-        id: 'financial-reports',
-        label: 'Mali Raporlar',
-        icon: <FileText className="w-4 h-4" />,
-        href: '/reports/financial',
+        id: 'reports-overview',
+        label: 'Raporlar',
+        icon: <BarChart3 className="w-4 h-4" />,
+        href: '/reports',
+        exactMatch: true,
       },
       {
-        id: 'patient-reports',
-        label: 'Hasta Raporları',
-        icon: <FileText className="w-4 h-4" />,
-        href: '/reports/patients',
+        id: 'reports-cashflow',
+        label: 'Kasa',
+        icon: <DollarSign className="w-4 h-4" />,
+        href: '/cashflow',
       },
     ],
+  },
+  {
+    id: 'invoice-normalizer',
+    label: 'Muhasebe',
+    icon: <FileSpreadsheet className="w-5 h-5" />,
+    href: '/invoice-normalizer',
+    requiredFeature: 'invoice_normalizer',
   },
   {
     id: 'settings',
     label: 'Ayarlar',
     icon: <Settings className="w-5 h-5" />,
-    href: '/settings',
+    children: [
+      {
+        id: 'settings-company',
+        label: 'Firma Bilgileri',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=company',
+        exactMatch: true,
+      },
+      {
+        id: 'settings-integration',
+        label: 'Entegrasyonlar',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=integration',
+        exactMatch: true,
+      },
+      {
+        id: 'settings-team',
+        label: 'Ekip Yönetimi',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=team',
+        exactMatch: true,
+      },
+      {
+        id: 'settings-parties',
+        label: 'Hasta Ayarları',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=parties',
+        exactMatch: true,
+      },
+      {
+        id: 'settings-sgk',
+        label: 'SGK Ayarları',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=sgk',
+        exactMatch: true,
+        requiredModule: 'sgk',
+      },
+      {
+        id: 'settings-subscription',
+        label: 'Abonelik',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=subscription',
+        exactMatch: true,
+      },
+    ],
   },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  isOpen = true,
+  isOpen,
+  isCollapsed,
+  onToggle,
   onClose,
-  currentPath = '/dashboard',
-  className = '',
+  currentPath = '/',
+  isMobile: propIsMobile,
+  isTablet: propIsTablet,
+  isDesktop: propIsDesktop,
+  onNavigate,
+  enabledFeatures,
+  visibleItemIds,
+  enabledModules,
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const breakpoints = useBreakpoints();
+  const isMobile = propIsMobile ?? breakpoints.isMobile;
+  const isTablet = propIsTablet ?? breakpoints.isTablet;
+  const isDesktop = propIsDesktop ?? breakpoints.isDesktop;
+
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Load collapsed state from localStorage
-  useEffect(() => {
-    const savedCollapsed = localStorage.getItem('sidebar-collapsed');
-    if (savedCollapsed) {
-      setCollapsed(JSON.parse(savedCollapsed));
-    }
+  const filterMenuItems = (items: MenuItem[]): MenuItem[] => (
+    items.flatMap((item) => {
+      if (item.requiredFeature && enabledFeatures && enabledFeatures[item.requiredFeature] !== true) {
+        return [];
+      }
 
-    // Load expanded items from localStorage
+      // Module gating: hide items whose module is not enabled for the current sector
+      if (item.requiredModule && enabledModules && enabledModules.length > 0) {
+        if (!enabledModules.includes(item.requiredModule)) {
+          return [];
+        }
+      }
+
+      const filteredChildren = item.children ? filterMenuItems(item.children) : undefined;
+      const isExplicitlyVisible = !visibleItemIds || visibleItemIds.includes(item.id);
+      const hasVisibleChildren = Boolean(filteredChildren && filteredChildren.length > 0);
+
+      if (!isExplicitlyVisible && !hasVisibleChildren) {
+        return [];
+      }
+
+      return [{ ...item, children: filteredChildren }];
+    })
+  );
+
+  const visibleMenuItems = filterMenuItems(menuItems);
+
+  // Load expanded items from localStorage
+  useEffect(() => {
     const savedExpanded = localStorage.getItem('sidebar-expanded');
     if (savedExpanded) {
       setExpandedItems(new Set(JSON.parse(savedExpanded)));
     }
   }, []);
 
-  // Save collapsed state to localStorage
-  useEffect(() => {
-    localStorage.setItem('sidebar-collapsed', JSON.stringify(collapsed));
-  }, [collapsed]);
-
   // Save expanded items to localStorage
   useEffect(() => {
     localStorage.setItem('sidebar-expanded', JSON.stringify([...expandedItems]));
   }, [expandedItems]);
-
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
-  };
 
   const toggleExpanded = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -187,53 +346,142 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setExpandedItems(newExpanded);
   };
 
-  const isActive = (href?: string) => {
-    if (!href) return false;
-    return currentPath === href || currentPath.startsWith(href + '/');
+  const normalizePath = (href: string) => {
+    try {
+      return new URL(href, 'http://localhost');
+    } catch {
+      return new URL('/', 'http://localhost');
+    }
+  };
+
+  const matchesPattern = (pattern: string, exactMatch = false) => {
+    const current = normalizePath(currentPath);
+    const target = normalizePath(pattern);
+
+    if (current.pathname !== target.pathname) {
+      if (exactMatch || target.pathname === '/') {
+        return false;
+      }
+
+      if (!current.pathname.startsWith(`${target.pathname}/`)) {
+        return false;
+      }
+    }
+
+    const targetParams = new URLSearchParams(target.search);
+    if ([...targetParams.keys()].length === 0) {
+      return exactMatch ? current.pathname === target.pathname : true;
+    }
+
+    const currentParams = new URLSearchParams(current.search);
+    for (const [key, value] of targetParams.entries()) {
+      if (currentParams.get(key) !== value) {
+        return false;
+      }
+    }
+
+    return exactMatch ? current.pathname === target.pathname : true;
+  };
+
+  // Collect all menu hrefs for precise active-state matching
+  const collectMatchers = (items: MenuItem[]): Array<{ pattern: string; exactMatch: boolean }> => {
+    const hrefs: Array<{ pattern: string; exactMatch: boolean }> = [];
+    for (const item of items) {
+      if (item.href) {
+        hrefs.push({ pattern: item.href, exactMatch: item.exactMatch ?? false });
+      }
+      if (item.activePatterns) {
+        hrefs.push(...item.activePatterns.map((pattern) => ({
+          pattern,
+          exactMatch: item.exactMatch ?? false,
+        })));
+      }
+      if (item.children) hrefs.push(...collectMatchers(item.children));
+    }
+    return hrefs;
+  };
+  const allMatchers = collectMatchers(visibleMenuItems);
+
+  const isActive = (item: MenuItem) => {
+    const patterns = [
+      ...(item.href ? [item.href] : []),
+      ...(item.activePatterns ?? []),
+    ];
+
+    if (patterns.length === 0) return false;
+
+    const matchedPattern = patterns.find((pattern) => matchesPattern(pattern, item.exactMatch ?? false));
+    if (!matchedPattern) return false;
+
+    const matchedPathLength = normalizePath(matchedPattern).pathname.length;
+    const hasMoreSpecificMatch = allMatchers.some(({ pattern, exactMatch }) => {
+      if (patterns.includes(pattern)) return false;
+      if (!matchesPattern(pattern, exactMatch)) return false;
+
+      return normalizePath(pattern).pathname.length > matchedPathLength;
+    });
+
+    return !hasMoreSpecificMatch;
+  };
+
+  const hasActiveChild = (item: MenuItem): boolean => {
+    if (!item.children?.length) return false;
+    return item.children.some((child) => isActive(child) || hasActiveChild(child));
+  };
+
+  const handleNavigation = (href?: string) => {
+    if (href && onNavigate) {
+      onNavigate(href);
+      if (isMobile) {
+        onClose();
+      }
+    }
   };
 
   const renderMenuItem = (item: MenuItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.has(item.id);
-    const active = isActive(item.href);
+    const active = isActive(item) || hasActiveChild(item);
+    const isExpanded = expandedItems.has(item.id) || hasActiveChild(item);
+    const showLabel = !isCollapsed || isMobile;
 
     return (
       <div key={item.id}>
         <div
+          data-testid={`sidebar-menu-${item.id}`}
           className={`
-            flex items-center px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors
-            ${level > 0 ? 'ml-6' : ''}
+            flex items-center text-sm font-medium rounded-2xl border border-transparent cursor-pointer transition-all
+            ${level > 0 ? (isCollapsed && !isMobile ? 'ml-0 justify-center' : 'ml-6') : ''}
             ${active
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-            }
+              ? 'border-blue-200/70 bg-gradient-to-r from-blue-500/15 via-cyan-500/10 to-transparent text-blue-700 shadow-sm shadow-blue-500/10 dark:border-blue-500/20 dark:text-blue-200'
+              : 'text-slate-700 dark:text-slate-200 hover:border-white/70 hover:bg-white/70 dark:hover:border-white/10 dark:hover:bg-white/5'
+             }
+            ${!showLabel ? 'justify-center w-10 h-10 mx-auto p-0 mb-1' : 'px-3 py-2 w-full'}
           `}
           onClick={() => {
             if (hasChildren) {
               toggleExpanded(item.id);
-            } else if (item.href) {
-              // Navigate to the route
-              window.location.href = item.href;
+            } else {
+              handleNavigation(item.href);
             }
           }}
         >
-          <div className="flex items-center flex-1 min-w-0">
-            <div className="flex-shrink-0">
+          <div className={`flex items-center ${showLabel ? 'flex-1 min-w-0' : 'justify-center w-full'}`} data-testid={`sidebar-menu-item-${item.id}`}>
+            <div className={`flex-shrink-0 flex items-center justify-center ${!showLabel ? 'w-full h-full' : ''}`} data-testid={`sidebar-icon-${item.id}`}>
               {item.icon}
             </div>
-            {!collapsed && (
+            {showLabel && (
               <>
-                <span className="ml-3 truncate">{item.label}</span>
+                <span className="ml-3 truncate" data-testid={`sidebar-label-${item.id}`}>{item.label}</span>
                 {item.badge && (
-                  <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" data-testid={`sidebar-badge-${item.id}`}>
                     {item.badge}
                   </span>
                 )}
               </>
             )}
           </div>
-          {hasChildren && !collapsed && (
-            <div className="flex-shrink-0 ml-2">
+          {hasChildren && showLabel && (
+            <div className="flex-shrink-0 ml-2" data-testid={`sidebar-expand-${item.id}`}>
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
               ) : (
@@ -244,7 +492,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Submenu */}
-        {hasChildren && isExpanded && !collapsed && (
+        {hasChildren && isExpanded && showLabel && (
           <div className="mt-1 space-y-1">
             {item.children?.map((child) => renderMenuItem(child, level + 1))}
           </div>
@@ -253,32 +501,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
-  return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={onClose}
-        />
-      )}
+  // Mobile: Full screen overlay
+  if (isMobile) {
+    return (
+      <>
+        {/* Overlay */}
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75"
+            onClick={onClose}
+          />
+        )}
 
-      {/* Sidebar */}
-      <div
-        className={`
-          fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out
-          ${collapsed ? 'w-16' : 'w-64'}
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static lg:inset-0
-          ${className}
-        `}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-          {!collapsed && (
+        {/* Sidebar */}
+        <div
+          data-testid="sidebar-container"
+          className={`
+            fixed inset-y-0 left-0 z-50 w-[280px] flex flex-col bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl 
+            border-r border-gray-200/50 dark:border-gray-700/50 transition-transform duration-300 ease-in-out
+            ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          `}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">X</span>
                 </div>
               </div>
@@ -286,40 +534,126 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 X-Ear
               </span>
             </div>
-          )}
-          
-          {/* Mobile close button */}
-          <button
-            onClick={onClose}
-            className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-          >
-            <X className="w-5 h-5" />
-          </button>
 
-          {/* Desktop collapse button */}
-          <button
-            onClick={toggleCollapsed}
-            className="hidden lg:block p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
-          </button>
-        </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+              data-testid="sidebar-close-button"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => renderMenuItem(item))}
-        </nav>
+          {/* Navigation */}
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            {visibleMenuItems.map((item) => renderMenuItem(item))}
+          </nav>
 
-        {/* Footer */}
-        {!collapsed && (
+          {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
               X-Ear v1.0.0
             </div>
           </div>
+        </div>
+      </>
+    );
+  }
+
+  // Tablet: Icon-only sidebar (64px)
+  if (isTablet) {
+    return (
+        <div
+          data-testid="sidebar-container"
+          className="fixed bottom-4 left-4 top-4 z-40 w-16 overflow-hidden rounded-[28px] border border-white/60 bg-white/75 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.4)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/70"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-center h-16 border-b border-slate-200/70 dark:border-white/10" data-testid="sidebar-header">
+            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">X</span>
+            </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+          {visibleMenuItems.map((item) => renderMenuItem(item))}
+        </nav>
+      </div>
+    );
+  }
+
+  // Desktop: Collapsible sidebar (256px or 64px)
+  return (
+      <div
+        data-testid="sidebar-container"
+        className={`
+         fixed bottom-4 left-4 top-4 z-40 flex flex-col overflow-hidden rounded-[28px] bg-white/75 backdrop-blur-xl 
+         border border-white/60 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.4)] transition-all duration-300 ease-in-out dark:border-white/10 dark:bg-slate-900/70
+         ${isCollapsed ? 'w-16' : 'w-64'}
+       `}
+     >
+       {/* Header */}
+       <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200/70 dark:border-white/10" data-testid="sidebar-header">
+         {!isCollapsed && (
+           <div className="flex items-center">
+             <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">X</span>
+              </div>
+            </div>
+            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
+              X-Ear
+            </span>
+          </div>
+        )}
+
+        {isCollapsed && (
+          <div className="w-full flex justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">X</span>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop collapse button */}
+         {!isCollapsed && (
+           <button
+             onClick={onToggle}
+             className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/80 dark:hover:bg-white/10"
+             data-testid="sidebar-collapse-button"
+           >
+             <ChevronRight className="w-4 h-4 transition-transform rotate-180" />
+          </button>
         )}
       </div>
-    </>
+
+      {/* Expand button when collapsed */}
+       {isCollapsed && (
+         <div className="flex justify-center py-2 border-b border-slate-200/70 dark:border-white/10">
+           <button
+             onClick={onToggle}
+             className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/80 dark:hover:bg-white/10"
+             data-testid="sidebar-expand-button"
+           >
+             <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <nav className={`flex-1 py-4 space-y-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-3'}`}>
+        {visibleMenuItems.map((item) => renderMenuItem(item))}
+      </nav>
+
+      {/* Footer */}
+       {!isCollapsed && (
+         <div className="p-4 border-t border-slate-200/70 dark:border-white/10">
+           <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
+             X-Ear v1.0.0
+           </div>
+         </div>
+      )}
+    </div>
   );
 };
 

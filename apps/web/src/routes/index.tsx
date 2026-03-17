@@ -1,50 +1,72 @@
 import { Button, Select } from '@x-ear/ui-web';
-import { createFileRoute } from '@tanstack/react-router'
-import React, { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { createFileRoute } from '@tanstack/react-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Activity, ChevronRight, PieChart, RefreshCw } from 'lucide-react';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
 import { QuickStatsCard } from '../components/dashboard/QuickStatsCard';
 import { CashRegisterCard } from '../components/dashboard/CashRegisterCard';
 import { PricingCalculatorCard } from '../components/dashboard/PricingCalculatorCard';
 import { CashRegisterModal } from '../components/dashboard/CashRegisterModal';
 import { PricingCalculatorModal } from '../components/dashboard/PricingCalculatorModal';
+import type { PricingCalculation } from '../components/dashboard/PricingCalculatorModal';
+import { useCreateCashRecord } from '../hooks/useCashflow';
+import type { CashRecordFormData } from '../types/cashflow';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { usePermissions } from '../hooks/usePermissions';
-// import { getEnvVar } from '../utils/env'; // Available but not currently used
 import PieChartSimple from '../components/charts/PieChartSimple';
 import { usePartyDistribution } from '../api/dashboard';
-import { formatActivitySentence } from '../utils/activity';
+import { useListBranches } from '../api/client/branches.client';
+import { formatActivitySentence, formatActivityTimeAgo, formatActivityTimestamp } from '../utils/activity';
+import { loadPartySegmentsFromAPI, type SegmentOption } from '../utils/party-segments';
 import { NoPermissionPlaceholder } from '../components/ui/NoPermissionPlaceholder';
+import { useIsMobile } from '../hooks/useBreakpoint';
+import { MobileDashboard } from '../pages/dashboard/MobileDashboard';
 
-interface Slice {
-  label: string;
-  value: number;
+interface BranchDistribution {
+  branch?: string;
+  branchId?: string;
+  breakdown?: {
+    status?: Record<string, number>;
+    segment?: Record<string, number>;
+  };
 }
 
-interface CashRegisterData {
-  type: 'income' | 'expense';
-  recordType: 'cash' | 'card' | 'transfer';
-  amount: number;
-  description?: string;
-  category?: string;
+interface BranchOption {
+  id?: string | null;
+  name?: string | null;
 }
-
-interface PricingCalculation {
-  devicePrice: number;
-  discountPercent: number;
-  discountAmount: number;
-  finalPrice: number;
-  installments?: number;
-  installmentAmount?: number;
-}
-
 
 export const Route = createFileRoute('/')({
   component: Dashboard,
-})
+});
 
-import { useIsMobile } from '../hooks/useBreakpoint';
-import { MobileDashboard } from '../pages/dashboard/MobileDashboard';
+function GlassPanel({
+  title,
+  subtitle,
+  icon,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-[30px] border border-border/80 bg-white/88 p-6 shadow-[0_20px_60px_-38px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/46 dark:shadow-[0_24px_80px_-44px_rgba(2,6,23,0.9)]">
+      <div className="absolute inset-x-10 top-0 h-20 rounded-full bg-gradient-to-r from-sky-100/70 via-white/60 to-emerald-100/55 blur-3xl dark:from-sky-500/20 dark:via-gray-900/10 dark:to-emerald-500/20" />
+      <div className="relative mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+        </div>
+        <div className="rounded-2xl border border-white/50 bg-white/55 p-3 text-sky-700 backdrop-blur-md dark:border-white/10 dark:bg-white/10 dark:text-sky-300">
+          {icon}
+        </div>
+      </div>
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
 
 function Dashboard() {
   const isMobile = useIsMobile();
@@ -59,21 +81,56 @@ function Dashboard() {
 function DesktopDashboard() {
   const { stats, lastTransaction, lastCalculation, recentActivity, loading, error } = useDashboardData();
   const [dateRange, setDateRange] = useState('week');
+  const [selectedBranchId, setSelectedBranchId] = useState('');
+  const [segmentOptions, setSegmentOptions] = useState<SegmentOption[]>([]);
   const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
   const [isPricingCalculatorModalOpen, setIsPricingCalculatorModalOpen] = useState(false);
+  const createCashRecordMutation = useCreateCashRecord();
+  const { hasPermission, hasAnyPermission, isSuperAdmin } = usePermissions();
 
-  // Permission-based visibility
-  const { hasPermission, isSuperAdmin } = usePermissions();
-
-  // Check individual permissions for dashboard sections
+  const canViewDashboard = isSuperAdmin || hasAnyPermission(['dashboard.view', 'dashboard.analytics']);
   const canViewParties = isSuperAdmin || hasPermission('parties.view');
   const canViewFinance = isSuperAdmin || hasPermission('finance.view');
   const canViewAppointments = isSuperAdmin || hasPermission('appointments.view');
   const canViewCashRegister = isSuperAdmin || hasPermission('finance.cash_register');
   const canViewSales = isSuperAdmin || hasPermission('sales.view');
-  const canViewAnalytics = isSuperAdmin || hasPermission('dashboard.analytics');
+  const canViewAnalytics = isSuperAdmin || hasAnyPermission(['dashboard.analytics', 'dashboard.view']);
   const canViewActivityLogs = isSuperAdmin || hasPermission('activity_logs.view');
-  // const canViewReports = isSuperAdmin || hasPermission('reports.view'); // Available for future use
+  const canViewBranches = isSuperAdmin || hasPermission('branches.view');
+
+  const { data: branchesResponse } = useListBranches(undefined, {
+    query: {
+      enabled: canViewAnalytics,
+      staleTime: 5 * 60 * 1000,
+      select: (response) => response.data ?? [],
+    },
+  });
+
+  const availableBranches = useMemo(() => (
+    Array.isArray(branchesResponse) ? (branchesResponse as BranchOption[]) : []
+  ), [branchesResponse]);
+
+  useEffect(() => {
+    void loadPartySegmentsFromAPI().then(({ segments }) => {
+      setSegmentOptions(segments);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (availableBranches.length === 1 && availableBranches[0]?.id) {
+      setSelectedBranchId((current) => current || String(availableBranches[0]?.id || ''));
+      return;
+    }
+
+    if (selectedBranchId && availableBranches.length > 0) {
+      const exists = availableBranches.some((branch) => String(branch.id || '') === selectedBranchId);
+      if (!exists) {
+        setSelectedBranchId('');
+      }
+    }
+  }, [availableBranches, selectedBranchId]);
+
+  const showBranchSelector = canViewBranches && availableBranches.length > 1;
 
   const handleCardClick = (cardType: string) => {
     switch (cardType) {
@@ -81,11 +138,9 @@ function DesktopDashboard() {
         window.location.href = '/parties';
         break;
       case 'trials':
-        // Navigate to parties with trial filter
         window.location.href = '/parties?filter=trial';
         break;
       case 'revenue':
-        // Navigate to reports
         window.location.href = '/reports';
         break;
       case 'appointments':
@@ -94,71 +149,75 @@ function DesktopDashboard() {
     }
   };
 
-  const handleCashRegisterClick = () => {
-    setIsCashRegisterModalOpen(true);
-  };
-
-  const handlePricingCalculatorClick = () => {
-    setIsPricingCalculatorModalOpen(true);
-  };
-
-  const handleCashRegisterSubmit = (data: CashRegisterData) => {
-    console.log('Cash register data:', data);
-    // TODO: Save to backend
+  const handleCashRegisterSubmit = async (data: CashRecordFormData) => {
+    await createCashRecordMutation.mutateAsync(data);
   };
 
   const handlePricingCalculatorSubmit = (data: PricingCalculation) => {
     console.log('Pricing calculation data:', data);
-    // TODO: Save to backend
-  };
-
-  const handleRefresh = () => {
-    window.location.reload();
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-600">Hata: {error}</p>
+      <div className="rounded-2xl border border-red-200 bg-destructive/10 p-4">
+        <p className="text-destructive">Hata: {error}</p>
       </div>
     );
   }
 
+  if (!canViewDashboard) {
+    return <NoPermissionPlaceholder />;
+  }
+
   return (
     <div className="space-y-6">
-      {/* Dashboard Controls */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-lg shadow-sm">
+      <div className="rounded-[28px] border border-border/80 bg-white/90 px-6 py-4 shadow-[0_18px_52px_-36px_rgba(15,23,42,0.22)] backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/44 dark:shadow-[0_20px_70px_-44px_rgba(2,6,23,0.85)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            {showBranchSelector ? (
+              <Select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                className="rounded-2xl border border-white/60 bg-white/70 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-ring dark:border-white/10 dark:bg-gray-900/55 dark:text-white"
+                options={[
+                  { value: '', label: 'Tum Erisilebilir Subeler' },
+                  ...availableBranches.map((branch) => ({
+                    value: String(branch.id || ''),
+                    label: branch.name || 'Sube',
+                  })),
+                ]}
+              />
+            ) : null}
             <Select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="rounded-2xl border border-white/60 bg-white/70 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-ring dark:border-white/10 dark:bg-gray-900/55 dark:text-white"
               options={[
-                { value: "today", label: "Bugün" },
-                { value: "week", label: "Son 1 Hafta" },
-                { value: "month", label: "Son 1 Ay" },
-                { value: "quarter", label: "Son Çeyrek" }
+                { value: 'today', label: 'Bugun' },
+                { value: 'week', label: 'Son 1 Hafta' },
+                { value: 'month', label: 'Son 1 Ay' },
+                { value: 'quarter', label: 'Son Ceyrek' },
               ]}
             />
             <Button
-              onClick={handleRefresh}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              variant='secondary'>
-              <RefreshCw className="w-5 h-5" />
+              onClick={() => window.location.reload()}
+              className="rounded-2xl border border-white/60 bg-white/65 p-2 text-foreground transition-colors hover:bg-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
+              variant="secondary"
+            >
+              <RefreshCw className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </div>
-      {/* KPI Cards - Show with masked values for restricted metrics */}
+
       <DashboardStats
         stats={{
           totalParties: canViewParties ? stats.totalParties : 0,
@@ -168,25 +227,22 @@ function DesktopDashboard() {
         }}
         onCardClick={handleCardClick}
       />
-      {/* Cash Register Card and Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Cash Register Card - Only show if user can access cash register */}
-        {canViewCashRegister && (
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {canViewCashRegister ? (
           <CashRegisterCard
             lastTransaction={lastTransaction}
-            onClick={handleCashRegisterClick}
+            onClick={() => setIsCashRegisterModalOpen(true)}
           />
-        )}
+        ) : null}
 
-        {/* Pricing Calculator Card - Only show if user can view sales */}
-        {canViewSales && (
+        {canViewSales ? (
           <PricingCalculatorCard
             lastCalculation={lastCalculation}
-            onClick={handlePricingCalculatorClick}
+            onClick={() => setIsPricingCalculatorModalOpen(true)}
           />
-        )}
+        ) : null}
 
-        {/* Quick Stats Card - Show with permission-masked values */}
         <QuickStatsCard
           stats={{
             activeParties: canViewParties ? stats.activeParties : 0,
@@ -196,89 +252,133 @@ function DesktopDashboard() {
           }}
         />
       </div>
-      {/* Party distribution + Recent activity (keeps only these two) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Party Distribution - Only show if user has analytics permission */}
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {canViewAnalytics ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Dağılımı</h3>
-            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-lg flex items-center justify-center">
-              <PartyDistribution />
+          <GlassPanel
+            title="Hasta Segmentleri"
+            subtitle="Secili subedeki hasta segment dagilimini tek bakista gorun"
+            icon={<PieChart className="h-5 w-5" />}
+          >
+            <div className="rounded-[26px] border border-border/70 bg-white/78 p-5 backdrop-blur-md dark:border-white/10 dark:bg-gray-950/25">
+              <PartyDistribution
+                selectedBranchId={selectedBranchId || undefined}
+                segmentOptions={segmentOptions}
+              />
             </div>
-          </div>
+          </GlassPanel>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Dağılımı</h3>
+          <GlassPanel
+            title="Hasta Segmentleri"
+            subtitle="Secili subedeki hasta segment dagilimini tek bakista gorun"
+            icon={<PieChart className="h-5 w-5" />}
+          >
             <NoPermissionPlaceholder />
-          </div>
+          </GlassPanel>
         )}
 
-        {/* Recent Activity - Only show if user has activity logs permission */}
         {canViewActivityLogs ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Son Aktiviteler</h3>
-            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-auto">
-              {(!recentActivity || recentActivity.length === 0) ? (
-                <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">No recent activity</div>
-              ) : (
-                <ul className="p-4 space-y-3">
-                  {recentActivity.map((act: Record<string, unknown>, idx: number) => (
-                    <li key={idx} className="text-sm text-gray-700 dark:text-gray-300">
-                      <div className="text-sm text-gray-800 dark:text-gray-200">{formatActivitySentence(act)}</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
+          <GlassPanel
+            title="Son Aktiviteler"
+            subtitle="Ekibin son islemleri daha okunur bir dille sunulur"
+            icon={<Activity className="h-5 w-5" />}
+          >
+            {!recentActivity || recentActivity.length === 0 ? (
+              <div className="flex min-h-64 items-center justify-center rounded-[26px] border border-border/70 bg-white/78 text-muted-foreground backdrop-blur-md dark:border-white/10 dark:bg-gray-950/25">
+                Henuz son aktivite kaydi yok
+              </div>
+            ) : (
+              <ul className="max-h-80 space-y-3 overflow-auto pr-1">
+                {recentActivity.map((act: Record<string, unknown>, idx: number) => (
+                  <li key={idx} className="rounded-[24px] border border-border/70 bg-white/82 p-4 backdrop-blur-md transition-colors hover:bg-white dark:border-white/10 dark:bg-gray-950/28 dark:hover:bg-gray-900/42">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium leading-6 text-foreground">
+                          {formatActivitySentence(act)}
+                        </div>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{formatActivityTimeAgo(act)}</span>
+                          <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+                          <span>{formatActivityTimestamp(act)}</span>
+                        </div>
+                      </div>
+                      <div className="rounded-full bg-gray-900/5 p-2 text-muted-foreground dark:bg-white/10">
+                        <ChevronRight className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassPanel>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Son Aktiviteler</h3>
+          <GlassPanel
+            title="Son Aktiviteler"
+            subtitle="Ekibin son islemleri daha okunur bir dille sunulur"
+            icon={<Activity className="h-5 w-5" />}
+          >
             <NoPermissionPlaceholder />
-          </div>
+          </GlassPanel>
         )}
       </div>
-      {/* Modals */}
+
       <CashRegisterModal
         isOpen={isCashRegisterModalOpen}
         onClose={() => setIsCashRegisterModalOpen(false)}
         onSubmit={handleCashRegisterSubmit}
+        isLoading={createCashRecordMutation.isPending}
       />
       <PricingCalculatorModal
         isOpen={isPricingCalculatorModalOpen}
         onClose={() => setIsPricingCalculatorModalOpen(false)}
         onCalculate={handlePricingCalculatorSubmit}
       />
-    </div >
+    </div>
   );
 }
 
-interface BranchDistribution {
-  branch?: string;
-  branchId?: string;
-  breakdown?: {
-    status?: Record<string, number>;
-  };
-}
+function PartyDistribution({
+  selectedBranchId,
+  segmentOptions,
+}: {
+  selectedBranchId?: string;
+  segmentOptions: SegmentOption[];
+}) {
+  const { data, isLoading, isError } = usePartyDistribution({
+    branchId: selectedBranchId,
+  });
+  const list = Array.isArray(data) ? data : [];
+  const segments = new Map<string, number>();
+  const segmentLabelMap = new Map(
+    segmentOptions.map((segment) => [segment.value.trim().toLowerCase(), segment.label])
+  );
 
-function PartyDistribution() {
-  const { data, isLoading, isError } = usePartyDistribution();
-  const raw = (data as unknown as Record<string, unknown>)?.data;
-  const list = Array.isArray(raw) ? raw : [];
-
-  // Convert to pie slices by summing breakdowns per branch (use status counts as primary)
-  const partyTrends = list.map((b: BranchDistribution) => {
-    const status = b?.breakdown?.status || {};
-    // sum status counts as branch total
-    const total = Object.values(status).reduce((s: number, v: number) => s + Number(v || 0), 0);
-    return { label: b.branch || b.branchId || 'Unknown', value: total };
+  (list as BranchDistribution[]).forEach((branch) => {
+    const breakdown = branch?.breakdown?.segment || {};
+    Object.entries(breakdown).forEach(([segment, count]) => {
+      segments.set(segment, (segments.get(segment) || 0) + Number(count || 0));
+    });
   });
 
-  if (isLoading) return <div className="text-gray-500">Yükleniyor...</div>;
-  if (isError) return <div className="text-red-500">Hata yüklenirken</div>;
+  if (isLoading) return <div className="flex h-64 items-center justify-center text-muted-foreground">Dagilim yukleniyor...</div>;
+  if (isError) return <div className="flex h-64 items-center justify-center text-rose-500">Dagilim verisi alinamadi</div>;
 
-  const slices: Slice[] = partyTrends.filter(p => Number(p.value) > 0).slice(0, 6);
-  return (
-    <PieChartSimple data={slices.length ? slices : partyTrends.slice(0, 6)} />
-  );
+  const chartData = Array.from(segments.entries())
+    .map(([label, value]) => ({
+      label: segmentLabelMap.get(label.trim().toLowerCase()) || label,
+      value,
+    }))
+    .filter((item) => Number(item.value) > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
+
+  if (!chartData.length) {
+    return (
+      <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-white/45 bg-card/28 text-sm text-muted-foreground">
+        Gosterilecek segment verisi bulunmuyor
+      </div>
+    );
+  }
+
+  return <PieChartSimple data={chartData} size={240} />;
 }

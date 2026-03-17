@@ -1,24 +1,24 @@
 # Production Order Model
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, DateTime, String, Text
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
-from datetime import datetime
 
 class ProductionOrder(BaseModel, TenantScopedMixin):
     __tablename__ = 'production_orders'
     
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('prod'))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id('prod'))
     # tenant_id is now inherited from TenantScopedMixin
-    party_id = db.Column(db.String(50), nullable=False)
+    party_id = Column(String(50), nullable=False)
     
-    order_number = db.Column(db.String(50), unique=True, nullable=False)
-    product_type = db.Column(db.String(50)) # mold, filter, device
+    order_number = Column(String(50), unique=True, nullable=False)
+    product_type = Column(String(50)) # mold, filter, device
     
-    status = db.Column(db.String(20), default='new') # new, in_production, quality_check, shipped, delivered
+    status = Column(String(20), default='new') # new, in_production, quality_check, shipped, delivered
     
-    manufacturer = db.Column(db.String(100))
-    estimated_delivery_date = db.Column(db.DateTime)
+    manufacturer = Column(String(100))
+    estimated_delivery_date = Column(DateTime)
     
-    notes = db.Column(db.Text)
+    notes = Column(Text)
     
     def to_dict(self):
         base = self.to_dict_base()

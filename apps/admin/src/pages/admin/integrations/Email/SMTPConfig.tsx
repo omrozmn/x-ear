@@ -4,8 +4,23 @@ import { Input, Button, Card, CardHeader, CardTitle, CardContent, Alert, AlertDe
 import { EnvelopeIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { z } from 'zod';
-import type { SMTPConfigCreate } from '@/api/generated/schemas';
+import type { SmtpConfigCreate } from '@/api/generated/schemas';
 import { EmailIntegrationNav } from '@/components/integrations/EmailIntegrationNav';
+
+interface ApiErrorLike {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+      };
+    };
+  };
+}
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  const apiError = error as ApiErrorLike;
+  return apiError.response?.data?.error?.message || fallback;
+}
 
 // Zod validation schema
 const smtpConfigSchema = z.object({
@@ -26,7 +41,7 @@ const SMTPConfig: React.FC = () => {
   const sendTestMutation = useSendTestEmail();
 
   // Form state
-  const [formData, setFormData] = useState<SMTPConfigCreate>({
+  const [formData, setFormData] = useState<SmtpConfigCreate>({
     host: '',
     port: 587,
     username: '',
@@ -60,7 +75,7 @@ const SMTPConfig: React.FC = () => {
     }
   }, [configData]);
 
-  const handleInputChange = (field: keyof SMTPConfigCreate, value: string | number | boolean) => {
+  const handleInputChange = (field: keyof SmtpConfigCreate, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear validation error for this field
     if (validationErrors[field]) {
@@ -101,10 +116,9 @@ const SMTPConfig: React.FC = () => {
       await createOrUpdateMutation.mutateAsync({ data: formData });
       toast.success('SMTP ayarları başarıyla kaydedildi');
       refetch();
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || 'SMTP ayarları kaydedilemedi';
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error, 'SMTP ayarları kaydedilemedi');
       toast.error(errorMessage);
-      console.error('SMTP config save error:', error);
     }
   };
 
@@ -124,10 +138,9 @@ const SMTPConfig: React.FC = () => {
       toast.success('Test e-postası gönderildi');
       setShowTestConfirm(false);
       setTestEmail('');
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || 'Test e-postası gönderilemedi';
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error, 'Test e-postası gönderilemedi');
       toast.error(errorMessage);
-      console.error('Test email error:', error);
     }
   };
 

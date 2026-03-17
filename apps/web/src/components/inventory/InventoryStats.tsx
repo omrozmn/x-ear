@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { listInventoryStats } from '@/api/client/inventory.client';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface InventoryStatsProps {
   className?: string;
@@ -34,6 +35,8 @@ interface ExtendedInventoryStats extends BaseInventoryStats {
 }
 
 export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }) => {
+  const { hasPermission } = usePermissions();
+  const canViewCost = hasPermission('sensitive.inventory.overview.cost.view');
   const [stats, setStats] = useState<InventoryStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,20 +91,24 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     }).format(amount);
   };
 
+  const formatProtectedCurrency = (amount: number) => (
+    canViewCost ? formatCurrency(amount) : 'Bu rol icin gizli'
+  );
+
   if (loading) {
     return (
       <div className={`animate-pulse ${className}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white overflow-hidden shadow rounded-lg">
+            <div key={i} className="bg-card overflow-hidden shadow rounded-2xl">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                    <div className="w-8 h-8 bg-accent rounded"></div>
                   </div>
                   <div className="ml-5 w-0 flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-accent rounded w-3/4 mb-2"></div>
+                    <div className="h-6 bg-accent rounded w-1/2"></div>
                   </div>
                 </div>
               </div>
@@ -114,7 +121,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
 
   if (error) {
     return (
-      <div className={`bg-red-50 border border-red-200 rounded-md p-4 ${className}`}>
+      <div className={`bg-destructive/10 border border-red-200 rounded-xl p-4 ${className}`}>
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -123,7 +130,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">İstatistikler yüklenirken hata</h3>
-            <div className="mt-2 text-sm text-red-700">{error}</div>
+            <div className="mt-2 text-sm text-destructive">{error}</div>
           </div>
         </div>
       </div>
@@ -140,23 +147,23 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
       value: stats.total.toLocaleString(),
       subtitle: stats.totalStock !== undefined ? `Stok: ${stats.totalStock.toLocaleString()}` : undefined,
       icon: (
-        <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20'
+      color: 'text-primary',
+      bgColor: 'bg-primary/10'
     },
     {
       name: 'Toplam Değer',
-      value: formatCurrency(stats.totalValue),
+      value: formatProtectedCurrency(stats.totalValue),
       icon: (
-        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
         </svg>
       ),
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-50 dark:bg-green-900/20'
+      color: 'text-success',
+      bgColor: 'bg-success/10'
     },
     {
       name: 'Düşük Stok',
@@ -167,18 +174,18 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
         </svg>
       ),
       color: 'text-yellow-600 dark:text-yellow-400',
-      bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
+      bgColor: 'bg-warning/10'
     },
     {
       name: 'Tükenen Ürünler',
       value: stats.outOfStock.toLocaleString(),
       icon: (
-        <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-8 h-8 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
         </svg>
       ),
-      color: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-50 dark:bg-red-900/20'
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10'
     }
   ];
 
@@ -205,13 +212,13 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
       {/* Use a single-row flex layout so KPIs stay on one line and shrink on small screens */}
       <div className="flex gap-4 items-stretch w-full flex-nowrap">
         {statCards.map((stat) => (
-          <div key={stat.name} className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg flex-1 min-w-0">
+          <div key={stat.name} className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-2xl flex-1 min-w-0">
             <div className="p-4 sm:p-5">
               <div className="flex items-center">
-                <div className={`flex-shrink-0 ${stat.bgColor} p-2 rounded-md`}>{stat.icon}</div>
+                <div className={`flex-shrink-0 ${stat.bgColor} p-2 rounded-xl`}>{stat.icon}</div>
                 <div className="ml-4 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{stat.name}</dt>
+                    <dt className="text-sm font-medium text-muted-foreground truncate">{stat.name}</dt>
                     <dd
                       className={`font-medium ${stat.color} text-lg sm:text-2xl md:text-3xl leading-tight`}
                       style={{
@@ -225,7 +232,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
                       {stat.value}
                     </dd>
                     {stat.subtitle && (
-                      <dd className="text-sm text-gray-500 mt-1" style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
+                      <dd className="text-sm text-muted-foreground mt-1" style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
                         {stat.subtitle}
                       </dd>
                     )}

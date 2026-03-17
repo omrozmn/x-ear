@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select, Textarea, Modal } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea, Modal, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import {
   Search,
   Plus,
@@ -95,6 +97,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [confirmState, setConfirmState] = useState<{open: boolean, action?: () => void}>({open: false});
 
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '',
@@ -318,27 +321,30 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     }
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
+  const handleDeleteItem = (id: string) => {
+    setConfirmState({
+      open: true,
+      action: async () => {
+        setSaving(true);
+        setError(null);
 
-    setSaving(true);
-    setError(null);
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+          const updatedInventory = inventory.filter(item => item.id !== id);
+          setInventory(updatedInventory);
+          onInventoryUpdate?.(updatedInventory);
 
-      const updatedInventory = inventory.filter(item => item.id !== id);
-      setInventory(updatedInventory);
-      onInventoryUpdate?.(updatedInventory);
-
-      setSuccessMessage('Item deleted successfully!');
-    } catch (err) {
-      setError('Failed to delete item. Please try again.');
-      console.error('Error deleting item:', err);
-    } finally {
-      setSaving(false);
-    }
+          setSuccessMessage('Item deleted successfully!');
+        } catch (err) {
+          setError('Failed to delete item. Please try again.');
+          console.error('Error deleting item:', err);
+        } finally {
+          setSaving(false);
+        }
+      }
+    });
   };
 
   const resetForm = () => {
@@ -424,13 +430,91 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     const stockPercentage = (availableForSale / item.totalStock) * 100;
 
     if (item.onTrialStock > 0 && item.onTrialStock >= item.availableStock) {
-      return { color: 'text-blue-600', label: 'All on Trial' };
+      return { color: 'text-primary', label: 'All on Trial' };
     }
-    if (stockPercentage <= 10) return { color: 'text-red-600', label: 'Critical' };
+    if (stockPercentage <= 10) return { color: 'text-destructive', label: 'Critical' };
     if (stockPercentage <= 25) return { color: 'text-yellow-600', label: 'Low' };
-    if (item.onTrialStock > 0) return { color: 'text-blue-600', label: 'Some on Trial' };
-    return { color: 'text-green-600', label: 'Good' };
+    if (item.onTrialStock > 0) return { color: 'text-primary', label: 'Some on Trial' };
+    return { color: 'text-success', label: 'Good' };
   };
+
+  const inventoryColumns: Column<InventoryItem>[] = [
+    {
+      key: '_item',
+      title: 'Item Details',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="space-y-1">
+          <div className="font-medium text-foreground">{item.name}</div>
+          <div className="text-sm text-muted-foreground">{item.brand} - {item.model}</div>
+          <div className="text-xs text-muted-foreground">
+            {categoryOptions.find(c => c.value === item.category)?.label} &bull;
+            {typeOptions.find(t => t.value === item.type)?.label}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: '_stock',
+      title: 'Stock Status',
+      render: (_: unknown, item: InventoryItem) => {
+        const stockStatus = getStockStatus(item);
+        return (
+          <div className="space-y-1">
+            <div className="text-sm"><span className="font-medium">Available:</span> {item.availableStock}</div>
+            <div className="text-sm"><span className="font-medium">Assigned:</span> {item.assignedStock}</div>
+            <div className="text-sm"><span className="font-medium">On Trial:</span> {item.onTrialStock || 0}</div>
+            <div className="text-sm"><span className="font-medium">Defective:</span> {item.defectiveStock || 0}</div>
+            <div className="text-sm"><span className="font-medium">Total:</span> {item.totalStock}</div>
+            <div className={`text-xs font-medium ${stockStatus.color}`}>{stockStatus.label}</div>
+          </div>
+        );
+      },
+    },
+    {
+      key: '_pricing',
+      title: 'Pricing',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="space-y-1 text-sm">
+          <div><span className="font-medium">Price:</span> ₺{item.price.toLocaleString()}</div>
+          <div><span className="font-medium">List:</span> ₺{item.listPrice.toLocaleString()}</div>
+          <div><span className="font-medium">SGK:</span> ₺{item.sgkPrice.toLocaleString()}</div>
+        </div>
+      ),
+    },
+    {
+      key: '_warranty',
+      title: 'Warranty',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="text-sm">{item.warrantyPeriod} months</div>
+      ),
+    },
+    {
+      key: '_actions',
+      title: 'Actions',
+      align: 'center',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="flex justify-center gap-2">
+          <Button
+            onClick={() => startEdit(item)}
+            variant="outline"
+            size="sm"
+            disabled={saving}
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+          <Button
+            onClick={() => handleDeleteItem(item.id)}
+            variant="outline"
+            size="sm"
+            disabled={saving}
+            className="text-destructive hover:text-destructive hover:border-red-300"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   if (!isOpen) return null;
 
@@ -444,13 +528,13 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     >
       <div className="space-y-6">
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             <button data-allow-raw="true"
               onClick={() => setActiveTab('items')}
               className={`${activeTab === 'items'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
             >
               <Package className="w-4 h-4" />
@@ -459,8 +543,8 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
             <button data-allow-raw="true"
               onClick={() => setActiveTab('movements')}
               className={`${activeTab === 'movements'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
             >
               <RefreshCw className="w-4 h-4" />
@@ -473,14 +557,14 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
           <div className="space-y-6">
             {/* Status Messages */}
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-red-200 rounded-2xl text-destructive">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             {successMessage && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+              <div className="flex items-center gap-2 p-3 bg-success/10 border border-green-200 rounded-2xl text-success">
                 <CheckCircle className="w-5 h-5 flex-shrink-0" />
                 <span>{successMessage}</span>
               </div>
@@ -489,9 +573,9 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
             {/* Header Actions */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
               <div className="flex items-center gap-2">
-                <Package className="w-6 h-6 text-blue-600" />
+                <Package className="w-6 h-6 text-primary" />
                 <h2 className="text-xl font-semibold">Inventory Items</h2>
-                {loading && <Loader2 className="w-5 h-5 animate-spin text-blue-600" />}
+                {loading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -516,9 +600,9 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
             </div>
 
             {/* Search and Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted rounded-2xl">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search items..."
                   value={searchTerm}
@@ -544,7 +628,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                 disabled={loading}
               />
 
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Filter className="w-4 h-4" />
                 <span>{filteredInventory.length} of {inventory.length} items</span>
               </div>
@@ -554,104 +638,18 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-                  <p className="text-gray-600">Loading inventory...</p>
+                  <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-muted-foreground">Loading inventory...</p>
                 </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="text-left p-3 font-medium border-b">Item Details</th>
-                      <th className="text-left p-3 font-medium border-b">Stock Status</th>
-                      <th className="text-left p-3 font-medium border-b">Pricing</th>
-                      <th className="text-left p-3 font-medium border-b">Warranty</th>
-                      <th className="text-center p-3 font-medium border-b">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredInventory.map((item) => {
-                      const stockStatus = getStockStatus(item);
-                      return (
-                        <tr key={item.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3 border-b">
-                            <div className="space-y-1">
-                              <div className="font-medium text-gray-900">{item.name}</div>
-                              <div className="text-sm text-gray-600">{item.brand} - {item.model}</div>
-                              <div className="text-xs text-gray-500">
-                                {categoryOptions.find(c => c.value === item.category)?.label} •
-                                {typeOptions.find(t => t.value === item.type)?.label}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="space-y-1">
-                              <div className="text-sm">
-                                <span className="font-medium">Available:</span> {item.availableStock}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">Assigned:</span> {item.assignedStock}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">On Trial:</span> {item.onTrialStock || 0}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">Defective:</span> {item.defectiveStock || 0}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">Total:</span> {item.totalStock}
-                              </div>
-                              <div className={`text-xs font-medium ${stockStatus.color}`}>
-                                {stockStatus.label}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="space-y-1 text-sm">
-                              <div><span className="font-medium">Price:</span> ₺{item.price.toLocaleString()}</div>
-                              <div><span className="font-medium">List:</span> ₺{item.listPrice.toLocaleString()}</div>
-                              <div><span className="font-medium">SGK:</span> ₺{item.sgkPrice.toLocaleString()}</div>
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="text-sm">
-                              {item.warrantyPeriod} months
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="flex justify-center gap-2">
-                              <Button
-                                onClick={() => startEdit(item)}
-                                variant="outline"
-                                size="sm"
-                                disabled={saving}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteItem(item.id)}
-                                variant="outline"
-                                size="sm"
-                                disabled={saving}
-                                className="text-red-600 hover:text-red-700 hover:border-red-300"
-                              >
-                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-
-                {filteredInventory.length === 0 && !loading && (
-                  <div className="text-center py-8 text-gray-500">
-                    {inventory.length === 0 ? 'No inventory items found.' : 'No items match your search criteria.'}
-                  </div>
-                )}
-              </div>
+              <DataTable<InventoryItem>
+                data={filteredInventory}
+                columns={inventoryColumns}
+                rowKey={(item) => item.id}
+                loading={false}
+                emptyText={inventory.length === 0 ? 'No inventory items found.' : 'No items match your search criteria.'}
+              />
             )}
 
             {/* Add/Edit Item Modal */}
@@ -808,6 +806,18 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
         ) : (
           <InventoryMovementsTable />
         )}
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={confirmState.open}
+          title="Silme Onayı"
+          description="Bu ürünü silmek istediğinizden emin misiniz?"
+          onClose={() => setConfirmState({open: false})}
+          onConfirm={() => { confirmState.action?.(); setConfirmState({open: false}); }}
+          confirmLabel="Sil"
+          cancelLabel="İptal"
+          variant="danger"
+        />
       </div>
     </Modal>
   );

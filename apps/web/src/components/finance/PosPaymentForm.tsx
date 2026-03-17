@@ -76,7 +76,7 @@ export const PosPaymentForm: React.FC<PosPaymentFormProps> = ({
                     <h3 className="text-lg font-medium">{t('pos.secure_payment_screen')}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setIframeUrl(null)}>{t('pos.return')}</Button>
                 </div>
-                <div className="flex-1 min-h-[500px] border rounded-lg overflow-hidden bg-gray-50 relative">
+                <div className="flex-1 min-h-[500px] border rounded-2xl overflow-hidden bg-muted relative">
                     <iframe
                         src={iframeUrl}
                         className="absolute inset-0 w-full h-full"
@@ -93,15 +93,15 @@ export const PosPaymentForm: React.FC<PosPaymentFormProps> = ({
         <div className="space-y-6 max-w-md mx-auto py-4">
             {error && <Alert variant="error">{error}</Alert>}
 
-            <div className="text-center pt-4 pb-6 border-b border-gray-100">
-                <div className="text-gray-500 text-sm uppercase tracking-wide mb-2">{t('pos.amount_to_pay')}</div>
-                <div className="text-4xl font-bold text-blue-600">
+            <div className="text-center pt-4 pb-6 border-b border-border">
+                <div className="text-muted-foreground text-sm uppercase tracking-wide mb-2">{t('pos.amount_to_pay')}</div>
+                <div className="text-4xl font-bold text-primary">
                     {amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
                 </div>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('pos.installment_options')}</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('pos.installment_options')}</label>
                 <Select
                     value={installmentCount.toString()}
                     onChange={(e) => setInstallmentCount(Number(e.target.value))}
@@ -115,7 +115,7 @@ export const PosPaymentForm: React.FC<PosPaymentFormProps> = ({
                     ]}
                 />
                 {installmentCount > 1 && (
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                         {t('pos.installment_warning')}
                     </p>
                 )}
@@ -129,7 +129,7 @@ export const PosPaymentForm: React.FC<PosPaymentFormProps> = ({
                 >
                     {isPending ? <><Loading className="w-5 h-5 mr-2" /> {t('pos.starting')}</> : t('pos.pay_btn')}
                 </Button>
-                <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
+                <p className="text-center text-xs text-muted-foreground mt-4 flex items-center justify-center gap-1">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                     {t('pos.ssl_secure_short')}
                 </p>

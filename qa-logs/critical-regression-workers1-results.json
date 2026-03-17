@@ -1,0 +1,597 @@
+{
+  "config": {
+    "configFile": "/Users/ozmen/Desktop/x-ear web app/x-ear/playwright.e2e.apps.config.ts",
+    "rootDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "web-chromium",
+        "name": "web-chromium",
+        "testDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+        "testIgnore": [
+          "**/test-results/**",
+          "**/critical-flows/**",
+          "**/deep_qa_*.spec.ts",
+          "**/party-debug.spec.ts",
+          "**/debug-*.spec.ts"
+        ],
+        "testMatch": [
+          "**/web/**/*.spec.ts",
+          "**/auth/**/*.spec.ts",
+          "**/party/**/*.spec.ts",
+          "**/sale/**/*.spec.ts",
+          "**/payment/**/*.spec.ts",
+          "**/appointment/**/*.spec.ts",
+          "**/communication/**/*.spec.ts",
+          "**/settings/**/*.spec.ts",
+          "**/invoice/**/*.spec.ts",
+          "**/inventory/**/*.spec.ts",
+          "**/cash/**/*.spec.ts",
+          "**/reports/**/*.spec.ts",
+          "**/device/**/*.spec.ts",
+          "**/smoke/**/*.spec.ts"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "web-firefox",
+        "name": "web-firefox",
+        "testDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+        "testIgnore": [
+          "**/test-results/**",
+          "**/critical-flows/**",
+          "**/deep_qa_*.spec.ts",
+          "**/party-debug.spec.ts",
+          "**/debug-*.spec.ts"
+        ],
+        "testMatch": [
+          "**/web/**/*.spec.ts",
+          "**/auth/**/*.spec.ts",
+          "**/party/**/*.spec.ts",
+          "**/sale/**/*.spec.ts",
+          "**/payment/**/*.spec.ts",
+          "**/appointment/**/*.spec.ts",
+          "**/communication/**/*.spec.ts",
+          "**/settings/**/*.spec.ts",
+          "**/invoice/**/*.spec.ts",
+          "**/inventory/**/*.spec.ts",
+          "**/cash/**/*.spec.ts",
+          "**/reports/**/*.spec.ts",
+          "**/device/**/*.spec.ts",
+          "**/smoke/**/*.spec.ts"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "web-webkit",
+        "name": "web-webkit",
+        "testDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+        "testIgnore": [
+          "**/test-results/**",
+          "**/critical-flows/**",
+          "**/deep_qa_*.spec.ts",
+          "**/party-debug.spec.ts",
+          "**/debug-*.spec.ts"
+        ],
+        "testMatch": [
+          "**/web/**/*.spec.ts",
+          "**/auth/**/*.spec.ts",
+          "**/party/**/*.spec.ts",
+          "**/sale/**/*.spec.ts",
+          "**/payment/**/*.spec.ts",
+          "**/appointment/**/*.spec.ts",
+          "**/communication/**/*.spec.ts",
+          "**/settings/**/*.spec.ts",
+          "**/invoice/**/*.spec.ts",
+          "**/inventory/**/*.spec.ts",
+          "**/cash/**/*.spec.ts",
+          "**/reports/**/*.spec.ts",
+          "**/device/**/*.spec.ts",
+          "**/smoke/**/*.spec.ts"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "admin-chromium",
+        "name": "admin-chromium",
+        "testDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+        "testIgnore": [
+          "**/test-results/**",
+          "**/critical-flows/**",
+          "**/deep_qa_*.spec.ts",
+          "**/party-debug.spec.ts",
+          "**/debug-*.spec.ts"
+        ],
+        "testMatch": [
+          "**/admin/**/*.spec.ts"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "landing-chromium",
+        "name": "landing-chromium",
+        "testDir": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+        "testIgnore": [
+          "**/test-results/**",
+          "**/critical-flows/**",
+          "**/deep_qa_*.spec.ts",
+          "**/party-debug.spec.ts",
+          "**/debug-*.spec.ts"
+        ],
+        "testMatch": [
+          "**/landing/**/*.spec.ts"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report/apps-e2e"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/apps-e2e-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/apps-e2e-results.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "appointment/appointment-crud.spec.ts",
+      "file": "appointment/appointment-crud.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Appointment CRUD Operations",
+          "file": "appointment/appointment-crud.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "APPOINTMENT-004: Should navigate to appointments tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-chromium",
+                  "projectName": "web-chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11865,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-13T06:49:26.840Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "191b79794ac1aa463321-2112a6639788412a0352",
+              "file": "appointment/appointment-crud.spec.ts",
+              "line": 145,
+              "column": 3
+            },
+            {
+              "title": "APPOINTMENT-005: Should display calendar view",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-chromium",
+                  "projectName": "web-chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5527,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-13T06:49:38.793Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "191b79794ac1aa463321-22ca4d027721a4dfffc3",
+              "file": "appointment/appointment-crud.spec.ts",
+              "line": 159,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "party/party-crud.spec.ts",
+      "file": "party/party-crud.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Party CRUD Operations",
+          "file": "party/party-crud.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PARTY-003: Should create a new party with valid data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-chromium",
+                  "projectName": "web-chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15867,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[TEST] ✅ Party created successfully: pat_39862835\n"
+                        },
+                        {
+                          "text": "[TEST] ✅ Party cleaned up: pat_39862835\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-13T06:49:44.333Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-26d6c4b3736c49949145",
+              "file": "party/party-crud.spec.ts",
+              "line": 47,
+              "column": 3
+            },
+            {
+              "title": "PARTY-007: Should search parties by name",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-chromium",
+                  "projectName": "web-chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 20229,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Test1116')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Test1116')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Test1116')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Test1116')\u001b[22m\n\n    at /Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:130:63",
+                        "location": {
+                          "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts",
+                          "column": 63,
+                          "line": 130
+                        },
+                        "snippet": "  128 |     \n  129 |     // Verify party appears in results\n> 130 |     await expect(page.locator('text=' + testParty.firstName)).toBeVisible();\n      |                                                               ^\n  131 |     \n  132 |     // Cleanup\n  133 |     if (partyId) {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts",
+                            "column": 63,
+                            "line": 130
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Test1116')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Test1116')\u001b[22m\n\n\n  128 |     \n  129 |     // Verify party appears in results\n> 130 |     await expect(page.locator('text=' + testParty.firstName)).toBeVisible();\n      |                                                               ^\n  131 |     \n  132 |     // Cleanup\n  133 |     if (partyId) {\n    at /Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:130:63"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-13T06:50:00.205Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-c3f5a-ould-search-parties-by-name-web-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-c3f5a-ould-search-parties-by-name-web-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-c3f5a-ould-search-parties-by-name-web-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-c3f5a-ould-search-parties-by-name-web-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts",
+                        "column": 63,
+                        "line": 130
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-dacdbaba8c67dad30f97",
+              "file": "party/party-crud.spec.ts",
+              "line": 121,
+              "column": 3
+            },
+            {
+              "title": "PARTY-008: Should search parties by phone",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-chromium",
+                  "projectName": "web-chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 20059,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=+905282909754')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=+905282909754')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=+905282909754')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=+905282909754')\u001b[22m\n\n    at /Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:147:59",
+                        "location": {
+                          "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts",
+                          "column": 59,
+                          "line": 147
+                        },
+                        "snippet": "  145 |     \n  146 |     // Verify party appears in results\n> 147 |     await expect(page.locator('text=' + testParty.phone)).toBeVisible();\n      |                                                           ^\n  148 |     \n  149 |     // Cleanup\n  150 |     if (partyId) {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts",
+                            "column": 59,
+                            "line": 147
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=+905282909754')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=+905282909754')\u001b[22m\n\n\n  145 |     \n  146 |     // Verify party appears in results\n> 147 |     await expect(page.locator('text=' + testParty.phone)).toBeVisible();\n      |                                                           ^\n  148 |     \n  149 |     // Cleanup\n  150 |     if (partyId) {\n    at /Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:147:59"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-13T06:50:22.225Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-418f8-uld-search-parties-by-phone-web-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-418f8-uld-search-parties-by-phone-web-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-418f8-uld-search-parties-by-phone-web-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-418f8-uld-search-parties-by-phone-web-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts",
+                        "column": 59,
+                        "line": 147
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-b2f57607734ba8eeb7ad",
+              "file": "party/party-crud.spec.ts",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "PARTY-009: Should update party information",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-chromium",
+                  "projectName": "web-chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 48867,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"success-toast\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"success-toast\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"success-toast\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"success-toast\"]')\u001b[22m\n\n    at expectToastVisible (/Users/ozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts:22:23)\n    at /Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:171:11",
+                        "location": {
+                          "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts",
+                          "column": 23,
+                          "line": 22
+                        },
+                        "snippet": "   at ../helpers/assertions.ts:22\n\n  20 | ): Promise<void> {\n  21 |   const toast = page.locator(`[data-testid=\"${type}-toast\"]`);\n> 22 |   await expect(toast).toBeVisible({ timeout: 10000 });\n     |                       ^\n  23 |   \n  24 |   if (message) {\n  25 |     await expect(toast).toContainText(message);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts",
+                            "column": 23,
+                            "line": 22
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"success-toast\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"success-toast\"]')\u001b[22m\n\n\n   at ../helpers/assertions.ts:22\n\n  20 | ): Promise<void> {\n  21 |   const toast = page.locator(`[data-testid=\"${type}-toast\"]`);\n> 22 |   await expect(toast).toBeVisible({ timeout: 10000 });\n     |                       ^\n  23 |   \n  24 |   if (message) {\n  25 |     await expect(toast).toContainText(message);\n    at expectToastVisible (/Users/ozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts:22:23)\n    at /Users/ozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:171:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-13T06:50:43.470Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-70ac1-ld-update-party-information-web-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-70ac1-ld-update-party-information-web-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-70ac1-ld-update-party-information-web-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/ozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-70ac1-ld-update-party-information-web-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts",
+                        "column": 23,
+                        "line": 22
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-e27565cdb30c1d6aa5c1",
+              "file": "party/party-crud.spec.ts",
+              "line": 155,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-13T06:49:26.315Z",
+    "duration": 126620.902,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

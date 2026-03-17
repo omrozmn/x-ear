@@ -1,0 +1,219 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - button [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - generic [ref=e8]:
+          - img "X-Ear Logo" [ref=e9]
+          - heading "X-EAR CRM" [level=2] [ref=e10]
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - generic [ref=e13] [cursor=pointer]:
+            - img [ref=e15]
+            - generic [ref=e17]: Dashboard
+        - listitem [ref=e18]:
+          - generic [ref=e19] [cursor=pointer]:
+            - img [ref=e21]
+            - generic [ref=e26]: Patients
+        - listitem [ref=e27]:
+          - generic [ref=e28] [cursor=pointer]:
+            - img [ref=e30]
+            - generic [ref=e32]: Appointments
+        - listitem [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e39]: Invoices
+            - img [ref=e41]
+        - listitem [ref=e43]:
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e46]
+            - generic [ref=e50]: Inventory
+        - listitem [ref=e51]:
+          - generic [ref=e52] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e58]: Suppliers
+        - listitem [ref=e59]:
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e64]: POS
+        - listitem [ref=e65]:
+          - generic [ref=e66] [cursor=pointer]:
+            - img [ref=e68]
+            - generic [ref=e72]: Cashflow
+        - listitem [ref=e73]:
+          - generic [ref=e74] [cursor=pointer]:
+            - img [ref=e76]
+            - generic [ref=e78]: SMS Campaign
+        - listitem [ref=e79]:
+          - generic [ref=e80] [cursor=pointer]:
+            - img [ref=e82]
+            - generic [ref=e85]: Reports
+        - listitem [ref=e86]:
+          - generic [ref=e87] [cursor=pointer]:
+            - img [ref=e89]
+            - generic [ref=e92]: Automation
+        - listitem [ref=e93]:
+          - generic [ref=e94] [cursor=pointer]:
+            - img [ref=e96]
+            - generic [ref=e99]: Settings
+            - img [ref=e101]
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - generic [ref=e105]:
+          - heading "Dashboard" [level=1] [ref=e106]
+          - generic [ref=e108] [cursor=pointer]:
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - img [ref=e113]
+              - generic [ref=e116]: Search or start action with AI...
+            - generic [ref=e118]:
+              - generic [ref=e119]: ⌘
+              - text: K
+          - generic [ref=e120]:
+            - button "Koyu Tema" [ref=e121] [cursor=pointer]:
+              - img [ref=e122]
+            - button "TR" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e129]: TR
+            - button "Notifications" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+            - 'button "Tenant: tenant_0..." [ref=e136] [cursor=pointer]':
+              - img [ref=e137]
+              - generic [ref=e141]: "Tenant: tenant_0..."
+              - img [ref=e142]
+            - 'button "Debug: super_admin" [ref=e145] [cursor=pointer]':
+              - img [ref=e146]
+              - generic [ref=e155]: "Debug: super_admin"
+              - img [ref=e156]
+            - button "e2etest super_admin" [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e164]:
+                - generic [ref=e165]: e2etest
+                - generic [ref=e166]: super_admin
+              - img [ref=e167]
+      - main [ref=e169]:
+        - generic [ref=e170]:
+          - button "Hasta Listesine Dön" [ref=e172] [cursor=pointer]:
+            - img [ref=e173]
+            - text: Hasta Listesine Dön
+          - generic [ref=e176]:
+            - generic [ref=e177]:
+              - img [ref=e179]
+              - generic [ref=e182]:
+                - heading "Note Tester" [level=1] [ref=e184]
+                - generic [ref=e185]:
+                  - generic [ref=e186]: "Segment: lead"
+                  - generic [ref=e187]: "Kazanım Türü: Ziyaret"
+                  - generic [ref=e188]: "Roller: LEAD"
+                - generic [ref=e189]:
+                  - generic [ref=e190]:
+                    - img [ref=e191]
+                    - generic [ref=e193]: +(905) 559 99 8877
+                  - generic [ref=e194]:
+                    - img [ref=e195]
+                    - generic "Hasta ID" [ref=e198]: "ID: pat_b3424d40"
+                  - generic [ref=e199]:
+                    - img [ref=e200]
+                    - generic [ref=e203]: "TC: Belirtilmemiş"
+                  - generic [ref=e204]:
+                    - img [ref=e205]
+                    - generic [ref=e208]: "Cinsiyet: Belirtilmemiş"
+                  - generic [ref=e209]:
+                    - img [ref=e210]
+                    - generic [ref=e212]: "Doğum: Belirtilmemiş"
+                  - generic [ref=e213]:
+                    - img
+                    - generic [ref=e216]: note.tester@example.com
+                  - generic [ref=e217]:
+                    - img [ref=e218]
+                    - generic [ref=e221]: Adres bilgisi yok
+            - generic [ref=e222]:
+              - button "Not Ekle" [ref=e223] [cursor=pointer]:
+                - img [ref=e225]
+                - text: Not Ekle
+              - button "Düzenle" [ref=e227] [cursor=pointer]:
+                - img [ref=e229]
+                - text: Düzenle
+              - button "Rapor Oluştur" [ref=e232] [cursor=pointer]:
+                - img [ref=e234]
+                - text: Rapor Oluştur
+              - button "Etiket Güncelle" [ref=e237] [cursor=pointer]:
+                - img [ref=e239]
+                - text: Etiket Güncelle
+              - button "Sil" [active] [ref=e242] [cursor=pointer]:
+                - img [ref=e244]
+                - text: Sil
+          - generic [ref=e247]:
+            - generic [ref=e249]:
+              - img [ref=e250]
+              - generic [ref=e252]:
+                - paragraph [ref=e253]: Kayıt Tarihi
+                - paragraph [ref=e254]: 12 Şubat 2026
+            - generic [ref=e256]:
+              - img [ref=e257]
+              - generic [ref=e259]:
+                - paragraph [ref=e260]: Cihaz Sayısı
+                - paragraph [ref=e261]: "0"
+            - generic [ref=e263]:
+              - img [ref=e264]
+              - generic [ref=e266]:
+                - paragraph [ref=e267]: Durum
+                - generic [ref=e269]: Aktif
+          - navigation "Tabs" [ref=e272]:
+            - button "Genel Bilgiler" [ref=e273] [cursor=pointer]:
+              - img [ref=e274]
+              - generic [ref=e277]: Genel Bilgiler
+            - button "Cihazlar" [ref=e278] [cursor=pointer]:
+              - img [ref=e279]
+              - generic [ref=e281]: Cihazlar
+            - button "İşitme Testleri" [ref=e282] [cursor=pointer]:
+              - img [ref=e283]
+              - generic [ref=e287]: İşitme Testleri
+            - button "Satışlar" [ref=e288] [cursor=pointer]:
+              - img [ref=e289]
+              - generic [ref=e291]: Satışlar
+            - button "Belgeler" [ref=e292] [cursor=pointer]:
+              - img [ref=e293]
+              - generic [ref=e296]: Belgeler
+            - button "Zaman Çizelgesi" [ref=e297] [cursor=pointer]:
+              - img [ref=e298]
+              - generic [ref=e301]: Zaman Çizelgesi
+            - button "Notlar" [ref=e302] [cursor=pointer]:
+              - img [ref=e303]
+              - generic [ref=e306]: Notlar
+          - generic [ref=e308]:
+            - generic [ref=e309]:
+              - heading "Hasta Notları" [level=3] [ref=e310]
+              - button "Not Ekle" [ref=e311] [cursor=pointer]:
+                - img [ref=e312]
+                - text: Not Ekle
+            - generic [ref=e315]:
+              - generic [ref=e316]:
+                - paragraph [ref=e317]: Test Note 1770930875199
+                - generic [ref=e318]:
+                  - button [ref=e319] [cursor=pointer]:
+                    - img [ref=e320]
+                  - button [ref=e323] [cursor=pointer]:
+                    - img [ref=e324]
+              - generic [ref=e327]:
+                - text: 12.02.2026 21:14:35
+                - generic [ref=e328]: "• Yazar: system"
+        - button "Sayfa İzinlerini Görüntüle" [ref=e329] [cursor=pointer]:
+          - img [ref=e330]
+  - generic:
+    - contentinfo:
+      - button "Open TanStack Router Devtools" [ref=e333] [cursor=pointer]:
+        - generic [ref=e334]:
+          - img [ref=e336]
+          - img [ref=e371]
+        - generic [ref=e405]: "-"
+        - generic [ref=e406]: TanStack Router
+  - generic [ref=e407]:
+    - img [ref=e409]
+    - button "Open Tanstack query devtools" [ref=e457] [cursor=pointer]:
+      - img [ref=e458]
+```

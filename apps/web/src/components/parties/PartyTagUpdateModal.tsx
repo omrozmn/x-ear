@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from '@x-ear/ui-web';
 import { Settings, PenSquare } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 import type { Party, PartyStatus, PartySegment } from '../../types/party/party-base.types';
 import { useListBranches } from '../../api/generated/branches/branches';
 import { unwrapArray } from '../../utils/response-unwrap';
 import { BranchRead } from '../../api/generated/schemas';
+import { getPartySegments, getAcquisitionTypes } from '../../utils/party-segments';
 
 interface PartyTagUpdateModalProps {
   isOpen: boolean;
@@ -16,23 +18,29 @@ interface PartyTagUpdateModalProps {
     acquisitionType?: string;
     branchId?: string;
   }) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function PartyTagUpdateModal({
   isOpen,
   onClose,
   party,
-  onUpdate
+  onUpdate,
+  isLoading = false
 }: PartyTagUpdateModalProps) {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<PartyStatus>('ACTIVE');
   const [segment, setSegment] = useState<PartySegment>('NEW');
   const [acquisitionType, setAcquisitionType] = useState('');
   const [branchId, setBranchId] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch branches dynamically
   const { data: branchesResponse } = useListBranches();
   const allBranches = unwrapArray<BranchRead>(branchesResponse) || [];
+
+  // Load dynamic segments and acquisitions
+  const segmentOptions = getPartySegments();
+  const acquisitionOptions = getAcquisitionTypes();
 
   // Filter branches by party's tenant_id (for super admin viewing different tenants)
   const partyTenantId = 'tenantId' in (party || {}) ? (party as { tenantId?: string }).tenantId : undefined;
@@ -67,27 +75,30 @@ export function PartyTagUpdateModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!party?.id) return;
+    if (!party?.id || isLoading) return;
 
-    setIsSubmitting(true);
     try {
-      // Only send branchId if it's not empty
-      const updates: { status: PartyStatus; segment: PartySegment; acquisitionType: string; branchId?: string } = {
+      // Build updates object - only send non-empty values
+      const updates: { status: PartyStatus; segment: PartySegment; acquisitionType?: string; branchId?: string } = {
         status,
         segment,
-        acquisitionType,
       };
 
+      // Only add acquisitionType if it's not empty
+      if (acquisitionType) {
+        updates.acquisitionType = acquisitionType;
+      }
+
+      // Only add branchId if it's not empty
       if (branchId) {
         updates.branchId = branchId;
       }
 
       await onUpdate(party.id, updates);
-      onClose();
+      // Parent will close modal after successful update
     } catch (error) {
       console.error('Failed to update party tags:', error);
-    } finally {
-      setIsSubmitting(false);
+      // Don't close modal on error
     }
   };
 
@@ -102,108 +113,115 @@ export function PartyTagUpdateModal({
       showFooter={false}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
             <strong>{party.firstName} {party.lastName}</strong> için etiketleri güncelleyin
           </p>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="md"
             onClick={() => {
-              onClose();
-              window.location.href = '/settings/general';
+              navigate({ to: '/settings/parties' });
             }}
-            icon={<Settings className="w-4 h-4" />}
+            icon={<Settings className="w-5 h-5" />}
             iconPosition="left"
-            className="text-xs"
           >
-            Etiketleri Düzenle
+            Etiket Düzenle
           </Button>
         </div>
 
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Durum
-          </label>
-          <select data-allow-raw="true"
-            id="status"
-            value={status || ''}
-            onChange={(e) => setStatus(e.target.value as PartyStatus)}
-            className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="active" className="dark:bg-slate-800">Aktif</option>
-            <option value="inactive" className="dark:bg-slate-800">Pasif</option>
-          </select>
+        {/* Grid Layout - 2 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
+              Durum
+            </label>
+            <select data-allow-raw="true"
+              id="status"
+              value={status || ''}
+              onChange={(e) => setStatus(e.target.value as PartyStatus)}
+              disabled={isLoading}
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="active" className="dark:bg-slate-800">Aktif</option>
+              <option value="inactive" className="dark:bg-slate-800">Pasif</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="branchId" className="block text-sm font-medium text-foreground mb-1">
+              Şube
+            </label>
+            <select data-allow-raw="true"
+              id="branchId"
+              value={branchId}
+              onChange={(e) => setBranchId(e.target.value)}
+              disabled={isLoading}
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="" className="dark:bg-slate-800">Seçiniz</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id} className="dark:bg-slate-800">
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="segment" className="block text-sm font-medium text-foreground mb-1">
+              Segment
+            </label>
+            <select data-allow-raw="true"
+              id="segment"
+              value={segment}
+              onChange={(e) => setSegment(e.target.value as PartySegment)}
+              disabled={isLoading}
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {segmentOptions.map((option) => (
+                <option key={option.value} value={option.value} className="dark:bg-slate-800">
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="acquisitionType" className="block text-sm font-medium text-foreground mb-1">
+              Kazanım Türü
+            </label>
+            <select data-allow-raw="true"
+              id="acquisitionType"
+              value={acquisitionType}
+              onChange={(e) => setAcquisitionType(e.target.value)}
+              disabled={isLoading}
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="" className="dark:bg-slate-800">Seçiniz</option>
+              {acquisitionOptions.map((option) => (
+                <option key={option.value} value={option.value} className="dark:bg-slate-800">
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="segment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Segment
-          </label>
-          <select data-allow-raw="true"
-            id="segment"
-            value={segment}
-            onChange={(e) => setSegment(e.target.value as PartySegment)}
-            className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="new" className="dark:bg-slate-800">Yeni</option>
-            <option value="lead" className="dark:bg-slate-800">Potansiyel</option>
-            <option value="trial" className="dark:bg-slate-800">Deneme</option>
-            <option value="customer" className="dark:bg-slate-800">Müşteri</option>
-            <option value="control" className="dark:bg-slate-800">Kontrol</option>
-            <option value="renewal" className="dark:bg-slate-800">Yenileme</option>
-            <option value="existing" className="dark:bg-slate-800">Mevcut</option>
-            <option value="vip" className="dark:bg-slate-800">VIP</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="acquisitionType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Kazanım Türü
-          </label>
-          <select data-allow-raw="true"
-            id="acquisitionType"
-            value={acquisitionType}
-            onChange={(e) => setAcquisitionType(e.target.value)}
-            className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="" className="dark:bg-slate-800">Seçiniz</option>
-            <option value="referral" className="dark:bg-slate-800">Referans</option>
-            <option value="online" className="dark:bg-slate-800">Online</option>
-            <option value="walk-in" className="dark:bg-slate-800">Ziyaret</option>
-            <option value="social-media" className="dark:bg-slate-800">Sosyal Medya</option>
-            <option value="advertisement" className="dark:bg-slate-800">Reklam</option>
-            <option value="tabela" className="dark:bg-slate-800">Tabela</option>
-            <option value="other" className="dark:bg-slate-800">Diğer</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="branchId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Şube
-          </label>
-          <select data-allow-raw="true"
-            id="branchId"
-            value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
-            className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="" className="dark:bg-slate-800">Seçiniz</option>
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id} className="dark:bg-slate-800">
-                {branch.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex justify-end space-x-2 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
+        <div className="flex justify-end space-x-3 pt-4">
+          <Button type="button" variant="ghost" size="md" onClick={onClose} disabled={isLoading}>
             İptal
           </Button>
-          <Button type="submit" variant="primary" disabled={isSubmitting} icon={<PenSquare className="w-4 h-4" />} iconPosition="left">
-            Güncelle
+          <Button 
+            type="submit" 
+            variant="primary" 
+            size="md" 
+            disabled={isLoading} 
+            icon={<PenSquare className="w-5 h-5" />} 
+            iconPosition="left"
+          >
+            {isLoading ? 'Güncelleniyor...' : 'Güncelle'}
           </Button>
         </div>
       </form>

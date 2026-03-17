@@ -1,0 +1,89 @@
+================================================================================
+API TEST EXECUTION REPORT
+================================================================================
+Generated: 2026-02-18 23:56:51
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Tests:    513
+Passed:         258
+Failed:         255
+Success Rate:   50.3%
+
+CATEGORY STATISTICS
+--------------------------------------------------------------------------------
+ADMIN_PANEL          | Passed:  70 | Failed:  69 | Total: 139 | Success:  50.4%
+AFFILIATE            | Passed:   0 | Failed:   5 | Total:   5 | Success:   0.0%
+SYSTEM               | Passed:  13 | Failed:  24 | Total:  37 | Success:  35.1%
+TENANT_WEB_APP       | Passed: 175 | Failed: 157 | Total: 332 | Success:  52.7%
+
+FAILURE PATTERNS
+--------------------------------------------------------------------------------
+Connection/Timeout Error                 | Count: 123
+Not Found (Missing resource or unimplemented) | Count: 59
+HTTP 400                                 | Count: 29
+Internal Server Error (Backend bug)      | Count: 25
+Validation Error (Invalid request data)  | Count: 13
+Unauthorized (Auth issue)                | Count: 4
+HTTP 403                                 | Count: 2
+
+FAILED TESTS DETAIL
+--------------------------------------------------------------------------------
+POST   /api/campaigns/camp_6d1d4aad/send                  | 500 | name 'tenant_id' is not defined
+POST   /api/parties/bulk-upload                           | 422 | Validation error
+POST   /api/inventory                                     | 500 | (sqlite3.IntegrityError) NOT NULL constraint faile
+POST   /api/inventory/bulk-upload                         | 422 | Validation error
+POST   /api/inventory/item_18022026205621_f5d852/serials  | 404 | Item not found
+GET    /api/inventory/item_18022026205621_f5d852/movements | 404 | Item not found
+POST   /api/sales                                         | 404 | Party not found
+GET    /api/sales/{sale_id}                               | 0 | Missing required resource ID
+PUT    /api/sales/{sale_id}                               | 0 | Missing required resource ID
+GET    /api/sales/{sale_id}/payments                      | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/payments                      | 0 | Missing required resource ID
+GET    /api/sales/{sale_id}/payment-plan                  | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/payment-plan                  | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/installments/{installment_id}/pay | 0 | Missing required resource ID
+POST   /api/parties/pat_b6aa2c44/device-assignments       | 404 | Party not found
+PATCH  /api/device-assignments/{assignment_id}            | 0 | Missing required resource ID
+POST   /api/device-assignments/{assignment_id}/return-loaner | 0 | Missing required resource ID
+POST   /api/hearing-profiles                              | 404 | Patient not found
+GET    /api/hearing-profiles/pat_b6aa2c44                 | 404 | Hearing profile not found
+PUT    /api/hearing-profiles/pat_b6aa2c44                 | 404 | Patient not found
+POST   /api/auth/lookup-phone                             | 404 | User not found or no phone registered
+POST   /api/auth/forgot-password                          | 404 | User not found with this phone number
+POST   /api/auth/verify-otp                               | 400 | Invalid or expired OTP
+POST   /api/auth/reset-password                           | 400 | Invalid or expired OTP
+POST   /api/auth/login                                    | 400 | Kullanıcı adı/e-posta/telefon ve şifre gereklidir
+POST   /api/auth/refresh                                  | 401 | Invalid token type
+POST   /api/auth/send-verification-otp                    | 401 | User context required
+POST   /api/auth/set-password                             | 401 | User context required
+POST   /api/appointments                                  | 422 | Validation error
+GET    /api/appointments/{appointment_id}                 | 0 | Missing required resource ID
+PUT    /api/appointments/{appointment_id}                 | 0 | Missing required resource ID
+DELETE /api/appointments/{appointment_id}                 | 0 | Missing required resource ID
+POST   /api/appointments/{appointment_id}/reschedule      | 0 | Missing required resource ID
+POST   /api/appointments/{appointment_id}/cancel          | 0 | Missing required resource ID
+POST   /api/appointments/{appointment_id}/complete        | 0 | Missing required resource ID
+POST   /api/devices                                       | 422 | brand, model, and type are required (or provide a 
+GET    /api/devices/dev_20260218_235621_547669_598223     | 404 | Device not found
+PUT    /api/devices/dev_20260218_235621_547669_598223     | 404 | Device not found
+DELETE /api/devices/dev_20260218_235621_547669_598223     | 404 | Device not found
+POST   /api/devices/dev_20260218_235621_547669_598223/stock-update | 404 | Device not found
+PUT    /api/notifications/{notification_id}/read          | 0 | Missing required resource ID
+PUT    /api/notifications/{notification_id}               | 0 | Missing required resource ID
+DELETE /api/notifications/{notification_id}               | 0 | Missing required resource ID
+PUT    /api/notifications/settings                        | 404 | Notification not found
+PUT    /api/branches/{branch_id}                          | 0 | Missing required resource ID
+DELETE /api/branches/{branch_id}                          | 0 | Missing required resource ID
+PUT    /api/roles/b6485a74-5ab8-4604-b703-24604719a9c2    | 404 | role not found
+DELETE /api/roles/b6485a74-5ab8-4604-b703-24604719a9c2    | 404 | role not found
+POST   /api/roles/b6485a74-5ab8-4604-b703-24604719a9c2/permissions | 404 | role not found
+PUT    /api/roles/b6485a74-5ab8-4604-b703-24604719a9c2/permissions | 404 | role not found
+... and 205 more failures
+
+EXECUTION TIME STATISTICS
+--------------------------------------------------------------------------------
+Average:  0.06s
+Maximum:  10.16s
+
+================================================================================

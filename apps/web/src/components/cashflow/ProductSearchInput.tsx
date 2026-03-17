@@ -86,9 +86,9 @@ export function ProductSearchInput({
     return (
       <div className="space-y-3">
         {/* Selected Product Header */}
-        <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-2xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 rounded-2xl">
               <Package className="h-5 w-5 text-purple-600" />
             </div>
             <div>
@@ -108,14 +108,14 @@ export function ProductSearchInput({
         </div>
 
         {/* Product Info Card */}
-        <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="grid grid-cols-2 gap-3 p-3 bg-muted border border-border rounded-2xl">
           {/* Price Info */}
           {selectedProduct.price && (
             <div className="flex items-start space-x-2">
-              <DollarSign className="h-4 w-4 text-gray-500 mt-0.5" />
+              <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-gray-500">Fiyat</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-muted-foreground">Fiyat</p>
+                <p className="text-sm font-medium text-foreground">
                   {selectedProduct.price.toLocaleString('tr-TR')} ₺
                 </p>
               </div>
@@ -125,10 +125,10 @@ export function ProductSearchInput({
           {/* VAT Included Price */}
           {selectedProduct.vatIncludedPrice && (
             <div className="flex items-start space-x-2">
-              <TrendingUp className="h-4 w-4 text-gray-500 mt-0.5" />
+              <TrendingUp className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-gray-500">KDV Dahil</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-muted-foreground">KDV Dahil</p>
+                <p className="text-sm font-medium text-foreground">
                   {selectedProduct.vatIncludedPrice.toLocaleString('tr-TR')} ₺
                 </p>
               </div>
@@ -138,10 +138,10 @@ export function ProductSearchInput({
           {/* Stock Info */}
           {selectedProduct.availableInventory !== undefined && (
             <div className="flex items-start space-x-2">
-              <Package className="h-4 w-4 text-gray-500 mt-0.5" />
+              <Package className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-gray-500">Stok</p>
-                <p className={`text-sm font-medium ${selectedProduct.availableInventory > 0 ? 'text-green-600' : 'text-red-600'
+                <p className="text-xs text-muted-foreground">Stok</p>
+                <p className={`text-sm font-medium ${selectedProduct.availableInventory > 0 ? 'text-success' : 'text-destructive'
                   }`}>
                   {selectedProduct.availableInventory} adet
                 </p>
@@ -152,10 +152,10 @@ export function ProductSearchInput({
           {/* Brand/Model */}
           {(selectedProduct.brand || selectedProduct.model) && (
             <div className="flex items-start space-x-2">
-              <AlertCircle className="h-4 w-4 text-gray-500 mt-0.5" />
+              <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-gray-500">Marka/Model</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-muted-foreground">Marka/Model</p>
+                <p className="text-sm font-medium text-foreground">
                   {[selectedProduct.brand, selectedProduct.model].filter(Boolean).join(' ')}
                 </p>
               </div>
@@ -168,7 +168,7 @@ export function ProductSearchInput({
 
   return (
     <div ref={searchRef} className={`relative ${className}`}>
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         fullWidth
         placeholder="Ürün adı veya SKU ile ara..."
@@ -181,12 +181,12 @@ export function ProductSearchInput({
         className="pl-10"
       />
       {showResults && search.length >= 2 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg max-h-60 overflow-auto">
           {items.length > 0 ? (
             items.map((item) => (
               <div
                 key={item.id}
-                className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                className="p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1" onClick={() => {
@@ -197,8 +197,8 @@ export function ProductSearchInput({
                       onPriceSelect(item.price);
                     }
                   }}>
-                    <p className="font-medium text-gray-900">{item.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-foreground">{item.name}</p>
+                    <p className="text-sm text-muted-foreground">
                       {[
                         item.sku && `SKU: ${item.sku}`,
                         item.brand,
@@ -212,9 +212,9 @@ export function ProductSearchInput({
                   <div className="ml-3 text-right flex items-center gap-2">
                     {item.price && (
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{item.price} ₺</p>
+                        <p className="text-sm font-medium text-foreground">{item.price} ₺</p>
                         {item.vatIncludedPrice && (
-                          <p className="text-xs text-gray-500">KDV: {item.vatIncludedPrice} ₺</p>
+                          <p className="text-xs text-muted-foreground">KDV: {item.vatIncludedPrice} ₺</p>
                         )}
                       </div>
                     )}
@@ -235,7 +235,7 @@ export function ProductSearchInput({
               </div>
             ))
           ) : (
-            <div className="p-3 text-sm text-gray-500">Ürün bulunamadı</div>
+            <div className="p-3 text-sm text-muted-foreground">Ürün bulunamadı</div>
           )}
         </div>
       )}

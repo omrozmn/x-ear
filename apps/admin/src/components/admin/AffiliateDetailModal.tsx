@@ -1,8 +1,10 @@
 import React from 'react';
-import { XMarkIcon, UserGroupIcon, CurrencyDollarIcon, ChartBarIcon, CalendarIcon, ShoppingBagIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { adminApi } from '@/lib/apiMutator';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { XMarkIcon, UserGroupIcon, CurrencyDollarIcon, ChartBarIcon, ShoppingBagIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { useListAffiliateDetails, useUpdateAffiliateToggleStatus } from '@/lib/api-client';
+import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 
 interface AffiliateDetailModalProps {
     affiliateId: string;
@@ -54,6 +56,79 @@ interface AffiliateDetails {
     recent_commissions: Commission[];
 }
 
+interface ApiErrorLike {
+    message?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function normalizeAffiliateDetails(value: unknown): AffiliateDetails | null {
+    if (!isRecord(value)) {
+        return null;
+    }
+
+    const stats = isRecord(value.stats) ? value.stats : {};
+    const referrals = Array.isArray(value.referrals) ? value.referrals : [];
+    const commissions = Array.isArray(value.recent_commissions)
+        ? value.recent_commissions
+        : Array.isArray(value.recentCommissions)
+            ? value.recentCommissions
+            : [];
+
+    return {
+        id: Number(value.id ?? 0),
+        display_id: String(value.display_id ?? value.displayId ?? ''),
+        email: String(value.email ?? ''),
+        code: String(value.code ?? value.referralCode ?? ''),
+        iban: typeof value.iban === 'string' ? value.iban : null,
+        account_holder_name: typeof value.account_holder_name === 'string'
+            ? value.account_holder_name
+            : typeof value.accountHolderName === 'string'
+                ? value.accountHolderName
+                : null,
+        phone_number: typeof value.phone_number === 'string'
+            ? value.phone_number
+            : typeof value.phoneNumber === 'string'
+                ? value.phoneNumber
+                : null,
+        is_active: Boolean(value.is_active ?? value.isActive),
+        created_at: String(value.created_at ?? value.createdAt ?? ''),
+        stats: {
+            total_referrals: Number(stats.total_referrals ?? stats.totalReferrals ?? 0),
+            total_revenue: Number(stats.total_revenue ?? stats.totalRevenue ?? 0),
+            total_commission: Number(stats.total_commission ?? stats.totalCommission ?? 0),
+            active_subscriptions: Number(stats.active_subscriptions ?? stats.activeSubscriptions ?? 0),
+        },
+        referrals: referrals
+            .filter(isRecord)
+            .map((referral) => ({
+                tenant_id: String(referral.tenant_id ?? referral.tenantId ?? ''),
+                tenant_name: String(referral.tenant_name ?? referral.tenantName ?? '-'),
+                created_at: String(referral.created_at ?? referral.createdAt ?? ''),
+                subscription: isRecord(referral.subscription)
+                    ? {
+                        plan_name: String(referral.subscription.plan_name ?? referral.subscription.planName ?? ''),
+                        price: Number(referral.subscription.price ?? 0),
+                        status: String(referral.subscription.status ?? ''),
+                        start_date: String(referral.subscription.start_date ?? referral.subscription.startDate ?? ''),
+                        end_date: String(referral.subscription.end_date ?? referral.subscription.endDate ?? ''),
+                    }
+                    : null,
+            })),
+        recent_commissions: commissions
+            .filter(isRecord)
+            .map((commission) => ({
+                id: Number(commission.id ?? 0),
+                event: String(commission.event ?? ''),
+                amount: Number(commission.amount ?? 0),
+                status: String(commission.status ?? ''),
+                created_at: String(commission.created_at ?? commission.createdAt ?? ''),
+            })),
+    };
+}
+
 const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
     affiliateId,
     isOpen,
@@ -61,26 +136,25 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
     onStatusChange
 }) => {
     const queryClient = useQueryClient();
+    const numericId = Number(affiliateId);
 
-    const { data, isLoading, error } = useQuery<AffiliateDetails>({
-        queryKey: ['affiliate-details', affiliateId],
-        queryFn: () => adminApi({ url: `/affiliate/${affiliateId}/details`, method: 'GET' }),
-        enabled: isOpen && !!affiliateId,
+    const { data: rawData, isLoading, error } = useListAffiliateDetails(numericId, {
+        query: { enabled: isOpen && !!affiliateId },
     });
 
-    const toggleStatusMutation = useMutation({
-        mutationFn: () => adminApi({
-            url: `/affiliate/${affiliateId}/toggle-status`,
-            method: 'PATCH'
-        }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['affiliate-details', affiliateId] });
-            toast.success('Affiliate durumu güncellendi');
-            onStatusChange();
+    const data = rawData ? normalizeAffiliateDetails(rawData) : null;
+
+    const toggleStatusMutation = useUpdateAffiliateToggleStatus({
+        mutation: {
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['affiliate-details', affiliateId] });
+                toast.success('Affiliate durumu güncellendi');
+                onStatusChange();
+            },
+            onError: (error: ApiErrorLike) => {
+                toast.error(`Hata: ${error.message || 'Durum güncellenemedi'}`);
+            },
         },
-        onError: (error: any) => {
-            toast.error(`Hata: ${error.message || 'Durum güncellenemedi'}`);
-        }
     });
 
     if (!isOpen) return null;
@@ -114,11 +188,11 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-6 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white mb-10">
+            <div className="relative top-10 mx-auto p-6 border w-11/12 max-w-6xl shadow-lg rounded-xl bg-white mb-10">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-primary-100 rounded-lg">
+                        <div className="p-2 bg-primary-100 rounded-2xl">
                             <UserGroupIcon className="h-6 w-6 text-primary-600" />
                         </div>
                         <div>
@@ -145,8 +219,8 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                 )}
 
                 {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-                        Hata: {(error as any).message || 'Veri yüklenemedi'}
+                    <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-800">
+                        Hata: {(error as ApiErrorLike).message || 'Veri yüklenemedi'}
                     </div>
                 )}
 
@@ -154,7 +228,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                     <div className="space-y-6">
                         {/* Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-blue-600 font-medium">Toplam Yönlendirme</p>
@@ -164,7 +238,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-green-600 font-medium">Aktif Abonelik</p>
@@ -174,7 +248,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-purple-600 font-medium">Toplam Gelir</p>
@@ -184,7 +258,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-orange-600 font-medium">Toplam Komisyon</p>
@@ -196,7 +270,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                         </div>
 
                         {/* Affiliate Info */}
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
                             <h4 className="font-semibold text-gray-900 mb-3">Affiliate Bilgileri</h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                                 <div>
@@ -236,43 +310,41 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 <ShoppingBagIcon className="h-5 w-5 mr-2 text-primary-600" />
                                 Getirilen Aboneler ({data.referrals.length})
                             </h4>
-                            {data.referrals.length > 0 ? (
-                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müşteri</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paket</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kayıt Tarihi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {data.referrals.map((ref, idx) => (
-                                                <tr key={idx} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ref.tenant_name}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {ref.subscription?.plan_name || 'Paket yok'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                        {ref.subscription ? formatCurrency(ref.subscription.price) : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                        {ref.subscription ? getStatusBadge(ref.subscription.status) : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(ref.created_at)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="bg-gray-50 rounded-lg p-8 text-center border border-gray-200">
-                                    <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                                    <p className="text-gray-500">Henüz yönlendirme yok</p>
-                                </div>
-                            )}
+                            <DataTable<Referral>
+                                data={data.referrals}
+                                columns={[
+                                    {
+                                        key: 'tenant_name',
+                                        title: 'Müşteri',
+                                        render: (_: unknown, ref: Referral) => ref.tenant_name,
+                                    },
+                                    {
+                                        key: 'plan_name',
+                                        title: 'Paket',
+                                        render: (_: unknown, ref: Referral) => ref.subscription?.plan_name || 'Paket yok',
+                                    },
+                                    {
+                                        key: 'price',
+                                        title: 'Fiyat',
+                                        render: (_: unknown, ref: Referral) => ref.subscription ? formatCurrency(ref.subscription.price) : '-',
+                                    },
+                                    {
+                                        key: 'status',
+                                        title: 'Durum',
+                                        render: (_: unknown, ref: Referral) => ref.subscription ? getStatusBadge(ref.subscription.status) : '-',
+                                    },
+                                    {
+                                        key: 'created_at',
+                                        title: 'Kayıt Tarihi',
+                                        render: (_: unknown, ref: Referral) => formatDate(ref.created_at),
+                                    },
+                                ] as Column<Referral>[]}
+                                rowKey={(ref: Referral) => ref.tenant_id || ref.created_at}
+                                emptyText="Henüz yönlendirme yok"
+                                striped
+                                hoverable
+                                size="small"
+                            />
                         </div>
 
                         {/* Recent Commissions */}
@@ -282,32 +354,43 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                     <CurrencyDollarIcon className="h-5 w-5 mr-2 text-green-600" />
                                     Son Komisyonlar
                                 </h4>
-                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Olay</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miktar</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {data.recent_commissions.map((comm) => (
-                                                <tr key={comm.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{comm.event}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">{formatCurrency(comm.amount)}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${comm.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                            {comm.status === 'paid' ? 'Ödendi' : 'Beklemede'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(comm.created_at)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <DataTable<Commission>
+                                    data={data.recent_commissions}
+                                    columns={[
+                                        {
+                                            key: 'event',
+                                            title: 'Olay',
+                                            render: (_: unknown, comm: Commission) => comm.event,
+                                        },
+                                        {
+                                            key: 'amount',
+                                            title: 'Miktar',
+                                            render: (_: unknown, comm: Commission) => (
+                                                <span className="font-semibold text-green-600">
+                                                    {formatCurrency(comm.amount)}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'status',
+                                            title: 'Durum',
+                                            render: (_: unknown, comm: Commission) => (
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${comm.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                    {comm.status === 'paid' ? 'Ödendi' : 'Beklemede'}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'created_at',
+                                            title: 'Tarih',
+                                            render: (_: unknown, comm: Commission) => formatDate(comm.created_at),
+                                        },
+                                    ] as Column<Commission>[]}
+                                    rowKey={(comm) => String(comm.id)}
+                                    striped
+                                    hoverable
+                                    size="small"
+                                />
                             </div>
                         )}
                     </div>
@@ -317,9 +400,9 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                 {data && (
                     <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
                         <button
-                            onClick={() => toggleStatusMutation.mutate()}
+                            onClick={() => toggleStatusMutation.mutate({ affiliateId: numericId })}
                             disabled={toggleStatusMutation.isPending}
-                            className={`px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${data.is_active
+                            className={`px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white ${data.is_active
                                 ? 'bg-red-600 hover:bg-red-700'
                                 : 'bg-green-600 hover:bg-green-700'
                                 } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -328,7 +411,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                         </button>
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                            className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50"
                         >
                             Kapat
                         </button>

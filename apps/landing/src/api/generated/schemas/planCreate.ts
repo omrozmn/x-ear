@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { PlanCreateSlug } from './planCreateSlug';
 import type { PlanCreateDescription } from './planCreateDescription';
 import type { PlanCreateFeatures } from './planCreateFeatures';
 import type { PlanCreateMaxUsers } from './planCreateMaxUsers';
@@ -16,6 +17,8 @@ import type { PlanCreateMaxStorageGb } from './planCreateMaxStorageGb';
 export interface PlanCreate {
   /** Plan name */
   name: string;
+  /** Plan slug (auto-generated if not provided) */
+  slug?: PlanCreateSlug;
   /** Plan description */
   description?: PlanCreateDescription;
   /** Plan type */

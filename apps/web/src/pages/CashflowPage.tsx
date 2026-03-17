@@ -2,9 +2,11 @@
  * CashflowPage Component
  * Main cashflow management page
  */
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Modal, Pagination } from '@x-ear/ui-web';
 import { Plus, RefreshCw, Download, Filter, Trash2 } from 'lucide-react';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { CashflowStats } from '../components/cashflow/CashflowStats';
 import { CashflowFilters } from '../components/cashflow/CashflowFilters';
 import { CashflowTable } from '../components/cashflow/CashflowTable';
@@ -17,8 +19,23 @@ import {
 } from '../hooks/useCashflow';
 import { CashRecordDetailModal } from '../components/cashflow/CashRecordDetailModal';
 import type { CashflowFilters as CashflowFiltersType, CashRecord, CashRecordFormData } from '../types/cashflow';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { PermissionGate } from '@/components/PermissionGate';
+import { useIsMobile } from '@/hooks/useBreakpoint';
+import { MobileCashflowPage } from './cashflow/MobileCashflowPage';
 
 export function CashflowPage() {
+  const isMobile = useIsMobile();
+
+  if (isMobile) return <MobileCashflowPage />;
+
+  return <DesktopCashflowPage />;
+}
+
+function DesktopCashflowPage() {
+  const { t } = useTranslation('cashflow');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [filters, setFilters] = useState<CashflowFiltersType>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showNewRecordModal, setShowNewRecordModal] = useState(false);
@@ -26,6 +43,10 @@ export function CashflowPage() {
   const [recordToDelete, setRecordToDelete] = useState<CashRecord | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const requestedTransactionType = useMemo(() => {
+    const value = (location.search as Record<string, unknown>)?.new;
+    return value === 'income' || value === 'expense' ? value : undefined;
+  }, [location.search]);
 
   // Hooks
   const { data, isLoading, error, refetch } = useCashRecords(filters);
@@ -100,9 +121,22 @@ export function CashflowPage() {
 
   const totalPages = Math.ceil(records.length / itemsPerPage);
 
+  useEffect(() => {
+    if (requestedTransactionType) {
+      setShowNewRecordModal(true);
+    }
+  }, [requestedTransactionType]);
+
   // Handlers
   const handleRefresh = () => {
     refetch();
+  };
+
+  const handleCloseNewRecordModal = () => {
+    setShowNewRecordModal(false);
+    if (requestedTransactionType) {
+      navigate({ to: '/cashflow' });
+    }
   };
 
   const handleClearFilters = () => {
@@ -144,12 +178,12 @@ export function CashflowPage() {
 
   const handleExport = () => {
     // Prepare CSV data
-    const headers = ['Tarih', 'İşlem Türü', 'Kayıt Türü', 'Hasta', 'Tutar', 'Açıklama'];
+    const headers = [t('columns.date', 'Tarih'), t('columns.transactionType', 'İşlem Türü'), t('columns.recordType', 'Kayıt Türü'), t('columns.patient', 'Hasta'), t('columns.amount', 'Tutar'), t('columns.description', 'Açıklama')];
     const csvData = [
       headers.join(','),
       ...records.map((record) => {
         const date = new Date(record.date).toLocaleDateString('tr-TR');
-        const type = record.transactionType === 'income' ? 'Gelir' : 'Gider';
+        const type = record.transactionType === 'income' ? t('income', 'Gelir') : t('expense', 'Gider');
         const amount = record.amount.toFixed(2);
         return [
           date,
@@ -177,47 +211,51 @@ export function CashflowPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Kasa Yönetimi</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Gelir ve gider kayıtlarınızı yönetin
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Yenile
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Dışa Aktar
-            </Button>
-            <Button onClick={() => setShowNewRecordModal(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Yeni Kayıt
-            </Button>
-          </div>
-        </div>
+        <DesktopPageHeader
+          className="mb-6"
+          title={t('pageTitle', 'Kasa Yönetimi')}
+          description={t('pageDescription', 'Gelir ve gider kayıtlarınızı yönetin')}
+          eyebrow={{ tr: 'Nakit Akışı', en: 'Cashflow' }}
+          actions={(
+            <>
+              <Button variant="outline" onClick={handleRefresh}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {t('refresh', 'Yenile')}
+              </Button>
+              <PermissionGate permission="finance.payments.export.view">
+                <Button variant="outline" onClick={handleExport}>
+                  <Download className="h-4 w-4 mr-2" />
+                  {t('export', 'Dışa Aktar')}
+                </Button>
+              </PermissionGate>
+              <PermissionGate permission="finance.cash_register">
+                <Button onClick={() => setShowNewRecordModal(true)} className="premium-gradient tactile-press">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('newRecord', 'Yeni Kayıt')}
+                </Button>
+              </PermissionGate>
+            </>
+          )}
+        />
 
         {/* Stats */}
         <CashflowStats stats={stats} />
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filtreler</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('filters', 'Filtreler')}</h3>
           <Button
             variant={showFilters ? 'default' : 'outline'}
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? 'Gizle' : 'Göster'}
+            {showFilters ? t('hide', 'Gizle') : t('show', 'Göster')}
           </Button>
         </div>
 
@@ -231,18 +269,18 @@ export function CashflowPage() {
       </div>
 
       {/* Records Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Kasa Kayıtları</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{records.length} kayıt</p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border">
+        <div className="px-6 py-4 border-b border-border">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('cashRecords', 'Kasa Kayıtları')}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{records.length} {t('records', 'kayıt')}</p>
         </div>
 
         {error ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-sm text-red-600">Bir hata oluştu</p>
+              <p className="text-sm text-destructive">{t('error', 'Bir hata oluştu')}</p>
               <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
-                Tekrar Dene
+                {t('retry', 'Tekrar Dene')}
               </Button>
             </div>
           </div>
@@ -256,7 +294,7 @@ export function CashflowPage() {
             />
 
             {totalPages > 1 && (
-              <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+              <div className="border-t border-border p-4">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -273,9 +311,10 @@ export function CashflowPage() {
       {/* Modals */}
       <CashflowModal
         isOpen={showNewRecordModal}
-        onClose={() => setShowNewRecordModal(false)}
+        onClose={handleCloseNewRecordModal}
         onSave={handleSaveRecord}
         isLoading={createMutation.isPending}
+        lockedTransactionType={requestedTransactionType}
       />
 
       <CashRecordDetailModal
@@ -289,35 +328,37 @@ export function CashflowPage() {
       <Modal
         isOpen={!!recordToDelete}
         onClose={() => setRecordToDelete(null)}
-        title="Kaydı Sil"
+        title={t('deleteRecord', 'Kaydı Sil')}
         size="md"
       >
         <div className="space-y-4 dark:text-gray-200">
-          <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg">
+          <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-red-200 dark:border-red-800 rounded-2xl">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                <Trash2 className="h-5 w-5 text-red-600" />
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-destructive" />
               </div>
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-900 dark:text-red-400">
-                Bu kaydı silmek istediğinizden emin misiniz?
+                {t('deleteConfirm', 'Bu kaydı silmek istediğinizden emin misiniz?')}
               </h3>
-              <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                {recordToDelete?.partyName || 'Kayıt'} - {recordToDelete?.amount} ₺
+              <p className="mt-1 text-sm text-destructive">
+                {recordToDelete?.partyName || t('record', 'Kayıt')} - {recordToDelete?.amount} ₺
               </p>
             </div>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Bu işlem geri alınamaz. Kayıt kalıcı olarak silinecektir.
+          <p className="text-sm text-muted-foreground">
+            {t('deleteWarning', 'Bu işlem geri alınamaz. Kayıt kalıcı olarak silinecektir.')}
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setRecordToDelete(null)}>
-              İptal
+              {t('cancel', 'İptal')}
             </Button>
-            <Button variant="danger" onClick={confirmDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? 'Siliniyor...' : 'Sil'}
-            </Button>
+            <PermissionGate permission="finance.cash_register">
+              <Button variant="danger" onClick={confirmDelete} disabled={deleteMutation.isPending}>
+                {deleteMutation.isPending ? t('deleting', 'Siliniyor...') : t('delete', 'Sil')}
+              </Button>
+            </PermissionGate>
           </div>
         </div>
       </Modal>

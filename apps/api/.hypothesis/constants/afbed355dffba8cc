@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/affiliates.py
+# hypothesis_version: 6.151.9
+
+[0.0, 10.0, 'Account holder name', 'Affiliate ID', 'Affiliate name', 'Commission amount', 'Commission rate %', 'Commission status', 'Company name', 'Email', 'IBAN', 'Is affiliate active', 'Last login', 'Paid at', 'Paid earnings', 'Password', 'Pending earnings', 'Phone number', 'Referral code', 'Tax number', 'Tenant ID', 'Tenant name', 'Total earnings', 'Total referrals', 'Unique identifier', 'accountHolderName', 'affiliateId', 'code', 'commissionRate', 'companyName', 'isActive', 'lastLogin', 'paidAt', 'paidEarnings', 'pending', 'pendingEarnings', 'referralCode', 'taxNumber', 'tenantId', 'tenantName', 'totalEarnings', 'totalReferrals']

@@ -1,4 +1,4 @@
-from .base import db, BaseModel
+from .base import BaseModel
 from sqlalchemy import Column, String, Integer, UniqueConstraint
 
 class Sequence(BaseModel):
@@ -8,6 +8,7 @@ class Sequence(BaseModel):
     """
     __tablename__ = 'sequences'
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
     tenant_id = Column(String(36), nullable=False, index=True)
     seq_type = Column(String(50), nullable=False)  # e.g., 'invoice', 'order'
     year = Column(Integer, nullable=False)

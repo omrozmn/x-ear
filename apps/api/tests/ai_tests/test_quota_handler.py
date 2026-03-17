@@ -14,7 +14,6 @@ from ai.services.quota_handler import (
     QuotaInfo,
     QuotaStatus,
     QuotaExceededResponse,
-    get_quota_handler,
     reset_quota_handler,
     require_quota,
     graceful_quota_check,

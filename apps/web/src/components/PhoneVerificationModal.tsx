@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { Button, Input } from '@x-ear/ui-web';
 import { Modal } from './ui/Modal';
-import { Phone } from 'lucide-react';
+import { Pencil, Phone } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export const PhoneVerificationModal: React.FC = () => {
@@ -16,16 +16,12 @@ export const PhoneVerificationModal: React.FC = () => {
     useEffect(() => {
         // Show modal if user is authenticated but phone is not verified
         // Skip for admin users (they don't have phone verification)
-        const isAdminUser = user?.role === 'super_admin' || user?.role === 'support' || user?.role === 'finance' || user?.role === 'content';
+        const isAdminUser = user?.role === 'super_admin' || user?.role === 'SUPER_ADMIN' || user?.role === 'admin' || user?.role === 'ADMIN' || user?.role === 'support' || user?.role === 'finance' || user?.role === 'content';
 
         if (isAuthenticated && user && !isAdminUser && !user.isPhoneVerified) {
             setIsOpen(true);
-            if (!user.phone) {
-                setStep('phone');
-            } else {
-                setStep('otp');
-                setPhoneNumber(user.phone);
-            }
+            setStep('phone');
+            setPhoneNumber(user.phone || '');
         } else {
             setIsOpen(false);
         }
@@ -48,6 +44,11 @@ export const PhoneVerificationModal: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleEditPhone = () => {
+        setOtpCode('');
+        setStep('phone');
     };
 
     const handleVerifyOtp = async () => {
@@ -81,46 +82,73 @@ export const PhoneVerificationModal: React.FC = () => {
             closeOnOverlayClick={false}
         >
             <div className="flex flex-col items-center mb-6">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-                    <Phone className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Phone className="w-6 h-6 text-primary" />
                 </div>
-                <p className="text-center text-gray-600">
+                <p className="text-center text-muted-foreground">
                     Hesabınızın güvenliği için telefon numaranızı doğrulamanız gerekmektedir.
                 </p>
             </div>
 
             <div className="space-y-4 mb-6">
                 {step === 'phone' ? (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <div className="rounded-2xl border border-border bg-gray-50 p-4 text-center dark:bg-gray-800/60">
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                             Telefon Numarası
-                        </label>
-                        <Input
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            placeholder="5XX XXX XX XX"
-                            disabled={isLoading}
-                        />
+                        </p>
+                        <div className="mx-auto mt-3 max-w-[280px]">
+                            <Input
+                                type="tel"
+                                inputMode="tel"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                placeholder="5XX XXX XX XX"
+                                disabled={isLoading}
+                                className="h-14 text-center text-lg font-medium"
+                                fullWidth
+                            />
+                        </div>
+                        <p className="mt-3 text-xs text-muted-foreground">
+                            Kodu bu numaraya göndereceğiz. Numara yanlışsa burada düzeltebilirsiniz.
+                        </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="rounded-2xl border border-border bg-gray-50 p-4 text-center dark:bg-gray-800/60">
+                            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                                 Doğrulama Kodu
-                            </label>
-                            <Input
-                                type="text"
-                                value={otpCode}
-                                onChange={(e) => setOtpCode(e.target.value)}
-                                placeholder="XXXXXX"
-                                maxLength={6}
-                                className="text-center tracking-widest text-lg"
-                                disabled={isLoading}
-                            />
-                            <p className="text-xs text-center text-gray-500">
-                                {phoneNumber} numaralı telefona gönderilen kodu giriniz.
                             </p>
+                            <div className="mx-auto mt-3 max-w-[220px]">
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={otpCode}
+                                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    placeholder="000000"
+                                    maxLength={6}
+                                    className="h-14 text-center text-2xl font-semibold tracking-[0.55em] [text-indent:0.55em]"
+                                    disabled={isLoading}
+                                    fullWidth
+                                />
+                            </div>
+                            <p className="mt-3 text-xs text-muted-foreground">
+                                <span className="font-medium text-foreground">{phoneNumber}</span> numaralı telefona gönderilen kodu giriniz.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2 text-center">
+                            <p className="text-xs text-muted-foreground">
+                                Numara hatalıysa değiştirip yeni doğrulama kodu gönderebilirsiniz.
+                            </p>
+                            <Button
+                                variant="ghost"
+                                onClick={handleEditPhone}
+                                disabled={isLoading}
+                                className="mx-auto inline-flex w-auto items-center gap-2 text-sm"
+                            >
+                                <Pencil className="h-4 w-4" />
+                                Telefon Numarasını Değiştir
+                            </Button>
                         </div>
                     </div>
                 )}
@@ -144,16 +172,6 @@ export const PhoneVerificationModal: React.FC = () => {
                         >
                             Kodu Tekrar Gönder
                         </Button>
-                        {!user?.phone && (
-                            <Button
-                                variant="ghost"
-                                onClick={() => setStep('phone')}
-                                disabled={isLoading}
-                                className="w-full text-xs text-gray-400"
-                            >
-                                Numarayı Değiştir
-                            </Button>
-                        )}
                     </>
                 )}
             </div>

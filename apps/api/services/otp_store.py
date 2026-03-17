@@ -1,6 +1,5 @@
 import os
 import time
-import json
 from typing import Optional
 
 REDIS_URL = os.getenv('REDIS_URL')
@@ -98,18 +97,26 @@ class RedisOTPStore(BaseOTPStore):
             return False
 
 
+_store_singleton: BaseOTPStore | None = None
+
 def get_store() -> BaseOTPStore:
+    global _store_singleton
+    if _store_singleton is not None:
+        return _store_singleton
+
     if REDIS_URL:
         try:
             store = RedisOTPStore(REDIS_URL)
             if store.is_healthy():
-                return store
+                _store_singleton = store
+                return _store_singleton
             # If ping fails, log and fall back
             import logging
             logging.getLogger(__name__).warning('Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store')
-            return InMemoryOTPStore()
         except Exception as e:
             import logging
             logging.getLogger(__name__).warning(f'Failed to initialize RedisOTPStore: {e} — falling back to in-memory store')
-            return InMemoryOTPStore()
-    return InMemoryOTPStore()
+
+    _store_singleton = InMemoryOTPStore()
+    return _store_singleton
+

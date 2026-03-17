@@ -5,13 +5,11 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { AdminLoginResponseToken } from './adminLoginResponseToken';
-import type { AdminLoginResponseRefreshToken } from './adminLoginResponseRefreshToken';
 import type { AdminLoginResponseUser } from './adminLoginResponseUser';
 
 export interface AdminLoginResponse {
-  token?: AdminLoginResponseToken;
-  refreshToken?: AdminLoginResponseRefreshToken;
-  user?: AdminLoginResponseUser;
-  requiresMfa?: boolean;
+  token: string;
+  refresh_token: string;
+  user: AdminLoginResponseUser;
+  requires_mfa?: boolean;
 }

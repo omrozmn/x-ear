@@ -41,8 +41,8 @@ def create_superadmin():
             
             print("\n🔑 Password reset to: admin123")
             print("\n📧 Login credentials:")
-            print(f"   Email: admin@x-ear.com")
-            print(f"   Password: admin123")
+            print("   Email: admin@x-ear.com")
+            print("   Password: admin123")
             
             # Verify immediately
             from core.database import engine
@@ -84,14 +84,14 @@ def create_superadmin():
             if not is_valid:
                 print(f"DEBUG: Hash stored: {admin.password_hash}")
             
-            print(f"\n✅ Created superadmin user!")
+            print("\n✅ Created superadmin user!")
             print(f"   ID: {admin.id}")
             print(f"   Email: {admin.email}")
             print(f"   Role: {admin.role}")
             
             print("\n🔑 Login credentials:")
-            print(f"   Email: admin@x-ear.com")
-            print(f"   Password: admin123")
+            print("   Email: admin@x-ear.com")
+            print("   Password: admin123")
         
         print("\n" + "="*50)
         print("🚀 You can now login to:")

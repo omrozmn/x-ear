@@ -3,6 +3,7 @@
  * View and edit cash record details
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Input } from '@x-ear/ui-web';
 import { Edit2, Save, X } from 'lucide-react';
 import type { CashRecord, TransactionType, RecordType } from '../../types/cashflow';
@@ -31,6 +32,7 @@ export function CashRecordDetailModal({
   onUpdate,
   isLoading,
 }: CashRecordDetailModalProps) {
+  const { t } = useTranslation('cashflow');
   const [isEditing, setIsEditing] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType | ''>('');
   const [recordType, setRecordType] = useState<RecordType | ''>('');
@@ -106,14 +108,14 @@ export function CashRecordDetailModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Kayıt Detayları" size="lg" showFooter={false}>
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('recordDetails', 'Kayıt Detayları')} size="lg" showFooter={false}>
       <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex justify-end">
           {!isEditing ? (
             <Button onClick={() => setIsEditing(true)} size="sm">
               <Edit2 className="h-4 w-4 mr-2" />
-              Düzenle
+              {t('edit', 'Düzenle')}
             </Button>
           ) : (
             <div className="flex gap-2">
@@ -134,16 +136,16 @@ export function CashRecordDetailModal({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Tarih</label>
+                <label className="text-sm font-medium text-muted-foreground">Tarih</label>
                 <p className="text-base text-gray-900 dark:text-white">{formatDate(record.date)}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">İşlem Türü</label>
+                <label className="text-sm font-medium text-muted-foreground">İşlem Türü</label>
                 <p className="text-base">
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${record.transactionType === 'income'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      ? 'bg-success/10 text-success'
+                      : 'bg-destructive/10 text-red-800 dark:text-red-400'
                       }`}
                   >
                     {record.transactionType === 'income' ? 'Gelir' : 'Gider'}
@@ -151,16 +153,16 @@ export function CashRecordDetailModal({
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Kayıt Türü</label>
+                <label className="text-sm font-medium text-muted-foreground">Kayıt Türü</label>
                 <p className="text-base text-gray-900 dark:text-white">
                   {RECORD_TYPE_LABELS[record.recordType] || record.recordType}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Tutar</label>
+                <label className="text-sm font-medium text-muted-foreground">Tutar</label>
                 <p className={`text-xl font-bold ${record.transactionType === 'income'
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
+                  ? 'text-success'
+                  : 'text-destructive'
                   }`}>
                   {record.transactionType === 'income' ? '+' : '-'}
                   {formatCurrency(record.amount)}
@@ -168,19 +170,19 @@ export function CashRecordDetailModal({
               </div>
               {record.partyName && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Hasta</label>
+                  <label className="text-sm font-medium text-muted-foreground">Hasta</label>
                   <p className="text-base text-gray-900 dark:text-white">{record.partyName}</p>
                 </div>
               )}
               {record.inventoryItemName && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Ürün</label>
+                  <label className="text-sm font-medium text-muted-foreground">Ürün</label>
                   <p className="text-base text-gray-900 dark:text-white">{record.inventoryItemName}</p>
                 </div>
               )}
               {record.description && (
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Açıklama</label>
+                  <label className="text-sm font-medium text-muted-foreground">Açıklama</label>
                   <p className="text-base text-gray-900 dark:text-white">{record.description}</p>
                 </div>
               )}
@@ -196,7 +198,7 @@ export function CashRecordDetailModal({
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Hasta (İsteğe Bağlı)
               </label>
               <PartySearchInput
@@ -206,7 +208,7 @@ export function CashRecordDetailModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Tutar (₺) *
               </label>
               <Input
@@ -215,19 +217,19 @@ export function CashRecordDetailModal({
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Açıklama (İsteğe Bağlı)
               </label>
               <textarea data-allow-raw="true"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>

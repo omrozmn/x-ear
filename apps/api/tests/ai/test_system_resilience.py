@@ -23,7 +23,6 @@ _api_dir = Path(__file__).resolve().parent.parent.parent
 if str(_api_dir) not in sys.path:
     sys.path.insert(0, str(_api_dir))
 
-import pytest
 from hypothesis import given, strategies as st, settings
 from unittest.mock import patch
 from datetime import datetime, timezone

@@ -16,103 +16,85 @@
 
 import React from 'react';
 import { Badge } from '@x-ear/ui-web';
-import { useTranslation } from 'react-i18next';
+import { getSegmentLabel, getAcquisitionLabel } from '../../utils/party-segments';
 
 // Component wrapper for Status Badge
 export const StatusBadge = ({ status }: { status?: string }) => {
-  const { t } = useTranslation('constants');
 
   const normalizedStatus = (status || '').toUpperCase();
+  
+  // Turkish label mapping
+  const statusLabels: Record<string, string> = {
+    'ACTIVE': 'Aktif',
+    'INACTIVE': 'Pasif',
+    'TRIAL': 'Deneme',
+    'BLOCKED': 'Engelli'
+  };
+  
+  const label = statusLabels[normalizedStatus] || 'Bilinmiyor';
+  
   switch (normalizedStatus) {
     case 'ACTIVE':
-      return <Badge variant="success" size="sm">{t('party.status.active')}</Badge>;
-    case 'INACTIVE':
-      return <Badge variant="warning" size="sm">{t('party.status.inactive')}</Badge>;
-    case 'TRIAL':
-      return <Badge variant="primary" size="sm">{t('party.status.trial')}</Badge>;
-    case 'BLOCKED':
-      return <Badge variant="danger" size="sm">Engelli</Badge>; // Add translation key if missing
-    default:
-      return <Badge variant="secondary" size="sm">Bilinmiyor</Badge>;
-  }
-};
-
-// Deprecated function - to be removed after refactor
-export const getStatusBadge = (status?: string) => <StatusBadge status={status} />;
-
-/**
- * Helper functions for PartyList component
- * Keeps main component under 500 LOC
- */
-
-
-
-export const formatDate = (dateString?: string) => {
-  if (!dateString) return '-';
-  try {
-    return new Date(dateString).toLocaleDateString('tr-TR');
-  } catch {
-    return '-';
-  }
-};
-
-export const formatPhone = (phone?: string) => {
-  if (!phone) return '-';
-  // Format Turkish phone number
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 11 && cleaned.startsWith('0')) {
-    return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7, 9)} ${cleaned.slice(9)}`;
-  }
-  return phone;
-};
-
-export const SegmentBadge = ({ segment }: { segment?: string }) => {
-  const { t } = useTranslation('constants');
-
-  if (!segment) return <Badge variant="secondary" size="sm">-</Badge>;
-
-  const label = t(`party.segment.${segment.toLowerCase()}`, { defaultValue: segment });
-
-  switch (segment.toUpperCase()) {
-    case 'VIP':
-    case 'PREMIUM':
       return <Badge variant="success" size="sm">{label}</Badge>;
-    case 'PURCHASED':
-    case 'STANDARD':
-      return <Badge variant="default" size="sm">{label}</Badge>;
-    case 'NEW':
-    case 'LEAD':
+    case 'INACTIVE':
+      return <Badge variant="warning" size="sm">{label}</Badge>;
+    case 'TRIAL':
       return <Badge variant="primary" size="sm">{label}</Badge>;
-    case 'CHURNED':
+    case 'BLOCKED':
       return <Badge variant="danger" size="sm">{label}</Badge>;
     default:
       return <Badge variant="secondary" size="sm">{label}</Badge>;
   }
 };
-export const getSegmentBadge = (segment?: string) => <SegmentBadge segment={segment} />;
+
+export const SegmentBadge = ({ segment }: { segment?: string }) => {
+  if (!segment) return <Badge variant="secondary" size="sm">-</Badge>;
+
+  // Use dynamic label from settings
+  const label = getSegmentLabel(segment);
+
+  switch (segment.toLowerCase()) {
+    case 'vip':
+    case 'premium':
+      return <Badge variant="success" size="sm">{label}</Badge>;
+    case 'customer':
+    case 'existing':
+    case 'purchased':
+      return <Badge variant="default" size="sm">{label}</Badge>;
+    case 'new':
+    case 'lead':
+    case 'trial':
+      return <Badge variant="primary" size="sm">{label}</Badge>;
+    case 'churned':
+      return <Badge variant="danger" size="sm">{label}</Badge>;
+    case 'control':
+      return <Badge variant="warning" size="sm">{label}</Badge>;
+    default:
+      return <Badge variant="secondary" size="sm">{label}</Badge>;
+  }
+};
 
 export const AcquisitionStatusBadge = ({ acquisitionType }: { acquisitionType?: string }) => {
   if (!acquisitionType) return <Badge variant="secondary" size="sm">-</Badge>;
 
-  const label = acquisitionType; // Translations needed for this too
-  const upperType = acquisitionType.toUpperCase().replace('-', '_');
+  // Use dynamic label from settings
+  const label = getAcquisitionLabel(acquisitionType);
 
-  switch (upperType) {
-    case 'REFERRAL':
+  switch (acquisitionType.toLowerCase().replace('_', '-')) {
+    case 'referral':
       return <Badge variant="primary" size="sm">{label}</Badge>;
-    case 'ONLINE':
+    case 'online':
       return <Badge variant="success" size="sm">{label}</Badge>;
-    case 'SOCIAL_MEDIA':
-    case 'ADVERTISEMENT':
+    case 'social-media':
+    case 'advertisement':
       return <Badge variant="default" size="sm">{label}</Badge>;
-    case 'WALK_IN':
-    case 'TABELA':
+    case 'walk-in':
+    case 'tabela':
       return <Badge variant="secondary" size="sm">{label}</Badge>;
     default:
       return <Badge variant="secondary" size="sm">{label}</Badge>;
   }
 };
-export const getAcquisitionStatusBadge = (acquisitionType?: string) => <AcquisitionStatusBadge acquisitionType={acquisitionType} />;
 
 export const BranchBadge = ({ branchId, branchName }: { branchId?: string, branchName?: string }) => {
   if (!branchId && !branchName) return <Badge variant="secondary" size="sm">-</Badge>;
@@ -127,4 +109,6 @@ export const BranchBadge = ({ branchId, branchName }: { branchId?: string, branc
 
   return <Badge variant="default" size="sm">{label}</Badge>;
 };
-export const getBranchBadge = (branchId?: string, branchName?: string) => <BranchBadge branchId={branchId} branchName={branchName} />;
+
+// Deprecated wrapper functions - removed as they trigger Fast Refresh warnings and are unused.
+// Use components <StatusBadge />, <SegmentBadge />, etc. directly.

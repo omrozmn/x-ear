@@ -55,7 +55,8 @@ test('debug: check page rendering', async ({ page }) => {
   
   // Check for script errors in window
   const windowErrors = await page.evaluate(() => {
-    return (window as any).__errors || [];
+    const browserWindow = window as Window & { __errors?: unknown[] };
+    return browserWindow.__errors || [];
   });
   console.log('Window errors:', windowErrors);
   

@@ -30,7 +30,7 @@ export function CashflowFilters({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Start Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Başlangıç Tarihi
           </label>
           <Input
@@ -42,7 +42,7 @@ export function CashflowFilters({
 
         {/* End Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Bitiş Tarihi
           </label>
           <Input
@@ -54,13 +54,13 @@ export function CashflowFilters({
 
         {/* Transaction Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             İşlem Türü
           </label>
           <select data-allow-raw="true"
             value={filters.transactionType || ''}
             onChange={(e) => handleFilterChange('transactionType', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           >
             <option value="">Tümü</option>
             <option value="income">Gelir</option>
@@ -70,13 +70,13 @@ export function CashflowFilters({
 
         {/* Record Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Kayıt Türü
           </label>
           <select data-allow-raw="true"
             value={filters.recordType || ''}
             onChange={(e) => handleFilterChange('recordType', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           >
             <option value="">Tümü</option>
             {Object.entries(RECORD_TYPE_LABELS).map(([value, label]) => (
@@ -89,11 +89,11 @@ export function CashflowFilters({
 
         {/* Search */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Arama
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Hasta adı, açıklama..."
               value={filters.search || ''}

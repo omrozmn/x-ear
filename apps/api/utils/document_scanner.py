@@ -10,8 +10,40 @@ adaptation aimed at reliably cropping typical SGK documents before OCR.
 """
 import cv2
 import numpy as np
+import logging
 import os
 import tempfile
+
+logger = logging.getLogger(__name__)
+
+# Allowed base directories for image processing (resolve symlinks for macOS)
+ALLOWED_PATH_PREFIXES = tuple(set([
+    "/tmp/",
+    os.path.realpath("/tmp/"),
+    tempfile.gettempdir(),
+    os.path.realpath(tempfile.gettempdir()),
+]))
+
+
+def _validate_image_path(path: str) -> str:
+    """Validate that the image path is within allowed directories.
+
+    Prevents path traversal attacks by resolving symlinks and checking
+    that the real path starts with an allowed prefix.
+    """
+    # Check for traversal before resolving
+    norm_parts = os.path.normpath(path).split(os.sep)
+    if ".." in norm_parts:
+        logger.warning(f"Path traversal attempt blocked: {path}")
+        raise ValueError("Invalid path: directory traversal not allowed")
+
+    real_path = os.path.realpath(path)
+
+    if not any(real_path.startswith(prefix) for prefix in ALLOWED_PATH_PREFIXES):
+        logger.warning(f"Path outside allowed directory: {real_path}")
+        raise ValueError("Invalid path: not within allowed directories")
+
+    return real_path
 
 
 def _order_points(pts):
@@ -56,6 +88,9 @@ def four_point_transform(image, pts):
 
 def auto_crop_image(input_path):
     try:
+        # Validate path against traversal attacks
+        input_path = _validate_image_path(input_path)
+
         if not os.path.exists(input_path):
             return None
 
@@ -69,7 +104,12 @@ def auto_crop_image(input_path):
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (5, 5), 0)
-        edged = cv2.Canny(gray, 75, 200)
+
+        # Adaptive Canny thresholds based on image median (Otsu-inspired)
+        median_val = float(np.median(gray))
+        canny_low = max(30, int(median_val * 0.5))
+        canny_high = max(80, int(median_val * 1.2))
+        edged = cv2.Canny(gray, canny_low, canny_high)
 
         cnts, _ = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]

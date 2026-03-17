@@ -43,7 +43,8 @@ test.describe('New Invoice Creation', () => {
         await tenantPage.waitForLoadState('networkidle');
 
         // Look for save button
-        const saveButton = tenantPage.getByRole('button', { name: /Kaydet|Oluştur|Save|Create|Fatura/i }).first();
+        // Look for save button "Fatura Oluştur"
+        const saveButton = tenantPage.getByRole('button', { name: 'Fatura Oluştur' }).first();
         await expect(saveButton).toBeVisible({ timeout: 5000 });
     });
 });

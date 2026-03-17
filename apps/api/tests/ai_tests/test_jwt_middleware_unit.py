@@ -345,11 +345,12 @@ class TestExcludedPaths:
     """Test excluded paths that bypass authentication."""
     
     def test_status_endpoint_bypasses_auth(self, client):
-        """Status endpoint should not require authentication."""
+        """Status endpoint requires authentication (not in exclude_paths)."""
         response = client.get("/ai/status")
         
-        assert response.status_code == 200
-        assert response.json()["status"] == "ok"
+        # /ai/status is NOT in exclude_paths (was removed to require auth
+        # for tenant context), so it should require authentication
+        assert response.status_code == 401
     
     def test_health_endpoint_bypasses_auth(self, app):
         """Health endpoint should not require authentication."""

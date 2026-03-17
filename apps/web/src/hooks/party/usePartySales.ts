@@ -8,6 +8,7 @@ export interface PartySale {
   productId?: string;
   saleDate: string;
   listPriceTotal?: number;
+  actualListPriceTotal?: number;  // NEW: Actual total (unit × count) for bilateral
   totalAmount: number;
   discountAmount: number;
   finalAmount: number;
@@ -30,22 +31,37 @@ export interface PartySale {
   // Legacy form fields
   vatAmount?: number;
   vatRate?: number;
-  discountType?: 'percentage' | 'fixed';
+  kdvAmount?: number;
+  kdvRate?: number;
+  discountType?: 'percentage' | 'amount' | 'none';
   discountValue?: number;
   productBarcode?: string;
   productSerialNumber?: string;
+  // Sale-level product fields (from first device)
+  productName?: string;  // Real product name from inventory (e.g., "deneme")
+  brand?: string;
+  model?: string;
+  category?: string;
+  barcode?: string;
+  serialNumber?: string;
+  serialNumberLeft?: string;
+  serialNumberRight?: string;
   devices?: Array<{
     id: string;
     name: string;
     brand: string;
     model: string;
     serialNumber?: string;
+    serialNumberLeft?: string;
+    serialNumberRight?: string;
     barcode?: string;
     ear?: string;
     listPrice?: number;
     salePrice?: number;
     sgkCoverageAmount?: number;
     partyResponsibleAmount?: number;
+    category?: string;
+    assignmentUid?: string;
   }>;
   paymentPlan?: {
     id: string;
@@ -71,6 +87,7 @@ export interface PartySale {
   }>;
   invoice?: {
     id: string;
+    purchaseInvoiceId?: number;
     invoiceNumber: string;
     invoiceDate: string;
     status: string;

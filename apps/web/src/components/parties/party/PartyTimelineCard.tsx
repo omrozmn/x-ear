@@ -58,24 +58,24 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
   const getEventTypeColor = (eventType: string) => {
     switch (eventType) {
       case 'appointment':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-primary/10 text-blue-800';
       case 'sale':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success/10 text-success';
       case 'device_assignment':
         return 'bg-purple-100 text-purple-800';
       case 'note':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-warning/10 text-yellow-800';
       case 'test':
       case 'hearing_test':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/10 text-red-800';
       case 'payment':
         return 'bg-indigo-100 text-indigo-800';
       case 'document':
         return 'bg-cyan-100 text-cyan-800';
       case 'activity':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
@@ -106,7 +106,7 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
   const getSourceBadge = (source?: string) => {
     if (!source) return null;
     return (
-      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600 ml-2">
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-muted text-muted-foreground ml-2">
         {source === 'activity_log' ? 'Log' : 'Manuel'}
       </span>
     );
@@ -114,7 +114,7 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-card border border-border rounded-2xl p-4 hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onEventClick?.(event)}
       role="button"
       tabIndex={0}
@@ -133,7 +133,7 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <h4 className="text-sm font-medium text-gray-900 truncate">
+            <h4 className="text-sm font-medium text-foreground truncate">
               {event.title}
             </h4>
             <div className="flex items-center">
@@ -145,13 +145,13 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
           </div>
 
           {event.description && (
-            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
               {event.description}
             </p>
           )}
 
           {event.details && Object.keys(event.details).length > 0 && (
-            <div className="text-xs text-gray-500 mb-2">
+            <div className="text-xs text-muted-foreground mb-2">
               {Object.entries(event.details).slice(0, 2).map(([key, value]) => (
                 <div key={key} className="inline-block mr-3">
                   <span className="font-medium">{key}:</span> {value ? String(value) : 'N/A'}
@@ -160,7 +160,7 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
             </div>
           )}
 
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center">
               <Calendar className="w-3 h-3 mr-1" aria-hidden="true" />
               {formatDate(event.eventDate)}
@@ -168,7 +168,7 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
 
             <div className="flex items-center space-x-3">
               {event.category && (
-                <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
                   {event.category}
                 </span>
               )}

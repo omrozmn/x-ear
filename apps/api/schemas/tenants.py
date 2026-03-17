@@ -13,6 +13,8 @@ class TenantStatus(str, Enum):
     INACTIVE = "inactive"
     SUSPENDED = "suspended"
     TRIAL = "trial"
+    CANCELLED = "cancelled"
+    PENDING = "pending"
 
     @classmethod
     def _missing_(cls, value):
@@ -25,7 +27,7 @@ class TenantStatus(str, Enum):
         return None
 
 
-from core.models.enums import ProductCode
+from .enums import ProductCode, SectorCode
 
 class TenantBase(AppBaseModel):
     """Base tenant schema"""
@@ -48,12 +50,16 @@ class TenantBase(AppBaseModel):
     # Product (Strict)
     product_code: Optional[ProductCode] = Field(ProductCode.XEAR_HEARING, description="Product Code")
 
+    # Sector (Multi-sector platform)
+    sector: SectorCode = Field(SectorCode.HEARING, description="Business sector")
+
 
 class TenantCreate(TenantBase):
     """Schema for creating a tenant"""
     slug: Optional[str] = Field(None, description="Tenant slug (auto-generated if empty)")
     plan_id: Optional[str] = Field(None, alias="planId", description="Subscription plan ID")
     current_plan: Optional[str] = Field(None, description="Current Plan Slug") # Admin override
+    country_code: Optional[str] = Field(None, alias="countryCode", description="ISO country code")
     max_users: Optional[int] = Field(5, description="Max users")
     current_users: Optional[int] = Field(0, description="Current users")
     company_info: Optional[Dict[str, Any]] = Field(default={}, description="Company Info")
@@ -82,14 +88,29 @@ class TenantUpdate(AppBaseModel):
     description: Optional[str] = None
     slug: Optional[str] = None
     product_code: Optional[ProductCode] = None
+    sector: Optional[SectorCode] = None
+    country_code: Optional[str] = Field(None, alias="countryCode")
 
 
 class TenantRead(TenantBase, IDMixin, TimestampMixin):
     """Schema for reading a tenant"""
-    # Product Identification (Strict)
-    product_code: ProductCode = Field(..., description="Product Code")
+    # Product Identification (Optional - some old tenants may not have it)
+    product_code: Optional[ProductCode] = Field(None, description="Product Code")
+
+    # Sector
+    sector: SectorCode = Field(SectorCode.HEARING, description="Business sector")
+
+    # Country
+    country_code: Optional[str] = Field(None, alias="countryCode", description="Country code")
 
     # Subscription info
+    current_plan: Optional[str] = Field(None, alias="currentPlan", description="Current plan slug")
+    current_plan_id: Optional[str] = Field(None, alias="currentPlanId", description="Current plan ID")
+    subscription_start_date: Optional[datetime] = Field(None, alias="subscriptionStartDate", description="Subscription start date")
+    subscription_end_date: Optional[datetime] = Field(None, alias="subscriptionEndDate", description="Subscription end date")
+    feature_usage: Optional[Dict[str, Any]] = Field(None, alias="featureUsage", description="Feature usage tracking")
+    
+    # Legacy fields (for backward compatibility)
     plan_id: Optional[str] = Field(None, alias="planId")
     plan_name: Optional[str] = Field(None, alias="planName")
     subscription_end: Optional[datetime] = Field(None, alias="subscriptionEnd")
@@ -101,8 +122,8 @@ class TenantRead(TenantBase, IDMixin, TimestampMixin):
     
     # Settings
     settings: Optional[Dict[str, Any]] = Field(None, description="Tenant settings")
-    max_users: int = Field(..., alias="maxUsers")
-    current_users: int = Field(..., alias="currentUsers")
+    max_users: Optional[int] = Field(None, alias="maxUsers")
+    current_users: Optional[int] = Field(None, alias="currentUsers")
     owner_email: Optional[str] = Field(None, alias="ownerEmail")
     billing_email: Optional[str] = Field(None, alias="billingEmail")
     status: TenantStatus = Field(...)

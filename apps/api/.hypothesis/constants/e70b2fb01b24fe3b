@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/whatsapp.py
+# hypothesis_version: 6.151.9
+
+[255, 'Party', 'chatId', 'chatTitle', 'chat_id', 'created_at', 'direction', 'externalMessageId', 'id', 'inbound', 'messageText', 'parties.id', 'partyId', 'phoneNumber', 'received', 'status', 'tenant_id', 'wam', 'whatsapp_messages']

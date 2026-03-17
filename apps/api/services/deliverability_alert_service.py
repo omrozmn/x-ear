@@ -112,7 +112,7 @@ class DeliverabilityAlertService:
             
             alert_text += f"{severity_emoji} *{alert['type']}*: {alert['message']}\n"
         
-        alert_text += f"\n📊 *Metrics:*\n"
+        alert_text += "\n📊 *Metrics:*\n"
         alert_text += f"• Sent: {metrics.get('sent_count', 0)}\n"
         alert_text += f"• Bounce Rate: {metrics.get('bounce_rate', 0)}%\n"
         alert_text += f"• Spam Rate: {metrics.get('spam_rate', 0)}%\n"

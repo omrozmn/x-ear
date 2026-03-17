@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Autocomplete, type AutocompleteOption } from '@x-ear/ui-web';
-import { Building2, User, MapPin } from 'lucide-react';
+import { Building2, User, MapPin, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { SupplierExtended } from './supplier-search.types';
+import { useAutoFillSupplier } from '../../hooks/useAutoFillSupplier';
 import citiesDataRaw from '../../data/cities.json';
 import countriesData from '../../data/countries.json';
 
@@ -45,6 +47,7 @@ export function SupplierFormModal({
     companyCode: '',
     taxNumber: '',
     taxOffice: '',
+    institutionNumber: '',
     contactPerson: '',
     email: '',
     phone: '',
@@ -72,6 +75,7 @@ export function SupplierFormModal({
         companyCode: supplier.companyCode || '',
         taxNumber: supplier.taxNumber || '',
         taxOffice: supplier.taxOffice || '',
+        institutionNumber: supplier.institutionNumber || '',
         contactPerson: supplier.contactPerson || '',
         email: supplier.email || '',
         phone: supplier.phone || '',
@@ -97,6 +101,7 @@ export function SupplierFormModal({
         companyCode: '',
         taxNumber: '',
         taxOffice: '',
+        institutionNumber: '',
         contactPerson: '',
         email: '',
         phone: '',
@@ -115,6 +120,24 @@ export function SupplierFormModal({
     }
     setErrors({});
   }, [supplier, isOpen]);
+
+  // Auto-fill supplier details from invoice data
+  const { autoFillData, hasData: hasAutoFill } = useAutoFillSupplier(
+    formData.taxNumber || undefined,
+    formData.companyName || undefined,
+  );
+
+  const handleAutoFill = () => {
+    if (!autoFillData) return;
+    setFormData(prev => ({
+      ...prev,
+      companyName: autoFillData.companyName || prev.companyName,
+      taxOffice: autoFillData.taxOffice || prev.taxOffice,
+      address: autoFillData.address || prev.address,
+      city: autoFillData.city || prev.city,
+    }));
+    toast.success('Fatura bilgileri otomatik olarak dolduruldu');
+  };
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -189,16 +212,17 @@ export function SupplierFormModal({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Şirket Bilgileri
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Şirket Adı *
               </label>
               <Input
+                fullWidth
                 value={formData.companyName}
                 onChange={(e) => handleChange('companyName', e.target.value)}
                 placeholder="Şirket adını giriniz"
@@ -207,10 +231,11 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Website
               </label>
               <Input
+                fullWidth
                 value={formData.website}
                 onChange={(e) => handleChange('website', e.target.value)}
                 placeholder="https://www.example.com"
@@ -218,21 +243,51 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Vergi Numarası
               </label>
+              <div className="flex gap-2">
+                <Input
+                  fullWidth
+                  value={formData.taxNumber}
+                  onChange={(e) => handleChange('taxNumber', e.target.value)}
+                  placeholder="10 haneli vergi numarası"
+                  className="flex-1"
+                />
+                {hasAutoFill && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAutoFill}
+                    className="flex items-center gap-1 text-primary border-blue-300 hover:bg-primary/10 whitespace-nowrap mt-0 self-end"
+                    title="Fatura bilgilerinden otomatik doldur"
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    Otomatik Doldur
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                UTS Kurum No
+              </label>
               <Input
-                value={formData.taxNumber}
-                onChange={(e) => handleChange('taxNumber', e.target.value)}
-                placeholder="10 haneli vergi numarası"
+                fullWidth
+                value={formData.institutionNumber}
+                onChange={(e) => handleChange('institutionNumber', e.target.value)}
+                placeholder="UTS kurum numarası"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Şirket Kodu
               </label>
               <Input
+                fullWidth
                 value={formData.companyCode}
                 onChange={(e) => handleChange('companyCode', e.target.value)}
                 placeholder="Örn: SUP001"
@@ -240,10 +295,11 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Vergi Dairesi
               </label>
               <Input
+                fullWidth
                 value={formData.taxOffice}
                 onChange={(e) => handleChange('taxOffice', e.target.value)}
                 placeholder="Vergi dairesi adı"
@@ -251,14 +307,14 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Durum
               </label>
               <select
                 data-allow-raw="true"
                 value={formData.isActive ? 'active' : 'inactive'}
                 onChange={(e) => handleChange('isActive', e.target.value === 'active')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="active">Aktif</option>
                 <option value="inactive">Pasif</option>
@@ -269,16 +325,17 @@ export function SupplierFormModal({
 
         {/* Contact Information */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <User className="h-4 w-4" />
             İletişim Bilgileri
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Yetkili Kişi
               </label>
               <Input
+                fullWidth
                 value={formData.contactPerson}
                 onChange={(e) => handleChange('contactPerson', e.target.value)}
                 placeholder="İsim soyisim"
@@ -286,10 +343,11 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 E-posta
               </label>
               <Input
+                fullWidth
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
@@ -299,10 +357,11 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Telefon
               </label>
               <Input
+                fullWidth
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 placeholder="0212 XXX XX XX"
@@ -310,10 +369,11 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Mobil
               </label>
               <Input
+                fullWidth
                 value={formData.mobile}
                 onChange={(e) => handleChange('mobile', e.target.value)}
                 placeholder="0532 XXX XX XX"
@@ -324,7 +384,7 @@ export function SupplierFormModal({
 
         {/* Address Information */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             Adres Bilgileri
           </h3>
@@ -352,10 +412,11 @@ export function SupplierFormModal({
                 />
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Şehir
                   </label>
                   <Input
+                    fullWidth
                     value={formData.city}
                     onChange={(e) => handleChange('city', e.target.value)}
                     placeholder="Şehir giriniz"
@@ -377,10 +438,11 @@ export function SupplierFormModal({
                 />
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Bölge
                   </label>
                   <Input
+                    fullWidth
                     value={formData.district}
                     onChange={(e) => handleChange('district', e.target.value)}
                     placeholder="Bölge giriniz"
@@ -390,10 +452,11 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Posta Kodu
               </label>
               <Input
+                fullWidth
                 value={formData.postalCode}
                 onChange={(e) => handleChange('postalCode', e.target.value)}
                 placeholder="34000"
@@ -401,7 +464,7 @@ export function SupplierFormModal({
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Adres
               </label>
               <textarea
@@ -410,7 +473,7 @@ export function SupplierFormModal({
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Tam adres giriniz"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -418,7 +481,7 @@ export function SupplierFormModal({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Notlar
           </label>
           <textarea
@@ -427,7 +490,7 @@ export function SupplierFormModal({
             onChange={(e) => handleChange('notes', e.target.value)}
             placeholder="İlave notlar..."
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
@@ -444,7 +507,7 @@ export function SupplierFormModal({
           <Button
             type="submit"
             disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="premium-gradient tactile-press text-white"
           >
             {isLoading ? 'Kaydediliyor...' : supplier ? 'Güncelle' : 'Kaydet'}
           </Button>

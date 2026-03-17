@@ -1,0 +1,20 @@
+Schemathesis v4.10.2
+━━━━━━━━━━━━━━━━━━━━
+
+
+ ✅  Loaded specification from http://localhost:5003/openapi.json  
+ (in 0.15s)                                                        
+
+     Base URL:         http://localhost:5003                       
+     Specification:    Open API 3.1.0                              
+     Operations:       509 selected / 509 total                    
+
+
+ ✅  API capabilities:                                             
+
+     Supports NULL byte in headers:    ✘                           
+
+ ⏭   Examples (in 0.64s)                                           
+                                                                   
+     ⏭  509 skipped                                                
+

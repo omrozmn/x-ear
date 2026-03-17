@@ -7,6 +7,7 @@ import type {
     SlotConfig,
     ExecuteResponse
 } from '../api/generated/schemas';
+import type { ActionPlan, ActionStep } from '../ai/types/ai.types';
 
 // Define modes for the state machine
 export type ComposerMode = 'idle' | 'context_locked' | 'action_selection' | 'slot_filling' | 'confirmation' | 'executing';
@@ -19,11 +20,11 @@ interface ComposerState {
     query: string;
 
     // Context State
-    context: EntityItem | null;
+    context: EntityItem[] | null;
 
     // Action State
     availableActions: Capability[];
-    selectedAction: Capability | null;
+    selectedAction: (Capability & { displayName?: string }) | null;
 
     // Slot State
     slots: Record<string, unknown>; // Collected arguments
@@ -38,9 +39,10 @@ interface ComposerState {
     toggleOpen: () => void;
 
     setQuery: (q: string) => void;
-    setContext: (entity: EntityItem | null) => void;
+    setContext: (entities: EntityItem[] | null) => void;
     setAvailableActions: (actions: Capability[]) => void;
     selectAction: (action: Capability, entities?: EntityItem[]) => void;
+    startWithCommand: (prompt: string, entities: EntityItem[]) => void;
 
     updateSlot: (key: string, value: unknown) => void;
     nextSlot: () => void; // Advances to next slot or confirmation
@@ -57,6 +59,7 @@ interface ComposerState {
     addExecutionStep: (step: ExecutionStep) => void;
     updateExecutionStep: (id: string, updates: Partial<ExecutionStep>) => void;
     setExecutionError: (error: string | null) => void;
+    setPlan: (plan: ActionPlan | null) => void;
 }
 
 export type ExecutionStatus = 'idle' | 'init' | 'running' | 'waiting' | 'success' | 'error';
@@ -87,10 +90,10 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
 
     setQuery: (q) => set({ query: q }),
 
-    setContext: (entity) => set({
-        context: entity,
-        mode: entity ? 'context_locked' : 'idle',
-        query: '', // Clear query when context locked
+    setContext: (entities) => set({
+        context: entities,
+        mode: (entities && entities.length > 0) ? 'context_locked' : 'idle',
+        query: '',
         selectedAction: null,
         slots: {}
     }),
@@ -101,15 +104,14 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         const currentState = get();
         const initialSlots: Record<string, unknown> = {};
 
-        // Unified source for entities (either passed or from single context)
-        const sourceEntities = entities || (currentState.context ? [currentState.context] : []);
+        // Unified source for entities (either passed or from context)
+        const sourceEntities = entities || currentState.context || [];
 
         // Map all source entities to available slots
         sourceEntities.forEach(entity => {
             const matchingSlot = action.slots?.find(s => {
                 // Map context type to slot name conventions
-                // legacy: patient_id compatibility for backward compatibility with old actions
-                if (entity.type === 'patient' && (s.name === 'party_id' || s.name === 'patient_id')) return true; // legacy
+                if (entity.type === 'patient' && s.name === 'party_id') return true;
                 if (entity.type === 'device' && (s.name === 'device_id' || s.name === 'inventory_id')) return true;
                 if (entity.type === 'invoice' && s.name === 'invoice_id') return true;
                 if (entity.type === 'supplier' && s.name === 'supplier_id') return true;
@@ -146,8 +148,10 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         // Find first missing slot
         const requiredSlots = selectedAction.slots || [];
         const nextMissing = requiredSlots.find(s => {
+            const isOptional = s.validationRules?.required === false;
             const val = slots[s.name];
-            return val === undefined || val === null || val === '';
+            const isMissing = val === undefined || val === null || val === '';
+            return isMissing && !isOptional;
         });
 
         if (nextMissing) {
@@ -184,5 +188,45 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         executionSteps: state.executionSteps.map(s => s.id === id ? { ...s, ...updates } : s)
     })),
 
-    setExecutionError: (error) => set({ executionError: error })
+    setExecutionError: (error) => set({ executionError: error }),
+
+    startWithCommand: (prompt, entities) => {
+        set({
+            context: entities,
+            query: prompt,
+            mode: 'idle', // Chat will handle the rest
+            isOpen: false
+        });
+    },
+
+    setPlan: (plan) => {
+        if (!plan) return;
+
+        // Map first step as selected action for simplified view
+        const firstStep = plan.steps[0];
+
+        // Convert Steps to ExecutionSteps for progress UI
+        const executionSteps: ExecutionStep[] = plan.steps.map((s: ActionStep) => ({
+            id: `step-${s.stepNumber}`,
+            label: s.description,
+            status: 'pending'
+        }));
+
+        set({
+            selectedAction: {
+                name: firstStep.toolName,
+                description: firstStep.description,
+                category: 'AI Operation',
+                examplePhrases: [],
+                requiredPermissions: [],
+                toolOperations: [],
+                limitations: [],
+                slots: [] // Handled by chat
+            } as Capability,
+            executionSteps,
+            executionStatus: 'waiting', // Waiting for user confirmation
+            mode: 'confirmation',
+            slots: firstStep.parameters || {}
+        });
+    }
 }));

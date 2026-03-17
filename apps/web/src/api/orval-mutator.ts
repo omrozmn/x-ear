@@ -19,8 +19,13 @@ interface ExtendedAxiosInstance extends AxiosInstance {
 }
 
 interface RefreshResponse {
-  accessToken?: string;
-  access_token?: string;
+  // ResponseEnvelope<RefreshTokenResponse> structure from backend
+  success?: boolean;
+  data?: {
+    accessToken?: string;
+    access_token?: string;
+  };
+  error?: unknown;
 }
 
 // Hybrid Converter: Adds CamelCase keys while preserving SnakeCase keys
@@ -47,10 +52,15 @@ export const hybridCamelize = (data: unknown): unknown => {
   return data;
 };
 
-// API Configuration - NO /api suffix because Orval paths already include it
-const API_BASE_URL = typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') // Remove trailing /api if present
-  : 'http://localhost:5003'; // Just host+port, Orval adds /api
+// API Configuration - NO /api suffix because Orval paths already include it.
+// In development, default to same-origin so Vite's /api proxy is used.
+// This avoids browser-side localhost/CORS/network mismatches while preserving
+// explicit VITE_API_URL overrides for non-proxied environments.
+const configuredApiUrl = import.meta?.env?.VITE_API_URL?.replace(/\/api$/, '');
+const API_BASE_URL = configuredApiUrl
+  || (import.meta.env.DEV
+    ? ''
+    : (typeof window !== 'undefined' ? window.location.origin : ''));
 
 // Connection pooling and retry configuration
 const CONNECTION_CONFIG = {
@@ -237,19 +247,31 @@ apiClient.interceptors.request.use(
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
 
-      // DEBUG LOG
-      console.log('[orval-mutator] Request interceptor:', {
-        url: config.url,
-        method: config.method,
-        tokenSource: 'TokenManager',
-        tokenPreview: token.substring(0, 50) + '...',
-        tokenIdentity: tokenManager.getUserId(),
-        isAdmin,
-        tokenTTL: tokenManager.getAccessTokenTTL(),
-        isExpired: tokenManager.isAccessTokenExpired()
-      });
+      // Add X-Tenant-ID header for multi-tenant operations
+      const tenantId = tokenManager.getTenantId();
+      if (tenantId) {
+        config.headers['X-Tenant-ID'] = tenantId;
+      }
+
+      // CRITICAL: Add X-Effective-Tenant-Id header for admin impersonation
+      // Backend middleware checks this header for tenant context
+      const payload = tokenManager.payload;
+      const effectiveTenantId = payload?.effective_tenant_id;
+      const isImpersonatingTenant = payload?.is_impersonating_tenant === true;
+      
+      if (effectiveTenantId && (isAdmin || isImpersonatingTenant)) {
+        config.headers['X-Effective-Tenant-Id'] = effectiveTenantId;
+      }
+
     } else {
-      console.warn('[orval-mutator] İstek için token bulunamadı:', config.url);
+      const isPublicEndpoint = config.url?.includes('/auth/login') ||
+        config.url?.includes('/auth/register') ||
+        config.url?.includes('/auth/verify-otp') ||
+        config.url?.includes('/auth/forgot-password') ||
+        config.url?.includes('/auth/reset-password');
+      if (!isPublicEndpoint) {
+        console.warn('[orval-mutator] İstek için token bulunamadı:', config.url);
+      }
     }
 
     // URL rewriting logic has been removed as backend now supports Unified Endpoints.
@@ -262,6 +284,9 @@ apiClient.interceptors.request.use(
       console.warn('[orval-mutator] Demo modunda yazma işlemleri engellendi:', config.url);
       return Promise.reject(new Error('Demo modunda sadece okuma yapılabilir.'));
     }
+
+    // CRITICAL: Initialize headers object if not exists (for FormData requests)
+    config.headers = config.headers || {};
 
     // Add idempotency key for non-GET requests
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
@@ -295,7 +320,12 @@ apiClient.interceptors.request.use(
 // Response interceptor for error handling and offline support
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    if (response.data) {
+    // Skip camelCase transformation for binary responses (arraybuffer/blob)
+    const responseType = response.config?.responseType;
+    const isBinary = responseType === 'arraybuffer' || responseType === 'blob'
+      || response.data instanceof ArrayBuffer
+      || (typeof Blob !== 'undefined' && response.data instanceof Blob);
+    if (response.data && !isBinary) {
       // Apply hybrid conversion to response data
       response.data = hybridCamelize(response.data);
     }
@@ -329,7 +359,13 @@ apiClient.interceptors.response.use(
           try {
             if (!createAuthRefresh) {
               console.error('[orval-mutator] Yenileme token\'ı mevcut değil');
-              throw new Error('Yenileme token\'ı mevcut değil');
+              // CRITICAL FIX: Don't throw immediately - let subscribers handle it
+              extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
+              extendedClient._refreshing = false;
+              extendedClient._refreshSubscribers = [];
+              // Clear tokens ONLY if no refresh token
+              tokenManager.clearTokens();
+              return Promise.reject(error);
             }
 
             console.log('[orval-mutator] Attempting token refresh...');
@@ -358,11 +394,12 @@ apiClient.interceptors.response.use(
 
             console.log('[orval-mutator] Refresh response:', {
               status: refreshResp.status,
-              hasAccessToken: !!refreshResp.data?.access_token || !!refreshResp.data?.accessToken
+              hasAccessToken: !!refreshResp.data?.data?.accessToken || !!refreshResp.data?.data?.access_token
             });
 
             if (refreshResp.status === 200 && refreshResp.data) {
-              const newToken = refreshResp.data.access_token || refreshResp.data.accessToken || null;
+              // Backend returns ResponseEnvelope<RefreshTokenResponse>, so accessToken is in data.data
+              const newToken = refreshResp.data?.data?.accessToken || refreshResp.data?.data?.access_token || null;
               if (newToken) {
                 console.log('[orval-mutator] Token refresh successful, updating via TokenManager...');
                 // Use TokenManager to update token (single source of truth)
@@ -375,14 +412,23 @@ apiClient.interceptors.response.use(
             } else {
               console.error('[orval-mutator] Refresh failed with status:', refreshResp.status);
               extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
-              // Clear tokens via TokenManager
-              tokenManager.clearTokens();
+              // ONLY clear tokens if refresh explicitly failed (not network error)
+              if (refreshResp.status === 401 || refreshResp.status === 403) {
+                console.error('[orval-mutator] Refresh token invalid, clearing tokens');
+                tokenManager.clearTokens();
+              }
             }
           } catch (e) {
             console.error('[orval-mutator] Token refresh error:', e);
             extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
-            // Clear tokens via TokenManager
-            tokenManager.clearTokens();
+            // ONLY clear tokens if it's an auth error, not network error
+            const err = e as { response?: { status?: number } };
+            if (err.response?.status === 401 || err.response?.status === 403) {
+              console.error('[orval-mutator] Refresh token invalid, clearing tokens');
+              tokenManager.clearTokens();
+            } else {
+              console.warn('[orval-mutator] Refresh failed due to network/server error, keeping tokens');
+            }
           } finally {
             extendedClient._refreshing = false;
             extendedClient._refreshSubscribers = [];

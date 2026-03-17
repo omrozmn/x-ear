@@ -51,6 +51,49 @@ code {
   font-weight: 600;
 }
 
+/* Dark mode overrides for Ant Design */
+.dark .ant-menu-item-selected {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+.dark .ant-table-thead > tr > th {
+  background-color: #1f2937;
+  color: #d1d5db;
+}
+
+.dark .ant-card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .ant-statistic-title {
+  color: #9ca3af;
+}
+
+.dark .ant-statistic-content {
+  color: #f3f4f6;
+}
+
+.dark .ant-layout-sider {
+  background-color: #111827;
+}
+
+.dark .stat-card {
+  @apply bg-gray-800;
+}
+
+.dark .stat-value {
+  @apply text-white;
+}
+
+.dark .page-title {
+  @apply text-white;
+}
+
+.dark .page-description {
+  @apply text-gray-400;
+}
+
 /* Custom utility classes */
 .page-header {
   @apply mb-6 pb-4 border-b border-gray-200;
@@ -69,7 +112,7 @@ code {
 }
 
 .stat-card {
-  @apply bg-white rounded-lg shadow p-6;
+  @apply bg-white rounded-2xl shadow p-6;
 }
 
 .stat-value {
@@ -136,4 +179,61 @@ code {
 
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
+}
+
+/* Premium UI Enhancement Suite */
+:root {
+  --radius: 1rem;
+}
+
+.premium-shadow {
+  box-shadow: 
+    0 1px 2px rgba(0,0,0,0.05),
+    0 4px 12px rgba(0,0,0,0.05) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.premium-shadow:hover {
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.05),
+    0 12px 24px rgba(0,0,0,0.08) !important;
+  transform: translateY(-2px);
+}
+
+.tactile-press {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.tactile-press:active {
+  transform: scale(0.995) !important;
+}
+
+.premium-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  background-size: 200% 200% !important;
+  animation: gradientShift 5s ease infinite !important;
+  color: white !important;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark .glass-morphism {
+  background: rgba(17, 24, 39, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }

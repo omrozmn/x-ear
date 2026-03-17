@@ -3,14 +3,15 @@ import os
 # Add backend root to path to allow imports from app, models, etc.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 """Quick admin panel data seeder - adds minimal test data to all empty pages"""
-import sys, os, random
+import sys
+import os
+import random
 from datetime import datetime, timedelta
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from app import app
 from models.base import db, gen_id
 from models.tenant import Tenant
 from models.marketplace import MarketplaceIntegration
-from models.ocr_job import OCRJob
 from models.scan_queue import ScanQueue
 from models.notification import Notification
 from utils.tenant_security import _skip_filter

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/ocr_result_normalizer.py
+# hypothesis_version: 6.151.6
+
+[1.0, 'confidence', 'text']

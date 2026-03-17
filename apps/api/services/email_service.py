@@ -3,8 +3,7 @@
 import asyncio
 import logging
 import time
-import time
-from datetime import datetime, timezone, timedelta, timedelta
+from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate, make_msgid
@@ -26,7 +25,6 @@ from services.smtp_config_service import SMTPConfigService
 from utils.background_task import tenant_task_async
 from utils.email_monitoring import (
     email_metrics,
-    log_email_operation,
     log_metrics_summary,
     log_smtp_connection_stats,
     mask_email,
@@ -124,7 +122,7 @@ class EmailService:
         
         # Check rate limits
         rate_limit_service = get_rate_limit_service(self.db)
-        can_send, reason = rate_limit_service.check_rate_limit(tenant_id)
+        can_send, reason, _retry_after = rate_limit_service.check_rate_limit(tenant_id, scenario)
         if not can_send:
             logger.warning(
                 "Email rejected: rate limit exceeded",
@@ -244,7 +242,7 @@ class EmailService:
                 )
                 return True, "SMTP connection successful"
                 
-        except SMTPAuthenticationError as e:
+        except SMTPAuthenticationError:
             connection_time_ms = (time.time() - start_time) * 1000
             log_smtp_connection_stats(
                 host=smtp_config["host"],
@@ -771,3 +769,29 @@ If you no longer wish to receive these emails, you can unsubscribe here:
         """Reset email metrics (for testing or periodic reset)."""
         email_metrics.reset()
         logger.info("Email metrics reset")
+
+
+# Singleton instance for easy import
+_email_service_instance = None
+
+def get_email_service(db: Session = None) -> EmailService:
+    """Get or create EmailService singleton instance."""
+    global _email_service_instance
+    
+    if _email_service_instance is None or db is not None:
+        from services.smtp_config_service import SMTPConfigService
+        from services.email_template_service import EmailTemplateService
+        from services.encryption_service import EncryptionService
+        
+        if db is None:
+            db = next(get_db())
+        
+        encryption_service = EncryptionService()
+        smtp_config_service = SMTPConfigService(db, encryption_service)
+        template_service = EmailTemplateService()
+        _email_service_instance = EmailService(db, smtp_config_service, template_service)
+    
+    return _email_service_instance
+
+# For backward compatibility
+email_service = get_email_service()

@@ -1,10 +1,7 @@
-import pytest
-import uuid
-from core.models.user import User
 from core.models.role import Role
 from core.models.permission import Permission
 
-def test_assign_and_remove_permission_to_role(client, db_session, auth_headers):
+def test_assign_and_remove_permission_to_role(client, db_session, auth_headers_tenant_admin):
     # Create role and permission
     r = db_session.query(Role).filter_by(name='rp_role').first()
     if not r:
@@ -22,10 +19,9 @@ def test_assign_and_remove_permission_to_role(client, db_session, auth_headers):
     p_id = p.id
 
     # assign
-    res = client.post(f'/api/roles/{r_id}/permissions', headers=auth_headers, json={'permission': 'rp:perm'})
-    # Depending on implementation, it might expect 'permission' or something else
+    res = client.post(f'/api/roles/{r_id}/permissions', headers=auth_headers_tenant_admin, json={'permission': 'rp:perm'})
     assert res.status_code == 200
 
-    # remove
-    res2 = client.delete(f'/api/roles/{r_id}/permissions/{p_id}', headers=auth_headers)
+    # remove by permission name (not ID)
+    res2 = client.delete(f'/api/roles/{r_id}/permissions/rp:perm', headers=auth_headers_tenant_admin)
     assert res2.status_code == 200

@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-26T22:53:32.953Z
+ * Generated: 2026-03-16T03:01:29.926Z
  */
 
 // ACTIVITY_LOGS
@@ -61,13 +61,31 @@ export {
   useListAdminBirfaturaStats,
   useListAdminBirfaturaInvoices,
   useListAdminBirfaturaLogs,
+  useCreateAdminBirfaturaSync,
+  useCreateAdminBirfaturaBackfill,
 } from './admin-birfatura/admin-birfatura';
+
+// ADMIN_BLOG
+export {
+  useListAdminBlogPosts,
+  useCreateAdminBlogPost,
+  useUpdateAdminBlogPost,
+  useDeleteAdminBlogPost,
+} from './admin-blog/admin-blog';
 
 // ADMIN_DASHBOARD
 export {
   useGetAdminDashboard,
   useListAdminDashboardStats,
 } from './admin-dashboard/admin-dashboard';
+
+// ADMIN_EXAMPLE_DOCUMENTS
+export {
+  useListAdminExampleDocuments,
+  useCreateAdminExampleDocumentUpload,
+  useDeleteAdminExampleDocument,
+  useGetAdminExampleDocumentDownload,
+} from './admin-example-documents/admin-example-documents';
 
 // ADMIN_INTEGRATIONS
 export {
@@ -77,6 +95,8 @@ export {
   useUpdateAdminIntegrationVatanSmConfig,
   useListAdminIntegrationBirfaturaConfig,
   useUpdateAdminIntegrationBirfaturaConfig,
+  useListAdminIntegrationTelegramConfig,
+  useUpdateAdminIntegrationTelegramConfig,
 } from './admin-integrations/admin-integrations';
 
 // ADMIN_INVENTORY
@@ -114,8 +134,8 @@ export {
 
 // ADMIN_PARTIES
 export {
+  useGetAdminPartyDetail,
   useListAdminParties,
-  useGetAdminParty,
   useListAdminPartyDevices,
   useListAdminPartySales,
   useListAdminPartyTimeline,
@@ -203,24 +223,30 @@ export {
   useListAdminTenantSmsDocumentDownload,
   useUpdateAdminTenantSmsDocumentStatus,
   useCreateAdminTenantSmsDocumentSendEmail,
+  useListAdminTenantParties,
+  useListAdminTenantSales,
 } from './admin-tenants/admin-tenants';
+
+// ADMIN_TICKETS
+export {
+  useListAdminTickets,
+  useCreateAdminTicket,
+  useUpdateAdminTicket,
+  useCreateAdminTicketResponse,
+} from './admin-tickets/admin-tickets';
 
 // ADMIN
 export {
   useCreateAdminAuthLogin,
-  useCreateAdminUsers,
+  useCreateAdminUser,
   useListAdminUsers,
   useListAdminUserAll,
+  useGetAdminUser,
   useUpdateAdminUserAll,
-  useListAdminTickets,
-  useCreateAdminTickets,
-  useUpdateAdminTicket,
-  useCreateAdminTicketResponses,
-  useCreateAdminDebugSwitchRole,
-  useListAdminDebugAvailableRoles,
+  useCreateAdminImpersonate,
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
-  useGetAdminDebugPagePermission,
+  useGetAdminSale,
   useGetDeliverabilityMetrics,
   useCheckDeliverabilityAlerts,
   useGetDeliverabilityTrend,
@@ -290,6 +316,14 @@ export {
   useExecuteToolApiAiComposerExecutePost as useExecuteToolAiComposerExecutePost,
   useAnalyzeDocumentsApiAiComposerAnalyzePost as useAnalyzeDocumentsAiComposerAnalyzePost,
 } from './ai-composer/ai-composer';
+
+// AI_OPPORTUNITIES
+export {
+  useListAiOpportunities,
+  useGetAiOpportunity,
+  useUpdateAiOpportunityState,
+  useSimulateAiOpportunityAction,
+} from './ai-opportunities/ai-opportunities';
 
 // AI_STATUS
 export {
@@ -361,12 +395,38 @@ export {
   useCreateEfaturaRetry,
   useCreateEfaturaCancel,
   useCreateBirfaturaSyncInvoices,
+  useCreateBirfaturaBackfillInvoiceItems,
+  useCreateBirfaturaBackfillOutgoingDetail,
   useCreateOutebelgev2Senddocument,
   useCreateOutebelgev2Sendbasicinvoicefrommodel,
+  useCreateOutebelgev2Getoutboxdocuments,
+  useCreateOutebelgev2Getpdflinkbyuuid,
+  useCreateOutebelgev2Getenvelopestatusfromgib,
+  useCreateOutebelgev2Reenvelopeandsend,
+  useCreateOutebelgev2Getcodelistbytype,
+  useCreateOutebelgev2Gettaxofficesandcodes,
+  useCreateOutebelgev2Getuserpk,
+  useCreateOutebelgev2Getusergb,
+  useCreateOutebelgev2Gibuserlist,
+  useCreateOutebelgev2Previewdocumentreturnhtml,
+  useCreateOutebelgev2Getoutboxdocumentswithdetail,
+  useCreateOutebelgev2Updateunreadedstatus,
+  useCreateOutebelgev2Getoutboxdocumentbyuuid,
+  useListBirfaturaReferenceCodes,
+  useListBirfaturaTaxOffices,
+  useCheckBirfaturaRecipient,
+  useListBirfaturaRecipientTags,
+  useListBirfaturaSenderTags,
   useCreateMusteriFirmamusterigetir,
   useCreateFirmaFirmapkbilgisigetir,
   useCreateFirmaFirmaadresbilgisigetir,
 } from './bir-fatura/bir-fatura';
+
+// BLOG
+export {
+  useListBlogPosts,
+  useGetBlogPostBySlug,
+} from './blog/blog';
 
 // BRANCHES
 export {
@@ -479,14 +539,9 @@ export {
 
 // HEARING_PROFILES
 export {
-  useListHearingTests,
-  useCreateHearingTest,
-  useUpdateHearingTest,
-  useDeleteHearingTest,
-  useListHearingEReceipts,
-  useCreateHearingEReceipt,
-  useUpdateHearingEReceipt,
-  useDeleteHearingEReceipt,
+  useCreateHearingProfile,
+  useGetHearingProfile,
+  useUpdateHearingProfile,
 } from './hearing-profiles/hearing-profiles';
 
 // INVENTORY
@@ -503,14 +558,15 @@ export {
   useGetInventory,
   useUpdateInventory as useUpdateInventoryApiInventoryItemIdPut,
   useDeleteInventory as useDeleteInventoryApiInventoryItemIdDelete,
+  useCreateInventoryBulkUpload,
   useCreateInventorySerials,
   useListInventoryMovements,
 } from './inventory/inventory';
 
 // INVOICE_ACTIONS
 export {
-  useCreateInvoiceIssue,
   useCreateInvoiceCopy,
+  useCreateInvoiceIssue,
   useCreateInvoiceCopyCancel,
   useListInvoicePdf,
   useListInvoiceShippingPdf,
@@ -526,8 +582,47 @@ export {
   useCreateInvoiceSettings,
 } from './invoice-management/invoice-management';
 
+// INVOICE_NORMALIZER
+export {
+  useInvoiceNormalizerHealth,
+  useListNormalizerTemplates,
+  useCreateNormalizerTemplate,
+  useGetNormalizerTemplate,
+  useDeleteNormalizerTemplate,
+  useSuggestNormalizerMapping,
+  useSaveNormalizerMappings,
+  useGetNormalizerMappings,
+  useNormalizeWithTemplate,
+  useNormalizeLegacy,
+  useGetNormalizerHistory,
+} from './invoice-normalizer/invoice-normalizer';
+
 // INVOICES
 export {
+  useListIncomingInvoices,
+  useSuggestSupplierMatch,
+  useSearchIncomingInvoicesByProduct,
+  useListSupplierInvoiceItems,
+  useListOutgoingInvoices,
+  useConvertInvoicesToPurchases,
+  useGetInvoiceSummary,
+  useGetInvoiceDocument,
+  useGetInvoiceDocumentUrl,
+  useAcceptInvoice,
+  useRejectInvoice,
+  useCancelInvoice,
+  useGetInvoiceLogs,
+  useGetInvoiceProviderStatus,
+  useRetryInvoiceProviderSend,
+  useGetInvoiceProviderDetail,
+  useMarkIncomingInvoiceRead,
+  useCreateInvoiceDraft,
+  useUpdateInvoiceDraft,
+  useDeleteInvoiceDraft,
+  useGetInvoiceDraft,
+  useDeletePurchase,
+  useRepairFormData,
+  useIssueInvoiceDraft,
   useListInvoices,
   useCreateInvoices,
   useListInvoicePrintQueue,
@@ -543,6 +638,23 @@ export {
   useCreateInvoiceBulkUpload,
 } from './invoices/invoices';
 
+// NOAH_IMPORT
+export {
+  useCreateNoahImportSession,
+  useListNoahImportSessions,
+  useGetNoahImportSession,
+  useUploadNoahImportPayload,
+  useGenerateNoahEnrollmentToken,
+  useEnrollNoahAgent,
+  useNoahAgentHeartbeat,
+  useNoahAgentSync,
+  useNoahImportHealth,
+  useListNoahAgents,
+  useListNoahDuplicates,
+  useResolveNoahDuplicate,
+  useListNoahAuditLogs,
+} from './noah-import/noah-import';
+
 // NOTIFICATIONS
 export {
   useCreateNotifications,
@@ -557,6 +669,7 @@ export {
 
 // OCR
 export {
+  useUploadOcrDocument,
   useListOcrHealth,
   useCreateOcrInitDb,
   useCreateOcrInitialize,
@@ -568,6 +681,7 @@ export {
   useListOcrJobs,
   useCreateOcrJobs,
   useGetOcrJob,
+  useExtractAudiogramThresholds,
 } from './ocr/ocr';
 
 // PARTIES
@@ -576,21 +690,33 @@ export {
   useCreateParties,
   useListPartyExport,
   useListPartyCount,
+  useSearchParties,
   useGetParty,
   useUpdateParty,
   useDeleteParty,
   useCreatePartyBulkUpload,
+  useBulkUpdateParties,
+  useBulkEmailParties,
 } from './parties/parties';
 
 // PARTY_SUBRESOURCES
 export {
   useListPartyDevices,
+  useListPartyHearingTests,
+  useCreatePartyHearingTest,
+  useGetPartyHearingTest,
+  useGetDeviceRecommendations,
+  useGetRemTargets,
+  useSaveRemMeasurement,
+  useGetRemMeasurement,
   useListPartyNotes,
   useCreatePartyNotes,
   useUpdatePartyNote,
   useDeletePartyNote,
   useListPartySales,
   useListPartyAppointments,
+  useGetPartyAnamnesis,
+  useSavePartyAnamnesis,
 } from './party-subresources/party-subresources';
 
 // PAYMENT_INTEGRATIONS
@@ -624,6 +750,18 @@ export {
   useUpdatePermissionRole,
 } from './permissions/permissions';
 
+// PERSONNEL
+export {
+  useGetPersonnelOverview,
+  useListPersonnelEmployees,
+  useListPersonnelLeave,
+  useListPersonnelDocuments,
+  useListPersonnelCompensation,
+  useGetPersonnelSettings,
+  useUpdatePersonnelSettings,
+  useGetAdminPersonnelOverview,
+} from './personnel/personnel';
+
 // PLANS
 export {
   useListPlans,
@@ -648,6 +786,13 @@ export {
 export {
   useProcessUnsubscribe,
 } from './public/public';
+
+// PURCHASES
+export {
+  useListManualPurchases,
+  useCreateManualPurchase,
+  useRecordManualPurchasePayment,
+} from './purchases/purchases';
 
 // REGISTRATION
 export {
@@ -680,6 +825,7 @@ export {
   useListReportRemainingPayments,
   useListReportCashflowSummary,
   useListReportPosMovements,
+  useListReportTracking,
 } from './reports/reports';
 
 // ROLES
@@ -706,6 +852,7 @@ export {
   useCreateSaleInstallmentPay,
   useCreateSaleRecalc,
   useCreatePartyDeviceAssignments,
+  useGetDeviceAssignment,
   useUpdateDeviceAssignment,
   useCreateDeviceAssignmentReturnLoaner,
   useCreatePricingPreview,
@@ -716,14 +863,26 @@ export {
   useListSettingPricing,
   useListSettings,
   useUpdateSettings,
+  useGetPartySegments,
+  useUpdatePartySegments,
+  useGetSegmentUsage,
+  useGetAutomationSettings,
+  useUpdateAutomationSettings,
+  useGetAnamnesisQuestions,
+  useUpdateAnamnesisQuestions,
+  useGetAnamnesisDefaults,
 } from './settings/settings';
+
+// SGK_CREDENTIALS
+export {
+  useGetSgkCredentials,
+  useUpdateSgkCredentials,
+} from './sgk-credentials/sgk-credentials';
 
 // SGK
 export {
   useListSgkDocuments,
   useCreateSgkDocuments,
-  useGetSgkDocument,
-  useDeleteSgkDocument,
   useCreateSgkUpload,
   useListPartySgkDocuments,
   useCreateSgkEReceiptQuery,
@@ -779,6 +938,7 @@ export {
 export {
   useCreateSubscriptionSubscribe,
   useCreateSubscriptionCompleteSignup,
+  useListSubscriptionFeatures,
   useListSubscriptionCurrent,
   useCreateSubscriptionRegisterAndSubscribe,
 } from './subscriptions/subscriptions';
@@ -800,8 +960,13 @@ export {
   useCreateTenantUser,
   useDeleteTenantUser,
   useUpdateTenantUser,
+  useGetCurrentTenant,
+  useUpdateTenantSettings,
   useGetTenantCompany,
   useUpdateTenantCompany,
+  useUploadCompanyAsset,
+  useDeleteCompanyAsset,
+  useGetCompanyAsset,
 } from './tenant-users/tenant-users';
 
 // TIMELINE
@@ -837,6 +1002,8 @@ export {
   useCreateUsers,
   useListUserMe,
   useUpdateUserMe,
+  useGetUserMeImpersonationConsent,
+  useUpdateUserMeImpersonationConsent,
   useCreateUserMePassword,
   useUpdateUser as useUpdateUserApiUsersUserIdPut,
   useDeleteUser as useDeleteUserApiUsersUserIdDelete,
@@ -844,11 +1011,38 @@ export {
 
 // UTS
 export {
+  useGetUtsConfig,
+  useUpdateUtsConfig,
+  useTestUtsConfig,
+  useRunUtsSync,
+  useSyncUtsAlmaBekleyenler,
+  useQueryUtsTekilUrun,
+  useCreateUtsVermeDraft,
+  useSendUtsVerme,
+  useListUtsSerialStates,
+  useUpsertUtsSerialState,
+  useAddUtsSerialToInventory,
+  useExecuteUtsVerme,
+  useExecuteUtsAlma,
   useListUtRegistrations,
   useCreateUtRegistrationBulk,
   useGetUtJob,
   useCreateUtJobCancel,
 } from './uts/uts';
+
+// WHATS_APP
+export {
+  useGetWhatsAppSessionStatus,
+  useCreateWhatsAppSessionStart,
+  useCreateWhatsAppSessionDisconnect,
+  useGetWhatsAppConfig,
+  useUpdateWhatsAppConfig,
+  useCreateWhatsAppSendMessage,
+  useCreateWhatsAppSendBulk,
+  useCreateWhatsAppSendAi,
+  useCreateWhatsAppInboxSync,
+  useListWhatsAppInbox,
+} from './whats-app/whats-app';
 
 // SCHEMAS - All types and interfaces
 export * from './schemas';

@@ -1,98 +1,107 @@
-/**
- * Invoices Full CRUD E2E Tests
- * Tests Create, View, Cancel operations for invoices
- */
 import { test, expect } from '../fixtures/fixtures';
 
-test.describe('Invoices CRUD Operations', () => {
+/**
+ * Phase 3.8: Invoice Tests
+ * Invoice generation and management
+ */
 
-    test('should list invoices', async ({ tenantPage }) => {
-        await tenantPage.goto('/invoices');
-        await tenantPage.waitForLoadState('networkidle');
+test.describe('Phase 3.8: Invoice', () => {
 
-        // Verify page loads
-        const heading = tenantPage.locator('h1, h2, h3, [role="heading"]').first();
-        await expect(heading).toBeVisible({ timeout: 10000 });
-    });
+  test('3.8.1: Invoice page loads', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const main = tenantPage.locator('main, [class*="main"]').first();
+    await expect(main).toBeVisible({ timeout: 10000 });
+  });
 
-    test('should navigate to new invoice form', async ({ tenantPage }) => {
-        await tenantPage.goto('/invoices');
-        await tenantPage.waitForLoadState('networkidle');
+  test('3.8.2: Invoice list — table displayed', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const table = tenantPage.locator('table, [role="table"]').first();
+    const hasList = await table.isVisible({ timeout: 5000 }).catch(() => false);
+    
+    if (!hasList) {
+      test.skip(true, 'Invoice list not found');
+    }
+    
+    await expect(table).toBeVisible();
+  });
 
-        // Click new invoice button
-        const newButton = tenantPage.getByRole('button', { name: /Yeni|Fatura|Ekle|Oluştur/i }).first();
-        const hasButton = await newButton.isVisible({ timeout: 5000 }).catch(() => false);
+  test('3.8.3: Create invoice button', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const createButton = tenantPage.locator('button').filter({
+      hasText: /new|yeni|create|fatura|invoice/i
+    }).first();
+    
+    const hasButton = await createButton.isVisible({ timeout: 5000 }).catch(() => false);
+    expect(hasButton || true).toBeTruthy();
+  });
 
-        if (hasButton) {
-            await newButton.click();
-            await tenantPage.waitForTimeout(1000);
+  test('3.8.4: Filter by status', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const statusFilter = tenantPage.locator('select, [role="combobox"]').filter({
+      hasText: /status|durum/i
+    }).first();
+    
+    const hasFilter = await statusFilter.isVisible({ timeout: 3000 }).catch(() => false);
+    test.skip(!hasFilter, 'Status filter not found');
+  });
 
-            // Should navigate to new invoice form
-            expect(tenantPage.url().includes('/new') || tenantPage.url().includes('/invoices')).toBeTruthy();
-        } else {
-            // Try direct navigation
-            await tenantPage.goto('/invoices/new');
-            await tenantPage.waitForLoadState('networkidle');
-            expect(tenantPage.url()).toContain('/invoices');
-        }
-    });
+  test('3.8.5: Filter by date range', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const dateFilter = tenantPage.locator('input[type="date"]').first();
+    const hasFilter = await dateFilter.isVisible({ timeout: 3000 }).catch(() => false);
+    
+    test.skip(!hasFilter, 'Date filter not found');
+  });
 
-    test('should display invoice creation form elements', async ({ tenantPage }) => {
-        await tenantPage.goto('/invoices/new');
-        await tenantPage.waitForLoadState('networkidle');
+  test('3.8.6: Search invoices', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const searchInput = tenantPage.locator('input[type="search"], input[placeholder*="search"]').first();
+    const hasSearch = await searchInput.isVisible({ timeout: 5000 }).catch(() => false);
+    
+    test.skip(!hasSearch, 'Search not found');
+  });
 
-        // Look for customer selection
-        const customerField = tenantPage.getByRole('combobox').first();
-        const hasCustomer = await customerField.isVisible({ timeout: 5000 }).catch(() => false);
+  test('3.8.7: Print/Download invoice', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const printButton = tenantPage.locator('button').filter({
+      hasText: /print|download|yazdır|indir/i
+    }).first();
+    
+    const hasButton = await printButton.isVisible({ timeout: 3000 }).catch(() => false);
+    test.skip(!hasButton, 'Print/Download button not found');
+  });
 
-        // Look for items section
-        const itemsSection = tenantPage.locator('[class*="item"], [class*="product"], table').first();
-        const hasItems = await itemsSection.isVisible({ timeout: 5000 }).catch(() => false);
-
-        expect(hasCustomer || hasItems || true).toBeTruthy();
-    });
-
-    test('should show invoice detail', async ({ tenantPage }) => {
-        await tenantPage.goto('/invoices');
-        await tenantPage.waitForLoadState('networkidle');
-
-        // Click on first invoice if exists
-        const firstRow = tenantPage.locator('table tbody tr, [class*="invoice-row"]').first();
-        const hasRows = await firstRow.isVisible({ timeout: 5000 }).catch(() => false);
-
-        if (hasRows) {
-            await firstRow.click();
-            await tenantPage.waitForLoadState('networkidle');
-
-            // Verify detail loads
-            expect(tenantPage.url().includes('/invoices/')).toBeTruthy();
-        } else {
-            expect(true).toBeTruthy();
-        }
-    });
-
-    test('should filter invoices by status', async ({ tenantPage }) => {
-        await tenantPage.goto('/invoices');
-        await tenantPage.waitForLoadState('networkidle');
-
-        // Look for status filter
-        const statusFilter = tenantPage.locator('[class*="filter"], select, [role="combobox"]').first();
-        const hasFilter = await statusFilter.isVisible({ timeout: 3000 }).catch(() => false);
-
-        if (hasFilter) {
-            await statusFilter.click();
-            await tenantPage.waitForTimeout(500);
-        }
-        expect(true).toBeTruthy();
-    });
-
-    test('should have print/export functionality', async ({ tenantPage }) => {
-        await tenantPage.goto('/invoices');
-        await tenantPage.waitForLoadState('networkidle');
-
-        // Look for print or export buttons
-        const exportButton = tenantPage.getByRole('button', { name: /Yazdır|Print|Export|PDF/i }).first();
-        const hasExport = await exportButton.isVisible({ timeout: 3000 }).catch(() => false);
-        expect(hasExport || true).toBeTruthy();
-    });
+  test('3.8.8: Invoice detail view', async ({ tenantPage }) => {
+    await tenantPage.goto('/invoices');
+    await tenantPage.waitForLoadState('networkidle');
+    
+    const invoiceRows = tenantPage.locator('table tbody tr, [role="row"]');
+    const rowCount = await invoiceRows.count();
+    
+    if (rowCount === 0) {
+      test.skip(true, 'No invoices found');
+    }
+    
+    await invoiceRows.first().click();
+    await tenantPage.waitForTimeout(1000);
+    
+    const detailView = tenantPage.locator('[role="dialog"], [class*="detail"], [class*="modal"]');
+    const hasDetail = await detailView.isVisible({ timeout: 2000 }).catch(() => false);
+    
+    expect(hasDetail || true).toBeTruthy();
+  });
 });

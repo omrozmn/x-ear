@@ -1,0 +1,213 @@
+Failed to get/create Plan: 0
+Failed to get/create Addon: 0
+✗ Failed to create BRANCH: 403 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Branch limit reached. Your plan allows 1 branches.","code":"BRANCH_LIMIT_REACHED","details":null},"meta":null,"requestId
+✗ Failed to create ASSIGNMENT: 500 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Internal server error","code":"INTERNAL_ERROR","details":null},"meta":null,"requestId":"37f6f142-53f1-4bfe-bd17-60734315
+✗ Assignment creation returned None
+✗ Failed to create TICKET: 404 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Not Found","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"fc663ace-0350-4e8d-a1d5-f6cb89d45f37","timestamp
+✗ Ticket creation returned None
+✗ Promissory note creation failed: 422
+✗ Bounce creation failed: 405
+✗ Approval creation failed: 405
+✗ OCR job creation failed: 422
+✗ Order creation failed: 405
+✗ Scan creation failed: 405
+✗ Document creation failed: 422
+✗ Replacement creation failed: 404
+✗ Failed (400): SMS configuration missing
+⊘ Skipped (bulk-upload requires file upload)
+⊘ Skipped (bulk-upload requires file upload)
+✗ Failed (500): Internal server error
+✗ Failed (500): Internal server error
+✗ Failed (400): Amount 416.41 exceeds remaining 0.0
+✗ Failed (500): Internal server error
+✗ Failed (500): Internal server error
+✗ Failed (500): Internal server error
+✗ Failed (404): Assignment not found
+✗ Failed (404): Assignment not found
+✗ Failed (404): User not found or no phone registered
+✗ Failed (404): User not found with this phone number
+✗ Failed (400): Invalid or expired OTP
+✗ Failed (400): Invalid or expired OTP
+✗ Failed (401): Geçersiz kullanıcı adı veya şifre
+✗ Failed (401): Invalid token type
+✗ Failed (404): User not found
+✗ Failed (401): User context required
+✗ Failed (401): User context required
+✗ Failed (422): brand, model, and type are required (or provide a valid inventoryId)
+✗ Failed (404): Notification not found
+✗ Failed (403): Branch limit reached. Your plan allows 1 branches.
+✗ Failed (404): Branch not found
+✗ Failed (500): Internal server error
+✗ Failed (404): role not found
+✗ Failed (404): role not found
+✗ Failed (404): role not found
+✗ Failed (404): Payment record not found
+✗ Failed (404): Promissory note not found
+✗ Failed (404): Promissory note not found
+✗ Failed (403): User limit reached. Your plan allows 5 users.
+✗ Failed (403): Invalid current password
+✗ Failed (401): Invalid credentials
+✗ Failed (422): Validation error
+✗ Failed (500): 1 validation error for TenantRead
+status
+  Input should be 'active', 'inactive', 'suspended', 'trial', 'cancelled' or 'pending' [type=enum, input_value='completed', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.12/v/enum
+✗ Failed (404): User not found in this tenant
+✗ Failed (404): Plan not found
+✗ Failed (404): Addon not found
+✗ Failed (404): No SMS configuration found
+✗ Failed (404): No SMS configuration found
+✗ Failed (404): No SMS configuration found
+✗ Failed (422): Validation error
+✗ Failed (400): Invalid document type. Must be one of: contract, example
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+⊘ Skipped (bulk-upload requires file upload)
+✗ Failed (422): Validation error
+✗ Failed (500): Internal server error
+✗ Failed (400): Invalid permission name format (use category.action)
+✗ Failed (404): Role not found
+✗ Failed (404): Role not found
+✗ Failed (400): No image path or text provided
+✗ Failed (400): Provide either both image paths or both text1 and text2
+✗ Failed (400): No image path or text provided
+✗ Failed (400): No image path or text provided
+✗ Failed (404): Job not found
+✗ Failed (400): Invalid base64 content: Incorrect padding
+✗ Failed (404): Document not found
+✗ Failed (500): 1 validation error for PaymentPlanRead
+installments
+  Input should be a valid list [type=list_type, input_value=1, input_type=int]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+✗ Failed (403): Admin permissions required
+✗ Failed (400): PayTR integration not configured
+✗ Failed (422): Validation error
+✗ Failed (404): Plan not found
+✗ Failed (404): Geçersiz plan
+✗ Failed (404): Plan not found
+✗ Failed (404): Kullanıcı bulunamadı
+✗ Failed (404): Kullanıcı bulunamadı
+✗ Failed (500): SMS gönderilemedi: 400 Client Error: Bad Request for url: https://api.vatansms.net/api/v1/1toN
+✗ Failed (400): Phone and OTP required
+✗ Failed (400): Tenant ID and amount are required
+✗ Failed (404): Invoice not found
+✗ Failed (404): Invoice not found
+✗ Failed (404): Invoice not found
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (404): Order not found
+✗ Failed (404): Scan not found
+✗ Failed (404): Ticket not found
+✗ Failed (404): Ticket not found
+⊘ Skipped (missing resource ID)
+✗ Exception: Affiliate token not available
+✗ Exception: Affiliate token not available
+✗ Exception: Affiliate token not available
+⊘ Skipped (missing resource ID)
+⊘ Skipped (missing resource ID)
+⊘ Skipped (missing resource ID)
+⊘ Skipped (missing resource ID)
+✗ Exception: Affiliate token not available
+✗ Exception: Affiliate token not available
+✗ Failed (404): Plan not found
+✗ Failed (404): Payment not found
+✗ Failed (404): Replacement not found
+✗ Failed (404): Replacement not found
+✗ Failed (404): Replacement not found
+✗ Failed (400): Missing xml or base64 field
+✗ Failed (400): Missing xml or base64 field
+✗ Failed (500): Internal server error
+✗ Failed (404): New owner user not found
+✗ Failed (400): Rates required
+✗ Failed (501): System-level rates update not yet implemented. Use tenant-level rates.
+✗ Failed (500): 1 validation error for SmsProviderConfigRead
+documents
+  Input should be a valid list [type=list_type, input_value='{}', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+✗ Failed (500): 1 validation error for SmsHeaderRequestRead
+status
+  Input should be 'pending', 'approved', 'rejected', 'cancelled' or 'active' [type=enum, input_value='completed', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.12/v/enum
+✗ Failed (400): Only approved headers can be set as default
+✗ Failed (422): Validation error
+✗ Failed (404): Document not found
+✗ Failed (422): Validation error
+✗ Failed (500): 1 validation error for SmsHeaderRequestRead
+status
+  Input should be 'pending', 'approved', 'rejected', 'cancelled' or 'active' [type=enum, input_value='completed', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.12/v/enum
+✗ Failed (404): File not found
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (422): Validation error
+✗ Failed (500): 'HistoryCreate' object has no attribute 'initiatedBy'
+✗ Exception: 'float' object cannot be interpreted as an integer
+✗ Failed (202): {"success":false,"data":null,"message":"No SMTP configuration found. Please configure SMTP first.","
+✗ Failed (404): No SMTP configuration found. Please configure SMTP first.
+✗ Failed (500): Failed to render email template: Template not found: ai_error_notification (tr): 'tr/ai_error_notification.txt' not found in search path: 'templates/email'
+✗ Failed (422): Validation error
+✗ Failed (400): commission_id is required
+✗ Failed (400): Invalid intent type: LE691332
+✗ Failed (404): Action act_default not found
+✗ Failed (404): Action act_default not found
+✗ Failed (404): Action act_default not found
+✗ Failed (404): Audit entry aud_default not found
+✗ Failed (404): Alert not found: alert_default
+✗ Failed to create DEVICE: 422 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"brand, model, and type are required (or provide a valid inventoryId)","code":"HTTP_ERROR","details":null},"meta":null,"r
+✗ Failed to create DEVICE for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed to create BRANCH: 403 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Branch limit reached. Your plan allows 1 branches.","code":"BRANCH_LIMIT_REACHED","details":null},"meta":null,"requestId
+✗ Failed to create BRANCH for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed (404): role not found
+✗ Failed (404): role not found
+✗ Failed to create USER: 403 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"User limit reached. Your plan allows 5 users.","code":"USER_LIMIT_REACHED","details":null},"meta":null,"requestId":"e617
+✗ Failed to create USER for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed to create USER: 403 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"User limit reached. Your plan allows 5 users.","code":"USER_LIMIT_REACHED","details":null},"meta":null,"requestId":"2a29
+✗ Failed to create USER for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed (422): Validation error
+EXAMPLE_DOCUMENT creation requires file upload - skipping
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed to create INVOICE: 404 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Party not found","code":"NOT_FOUND","details":null},"meta":null,"requestId":"135a8d7d-5a25-4e41-be88-3569ef540c4f","time
+✗ Failed to create INVOICE for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed to create UNSUBSCRIBE: 405 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"9a68fde6-af56-4eff-a184-a065e774a7a8","
+✗ Failed to create UNSUBSCRIBE for DELETE
+⊘ Skipped (could not create resource for DELETE)
+FILE creation requires file upload - skipping
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed (404): Document not found
+✗ Failed (404): Note not found
+✗ Failed to create CASH_RECORD: 422 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Validation error","code":"VALIDATION_ERROR","details":[{"type":"missing","loc":["body","transactionType"],"msg":"Field r
+✗ Failed to create CASH_RECORD for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed (404): Timeline event not found
+✗ Failed to create API_KEY: 422 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Validation error","code":"VALIDATION_ERROR","details":[{"type":"missing","loc":["body","tenantId"],"msg":"Field required
+✗ Failed to create API_KEY for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed to create NOTIFICATION_TEMPLATE: 500 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"(sqlite3.IntegrityError) NOT NULL constraint failed: notification_templates.tenant_id\n[SQL: INSERT INTO notification_te
+✗ Failed to create NOTIFICATION_TEMPLATE for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed to create SUPPLIER: 400 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"(sqlite3.IntegrityError) NOT NULL constraint failed: suppliers.tenant_id\n[SQL: INSERT INTO suppliers (company_name, com
+✗ Failed to create SUPPLIER for DELETE
+⊘ Skipped (could not create resource for DELETE)
+✗ Failed to create APP: 422 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Validation error","code":"VALIDATION_ERROR","details":[{"type":"missing","loc":["body","slug"],"msg":"Field required","i
+✗ Failed to create APP for DELETE
+⊘ Skipped (could not create resource for DELETE)
+SMS_DOCUMENT creation requires file upload - skipping
+⊘ Skipped (could not create resource for DELETE)
+✗ GOAL NOT MET: Success rate 70.76% < 95%
+
+=== TEST RESULTS ===
+Total: 513
+Passed: 363
+Failed: 128
+Skipped: 22
+Success Rate: 363/513 (70.8%)

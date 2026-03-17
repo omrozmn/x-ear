@@ -39,6 +39,9 @@ class ToolCategory(str, Enum):
     REPORT = "report"       # Report generation
     NOTIFICATION = "notification"  # Notifications
     ADMIN = "admin"         # Administrative operations
+    USER_DATA = "user_data" # User data management
+    ACTION = "action"       # General actions
+    INTEGRATION = "integration"  # External integrations
 
 
 @dataclass
@@ -318,7 +321,7 @@ class ToolRegistry:
                     errors.append(f"Parameter '{param.name}' must be object")
                 
                 # Enum checking
-                if param.enum and value not in param.enum:
+                if param.enum is not None and value not in param.enum:
                     errors.append(f"Parameter '{param.name}' must be one of: {param.enum}")
         
         # Check for unknown parameters
@@ -473,6 +476,13 @@ try:
     from ai.tools import sales_tools
     from ai.tools import device_tools
     from ai.tools import appointment_tools
+    from ai.tools import bulk_import_tools
+    from ai.tools import sgk_tools
+    from ai.tools import finance_tools
+    from ai.tools import analytics_tool
+    from ai.tools import hearing_tools
+    from ai.tools import business_tools
+    from ai.tools import ocr_tools
 except ImportError:
     # Handle partial initialization or circular import gracefully during development
     pass

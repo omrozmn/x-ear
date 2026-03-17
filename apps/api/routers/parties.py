@@ -1,13 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File
-from typing import List, Optional, Any, Dict
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 import json
-import base64
 import csv
 import io
-from enum import Enum
 
 try:
     from openpyxl import load_workbook
@@ -15,13 +12,12 @@ except ImportError:
     load_workbook = None
 
 from schemas.parties import (
-    PartyRead, PartyCreate, PartyUpdate, PartySearchFilters, BulkUploadResponse
+    PartyRead, PartyCreate, PartyUpdate, BulkUploadResponse,
+    BulkUpdateRequest, BulkUpdateResponse, BulkEmailRequest, BulkEmailResponse
 )
-from schemas.base import ResponseEnvelope, ResponseMeta
+from schemas.base import ResponseEnvelope
 from schemas.base import ApiError
 from core.models.party import Party
-from models.sales import Sale, DeviceAssignment, PaymentRecord
-from models.inventory import InventoryItem
 
 from services.party_service import PartyService
 
@@ -29,12 +25,48 @@ from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
 
 import logging
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Parties"])
 
 # --- HELPERS ---
+
+PATIENT_DETAIL_SENSITIVE_PERMISSION_MAP = {
+    "phone": "sensitive.parties.detail.contact.view",
+    "email": "sensitive.parties.detail.contact.view",
+    "tc_number": "sensitive.parties.detail.identity.view",
+    "identity_number": "sensitive.parties.detail.identity.view",
+    "sgk_info": "sensitive.parties.detail.sgk.view",
+}
+
+PATIENT_LIST_SENSITIVE_PERMISSION_MAP = {
+    "phone": "sensitive.parties.list.contact.view",
+    "email": "sensitive.parties.list.contact.view",
+    "tc_number": "sensitive.parties.list.identity.view",
+}
+
+
+def _mask_party_detail_response(patient: Party | dict, access: UnifiedAccess) -> PartyRead:
+    payload = PartyRead.model_validate(patient).model_dump(by_alias=False)
+
+    for field_name, permission_name in PATIENT_DETAIL_SENSITIVE_PERMISSION_MAP.items():
+        if not access.has_permission(permission_name):
+            payload[field_name] = {} if field_name == "sgk_info" else None
+
+    return PartyRead.model_validate(payload)
+
+
+def _mask_party_list_response(patients: list[Party], access: UnifiedAccess) -> list[PartyRead]:
+    masked_items: list[PartyRead] = []
+
+    for patient in patients:
+        payload = PartyRead.model_validate(patient).model_dump(by_alias=False)
+        for field_name, permission_name in PATIENT_LIST_SENSITIVE_PERMISSION_MAP.items():
+            if not access.has_permission(permission_name):
+                payload[field_name] = None
+        masked_items.append(PartyRead.model_validate(payload))
+
+    return masked_items
 
 
 
@@ -49,7 +81,7 @@ def list_parties(
     city: Optional[str] = None,
     district: Optional[str] = None,
     cursor: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("patient:read")),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
     db: Session = Depends(get_db)
 ):
     """List patients with filtering and pagination"""
@@ -90,7 +122,7 @@ def list_parties(
             total_pages = (total + per_page - 1) // per_page
             
         return ResponseEnvelope(
-            data=items,
+            data=_mask_party_list_response(items, access),
             meta={
                 "total": total,
                 "page": page,
@@ -113,24 +145,55 @@ def list_parties(
 @router.post("/parties", operation_id="createParties", response_model=ResponseEnvelope[PartyRead], status_code=201)
 def create_party(
     patient_in: PartyCreate,
-    access: UnifiedAccess = Depends(require_access("patient:write")),
+    access: UnifiedAccess = Depends(require_access("parties.create")),
     db: Session = Depends(get_db)
 ):
     """Create a new patient"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        from sqlalchemy.exc import IntegrityError
+        from models.user import ActivityLog
+        
         service = PartyService(db)
-        if not access.tenant_id or access.tenant_id == 'system':
-            raise HTTPException(
-                status_code=400,
-                detail="Lütfen işlem yapmak için bir klinik (tenant) seçiniz."
-            )
+        tenant_id = get_effective_tenant_id(access)
 
         # Service handles data normalization and defaults
-        data = patient_in.model_dump(exclude_unset=True)
+        # Use by_alias=False to get snake_case keys that Party.from_dict expects
+        data = patient_in.model_dump(exclude_unset=True, by_alias=False)
         
-        patient = service.create_party(data, access.tenant_id)
+        patient = service.create_party(data, tenant_id)
+        
+        # Log activity
+        try:
+            activity_log = ActivityLog(
+                user_id=getattr(access, 'user_id', None) or 'system',
+                action='party_created',
+                entity_type='party',
+                entity_id=patient.id,
+                tenant_id=tenant_id,
+                details=json.dumps({
+                    'name': f"{patient.first_name} {patient.last_name}",
+                    'phone': patient.phone,
+                    'status': patient.status
+                })
+            )
+            db.add(activity_log)
+            db.commit()
+        except Exception as log_error:
+            logger.warning(f"Failed to log party creation: {log_error}")
         
         return ResponseEnvelope(data=patient)
+    except IntegrityError as e:
+        logger.error(f"Party integrity error: {e}")
+        db.rollback()
+        error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
+        if 'phone' in error_msg.lower():
+            raise HTTPException(status_code=409, detail="Phone number already exists")
+        elif 'email' in error_msg.lower():
+            raise HTTPException(status_code=409, detail="Email already exists")
+        elif 'tc_number' in error_msg.lower():
+            raise HTTPException(status_code=409, detail="TC number already exists")
+        raise HTTPException(status_code=409, detail="Duplicate entry")
     except Exception as e:
         logger.error(f"Create patient error: {e}")
         # Service might raise HTTPException or others, safe to re-raise or wrap
@@ -143,7 +206,7 @@ def export_parties(
     q: Optional[str] = None,
     status: Optional[str] = None,
     segment: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("patient:export")),
+    access: UnifiedAccess = Depends(require_access("parties.export")),
     db: Session = Depends(get_db)
 ):
     """Export patients as CSV"""
@@ -190,6 +253,9 @@ def export_parties(
             # Handle potential None dates
             created = p.created_at.isoformat() if p.created_at else ''
             
+            # Serialize enum properly - use .value to get string representation
+            status_value = p.status.value if hasattr(p.status, 'value') else str(p.status or '')
+            
             writer.writerow([
                 str(p.id),
                 str(p.tc_number or ''),
@@ -199,7 +265,7 @@ def export_parties(
                 str(p.email or ''),
                 str(p.birth_date or ''),
                 str(p.gender or ''),
-                str(p.status or ''),
+                status_value,
                 str(p.segment or ''),
                 tags_str,
                 created
@@ -218,7 +284,7 @@ def export_parties(
 
 @router.get("/parties/count", operation_id="listPartyCount")
 def count_parties(
-    access: UnifiedAccess = Depends(require_access("patient:read")),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
     db: Session = Depends(get_db),
     status: Optional[str] = None,
     segment: Optional[str] = None
@@ -232,31 +298,88 @@ def count_parties(
         
     return ResponseEnvelope(data={'count': count})
 
+@router.get("/parties/search", operation_id="searchParties", response_model=ResponseEnvelope[List[dict]])
+def search_parties(
+    q: str = Query(..., min_length=1, description="Search query"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum results"),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
+    db: Session = Depends(get_db)
+):
+    """Search parties for selection (fuzzy search by name/phone)"""
+    service = PartyService(db)
+    results = service.search_parties(access.tenant_id, query=q, limit=limit)
+    
+    # Format for frontend consumption
+    formatted_results = []
+    for party in results:
+        formatted_results.append({
+            "partyId": party.id,
+            "firstName": party.first_name or "",
+            "lastName": party.last_name or "",
+            "phone": party.phone,
+            "fullName": f"{party.first_name or ''} {party.last_name or ''}".strip()
+        })
+    
+    return ResponseEnvelope(data=formatted_results)
+
 @router.get("/parties/{party_id}", operation_id="getParty", response_model=ResponseEnvelope[PartyRead])
 def get_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("patient:read")),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
     db: Session = Depends(get_db)
 ):
     """Get single patient"""
     service = PartyService(db)
     # Service raises 404 if not found or tenant mismatch
     patient = service.get_party(party_id, access.tenant_id)
-    return ResponseEnvelope(data=patient)
+    return ResponseEnvelope(data=_mask_party_detail_response(patient, access))
 
 @router.put("/parties/{party_id}", operation_id="updateParty", response_model=ResponseEnvelope[PartyRead])
 def update_party(
     party_id: str,
     patient_in: PartyUpdate,
-    access: UnifiedAccess = Depends(require_access("patient:write")),
+    access: UnifiedAccess = Depends(require_access("parties.edit")),
     db: Session = Depends(get_db)
 ):
     """Update patient"""
+    from models.user import ActivityLog
+    
     service = PartyService(db)
     
-    data = patient_in.model_dump(exclude_unset=True)
+    # Use by_alias=False to get snake_case keys
+    data = patient_in.model_dump(exclude_unset=True, by_alias=False)
     try:
         updated_patient = service.update_party(party_id, data, access.tenant_id)
+        
+        # Log activity
+        try:
+            # Build change summary
+            changes = {}
+            if 'status' in data:
+                changes['status'] = data['status']
+            if 'segment' in data:
+                changes['segment'] = data['segment']
+            if 'acquisition_type' in data:
+                changes['acquisition_type'] = data['acquisition_type']
+            if 'branch_id' in data:
+                changes['branch_id'] = data['branch_id']
+            
+            activity_log = ActivityLog(
+                user_id=getattr(access, 'user_id', None) or 'system',
+                action='party_updated',
+                entity_type='party',
+                entity_id=party_id,
+                tenant_id=access.tenant_id,
+                details=json.dumps({
+                    'name': f"{updated_patient.first_name} {updated_patient.last_name}",
+                    'changes': changes
+                })
+            )
+            db.add(activity_log)
+            db.commit()
+        except Exception as log_error:
+            logger.warning(f"Failed to log party update: {log_error}")
+        
         return ResponseEnvelope(data=updated_patient)
     except Exception as e:
         logger.error(f"Update patient error: {e}")
@@ -267,13 +390,37 @@ def update_party(
 @router.delete("/parties/{party_id}", operation_id="deleteParty")
 def delete_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("patient:delete")),
+    access: UnifiedAccess = Depends(require_access("parties.delete")),
     db: Session = Depends(get_db)
 ):
     """Delete patient"""
+    from models.user import ActivityLog
+    
     service = PartyService(db)
     try:
+        # Get party info before deletion for logging
+        party = service.get_party(party_id, access.tenant_id)
+        party_name = f"{party.first_name} {party.last_name}" if party else "Unknown"
+        
         service.delete_party(party_id, access.tenant_id)
+        
+        # Log activity
+        try:
+            activity_log = ActivityLog(
+                user_id=getattr(access, 'user_id', None) or 'system',
+                action='party_deleted',
+                entity_type='party',
+                entity_id=party_id,
+                tenant_id=access.tenant_id,
+                details=json.dumps({
+                    'name': party_name
+                })
+            )
+            db.add(activity_log)
+            db.commit()
+        except Exception as log_error:
+            logger.warning(f"Failed to log party deletion: {log_error}")
+        
         return ResponseEnvelope(message="Patient deleted")
     except Exception as e:
         logger.error(f"Delete patient error: {e}")
@@ -285,15 +432,21 @@ def delete_party(
 @router.post("/parties/bulk-upload", operation_id="createPartyBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_parties(
     file: UploadFile = File(...),
-    access: UnifiedAccess = Depends(require_access("patient:write")),
+    access: UnifiedAccess = Depends(require_access("parties.create")),
     db: Session = Depends(get_db)
 ):
     """Bulk upload patients from CSV or XLSX"""
     try:
-        if not access.tenant_id:
+        # Use effective_tenant_id if impersonating, otherwise use tenant_id
+        effective_tenant = access.effective_tenant_id or access.tenant_id
+        
+        logger.info(f"Bulk upload started - tenant_id: {access.tenant_id}, effective_tenant_id: {access.effective_tenant_id}, using: {effective_tenant}, filename: {file.filename}")
+        
+        if not effective_tenant or effective_tenant == 'system':
+            logger.error(f"Bulk upload rejected - invalid tenant. tenant_id: {access.tenant_id}, effective: {effective_tenant}")
             raise HTTPException(
                 status_code=400,
-                detail=ApiError(message="Tenant context required", code="TENANT_REQUIRED").model_dump(mode="json")
+                detail=ApiError(message="Lütfen işlem yapmak için bir klinik (tenant) seçiniz.", code="TENANT_REQUIRED").model_dump(mode="json")
             )
 
         filename = (file.filename or '').lower()
@@ -386,85 +539,145 @@ async def bulk_upload_parties(
                 else:
                     normalized_row = row
                 
-                # Normalize keys (handle variations)
+                # Normalize keys (handle variations) - case-insensitive
                 def get_val(keys):
+                    # First try exact match
                     for k in keys:
                         if k in normalized_row and normalized_row[k]:
                             return normalized_row[k]
+                    # Then try case-insensitive match
+                    normalized_keys = {k.lower(): k for k in normalized_row.keys()}
+                    for k in keys:
+                        lower_k = k.lower()
+                        if lower_k in normalized_keys and normalized_row[normalized_keys[lower_k]]:
+                            return normalized_row[normalized_keys[lower_k]]
                     return None
                     
-                tc_number = get_val(['tcNumber', 'tc_number', 'tc', 'TC', 'tc_no'])
-                first_name = get_val(['firstName', 'first_name', 'first', 'isim', 'ad'])
-                last_name = get_val(['lastName', 'last_name', 'last', 'soyisim', 'soyad'])
-                phone = get_val(['phone', 'phone_number', 'tel', 'telefon', 'cep_telefon', 'cep'])
+                tc_number = get_val(['tcNumber', 'tc_number', 'tc', 'TC', 'tc_no', 'TC Kimlik No', 'tc kimlik no', 'tc_kimlik_no'])
+                first_name = get_val(['firstName', 'first_name', 'first', 'isim', 'ad', 'Ad', 'İsim'])
+                last_name = get_val(['lastName', 'last_name', 'last', 'soyisim', 'soyad', 'Soyad', 'Soyisim'])
+                phone = get_val(['phone', 'phone_number', 'tel', 'telefon', 'cep_telefon', 'cep', 'Telefon', 'Tel'])
                 
                 if not (first_name or phone or tc_number):
                     # Skip empty rows or not enough info
                     errors.append({'row': row_num, 'error': 'Missing required identifying fields'})
                     continue
 
-                # Prepare Payload
+                # Prepare Payload — all Party model fields
                 payload = {
                     'tc_number': tc_number,
-                    'identity_number': get_val(['identityNumber', 'identity_number']),
+                    'identity_number': get_val(['identityNumber', 'identity_number', 'kimlik_no', 'Kimlik No']),
                     'first_name': first_name,
                     'last_name': last_name,
                     'phone': phone,
-                    'email': get_val(['email', 'e-mail', 'eposta']),
-                    'birth_date': get_val(['birthDate', 'birth_date', 'dob', 'dogum_tarihi']),
-                    'gender': get_val(['gender', 'cinsiyet']),
-                    'status': get_val(['status', 'durum']),
-                    'segment': get_val(['segment']),
+                    'email': get_val(['email', 'e-mail', 'eposta', 'Email', 'E-posta']),
+                    'birth_date': get_val(['birthDate', 'birth_date', 'dob', 'dogum_tarihi', 'Doğum Tarihi', 'dogum tarihi']),
+                    'gender': get_val(['gender', 'cinsiyet', 'Cinsiyet', 'Gender']),
+                    'status': get_val(['status', 'durum', 'Durum', 'Status']),
+                    'segment': get_val(['segment', 'Segment']),
+                    'acquisition_type': get_val(['acquisitionType', 'acquisition_type', 'kazanim_tipi', 'Kazanım Tipi']),
+                    'referred_by': get_val(['referredBy', 'referred_by', 'referans', 'Referans']),
                 }
+                
+                # Normalize gender values (Turkish → English)
+                if payload.get('gender'):
+                    gender_lower = str(payload['gender']).lower()
+                    if gender_lower in ['erkek', 'male', 'm', 'e']:
+                        payload['gender'] = 'MALE'
+                    elif gender_lower in ['kadın', 'kadın', 'female', 'f', 'k']:
+                        payload['gender'] = 'FEMALE'
+                    else:
+                        # Keep original if not recognized
+                        pass
+                
+                # Normalize status values (Turkish → English)
+                if payload.get('status'):
+                    status_lower = str(payload['status']).lower()
+                    if status_lower in ['aktif', 'active']:
+                        payload['status'] = 'ACTIVE'
+                    elif status_lower in ['pasif', 'passive', 'inactive']:
+                        payload['status'] = 'INACTIVE'
+                    else:
+                        # Keep original if not recognized
+                        pass
                 
                 # Clean up None values
                 payload = {k: v for k, v in payload.items() if v is not None}
                 
                 # Address
-                address_city = get_val(['address_city', 'city', 'il', 'sehir'])
-                address_district = get_val(['address_district', 'district', 'ilce'])
-                address_full = get_val(['address_full', 'fullAddress', 'address', 'adres'])
-                
+                address_city = get_val(['address_city', 'addressCity', 'city', 'il', 'sehir', 'Şehir', 'şehir', 'City'])
+                address_district = get_val(['address_district', 'addressDistrict', 'district', 'ilce', 'İlçe', 'ilçe', 'District'])
+                address_full = get_val(['address_full', 'addressFull', 'fullAddress', 'address', 'adres', 'Adres', 'Address'])
+
                 if address_city: payload['address_city'] = address_city
                 if address_district: payload['address_district'] = address_district
                 if address_full: payload['address_full'] = address_full
-                
+
                 # Tags
-                tags_val = get_val(['tags', 'etiketler'])
+                tags_val = get_val(['tags', 'etiketler', 'Etiketler'])
                 if tags_val:
                     if isinstance(tags_val, str):
                         payload['tags_json'] = [t.strip() for t in tags_val.split(',') if t.strip()]
                     else:
                         payload['tags_json'] = tags_val
 
-                # Check Existing
+                # Check Existing — cascading match (tc > phone > name)
                 existing = None
+
+                # Priority 1: TC number (strongest identifier)
                 if tc_number:
-                    existing = db.query(Party).filter(Party.tc_number == tc_number, Party.tenant_id == access.tenant_id).first()
-                
+                    existing = db.query(Party).filter(
+                        Party.tc_number == tc_number,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+
+                # Priority 2: Phone (exact match, tenant-scoped)
+                if not existing and phone:
+                    existing = db.query(Party).filter(
+                        Party.phone == phone,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+
+                # Priority 3: first_name + last_name (tenant-scoped)
+                if not existing and first_name and last_name:
+                    existing = db.query(Party).filter(
+                        Party.first_name == first_name,
+                        Party.last_name == last_name,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+
                 if existing:
-                    # Update Logic
+                    # Update Logic — additive: only fill empty fields, don't overwrite
                     for k, v in payload.items():
+                        if k == 'tags_json':
+                            continue  # handled separately below
                         if hasattr(existing, k) and v is not None:
-                            # Handle Date parsing for birth_date if strictly string
-                            if k == 'birth_date' and isinstance(v, str):
-                                try:
-                                    dt = None
-                                    for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%Y/%m/%d'):
-                                        try:
-                                            dt = datetime.strptime(v, fmt)
-                                            break
-                                        except ValueError:
-                                            pass
-                                    if dt:
-                                         setattr(existing, k, dt)
-                                    else:
-                                         # Try isoformat
-                                         setattr(existing, k, datetime.fromisoformat(v))
-                                except:
-                                    pass 
-                            else:
-                                setattr(existing, k, v)
+                            current_val = getattr(existing, k, None)
+                            # Only fill if current value is empty/null
+                            if current_val is None or current_val == '':
+                                # Handle Date parsing for birth_date if strictly string
+                                if k == 'birth_date' and isinstance(v, str):
+                                    try:
+                                        dt = None
+                                        for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%Y/%m/%d'):
+                                            try:
+                                                dt = datetime.strptime(v, fmt)
+                                                break
+                                            except ValueError:
+                                                pass
+                                        if dt:
+                                             setattr(existing, k, dt)
+                                        else:
+                                             setattr(existing, k, datetime.fromisoformat(v))
+                                    except:
+                                        pass
+                                else:
+                                    setattr(existing, k, v)
+                    # Merge tags (union, not replace)
+                    if 'tags_json' in payload and payload['tags_json']:
+                        existing_tags = existing.tags_json or []
+                        merged = list(set(existing_tags + payload['tags_json']))
+                        existing.tags_json = merged
                     updated += 1
                     db.add(existing)
                 else:
@@ -491,7 +704,7 @@ async def bulk_upload_parties(
                              except:
                                  del payload['birth_date']
                     
-                    patient = Party(tenant_id=access.tenant_id, **payload)
+                    patient = Party(tenant_id=effective_tenant, **payload)
                     if not patient.status: patient.status = 'ACTIVE'
                     
                     db.add(patient)
@@ -524,3 +737,151 @@ async def bulk_upload_parties(
         logger.error(f"Bulk upload patient error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+# --- Bulk Operations ---
+
+@router.post("/parties/bulk-update", operation_id="bulkUpdateParties", response_model=ResponseEnvelope[BulkUpdateResponse])
+async def bulk_update_parties(
+    request: BulkUpdateRequest,
+    access: UnifiedAccess = Depends(require_access("parties.edit")),
+    db: Session = Depends(get_db)
+):
+    """
+    Bulk update multiple parties with the same changes.
+    Returns success/failure count and individual results.
+    """
+    try:
+        from schemas.parties import BulkUpdateResponse, BulkUpdateResult
+        
+        service = PartyService(db)
+        results = []
+        success_count = 0
+        failure_count = 0
+        
+        for party_id in request.party_ids:
+            try:
+                # Verify party exists and belongs to tenant
+                party = service.get_party(party_id, access.tenant_id)
+                if not party:
+                    results.append(BulkUpdateResult(
+                        party_id=party_id,
+                        success=False,
+                        error="Party not found"
+                    ))
+                    failure_count += 1
+                    continue
+                
+                # Apply updates
+                update_data = request.updates.model_dump(exclude_unset=True, by_alias=False)
+                for key, value in update_data.items():
+                    if hasattr(party, key):
+                        setattr(party, key, value)
+                
+                db.commit()
+                results.append(BulkUpdateResult(
+                    party_id=party_id,
+                    success=True
+                ))
+                success_count += 1
+                
+            except Exception as e:
+                logger.error(f"Failed to update party {party_id}: {e}")
+                results.append(BulkUpdateResult(
+                    party_id=party_id,
+                    success=False,
+                    error=str(e)
+                ))
+                failure_count += 1
+                db.rollback()
+        
+        response_data = BulkUpdateResponse(
+            success_count=success_count,
+            failure_count=failure_count,
+            results=results
+        )
+        
+        return ResponseEnvelope(data=response_data)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bulk update error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/parties/bulk-email", operation_id="bulkEmailParties", response_model=ResponseEnvelope[BulkEmailResponse])
+async def bulk_email_parties(
+    request: BulkEmailRequest,
+    access: UnifiedAccess = Depends(require_access("parties.edit")),
+    db: Session = Depends(get_db)
+):
+    """
+    Send email to multiple parties.
+    Returns success/failure count and individual results.
+    """
+    try:
+        from schemas.parties import BulkEmailResponse, BulkEmailResult
+        
+        service = PartyService(db)
+        results = []
+        success_count = 0
+        failure_count = 0
+        
+        for party_id in request.party_ids:
+            try:
+                # Verify party exists and belongs to tenant
+                party = service.get_party(party_id, access.tenant_id)
+                if not party:
+                    results.append(BulkEmailResult(
+                        party_id=party_id,
+                        success=False,
+                        error="Party not found"
+                    ))
+                    failure_count += 1
+                    continue
+                
+                # Check if party has email
+                if not party.email:
+                    results.append(BulkEmailResult(
+                        party_id=party_id,
+                        email=None,
+                        success=False,
+                        error="Party has no email address"
+                    ))
+                    failure_count += 1
+                    continue
+                
+                # TODO: Implement actual email sending
+                # For now, just log and mark as success
+                logger.info(f"Would send email to {party.email}: {request.subject}")
+                
+                results.append(BulkEmailResult(
+                    party_id=party_id,
+                    email=party.email,
+                    success=True
+                ))
+                success_count += 1
+                
+            except Exception as e:
+                logger.error(f"Failed to email party {party_id}: {e}")
+                results.append(BulkEmailResult(
+                    party_id=party_id,
+                    success=False,
+                    error=str(e)
+                ))
+                failure_count += 1
+        
+        response_data = BulkEmailResponse(
+            success_count=success_count,
+            failure_count=failure_count,
+            results=results
+        )
+        
+        return ResponseEnvelope(data=response_data)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bulk email error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

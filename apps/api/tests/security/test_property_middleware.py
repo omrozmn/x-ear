@@ -2,7 +2,6 @@
 Property-based tests for middleware cleanup (G-02)
 Tests that middleware properly cleans up context in all scenarios
 """
-import pytest
 from core.database import _current_tenant_id, set_tenant_context, reset_tenant_context
 
 

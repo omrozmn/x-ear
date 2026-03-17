@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+  <cbc:ID>INV202600006</cbc:ID>
+  <cbc:UUID>efd43ea1-ab78-4659-ae6e-acf5336be099</cbc:UUID>
+  <cbc:ETTN>ETTN-86ce42cb9e1f</cbc:ETTN>
+  <cbc:IssueDate>2026-02-08</cbc:IssueDate>
+  <cbc:Note>Return invoice for replacement 9999</cbc:Note>
+  <cbc:SupplierInvoiceNumber>INV202600006</cbc:SupplierInvoiceNumber>
+</Invoice>

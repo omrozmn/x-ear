@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/ocr_similarity_service.py
+# hypothesis_version: 6.151.6
+
+[0.0, 0.4, 0.6, 1.0, 'Levenshtein', 'error', 'jaccard', 'jaccard+levenshtein', 'levenshtein', 'method', 'none', 'similarity', 'spacy', 'text', 'text1_tokens', 'text2_tokens', 'tokens1', 'tokens2']

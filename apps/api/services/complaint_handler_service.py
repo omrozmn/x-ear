@@ -105,7 +105,7 @@ class ComplaintHandlerService:
                     "complained_at": datetime.now(timezone.utc)
                 }
             
-            logger.warning(f"Failed to parse FBL report: no recipient found")
+            logger.warning("Failed to parse FBL report: no recipient found")
             return None
             
         except Exception as e:
@@ -196,7 +196,7 @@ class ComplaintHandlerService:
         self.db.commit()
         
         logger.warning(
-            f"Spam complaint processed and recipient auto-unsubscribed",
+            "Spam complaint processed and recipient auto-unsubscribed",
             extra={
                 "tenant_id": tenant_id,
                 "recipient": recipient,
@@ -209,7 +209,7 @@ class ComplaintHandlerService:
         complaint_rate = self.get_complaint_rate(tenant_id, hours=1)
         if complaint_rate > 0.1:  # Alert if > 0.1%
             logger.critical(
-                f"ALERT: Complaint rate exceeded threshold",
+                "ALERT: Complaint rate exceeded threshold",
                 extra={
                     "tenant_id": tenant_id,
                     "complaint_rate": complaint_rate,

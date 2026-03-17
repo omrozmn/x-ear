@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/middleware/require_module.py
+# hypothesis_version: 6.151.6
+
+['MODULE_DISABLED', 'MODULE_NOT_AVAILABLE', 'access', 'code', 'hearing', 'message', 'module', 'sector', 'true']

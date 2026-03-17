@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+# hypothesis_version: 6.151.9
+
+['HearingProfileRead', 'PartyRoleRead', '__dict__', '_sa_instance_state', 'acquisitionType', 'addressCity', 'addressDistrict', 'addressFull', 'assignedAt', 'before', 'birthDate', 'birth_date', 'branchId', 'branchName', 'code', 'conversionStep', 'created_at', 'failureCount', 'firstName', 'fullAddress', 'fullName', 'full_name', 'hearingProfile', 'id', 'identityNumber', 'lastName', 'lead', 'partyId', 'partyIds', 'party_id', 'priorityScore', 'referredBy', 'sgkInfo', 'sgk_info', 'sgk_info_json', 'status', 'successCount', 'tags', 'tags_json', 'tcNumber', 'templateId', 'tenantId', 'updated_at', 'value', 'walk-in']

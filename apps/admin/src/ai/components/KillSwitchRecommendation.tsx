@@ -187,6 +187,49 @@ export function KillSwitchRecommendation({
   
   // Filter to high-severity unacknowledged alerts
   const criticalAlerts = getHighSeverityAlerts(alerts);
+  const isGlobalSwitchActive = status?.global_switch.active ?? false;
+  const criticalCount = criticalAlerts.filter((a) => a.severity === 'critical').length;
+  const errorCount = criticalAlerts.filter((a) => a.severity === 'error').length;
+  const isLoading = isActivating || isKillSwitchLoading || isAcknowledging;
+
+  /**
+   * Handles kill switch activation with auto-acknowledgment
+   */
+  const handleActivateKillSwitch = useCallback(async () => {
+    setIsActivating(true);
+
+    try {
+      const reason = generateKillSwitchReason(criticalAlerts);
+
+      await activateGlobal(reason);
+
+      const acknowledgePromises = criticalAlerts.map((alert) =>
+        acknowledge(alert.alert_id, 'Auto-acknowledged on kill switch activation')
+          .catch((err) => {
+            if (import.meta.env.DEV) console.error(`Failed to acknowledge alert ${alert.alert_id}:`, err);
+          })
+      );
+
+      await Promise.allSettled(acknowledgePromises);
+
+      toast.success('Global kill switch aktive edildi ve ilgili alertler onaylandı');
+      onActivate?.();
+      setIsDismissed(true);
+    } catch (error) {
+      if (import.meta.env.DEV) console.error('Failed to activate kill switch:', error);
+      toast.error('Kill switch aktivasyonu başarısız oldu');
+    } finally {
+      setIsActivating(false);
+    }
+  }, [criticalAlerts, activateGlobal, acknowledge, onActivate]);
+
+  const handleDismiss = useCallback(() => {
+    setIsDismissed(true);
+  }, []);
+
+  const handleToggleExpand = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
   
   // Don't render if:
   // - No critical alerts
@@ -195,69 +238,11 @@ export function KillSwitchRecommendation({
   if (
     criticalAlerts.length === 0 ||
     isDismissed ||
-    status?.global_switch.active
+    isGlobalSwitchActive
   ) {
     return null;
   }
-  
-  // Count by severity
-  const criticalCount = criticalAlerts.filter((a) => a.severity === 'critical').length;
-  const errorCount = criticalAlerts.filter((a) => a.severity === 'error').length;
-  
-  /**
-   * Handles kill switch activation with auto-acknowledgment
-   */
-  const handleActivateKillSwitch = useCallback(async () => {
-    setIsActivating(true);
-    
-    try {
-      // Generate reason from alerts
-      const reason = generateKillSwitchReason(criticalAlerts);
-      
-      // Activate global kill switch
-      await activateGlobal(reason);
-      
-      // Auto-acknowledge all related alerts
-      const acknowledgePromises = criticalAlerts.map((alert) =>
-        acknowledge(alert.alert_id, 'Auto-acknowledged on kill switch activation')
-          .catch((err) => {
-            console.error(`Failed to acknowledge alert ${alert.alert_id}:`, err);
-          })
-      );
-      
-      await Promise.allSettled(acknowledgePromises);
-      
-      toast.success('Global kill switch aktive edildi ve ilgili alertler onaylandı');
-      
-      // Call optional callback
-      onActivate?.();
-      
-      // Dismiss the banner
-      setIsDismissed(true);
-    } catch (error) {
-      console.error('Failed to activate kill switch:', error);
-      toast.error('Kill switch aktivasyonu başarısız oldu');
-    } finally {
-      setIsActivating(false);
-    }
-  }, [criticalAlerts, activateGlobal, acknowledge, onActivate]);
-  
-  /**
-   * Handles banner dismissal
-   */
-  const handleDismiss = useCallback(() => {
-    setIsDismissed(true);
-  }, []);
-  
-  /**
-   * Toggles alert list expansion
-   */
-  const handleToggleExpand = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
-  
-  const isLoading = isActivating || isKillSwitchLoading || isAcknowledging;
-  
+
   return (
     <div
       className={`
@@ -270,7 +255,7 @@ export function KillSwitchRecommendation({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0 p-2 bg-red-100 rounded-lg">
+          <div className="flex-shrink-0 p-2 bg-red-100 rounded-2xl">
             <ShieldAlert className="h-6 w-6 text-red-600" />
           </div>
           <div>
@@ -318,7 +303,7 @@ export function KillSwitchRecommendation({
           disabled={isLoading}
           className={`
             inline-flex items-center px-4 py-2 text-sm font-medium text-white
-            bg-red-600 border border-transparent rounded-md shadow-sm
+            bg-red-600 border border-transparent rounded-xl shadow-sm
             hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2
             focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed
             transition-colors

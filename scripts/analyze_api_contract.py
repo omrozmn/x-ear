@@ -6,13 +6,11 @@ Analyzes backend endpoints and frontend API usage across multiple applications
 Outputs a detailed markdown report.
 """
 
-import os
 import re
-import json
 import sys
 from pathlib import Path
 from collections import defaultdict
-from typing import Dict, List, Set, Tuple, Any
+from typing import Dict, List, Set, Any
 
 # Define paths relative to this script
 SCRIPT_DIR = Path(__file__).parent
@@ -757,7 +755,7 @@ def main():
     print()
     
     # Extract data
-    print(f"📖 Extracting backend endpoints...")
+    print("📖 Extracting backend endpoints...")
     
     # Debug: Print extracted prefixes
     if main_py_path and main_py_path.exists():

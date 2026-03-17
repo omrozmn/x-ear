@@ -1,6 +1,5 @@
 """Integration tests for email metrics endpoint."""
 
-import pytest
 from utils.email_monitoring import email_metrics
 
 

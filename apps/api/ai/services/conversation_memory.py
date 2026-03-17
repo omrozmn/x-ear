@@ -8,9 +8,9 @@ In production, this should use Redis or a database.
 import time
 import json
 import logging
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 from collections import defaultdict
 from abc import ABC, abstractmethod
 
@@ -171,7 +171,8 @@ class RedisConversationMemory(ConversationMemory):
         return f"ai:session:{session_id}"
 
     def add_turn(self, session_id: str, **kwargs) -> None:
-        if not self.client: return
+        if not self.client:
+            return
         key = self._get_key(session_id)
         # Simplified Turn storage as JSON list
         turn_data = {
@@ -183,7 +184,8 @@ class RedisConversationMemory(ConversationMemory):
         self.client.expire(key, self.ttl_seconds)
 
     def get_history(self, session_id: str, max_turns: Optional[int] = None) -> List[ConversationTurn]:
-        if not self.client: return []
+        if not self.client:
+            return []
         key = self._get_key(session_id)
         items = self.client.lrange(key, 0, -1)
         # Parse items back to ConversationTurn
@@ -204,7 +206,8 @@ class RedisConversationMemory(ConversationMemory):
         return turns[-max_turns:] if max_turns else turns
 
     def clear_session(self, session_id: str) -> None:
-        if not self.client: return
+        if not self.client:
+            return
         self.client.delete(self._get_key(session_id))
 
 

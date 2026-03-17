@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/config.py
+# hypothesis_version: 6.151.6
+
+['/admin-panel/', '/config', '/country-config', 'ADMIN_PANEL_URL', 'Config', 'DD.MM.YYYY', 'Europe/Istanbul', 'TR', 'addressFields', 'adminPanelUrl', 'config', 'countryCode', 'country_code', 'currency', 'dateFormat', 'getCountryConfig', 'invoiceTypeMap', 'listConfig', 'locale', 'taxCodes', 'taxIdLabel', 'taxIdLength', 'timezone', 'tr-TR']

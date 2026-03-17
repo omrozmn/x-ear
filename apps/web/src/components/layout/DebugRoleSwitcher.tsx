@@ -11,6 +11,7 @@ import {
 import { useAuthStore, AuthStateUser } from '../../stores/authStore';
 import { partyService } from '../../services/party.service';
 import { indexedDBManager } from '../../utils/indexeddb';
+import { useTranslation } from 'react-i18next';
 
 interface RoleResponseData {
   accessToken?: string;
@@ -30,6 +31,7 @@ interface DebugRoleSwitcherProps {
 }
 
 export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode = false }) => {
+  const { t } = useTranslation('settings_extra');
   const { user, setAuth } = useAuthStore(); // Removed unused _setUser
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +65,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
       onMutate: () => {
         console.log('[DebugRoleSwitcher] Mutation starting...');
       },
-      onSuccess: async (response) => {
+      onSuccess: async (response: unknown) => {
         console.log('[DebugRoleSwitcher] ===== ROLE SWITCH SUCCESS =====');
 
         // CRITICAL: Clear ALL caches to prevent data leakage between tenant contexts
@@ -118,9 +120,9 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
           console.error('[DebugRoleSwitcher] Response:', response);
         }
       },
-      onError: (error) => {
+      onError: (error: unknown) => {
         console.error('[DebugRoleSwitcher] Role switch failed:', error);
-        alert('Rol değiştirme başarısız oldu');
+        alert(t('roleSwitchFailed', 'Rol değiştirme başarısız oldu'));
       }
     }
   });
@@ -166,7 +168,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
       },
       onError: (error) => {
         console.error('[DebugRoleSwitcher] Exit impersonation failed:', error);
-        alert('Orijinal role dönüş başarısız oldu');
+        alert(t('exitImpersonationFailed', 'Orijinal role dönüş başarısız oldu'));
       }
     }
   });
@@ -276,7 +278,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               fontSize: '0.75rem',
             }}>
               <Shield size={14} />
-              <span>QA Rol Değiştirici</span>
+              <span>{t('qaRoleSwitcher', 'QA Rol Değiştirici')}</span>
             </div>
             <div style={{
               fontSize: '0.65rem',
@@ -297,7 +299,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
                 fontSize: '0.875rem',
               }}>
                 <Loader2 size={20} className="animate-spin" style={{ marginBottom: '0.5rem' }} />
-                <div>Roller yükleniyor...</div>
+                <div>{t('rolesLoading', 'Roller yükleniyor...')}</div>
               </div>
             ) : roles.length === 0 ? (
               <div style={{
@@ -410,7 +412,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
                 ) : (
                   <LogOut size={14} />
                 )}
-                <span>Super Admin'e Dön</span>
+                <span>{t('returnToSuperAdmin', "Super Admin'e Dön")}</span>
               </button>
             </div>
           )}

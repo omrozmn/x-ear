@@ -9,38 +9,65 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WebManagementPreviewRouteImport } from './routes/web-management-preview'
+import { Route as WebManagementRouteImport } from './routes/web-management'
 import { Route as UtsRouteImport } from './routes/uts'
 import { Route as TestRouteImport } from './routes/test'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SalesRouteImport } from './routes/sales'
+import { Route as PurchasesRouteImport } from './routes/purchases'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PersonnelRouteImport } from './routes/personnel'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CashflowRouteImport } from './routes/cashflow'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
+import { Route as AutomationRouteImport } from './routes/automation'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers/index'
 import { Route as SgkIndexRouteImport } from './routes/sgk/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as ReportsIndexRouteImport } from './routes/reports/index'
 import { Route as PosIndexRouteImport } from './routes/pos/index'
 import { Route as PartiesIndexRouteImport } from './routes/parties/index'
 import { Route as InvoicesIndexRouteImport } from './routes/invoices/index'
+import { Route as InvoiceNormalizerIndexRouteImport } from './routes/invoice-normalizer/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
+import { Route as CashflowIndexRouteImport } from './routes/cashflow/index'
 import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers/$supplierId'
 import { Route as SgkDownloadsRouteImport } from './routes/sgk/downloads'
 import { Route as SettingsTeamRouteImport } from './routes/settings/team'
 import { Route as SettingsSubscriptionRouteImport } from './routes/settings/subscription'
+import { Route as SettingsSgkRouteImport } from './routes/settings/sgk'
 import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
+import { Route as SettingsPartiesRouteImport } from './routes/settings/parties'
 import { Route as SettingsIntegrationRouteImport } from './routes/settings/integration'
 import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
 import { Route as ReportsActivityRouteImport } from './routes/reports/activity'
 import { Route as PosSuccessRouteImport } from './routes/pos/success'
 import { Route as PosFailRouteImport } from './routes/pos/fail'
 import { Route as PartiesPartyIdRouteImport } from './routes/parties/$partyId'
+import { Route as InvoicesSummaryRouteImport } from './routes/invoices/summary'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
+import { Route as InvoicesPaymentsRouteImport } from './routes/invoices/payments'
 import { Route as InvoicesNewRouteImport } from './routes/invoices/new'
+import { Route as InvoicesIncomingRouteImport } from './routes/invoices/incoming'
 import { Route as InventoryIdRouteImport } from './routes/inventory/$id'
+import { Route as CashflowIdRouteImport } from './routes/cashflow/$id'
 
+const WebManagementPreviewRoute = WebManagementPreviewRouteImport.update({
+  id: '/web-management-preview',
+  path: '/web-management-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebManagementRoute = WebManagementRouteImport.update({
+  id: '/web-management',
+  path: '/web-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UtsRoute = UtsRouteImport.update({
   id: '/uts',
   path: '/uts',
@@ -51,9 +78,34 @@ const TestRoute = TestRouteImport.update({
   path: '/test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesRoute = SalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PurchasesRoute = PurchasesRouteImport.update({
+  id: '/purchases',
+  path: '/purchases',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonnelRoute = PersonnelRouteImport.update({
+  id: '/personnel',
+  path: '/personnel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesRoute = InvoicesRouteImport.update({
@@ -81,6 +133,11 @@ const CampaignsRoute = CampaignsRouteImport.update({
   path: '/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AutomationRoute = AutomationRouteImport.update({
+  id: '/automation',
+  path: '/automation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppointmentsRoute = AppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -100,6 +157,11 @@ const SgkIndexRoute = SgkIndexRouteImport.update({
   id: '/sgk/',
   path: '/sgk/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const ReportsIndexRoute = ReportsIndexRouteImport.update({
   id: '/reports/',
@@ -121,10 +183,20 @@ const InvoicesIndexRoute = InvoicesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => InvoicesRoute,
 } as any)
+const InvoiceNormalizerIndexRoute = InvoiceNormalizerIndexRouteImport.update({
+  id: '/invoice-normalizer/',
+  path: '/invoice-normalizer/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InventoryIndexRoute = InventoryIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => InventoryRoute,
+} as any)
+const CashflowIndexRoute = CashflowIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CashflowRoute,
 } as any)
 const SuppliersSupplierIdRoute = SuppliersSupplierIdRouteImport.update({
   id: '/suppliers/$supplierId',
@@ -137,29 +209,39 @@ const SgkDownloadsRoute = SgkDownloadsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsTeamRoute = SettingsTeamRouteImport.update({
-  id: '/settings/team',
-  path: '/settings/team',
-  getParentRoute: () => rootRouteImport,
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsSubscriptionRoute = SettingsSubscriptionRouteImport.update({
-  id: '/settings/subscription',
-  path: '/settings/subscription',
-  getParentRoute: () => rootRouteImport,
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsSgkRoute = SettingsSgkRouteImport.update({
+  id: '/sgk',
+  path: '/sgk',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsRolesRoute = SettingsRolesRouteImport.update({
-  id: '/settings/roles',
-  path: '/settings/roles',
-  getParentRoute: () => rootRouteImport,
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsPartiesRoute = SettingsPartiesRouteImport.update({
+  id: '/parties',
+  path: '/parties',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsIntegrationRoute = SettingsIntegrationRouteImport.update({
-  id: '/settings/integration',
-  path: '/settings/integration',
-  getParentRoute: () => rootRouteImport,
+  id: '/integration',
+  path: '/integration',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsCompanyRoute = SettingsCompanyRouteImport.update({
-  id: '/settings/company',
-  path: '/settings/company',
-  getParentRoute: () => rootRouteImport,
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const ReportsActivityRoute = ReportsActivityRouteImport.update({
   id: '/reports/activity',
@@ -181,9 +263,19 @@ const PartiesPartyIdRoute = PartiesPartyIdRouteImport.update({
   path: '/parties/$partyId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvoicesSummaryRoute = InvoicesSummaryRouteImport.update({
+  id: '/summary',
+  path: '/summary',
+  getParentRoute: () => InvoicesRoute,
+} as any)
 const InvoicesPurchasesRoute = InvoicesPurchasesRouteImport.update({
   id: '/purchases',
   path: '/purchases',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesPaymentsRoute = InvoicesPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
   getParentRoute: () => InvoicesRoute,
 } as any)
 const InvoicesNewRoute = InvoicesNewRouteImport.update({
@@ -191,73 +283,115 @@ const InvoicesNewRoute = InvoicesNewRouteImport.update({
   path: '/new',
   getParentRoute: () => InvoicesRoute,
 } as any)
+const InvoicesIncomingRoute = InvoicesIncomingRouteImport.update({
+  id: '/incoming',
+  path: '/incoming',
+  getParentRoute: () => InvoicesRoute,
+} as any)
 const InventoryIdRoute = InventoryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => InventoryRoute,
 } as any)
+const CashflowIdRoute = CashflowIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CashflowRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
-  '/cashflow': typeof CashflowRoute
+  '/cashflow': typeof CashflowRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
+  '/login': typeof LoginRoute
+  '/personnel': typeof PersonnelRoute
   '/profile': typeof ProfileRoute
+  '/purchases': typeof PurchasesRoute
+  '/sales': typeof SalesRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
+  '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/invoices/incoming': typeof InvoicesIncomingRoute
   '/invoices/new': typeof InvoicesNewRoute
+  '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
+  '/invoices/summary': typeof InvoicesSummaryRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
   '/pos/success': typeof PosSuccessRoute
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
+  '/settings/parties': typeof SettingsPartiesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/sgk': typeof SettingsSgkRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/cashflow/': typeof CashflowIndexRoute
   '/inventory/': typeof InventoryIndexRoute
+  '/invoice-normalizer/': typeof InvoiceNormalizerIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
-  '/parties': typeof PartiesIndexRoute
-  '/pos': typeof PosIndexRoute
-  '/reports': typeof ReportsIndexRoute
-  '/sgk': typeof SgkIndexRoute
-  '/suppliers': typeof SuppliersIndexRoute
+  '/parties/': typeof PartiesIndexRoute
+  '/pos/': typeof PosIndexRoute
+  '/reports/': typeof ReportsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/sgk/': typeof SgkIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
-  '/cashflow': typeof CashflowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
+  '/personnel': typeof PersonnelRoute
   '/profile': typeof ProfileRoute
+  '/purchases': typeof PurchasesRoute
+  '/sales': typeof SalesRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
+  '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/invoices/incoming': typeof InvoicesIncomingRoute
   '/invoices/new': typeof InvoicesNewRoute
+  '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
+  '/invoices/summary': typeof InvoicesSummaryRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
   '/pos/success': typeof PosSuccessRoute
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
+  '/settings/parties': typeof SettingsPartiesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/sgk': typeof SettingsSgkRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/cashflow': typeof CashflowIndexRoute
   '/inventory': typeof InventoryIndexRoute
+  '/invoice-normalizer': typeof InvoiceNormalizerIndexRoute
   '/invoices': typeof InvoicesIndexRoute
   '/parties': typeof PartiesIndexRoute
   '/pos': typeof PosIndexRoute
   '/reports': typeof ReportsIndexRoute
+  '/settings': typeof SettingsIndexRoute
   '/sgk': typeof SgkIndexRoute
   '/suppliers': typeof SuppliersIndexRoute
 }
@@ -265,33 +399,50 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
-  '/cashflow': typeof CashflowRoute
+  '/cashflow': typeof CashflowRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
+  '/login': typeof LoginRoute
+  '/personnel': typeof PersonnelRoute
   '/profile': typeof ProfileRoute
+  '/purchases': typeof PurchasesRoute
+  '/sales': typeof SalesRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
+  '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/invoices/incoming': typeof InvoicesIncomingRoute
   '/invoices/new': typeof InvoicesNewRoute
+  '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
+  '/invoices/summary': typeof InvoicesSummaryRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
   '/pos/success': typeof PosSuccessRoute
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
+  '/settings/parties': typeof SettingsPartiesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/sgk': typeof SettingsSgkRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/cashflow/': typeof CashflowIndexRoute
   '/inventory/': typeof InventoryIndexRoute
+  '/invoice-normalizer/': typeof InvoiceNormalizerIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/parties/': typeof PartiesIndexRoute
   '/pos/': typeof PosIndexRoute
   '/reports/': typeof ReportsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
   '/sgk/': typeof SgkIndexRoute
   '/suppliers/': typeof SuppliersIndexRoute
 }
@@ -300,97 +451,146 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/appointments'
+    | '/automation'
     | '/campaigns'
     | '/cashflow'
     | '/forgot-password'
     | '/inventory'
     | '/invoices'
+    | '/login'
+    | '/personnel'
     | '/profile'
+    | '/purchases'
+    | '/sales'
+    | '/settings'
     | '/test'
     | '/uts'
+    | '/web-management'
+    | '/web-management-preview'
+    | '/cashflow/$id'
     | '/inventory/$id'
+    | '/invoices/incoming'
     | '/invoices/new'
+    | '/invoices/payments'
     | '/invoices/purchases'
+    | '/invoices/summary'
     | '/parties/$partyId'
     | '/pos/fail'
     | '/pos/success'
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
+    | '/settings/parties'
     | '/settings/roles'
+    | '/settings/sgk'
     | '/settings/subscription'
     | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
+    | '/cashflow/'
     | '/inventory/'
+    | '/invoice-normalizer/'
     | '/invoices/'
-    | '/parties'
-    | '/pos'
-    | '/reports'
-    | '/sgk'
-    | '/suppliers'
+    | '/parties/'
+    | '/pos/'
+    | '/reports/'
+    | '/settings/'
+    | '/sgk/'
+    | '/suppliers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/appointments'
+    | '/automation'
     | '/campaigns'
-    | '/cashflow'
     | '/forgot-password'
+    | '/login'
+    | '/personnel'
     | '/profile'
+    | '/purchases'
+    | '/sales'
     | '/test'
     | '/uts'
+    | '/web-management'
+    | '/web-management-preview'
+    | '/cashflow/$id'
     | '/inventory/$id'
+    | '/invoices/incoming'
     | '/invoices/new'
+    | '/invoices/payments'
     | '/invoices/purchases'
+    | '/invoices/summary'
     | '/parties/$partyId'
     | '/pos/fail'
     | '/pos/success'
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
+    | '/settings/parties'
     | '/settings/roles'
+    | '/settings/sgk'
     | '/settings/subscription'
     | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
+    | '/cashflow'
     | '/inventory'
+    | '/invoice-normalizer'
     | '/invoices'
     | '/parties'
     | '/pos'
     | '/reports'
+    | '/settings'
     | '/sgk'
     | '/suppliers'
   id:
     | '__root__'
     | '/'
     | '/appointments'
+    | '/automation'
     | '/campaigns'
     | '/cashflow'
     | '/forgot-password'
     | '/inventory'
     | '/invoices'
+    | '/login'
+    | '/personnel'
     | '/profile'
+    | '/purchases'
+    | '/sales'
+    | '/settings'
     | '/test'
     | '/uts'
+    | '/web-management'
+    | '/web-management-preview'
+    | '/cashflow/$id'
     | '/inventory/$id'
+    | '/invoices/incoming'
     | '/invoices/new'
+    | '/invoices/payments'
     | '/invoices/purchases'
+    | '/invoices/summary'
     | '/parties/$partyId'
     | '/pos/fail'
     | '/pos/success'
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
+    | '/settings/parties'
     | '/settings/roles'
+    | '/settings/sgk'
     | '/settings/subscription'
     | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
+    | '/cashflow/'
     | '/inventory/'
+    | '/invoice-normalizer/'
     | '/invoices/'
     | '/parties/'
     | '/pos/'
     | '/reports/'
+    | '/settings/'
     | '/sgk/'
     | '/suppliers/'
   fileRoutesById: FileRoutesById
@@ -398,25 +598,29 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
+  AutomationRoute: typeof AutomationRoute
   CampaignsRoute: typeof CampaignsRoute
-  CashflowRoute: typeof CashflowRoute
+  CashflowRoute: typeof CashflowRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   InventoryRoute: typeof InventoryRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  PersonnelRoute: typeof PersonnelRoute
   ProfileRoute: typeof ProfileRoute
+  PurchasesRoute: typeof PurchasesRoute
+  SalesRoute: typeof SalesRoute
+  SettingsRoute: typeof SettingsRouteWithChildren
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
+  WebManagementRoute: typeof WebManagementRoute
+  WebManagementPreviewRoute: typeof WebManagementPreviewRoute
   PartiesPartyIdRoute: typeof PartiesPartyIdRoute
   PosFailRoute: typeof PosFailRoute
   PosSuccessRoute: typeof PosSuccessRoute
   ReportsActivityRoute: typeof ReportsActivityRoute
-  SettingsCompanyRoute: typeof SettingsCompanyRoute
-  SettingsIntegrationRoute: typeof SettingsIntegrationRoute
-  SettingsRolesRoute: typeof SettingsRolesRoute
-  SettingsSubscriptionRoute: typeof SettingsSubscriptionRoute
-  SettingsTeamRoute: typeof SettingsTeamRoute
   SgkDownloadsRoute: typeof SgkDownloadsRoute
   SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
+  InvoiceNormalizerIndexRoute: typeof InvoiceNormalizerIndexRoute
   PartiesIndexRoute: typeof PartiesIndexRoute
   PosIndexRoute: typeof PosIndexRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
@@ -426,6 +630,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/web-management-preview': {
+      id: '/web-management-preview'
+      path: '/web-management-preview'
+      fullPath: '/web-management-preview'
+      preLoaderRoute: typeof WebManagementPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/web-management': {
+      id: '/web-management'
+      path: '/web-management'
+      fullPath: '/web-management'
+      preLoaderRoute: typeof WebManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/uts': {
       id: '/uts'
       path: '/uts'
@@ -440,11 +658,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales': {
+      id: '/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/purchases': {
+      id: '/purchases'
+      path: '/purchases'
+      fullPath: '/purchases'
+      preLoaderRoute: typeof PurchasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/personnel': {
+      id: '/personnel'
+      path: '/personnel'
+      fullPath: '/personnel'
+      preLoaderRoute: typeof PersonnelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices': {
@@ -482,6 +735,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/automation': {
+      id: '/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AutomationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/appointments': {
       id: '/appointments'
       path: '/appointments'
@@ -499,35 +759,42 @@ declare module '@tanstack/react-router' {
     '/suppliers/': {
       id: '/suppliers/'
       path: '/suppliers'
-      fullPath: '/suppliers'
+      fullPath: '/suppliers/'
       preLoaderRoute: typeof SuppliersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sgk/': {
       id: '/sgk/'
       path: '/sgk'
-      fullPath: '/sgk'
+      fullPath: '/sgk/'
       preLoaderRoute: typeof SgkIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/reports/': {
       id: '/reports/'
       path: '/reports'
-      fullPath: '/reports'
+      fullPath: '/reports/'
       preLoaderRoute: typeof ReportsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos/': {
       id: '/pos/'
       path: '/pos'
-      fullPath: '/pos'
+      fullPath: '/pos/'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parties/': {
       id: '/parties/'
       path: '/parties'
-      fullPath: '/parties'
+      fullPath: '/parties/'
       preLoaderRoute: typeof PartiesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -538,12 +805,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvoicesIndexRouteImport
       parentRoute: typeof InvoicesRoute
     }
+    '/invoice-normalizer/': {
+      id: '/invoice-normalizer/'
+      path: '/invoice-normalizer'
+      fullPath: '/invoice-normalizer/'
+      preLoaderRoute: typeof InvoiceNormalizerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inventory/': {
       id: '/inventory/'
       path: '/'
       fullPath: '/inventory/'
       preLoaderRoute: typeof InventoryIndexRouteImport
       parentRoute: typeof InventoryRoute
+    }
+    '/cashflow/': {
+      id: '/cashflow/'
+      path: '/'
+      fullPath: '/cashflow/'
+      preLoaderRoute: typeof CashflowIndexRouteImport
+      parentRoute: typeof CashflowRoute
     }
     '/suppliers/$supplierId': {
       id: '/suppliers/$supplierId'
@@ -561,38 +842,52 @@ declare module '@tanstack/react-router' {
     }
     '/settings/team': {
       id: '/settings/team'
-      path: '/settings/team'
+      path: '/team'
       fullPath: '/settings/team'
       preLoaderRoute: typeof SettingsTeamRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/subscription': {
       id: '/settings/subscription'
-      path: '/settings/subscription'
+      path: '/subscription'
       fullPath: '/settings/subscription'
       preLoaderRoute: typeof SettingsSubscriptionRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/sgk': {
+      id: '/settings/sgk'
+      path: '/sgk'
+      fullPath: '/settings/sgk'
+      preLoaderRoute: typeof SettingsSgkRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/roles': {
       id: '/settings/roles'
-      path: '/settings/roles'
+      path: '/roles'
       fullPath: '/settings/roles'
       preLoaderRoute: typeof SettingsRolesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/parties': {
+      id: '/settings/parties'
+      path: '/parties'
+      fullPath: '/settings/parties'
+      preLoaderRoute: typeof SettingsPartiesRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/integration': {
       id: '/settings/integration'
-      path: '/settings/integration'
+      path: '/integration'
       fullPath: '/settings/integration'
       preLoaderRoute: typeof SettingsIntegrationRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/company': {
       id: '/settings/company'
-      path: '/settings/company'
+      path: '/company'
       fullPath: '/settings/company'
       preLoaderRoute: typeof SettingsCompanyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/reports/activity': {
       id: '/reports/activity'
@@ -622,11 +917,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartiesPartyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invoices/summary': {
+      id: '/invoices/summary'
+      path: '/summary'
+      fullPath: '/invoices/summary'
+      preLoaderRoute: typeof InvoicesSummaryRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
     '/invoices/purchases': {
       id: '/invoices/purchases'
       path: '/purchases'
       fullPath: '/invoices/purchases'
       preLoaderRoute: typeof InvoicesPurchasesRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices/payments': {
+      id: '/invoices/payments'
+      path: '/payments'
+      fullPath: '/invoices/payments'
+      preLoaderRoute: typeof InvoicesPaymentsRouteImport
       parentRoute: typeof InvoicesRoute
     }
     '/invoices/new': {
@@ -636,6 +945,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvoicesNewRouteImport
       parentRoute: typeof InvoicesRoute
     }
+    '/invoices/incoming': {
+      id: '/invoices/incoming'
+      path: '/incoming'
+      fullPath: '/invoices/incoming'
+      preLoaderRoute: typeof InvoicesIncomingRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
     '/inventory/$id': {
       id: '/inventory/$id'
       path: '/$id'
@@ -643,8 +959,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InventoryIdRouteImport
       parentRoute: typeof InventoryRoute
     }
+    '/cashflow/$id': {
+      id: '/cashflow/$id'
+      path: '/$id'
+      fullPath: '/cashflow/$id'
+      preLoaderRoute: typeof CashflowIdRouteImport
+      parentRoute: typeof CashflowRoute
+    }
   }
 }
+
+interface CashflowRouteChildren {
+  CashflowIdRoute: typeof CashflowIdRoute
+  CashflowIndexRoute: typeof CashflowIndexRoute
+}
+
+const CashflowRouteChildren: CashflowRouteChildren = {
+  CashflowIdRoute: CashflowIdRoute,
+  CashflowIndexRoute: CashflowIndexRoute,
+}
+
+const CashflowRouteWithChildren = CashflowRoute._addFileChildren(
+  CashflowRouteChildren,
+)
 
 interface InventoryRouteChildren {
   InventoryIdRoute: typeof InventoryIdRoute
@@ -661,14 +998,20 @@ const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
 )
 
 interface InvoicesRouteChildren {
+  InvoicesIncomingRoute: typeof InvoicesIncomingRoute
   InvoicesNewRoute: typeof InvoicesNewRoute
+  InvoicesPaymentsRoute: typeof InvoicesPaymentsRoute
   InvoicesPurchasesRoute: typeof InvoicesPurchasesRoute
+  InvoicesSummaryRoute: typeof InvoicesSummaryRoute
   InvoicesIndexRoute: typeof InvoicesIndexRoute
 }
 
 const InvoicesRouteChildren: InvoicesRouteChildren = {
+  InvoicesIncomingRoute: InvoicesIncomingRoute,
   InvoicesNewRoute: InvoicesNewRoute,
+  InvoicesPaymentsRoute: InvoicesPaymentsRoute,
   InvoicesPurchasesRoute: InvoicesPurchasesRoute,
+  InvoicesSummaryRoute: InvoicesSummaryRoute,
   InvoicesIndexRoute: InvoicesIndexRoute,
 }
 
@@ -676,28 +1019,58 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
   InvoicesRouteChildren,
 )
 
+interface SettingsRouteChildren {
+  SettingsCompanyRoute: typeof SettingsCompanyRoute
+  SettingsIntegrationRoute: typeof SettingsIntegrationRoute
+  SettingsPartiesRoute: typeof SettingsPartiesRoute
+  SettingsRolesRoute: typeof SettingsRolesRoute
+  SettingsSgkRoute: typeof SettingsSgkRoute
+  SettingsSubscriptionRoute: typeof SettingsSubscriptionRoute
+  SettingsTeamRoute: typeof SettingsTeamRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsCompanyRoute: SettingsCompanyRoute,
+  SettingsIntegrationRoute: SettingsIntegrationRoute,
+  SettingsPartiesRoute: SettingsPartiesRoute,
+  SettingsRolesRoute: SettingsRolesRoute,
+  SettingsSgkRoute: SettingsSgkRoute,
+  SettingsSubscriptionRoute: SettingsSubscriptionRoute,
+  SettingsTeamRoute: SettingsTeamRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
+  AutomationRoute: AutomationRoute,
   CampaignsRoute: CampaignsRoute,
-  CashflowRoute: CashflowRoute,
+  CashflowRoute: CashflowRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   InventoryRoute: InventoryRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
+  LoginRoute: LoginRoute,
+  PersonnelRoute: PersonnelRoute,
   ProfileRoute: ProfileRoute,
+  PurchasesRoute: PurchasesRoute,
+  SalesRoute: SalesRoute,
+  SettingsRoute: SettingsRouteWithChildren,
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
+  WebManagementRoute: WebManagementRoute,
+  WebManagementPreviewRoute: WebManagementPreviewRoute,
   PartiesPartyIdRoute: PartiesPartyIdRoute,
   PosFailRoute: PosFailRoute,
   PosSuccessRoute: PosSuccessRoute,
   ReportsActivityRoute: ReportsActivityRoute,
-  SettingsCompanyRoute: SettingsCompanyRoute,
-  SettingsIntegrationRoute: SettingsIntegrationRoute,
-  SettingsRolesRoute: SettingsRolesRoute,
-  SettingsSubscriptionRoute: SettingsSubscriptionRoute,
-  SettingsTeamRoute: SettingsTeamRoute,
   SgkDownloadsRoute: SgkDownloadsRoute,
   SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
+  InvoiceNormalizerIndexRoute: InvoiceNormalizerIndexRoute,
   PartiesIndexRoute: PartiesIndexRoute,
   PosIndexRoute: PosIndexRoute,
   ReportsIndexRoute: ReportsIndexRoute,

@@ -1,9 +1,8 @@
 """
 App Schemas
 """
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 from typing import Optional
-from datetime import datetime
 
 from schemas.base import AppBaseModel, IDMixin, TimestampMixin
 

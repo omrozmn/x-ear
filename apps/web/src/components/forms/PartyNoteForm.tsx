@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Textarea, Select } from '@x-ear/ui-web';
+import { Button, Textarea } from '@x-ear/ui-web';
 import { Modal } from '../ui/Modal';
-import { FileText, User } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface PartyNote {
@@ -37,7 +36,6 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<Partial<PartyNote>>({
     partyId,
-    title: '',
     content: '',
     priority: 'medium',
     category: 'general',
@@ -58,12 +56,10 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           ...note,
           tags: note.tags || []
         });
-        // Removed setTagInput - tags functionality is temporarily commented out
       } else {
         // Create mode
         setFormData({
           partyId,
-          title: '',
           content: '',
           priority: 'medium',
           category: 'general',
@@ -71,7 +67,6 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           createdBy: getCurrentUserId(),
           tags: []
         });
-        // Removed setTagInput - tags functionality is temporarily commented out
       }
       setErrors({});
     }
@@ -80,16 +75,8 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.title?.trim()) {
-      newErrors.title = 'Not başlığı zorunludur';
-    }
-
     if (!formData.content?.trim()) {
       newErrors.content = 'Not içeriği zorunludur';
-    }
-
-    if (formData.title && formData.title.length > 100) {
-      newErrors.title = 'Başlık 100 karakterden uzun olamaz';
     }
 
     if (formData.content && formData.content.length > 2000) {
@@ -110,7 +97,6 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     try {
       const noteData = {
         ...formData,
-        title: formData.title?.trim(),
         content: formData.content?.trim(),
         tags: formData.tags || []
       };
@@ -151,15 +137,15 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case 'low':
-        return <Info className="w-4 h-4 text-blue-500" />;
+        return <Info className="w-4 h-4 text-primary" />;
       case 'medium':
         return <Info className="w-4 h-4 text-yellow-500" />;
       case 'high':
         return <AlertTriangle className="w-4 h-4 text-orange-500" />;
       case 'critical':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+        return <AlertTriangle className="w-4 h-4 text-destructive" />;
       default:
-        return <Info className="w-4 h-4 text-gray-400" />;
+        return <Info className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -188,195 +174,39 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     <Modal
       open={isOpen}
       onClose={onClose}
-      title={note ? 'Notu Düzenle' : 'Yeni Not Ekle'}
+      title={note ? 'Notu Düzenle' : 'Yeni Not'}
+      size="md"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Başlık */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Başlık *
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FileText className="w-4 h-4 text-gray-400" />
-            </div>
-            <Input
-              type="text"
-              value={formData.title || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Not başlığı..."
-              maxLength={100}
-              className={`pl-10 pr-20 ${errors.title ? 'border-red-300' : ''}`}
-            />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="text-xs text-gray-400">
-                {(formData.title?.length || 0)}/100
-              </span>
-            </div>
-          </div>
-          {errors.title && (
-            <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-          )}
-        </div>
-
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* İçerik */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            İçerik *
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Not İçeriği *
           </label>
           <Textarea
             value={formData.content || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-            placeholder="Not içeriği..."
-            rows={6}
+            placeholder="Not içeriğini yazınız..."
+            rows={4}
             maxLength={2000}
-            className={errors.content ? 'border-red-300' : ''}
+            className={`w-full ${errors.content ? 'border-red-300' : ''}`}
           />
           <div className="flex justify-between items-center mt-1">
             {errors.content && (
-              <p className="text-sm text-red-600">{errors.content}</p>
+              <p className="text-xs text-destructive">{errors.content}</p>
             )}
-            <span className="text-xs text-gray-400 ml-auto">
+            <span className="text-xs text-muted-foreground ml-auto">
               {(formData.content?.length || 0)}/2000
             </span>
           </div>
         </div>
 
-        {/* Öncelik ve Kategori */}
-        {/* TEMPORARILY COMMENTED OUT - Will be added in future version
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Öncelik
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: 'low', label: 'Düşük' },
-                { value: 'medium', label: 'Orta' },
-                { value: 'high', label: 'Yüksek' },
-                { value: 'critical', label: 'Kritik' }
-              ].map((priority) => (
-                <label key={priority.value} className="relative">
-                  <input
-                    type="radio"
-                    name="priority"
-                    value={priority.value}
-                    checked={formData.priority === priority.value}
-                    onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as PartyNote['priority'] }))}
-                    className="sr-only"
-                  />
-                  <div className={`flex items-center justify-center p-2 border rounded-lg cursor-pointer transition-colors text-sm ${
-                    formData.priority === priority.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                  }`}>
-                    {getPriorityIcon(priority.value)}
-                    <span className="ml-1">{priority.label}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kategori
-            </label>
-            <select
-              value={formData.category || 'general'}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as PartyNote['category'] }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="medical">Tıbbi</option>
-              <option value="administrative">İdari</option>
-              <option value="technical">Teknik</option>
-              <option value="general">Genel</option>
-            </select>
-          </div>
-        </div>
-        */}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Kategori
-          </label>
-          <Select
-            value={formData.category || 'general'}
-            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as PartyNote['category'] }))}
-            options={[
-              { value: 'general', label: 'Genel' }
-            ]}
-            fullWidth
-          />
-        </div>
-
-        {/* Gizlilik */}
-        <div>
-          <label className="flex items-center">
-            <Input
-              type="checkbox"
-              checked={formData.isPrivate || false}
-              onChange={(e) => setFormData(prev => ({ ...prev, isPrivate: e.target.checked }))}
-              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            />
-            <span className="ml-2 text-sm text-gray-700">
-              <User className="w-4 h-4 inline mr-1" />
-              Özel not (sadece yetkili kişiler görebilir)
-            </span>
-          </label>
-        </div>
-
-        {/* Etiketler - TEMPORARILY COMMENTED OUT - Will be added in future version
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Etiketler
-          </label>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {formData.tags?.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(tag)}
-                  className="ml-1 text-blue-600 hover:text-blue-800"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyPress={handleTagInputKeyPress}
-              placeholder="Etiket ekleyin..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <Button
-              type="button"
-              onClick={addTag}
-              disabled={!tagInput.trim()}
-              variant="secondary"
-            >
-              Ekle
-            </Button>
-          </div>
-          <p className="mt-1 text-xs text-gray-500">
-            Enter tuşuna basarak veya "Ekle" butonuna tıklayarak etiket ekleyin
-          </p>
-        </div>
-        */}
-
         {/* Form Actions */}
-        <div className="flex justify-end space-x-3 pt-6 border-t">
+        <div className="flex justify-end space-x-2 pt-3 border-t border-border">
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
+            size="sm"
             onClick={onClose}
             disabled={isLoading}
           >
@@ -384,10 +214,10 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           </Button>
           <Button
             type="submit"
+            size="sm"
             disabled={isLoading}
-            className="min-w-[120px]"
           >
-            {isLoading ? 'Kaydediliyor...' : (note ? 'Güncelle' : 'Not Ekle')}
+            {isLoading ? 'Kaydediliyor...' : (note ? 'Güncelle' : 'Kaydet')}
           </Button>
         </div>
       </form>

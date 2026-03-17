@@ -1,5 +1,4 @@
 
-import re
 from collections import Counter
 
 def find_restricted_syntax_files(report_path):

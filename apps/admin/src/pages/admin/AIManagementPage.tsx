@@ -26,7 +26,9 @@ import {
   AIAuditViewer,
   AISettingsPanel,
 } from '@/ai';
-import { PermissionGate, useIsSuperAdmin, useHasAnyPermission } from '@/hooks/useAdminPermission';
+import { useIsSuperAdmin } from '@/hooks/useAdminPermission';
+import { PermissionGate } from '@/hooks/PermissionGate';
+import type { AdminPermissionCode } from '@/types';
 import { AdminPermissions } from '@/types';
 
 // =============================================================================
@@ -106,6 +108,7 @@ interface TabNavigationProps {
 }
 
 function TabNavigation({ activeTab, onTabChange, isSuperAdmin }: TabNavigationProps) {
+  void isSuperAdmin;
   return (
     <div className="border-b border-gray-200 bg-white rounded-t-lg">
       <nav className="flex -mb-px overflow-x-auto" aria-label="Tabs">
@@ -188,17 +191,17 @@ function OverviewTabContent() {
  * Tab Content Wrapper with Permission Check
  */
 interface TabContentWrapperProps {
-  permissions: string[];
+  permissions: AdminPermissionCode[];
   children: React.ReactNode;
 }
 
 function TabContentWrapper({ permissions, children }: TabContentWrapperProps) {
   return (
     <PermissionGate
-      permissions={permissions as any}
+      permissions={permissions}
       mode="any"
       fallback={
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Erişim Kısıtlı</h3>
           <p className="text-gray-500">
@@ -245,13 +248,8 @@ export default function AIManagementPage() {
   const [activeTab, setActiveTab] = useState<AIManagementTab>('overview');
   const isSuperAdmin = useIsSuperAdmin();
 
-  // Get the current tab config
-  const currentTab = TABS.find(t => t.id === activeTab);
-
   // Render tab content based on active tab with permission checks
   const renderTabContent = () => {
-    const permissions = currentTab?.requiredPermissions || [AdminPermissions.AI_READ];
-    
     switch (activeTab) {
       case 'overview':
         return <OverviewTabContent />;
@@ -305,7 +303,7 @@ export default function AIManagementPage() {
         {/* Page Header */}
         <div className="mb-6">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary-100 rounded-lg">
+            <div className="p-2 bg-primary-100 rounded-2xl">
               <Bot className="h-8 w-8 text-primary-600" />
             </div>
             <div>

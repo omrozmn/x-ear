@@ -33,5 +33,37 @@
             "success": "POS settings updated",
             "error": "Update failed"
         }
+    },
+    "party": {
+        "title": "Patient Settings",
+        "description": "Manage patient segments, acquisition types, and anamnesis questions",
+        "segments_title": "Patient Segments",
+        "acquisitions_title": "Acquisition Types"
+    },
+    "anamnesis": {
+        "title": "Anamnesis Questions",
+        "defaults_info": "Default audiology questions are being used. Customize by adding your own questions.",
+        "add_question": "Add New Question",
+        "question_placeholder": "Enter question text...",
+        "category": "Category",
+        "answer_type": "Answer Type",
+        "type_text": "Text",
+        "type_select": "Single Select",
+        "type_multiselect": "Multi Select",
+        "required": "Required",
+        "options": "Options",
+        "option_placeholder": "Add option...",
+        "add": "Add",
+        "add_question_btn": "Add Question",
+        "custom_questions": "Custom Questions",
+        "option_count": "options",
+        "make_optional": "Make optional",
+        "make_required": "Make required",
+        "save_success": "Anamnesis questions saved",
+        "save_error": "Save error: ",
+        "question_required": "Question text is required"
+    },
+    "common": {
+        "saving": "Saving..."
     }
 }

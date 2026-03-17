@@ -1,4 +1,5 @@
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import React, { useState, useMemo } from 'react';
 import { Appointment, AppointmentFilters, AppointmentStatus, AppointmentType } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
@@ -51,14 +52,14 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
 
   const getStatusColor = (status: AppointmentStatus): string => {
     const colors = {
-      scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      confirmed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      completed: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+      scheduled: 'bg-primary/10 text-blue-800 dark:text-blue-300',
+      confirmed: 'bg-success/10 text-success',
+      completed: 'bg-muted text-foreground',
+      cancelled: 'bg-destructive/10 text-red-800 dark:text-red-300',
       no_show: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
       rescheduled: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
     };
-    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    return colors[status] || 'bg-muted text-foreground';
   };
 
   const getStatusLabel = (status: AppointmentStatus): string => {
@@ -117,18 +118,143 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     onAppointmentDelete: (appointment) => onDeleteAppointment?.(appointment),
   });
 
+  const appointmentColumns: Column<Appointment>[] = [
+    {
+      key: 'patient',
+      title: t('list.columns.patient'),
+      render: (_, appointment) => (
+        <div className="flex items-center">
+          <div className="flex-shrink-0 h-10 w-10">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                {appointment.partyName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'N/A'}
+              </span>
+            </div>
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              {appointment.partyName || 'İsimsiz Hasta'}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              ID: {appointment.partyId}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'dateTime',
+      title: t('list.columns.date_time'),
+      render: (_, appointment) => (
+        <div>
+          <div className="text-sm text-gray-900 dark:text-white">{formatDate(appointment.date)}</div>
+          <div className="text-sm text-muted-foreground">
+            {formatTime(appointment.time)} ({appointment.duration} dk)
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'type',
+      title: t('list.columns.type'),
+      render: (_, appointment) => (
+        <div>
+          <div className="text-sm text-gray-900 dark:text-white">{getTypeLabel(appointment.type)}</div>
+          {appointment.title && appointment.title !== getTypeLabel(appointment.type) && (
+            <div className="text-sm text-muted-foreground">{appointment.title}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      title: t('list.columns.status'),
+      render: (_, appointment) => (
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
+          {getStatusLabel(appointment.status)}
+        </span>
+      ),
+    },
+    {
+      key: 'clinician',
+      title: t('list.columns.doctor'),
+      render: (_, appointment) => (
+        <span className="text-sm text-gray-900 dark:text-white">{appointment.clinician || '-'}</span>
+      ),
+    },
+    {
+      key: 'duration',
+      title: t('list.columns.duration'),
+      render: (_, appointment) => (
+        <span className="text-sm text-gray-900 dark:text-white">{appointment.duration} dakika</span>
+      ),
+    },
+    ...(showActions ? [{
+      key: '_actions',
+      title: t('list.columns.actions'),
+      align: 'right' as const,
+      render: (_: unknown, appointment: Appointment) => (
+        <div className="flex items-center justify-end space-x-2">
+          {appointment.status === 'scheduled' && (
+            <>
+              <Button
+                onClick={(e) => { e.stopPropagation(); handleStatusChange(appointment, 'completed'); }}
+                className="text-success hover:text-green-900 dark:hover:text-green-300 text-xs"
+                title={t('list.actions.complete')}
+                variant='default'>
+                {t('list.actions.complete')}
+              </Button>
+              <Button
+                onClick={(e) => { e.stopPropagation(); handleStatusChange(appointment, 'no_show'); }}
+                className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 text-xs"
+                title={t('list.actions.no_show')}
+                variant='default'>
+                {t('list.actions.no_show')}
+              </Button>
+              <Button
+                onClick={(e) => { e.stopPropagation(); handleStatusChange(appointment, 'cancelled'); }}
+                className="text-destructive hover:text-red-900 dark:hover:text-red-300 text-xs"
+                title={t('list.actions.cancel')}
+                variant='default'>
+                {t('list.actions.cancel')}
+              </Button>
+            </>
+          )}
+          {onEditAppointment && (
+            <Button
+              onClick={(e) => { e.stopPropagation(); onEditAppointment(appointment); }}
+              className="text-primary hover:text-blue-900 dark:hover:text-blue-300 text-xs"
+              title={t('list.actions.edit')}
+              variant='default'>
+              {t('list.actions.edit')}
+            </Button>
+          )}
+          {onDeleteAppointment && (
+            <Button
+              onClick={(e) => { e.stopPropagation(); onDeleteAppointment(appointment); }}
+              className="text-destructive hover:text-red-900 dark:hover:text-red-300 text-xs"
+              title={t('list.actions.delete')}
+              variant='default'>
+              {t('list.actions.delete')}
+            </Button>
+          )}
+        </div>
+      ),
+    }] : []),
+  ];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">{t('loading')}</span>
+        <span className="ml-2 text-muted-foreground">{t('loading')}</span>
       </div>
     );
   }
 
   if (_error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+      <div className="bg-destructive/10 border border-red-200 rounded-xl p-4">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -137,7 +263,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">{t('error_title')}</h3>
-            <div className="mt-2 text-sm text-red-700">{_error}</div>
+            <div className="mt-2 text-sm text-destructive">{_error}</div>
           </div>
         </div>
       </div>
@@ -148,7 +274,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     <div className={`appointment-list ${className}`}>
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <Select
@@ -189,32 +315,32 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {t('filters.start_date')}
               </label>
               <Input
                 type="date"
                 value={filters.startDate || ''}
                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {t('filters.end_date')}
               </label>
               <Input
                 type="date"
                 value={filters.endDate || ''}
                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               {t('filters.search')}
             </label>
             <Input
@@ -222,185 +348,22 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
               placeholder={t('filters.search_placeholder')}
               value={filters.search || ''}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
       )}
       {/* Appointment List */}
-      {sortedAppointments.length === 0 ? (
-        <div className="text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z" />
-          </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">{t('list.empty_title')}</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {t('list.empty_desc')}
-          </p>
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('list.columns.patient')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('list.columns.date_time')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('list.columns.type')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('list.columns.status')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('list.columns.doctor')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('list.columns.duration')}
-                  </th>
-                  {showActions && (
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('list.columns.actions')}
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {sortedAppointments.map((appointment, index) => (
-                  <tr
-                    key={appointment.id}
-                    className={`
-                      hover:bg-gray-50 dark:hover:bg-gray-700
-                      ${onAppointmentClick ? 'cursor-pointer' : ''} 
-                      ${selectedIndex === index ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}
-                    `}
-                    onClick={() => onAppointmentClick?.(appointment)}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                            <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                              {appointment.partyName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'N/A'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {appointment.partyName || 'İsimsiz Hasta'}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            ID: {appointment.partyId}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        {formatDate(appointment.date)}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatTime(appointment.time)} ({appointment.duration} dk)
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        {getTypeLabel(appointment.type)}
-                      </div>
-                      {appointment.title && appointment.title !== getTypeLabel(appointment.type) && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {appointment.title}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
-                        {getStatusLabel(appointment.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {appointment.clinician || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {appointment.duration} dakika
-                    </td>
-                    {showActions && (
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
-                          {appointment.status === 'scheduled' && (
-                            <>
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStatusChange(appointment, 'completed');
-                                }}
-                                className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-xs"
-                                title={t('list.actions.complete')}
-                                variant='default'>
-                                {t('list.actions.complete')}
-                              </Button>
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStatusChange(appointment, 'no_show');
-                                }}
-                                className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 text-xs"
-                                title={t('list.actions.no_show')}
-                                variant='default'>
-                                {t('list.actions.no_show')}
-                              </Button>
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStatusChange(appointment, 'cancelled');
-                                }}
-                                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs"
-                                title={t('list.actions.cancel')}
-                                variant='default'>
-                                {t('list.actions.cancel')}
-                              </Button>
-                            </>
-                          )}
-                          {onEditAppointment && (
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEditAppointment(appointment);
-                              }}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-xs"
-                              title={t('list.actions.edit')}
-                              variant='default'>
-                              {t('list.actions.edit')}
-                            </Button>
-                          )}
-                          {onDeleteAppointment && (
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteAppointment(appointment);
-                              }}
-                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs"
-                              title={t('list.actions.delete')}
-                              variant='default'>
-                              {t('list.actions.delete')}
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <DataTable<Appointment>
+        data={sortedAppointments}
+        columns={appointmentColumns}
+        rowKey="id"
+        onRowClick={(appointment) => onAppointmentClick?.(appointment)}
+        emptyText={t('list.empty_title')}
+      />
+
       {/* Summary */}
-      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+      <div className="mt-4 text-sm text-muted-foreground text-center">
         {t('list.summary', { count: sortedAppointments.length })}
       </div>
     </div>

@@ -40,23 +40,23 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Payment Summary */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="font-medium text-gray-900 mb-3">Ödeme Özeti</h4>
+      <div className="bg-muted p-4 rounded-2xl">
+        <h4 className="font-medium text-foreground mb-3">Ödeme Özeti</h4>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-600">Toplam Tutar:</span>
+            <span className="text-muted-foreground">Toplam Tutar:</span>
             <span className="font-medium ml-2">{formatCurrency(calculations.totalPaid + calculations.remainingBalance)}</span>
           </div>
           <div>
-            <span className="text-gray-600">Ödenen:</span>
-            <span className="font-medium ml-2 text-green-600">{formatCurrency(calculations.totalPaid)}</span>
+            <span className="text-muted-foreground">Ödenen:</span>
+            <span className="font-medium ml-2 text-success">{formatCurrency(calculations.totalPaid)}</span>
           </div>
           <div>
-            <span className="text-gray-600">Kalan:</span>
-            <span className="font-medium ml-2 text-red-600">{formatCurrency(calculations.remainingBalance)}</span>
+            <span className="text-muted-foreground">Kalan:</span>
+            <span className="font-medium ml-2 text-destructive">{formatCurrency(calculations.remainingBalance)}</span>
           </div>
           <div>
-            <span className="text-gray-600">Vadesi Geçen:</span>
+            <span className="text-muted-foreground">Vadesi Geçen:</span>
             <span className="font-medium ml-2 text-orange-600">
               {formatCurrency(calculations.overdueInstallments.reduce((sum, inst) => sum + inst.amount, 0))}
             </span>
@@ -66,11 +66,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
       {/* Payment Amount */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Ödeme Tutarı
         </label>
         <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             type="number"
             step="0.01"
@@ -83,7 +83,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             required
           />
         </div>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Maksimum: {formatCurrency(calculations.remainingBalance)}
         </p>
       </div>
@@ -105,14 +105,14 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
       {/* Payment Method Specific Fields */}
       {state.paymentMethod === 'credit' && (
-        <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-          <div className="flex items-center gap-2 text-blue-700">
+        <div className="space-y-4 p-4 bg-primary/10 rounded-2xl">
+          <div className="flex items-center gap-2 text-primary">
             <CreditCard className="h-4 w-4" />
             <span className="font-medium">Kredi Kartı Bilgileri</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Kart Son 4 Hanesi
               </label>
               <Input
@@ -138,7 +138,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               İşlem Numarası
             </label>
             <Input
@@ -150,14 +150,14 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       )}
 
       {state.paymentMethod === 'bank_transfer' && (
-        <div className="space-y-4 p-4 bg-green-50 rounded-lg">
-          <div className="flex items-center gap-2 text-green-700">
+        <div className="space-y-4 p-4 bg-success/10 rounded-2xl">
+          <div className="flex items-center gap-2 text-success">
             <Banknote className="h-4 w-4" />
             <span className="font-medium">Banka Havalesi Bilgileri</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Banka Adı
               </label>
               <Input
@@ -167,7 +167,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Hesap Numarası
               </label>
               <Input
@@ -177,7 +177,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Referans Numarası
             </label>
             <Input
@@ -190,14 +190,14 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       )}
 
       {state.paymentMethod === 'check' && (
-        <div className="space-y-4 p-4 bg-yellow-50 rounded-lg">
+        <div className="space-y-4 p-4 bg-warning/10 rounded-2xl">
           <div className="flex items-center gap-2 text-yellow-700">
             <Receipt className="h-4 w-4" />
             <span className="font-medium">Çek Bilgileri</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Çek Numarası
               </label>
               <Input
@@ -207,7 +207,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Çek Tarihi
               </label>
               <Input
@@ -218,7 +218,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Banka
             </label>
             <Input
@@ -233,12 +233,12 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       {/* Installment Selection */}
       {installments.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-foreground mb-3">
             Taksit Seçimi (İsteğe Bağlı)
           </label>
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {installments.map((installment) => (
-              <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={installment.id} className="flex items-center justify-between p-3 border rounded-2xl">
                 <div className="flex items-center space-x-3">
                   <Checkbox
                     id={`installment-${installment.id}`}
@@ -266,7 +266,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Notlar (İsteğe Bağlı)
         </label>
         <Textarea
@@ -283,7 +283,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           checked={state.generateReceipt}
           onChange={(e) => onStateUpdate({ generateReceipt: e.target.checked })}
         />
-        <label htmlFor="generateReceipt" className="text-sm text-gray-700">
+        <label htmlFor="generateReceipt" className="text-sm text-foreground">
           Makbuz oluştur
         </label>
       </div>

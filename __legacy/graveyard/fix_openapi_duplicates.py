@@ -23,7 +23,7 @@ for i, line in enumerate(lines):
             print(f"Duplicate found: {path}")
             print(f"  First occurrence: line {seen_paths[path] + 1}")
             print(f"  Duplicate at: line {i + 1}")
-            print(f"  Keeping first, removing duplicate")
+            print("  Keeping first, removing duplicate")
             
             # Mark this path and its content for removal
             # We'll remove from this line until the next path or end of paths section

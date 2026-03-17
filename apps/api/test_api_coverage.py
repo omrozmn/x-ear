@@ -1,6 +1,4 @@
-import json
 import pytest
-from datetime import datetime
 import random
 from utils import now_utc
 
@@ -110,7 +108,7 @@ def test_devices_crud_and_filters(client):
     did = create_sample_device(client)
 
     # Ensure category filter returns device
-    resp = client.get(f'/api/devices?inventory_only=true&category=hearing_aid')
+    resp = client.get('/api/devices?inventory_only=true&category=hearing_aid')
     assert resp.status_code == 200
     devices = resp.get_json().get('devices', [])
     assert any(d.get('id') == inv_did for d in devices)

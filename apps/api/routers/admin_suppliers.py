@@ -1,20 +1,39 @@
 """Admin Suppliers Router - FastAPI"""
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from typing import Optional
 from datetime import datetime
 import logging
 
 from database import get_db
+from core.database import engine, unbound_session
 from models.suppliers import Supplier
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.suppliers import SupplierCreate, SupplierUpdate, SupplierRead
 from schemas.base import ResponseEnvelope
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/suppliers", tags=["Admin Suppliers"])
+_SUPPLIER_SCHEMA_ENSURED = False
+
+
+def _ensure_supplier_schema() -> None:
+    global _SUPPLIER_SCHEMA_ENSURED
+    if _SUPPLIER_SCHEMA_ENSURED:
+        return
+    with engine.begin() as connection:
+        if connection.dialect.name == "sqlite":
+            rows = connection.exec_driver_sql("PRAGMA table_info(suppliers)").fetchall()
+            columns = {row[1] for row in rows}
+        else:
+            rows = connection.execute(text(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'suppliers'"
+            )).fetchall()
+            columns = {row[0] for row in rows}
+        if "institution_number" not in columns:
+            connection.exec_driver_sql("ALTER TABLE suppliers ADD COLUMN institution_number VARCHAR(50)")
+    _SUPPLIER_SCHEMA_ENSURED = True
 
 # Response models
 class SupplierListResponse(ResponseEnvelope):
@@ -25,7 +44,7 @@ class SupplierDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminSuppliers", response_model=SupplierListResponse)
 async def get_suppliers(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     status: Optional[str] = None,
@@ -34,24 +53,26 @@ async def get_suppliers(
 ):
     """Get list of suppliers"""
     try:
-        query = db.query(Supplier)
-        
-        if search:
-            query = query.filter(
-                or_(
-                    Supplier.company_name.ilike(f"%{search}%"),
-                    Supplier.contact_person.ilike(f"%{search}%"),
-                    Supplier.email.ilike(f"%{search}%")
+        _ensure_supplier_schema()
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Supplier)
+            
+            if search:
+                query = query.filter(
+                    or_(
+                        Supplier.company_name.ilike(f"%{search}%"),
+                        Supplier.contact_person.ilike(f"%{search}%"),
+                        Supplier.email.ilike(f"%{search}%")
+                    )
                 )
-            )
-        if status:
-            # Handle status conversion if needed, assuming status param is matching active/inactive logic or is_active boolean
-            # If status string is used, map it. The usage shows 'status' string param. 
-            pass
-            # query = query.filter(Supplier.is_active == (status == 'ACTIVE'))
-        
-        total = query.count()
-        suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if status:
+                # Handle status conversion if needed, assuming status param is matching active/inactive logic or is_active boolean
+                # If status string is used, map it. The usage shows 'status' string param. 
+                pass
+                # query = query.filter(Supplier.is_active == (status == 'ACTIVE'))
+            
+            total = query.count()
+            suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(
             data={
@@ -70,10 +91,12 @@ async def create_supplier(
 ):
     """Create a new supplier"""
     try:
+        _ensure_supplier_schema()
         if not data.company_name:
             raise HTTPException(status_code=400, detail="Company name is required")
         
         new_supplier = Supplier(
+            tenant_id=data.tenant_id,
             company_name=data.company_name,
             contact_person=data.contact_person,
             email=data.email,
@@ -81,6 +104,7 @@ async def create_supplier(
             address=data.address,
             tax_number=data.tax_number,
             tax_office=data.tax_office,
+            institution_number=data.institution_number,
             is_active=data.is_active,
             created_at=datetime.utcnow()
         )
@@ -102,7 +126,9 @@ async def get_supplier(
 ):
     """Get single supplier"""
     try:
-        supplier = db.get(Supplier, supplier_id)
+        _ensure_supplier_schema()
+        with unbound_session(reason="admin-cross-tenant"):
+            supplier = db.get(Supplier, supplier_id)
         if not supplier:
             raise HTTPException(status_code=404, detail="Supplier not found")
         return ResponseEnvelope(data={"supplier": SupplierRead.model_validate(supplier).model_dump(by_alias=True)})
@@ -120,7 +146,9 @@ async def update_supplier(
 ):
     """Update a supplier"""
     try:
-        supplier = db.get(Supplier, supplier_id)
+        _ensure_supplier_schema()
+        with unbound_session(reason="admin-cross-tenant"):
+            supplier = db.get(Supplier, supplier_id)
         if not supplier:
             raise HTTPException(status_code=404, detail="Supplier not found")
         
@@ -138,8 +166,12 @@ async def update_supplier(
             supplier.tax_number = data.tax_number
         if data.tax_office is not None:
             supplier.tax_office = data.tax_office
+        if getattr(data, "institution_number", None) is not None:
+            supplier.institution_number = data.institution_number
         if data.is_active is not None:
             supplier.is_active = data.is_active
+        if data.tenant_id is not None:
+            supplier.tenant_id = data.tenant_id
         
         supplier.updated_at = datetime.utcnow()
         db.commit()
@@ -158,7 +190,8 @@ async def delete_supplier(
 ):
     """Delete a supplier"""
     try:
-        supplier = db.get(Supplier, supplier_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            supplier = db.get(Supplier, supplier_id)
         if not supplier:
             raise HTTPException(status_code=404, detail="Supplier not found")
         

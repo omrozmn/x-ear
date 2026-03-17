@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/utils/file_validation.py
+# hypothesis_version: 6.151.6
+
+[b'%PDF', b'BM', b'II*\x00', b'MM\x00*', b'RIFF', b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff', 400, 1024, '.bmp', '.csv', '.jpeg', '.jpg', '.pdf', '.png', '.tif', '.tiff', '.tmp', '.webp', '.xls', '.xlsx', 'application/pdf', 'image/bmp', 'image/jpeg', 'image/png', 'image/tiff', 'image/webp', 'text/csv']

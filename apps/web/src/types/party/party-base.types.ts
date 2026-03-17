@@ -214,6 +214,7 @@ export interface Party extends OrvalParty {
   firstName?: string;
   lastName?: string;
   tcNumber?: string;
+  taxNumber?: string;
   identityNumber?: string;
   phone?: string;
   email?: string;
@@ -253,6 +254,7 @@ export interface Party extends OrvalParty {
   first_name?: string | undefined;
   last_name?: string | undefined;
   tc_number?: string | undefined;
+  tax_number?: string | undefined;
   birth_date?: string | undefined;
   created_at?: string | undefined;
   updated_at?: string | undefined;

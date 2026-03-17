@@ -10,7 +10,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
-    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', 'src/tests/e2e/**', '**/*.e2e.spec.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', 'src/tests/e2e/**', '**/*.e2e.spec.ts', 'tests/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -28,6 +28,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@x-ear/ui-web': path.resolve(__dirname, '../../packages/ui-web/index.ts'),
     },
   },
 });

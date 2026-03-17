@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Card, Input, Select, Button, Checkbox, Badge } from '@x-ear/ui-web';
 import BrandAutocomplete from '../../pages/inventory/components/BrandAutocomplete';
@@ -46,15 +47,15 @@ export interface InventoryFilters {
 }
 
 const stockStatusOptions = [
-  { value: 'all', label: 'Tüm Durumlar' },
-  { value: 'in_stock', label: 'Stokta Var' },
-  { value: 'low_stock', label: 'Düşük Stok' },
-  { value: 'out_of_stock', label: 'Stok Yok' },
-  { value: 'on_trial', label: 'Deneme Aşamasında' }
+  { value: 'all', label: t('filters.all_statuses') },
+  { value: 'in_stock', label: t('filters.in_stock') },
+  { value: 'low_stock', label: t('filters.low_stock') },
+  { value: 'out_of_stock', label: t('filters.out_of_stock') },
+  { value: 'on_trial', label: t('form.description') }
 ];
 
 const warrantyOptions = [
-  { value: '', label: 'Tüm Garanti Süreleri' },
+  { value: '', label: t('filters.all_statuses') },
   { value: '6 months', label: '6 Ay' },
   { value: '1 year', label: '1 Yıl' },
   { value: '2 years', label: '2 Yıl' },
@@ -80,6 +81,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   isExpanded = false,
   onToggleExpanded
 }) => {
+  const { t } = useTranslation('inventory');
   const [localFilters, setLocalFilters] = useState<InventoryFilters>(filters);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(filters.features || []);
   const [showCustomDateRange, setShowCustomDateRange] = useState(false);
@@ -207,11 +209,11 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       {/* Filter Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filtreler</h3>
+          <Filter className="w-5 h-5 text-muted-foreground" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('filters.all_statuses')}</h3>
           {getActiveFilterCount() > 0 && (
             <Badge variant="secondary" className="ml-2">
-              {getActiveFilterCount()} aktif filtre
+              {t('filters.all_statuses')}
             </Badge>
           )}
         </div>
@@ -221,7 +223,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               variant="ghost"
               size="sm"
               onClick={clearAllFilters}
-              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              className="text-destructive hover:text-destructive dark:hover:text-red-300"
             >
               <X className="w-4 h-4 mr-1" />
               Temizle
@@ -247,7 +249,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       {/* Basic Filters - Always Visible */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Arama
           </label>
           <Input
@@ -260,20 +262,20 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Kategori
           </label>
           <Select
             value={localFilters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
-            options={[{ value: '', label: 'Tüm Kategoriler' }, ...categoryOptions]}
+            options={[{ value: '', label: t('filters.all_categories') }, ...categoryOptions]}
             placeholder="Kategori seçin"
             fullWidth
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Marka
           </label>
           <BrandAutocomplete
@@ -286,7 +288,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Stok Durumu
           </label>
           <Select
@@ -303,7 +305,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         <div className="space-y-6 border-t pt-4">
           {/* Price Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               <DollarSign className="w-4 h-4 inline mr-1" />
               Fiyat Aralığı
             </label>
@@ -329,7 +331,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
           {/* Date Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               <Calendar className="w-4 h-4 inline mr-1" />
               Tarih Aralığı
             </label>
@@ -368,19 +370,19 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           {/* Additional Filters */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Tedarikçi
               </label>
               <Select
                 value={localFilters.supplier || ''}
                 onChange={(e) => handleFilterChange('supplier', e.target.value || undefined)}
-                options={[{ value: '', label: 'Tüm Tedarikçiler' }, ...supplierOptions]}
+                options={[{ value: '', label: t('filters.all_statuses') }, ...supplierOptions]}
                 placeholder="Tedarikçi seçin"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Garanti Süresi
               </label>
               <Select
@@ -394,7 +396,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
           {/* Features */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Özellikler
             </label>
             <div className="flex flex-wrap gap-2">
@@ -421,24 +423,24 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
           {/* Quick Filters */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Hızlı Filtreler
             </label>
             <div className="flex flex-wrap gap-4">
               <Checkbox
                 checked={localFilters.lowStock || false}
                 onChange={(e) => handleFilterChange('lowStock', e.target.checked)}
-                label="Düşük Stok"
+                label={t('filters.low_stock')}
               />
               <Checkbox
                 checked={localFilters.outOfStock || false}
                 onChange={(e) => handleFilterChange('outOfStock', e.target.checked)}
-                label="Stok Yok"
+                label={t('filters.out_of_stock')}
               />
               <Checkbox
                 checked={localFilters.hasTrials || false}
                 onChange={(e) => handleFilterChange('hasTrials', e.target.checked)}
-                label="Deneme Aşamasında"
+                label={t('form.description')}
               />
             </div>
           </div>

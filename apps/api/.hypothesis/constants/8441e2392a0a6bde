@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/finance_tools.py
+# hypothesis_version: 6.151.9
+
+['%Y-%m-%d', '1.0.0', 'CashRecord', 'Genel Gider', 'action', 'amount', 'cash', 'cash_records.create', 'cash_records.view', 'category', 'create', 'create_cash_record', 'data', 'date', 'description', 'entity', 'expense', 'id', 'message', 'month', 'net', 'number', 'paid', 'payment', 'period', 'record_count', 'string', 'tenant_id', 'today', 'total_expense', 'total_income', 'type', 'week', 'year']

@@ -12,6 +12,7 @@ export interface EditSaleModalProps {
   sale: SaleRead;
   onSaleUpdate: (sale: SaleRead) => void;
   loading?: boolean;
+  initialTab?: 'details' | 'payments' | 'notes'; // Add initialTab prop
 }
 
 export interface PaymentRecord {
@@ -44,18 +45,32 @@ export interface SaleFormData {
   productName: string;
   brand: string;
   model: string;
+  category: string;
+  barcode: string;
   serialNumber: string;
+  serialNumberLeft: string;
+  serialNumberRight: string;
   listPrice: number;
   salePrice: number;
   discountAmount: number;
+  discountType?: 'none' | 'percentage' | 'amount';
+  discountValue: number;  // ✅ NEW: Discount value (percentage or amount)
   sgkCoverage: number;
+  sgkScheme?: string; // SGK scheme selection
+  downPayment: number;
   notes: string;
   saleDate: string;
   deviceId: string;
   ear: 'left' | 'right' | 'both';
+  quantity: number; // Quantity for non-hearing-aid products
+  reason: string; // Assignment reason (Satış, Deneme, Tamir, etc.)
   warrantyPeriod: number;
   fittingDate: string;
   deliveryDate: string;
+  deliveryStatus: string;
+  reportStatus: string;
+  batteryReportQuantity?: 'per_ear' | 'bilateral';
+  inventoryId?: string;
 }
 
 export interface EditSaleState {

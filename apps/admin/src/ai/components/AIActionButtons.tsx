@@ -173,7 +173,7 @@ export function AIActionButton({
           onClick={handleClick}
           disabled={disabled || isBlocked || createAction.isPending}
           className={`
-            px-4 py-2 rounded-md font-medium
+            px-4 py-2 rounded-xl font-medium
             transition-colors duration-200
             disabled:opacity-50 disabled:cursor-not-allowed
             ${VARIANT_STYLES[variant]}
@@ -274,7 +274,7 @@ export function AIQuickAction({
           disabled={disabled || isBlocked || createAction.isPending}
           title={tooltip}
           className={`
-            p-2 rounded-md
+            p-2 rounded-xl
             text-gray-600 hover:text-blue-600 hover:bg-blue-50
             disabled:opacity-50 disabled:cursor-not-allowed
             transition-colors duration-200

@@ -48,7 +48,7 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Hasta Ara *
         </label>
         <div className="relative">
@@ -62,11 +62,11 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
                 className="w-full pl-10"
                 autoComplete="off"
               />
-              <span className="absolute left-3 top-3 text-gray-400">
+              <span className="absolute left-3 top-3 text-muted-foreground">
                 🔍
               </span>
               {isLoading && (
-                <span className="absolute right-3 top-3 text-gray-400">
+                <span className="absolute right-3 top-3 text-muted-foreground">
                   <i className="fa fa-spinner fa-spin"></i>
                 </span>
               )}
@@ -75,7 +75,7 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
               <Button
                 type="button"
                 onClick={handleClearSelection}
-                className="px-3 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+                className="px-3 py-2 bg-destructive/10 text-destructive rounded-xl hover:bg-red-200"
                 variant="default">
                 Temizle
               </Button>
@@ -84,20 +84,20 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
 
           {/* Arama Sonuçları */}
           {showResults && parties.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto">
               {parties.map((party: Party) => (
                 <Button
                   key={party.id}
                   type="button"
                   variant="ghost"
                   onClick={() => handlePartySelect(party)}
-                  className="w-full px-4 py-3 text-left hover:bg-blue-50 focus:bg-blue-50 border-b border-gray-100 last:border-b-0">
+                  className="w-full px-4 py-3 text-left hover:bg-primary/10 focus:bg-primary/10 border-b border-border last:border-b-0">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-foreground">
                         {party.firstName} {party.lastName}
                       </div>
-                      <div className="text-sm text-gray-500 space-x-3">
+                      <div className="text-sm text-muted-foreground space-x-3">
                         {party.tcNumber && (
                           <span>TC: {party.tcNumber}</span>
                         )}
@@ -106,7 +106,7 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
                         )}
                       </div>
                     </div>
-                    <span className="text-blue-600">→</span>
+                    <span className="text-primary">→</span>
                   </div>
                 </Button>
               ))}
@@ -115,21 +115,21 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
 
           {/* Sonuç Bulunamadı */}
           {showResults && parties.length === 0 && !isLoading && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4">
-              <p className="text-sm text-gray-500 text-center">
+            <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-xl shadow-lg p-4">
+              <p className="text-sm text-muted-foreground text-center">
                 Hasta bulunamadı. Yeni hasta bilgilerini manuel girebilirsiniz.
               </p>
             </div>
           )}
         </div>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           En az 2 karakter girerek hasta arayabilirsiniz
         </p>
       </div>
 
       {/* Seçili Hasta Bilgileri */}
       {selectedPartyData && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-success/10 border border-green-200 rounded-2xl p-4">
           <div className="flex items-start">
             <CheckCircle className="text-green-400 mr-3 flex-shrink-0" size={24} />
             <div className="flex-1">
@@ -138,47 +138,47 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
               </h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-gray-600">Ad Soyad:</span>
-                  <span className="ml-2 font-medium text-gray-900">
+                  <span className="text-muted-foreground">Ad Soyad:</span>
+                  <span className="ml-2 font-medium text-foreground">
                     {selectedPartyData.firstName} {selectedPartyData.lastName}
                   </span>
                 </div>
                 {selectedPartyData.tcNumber && (
                   <div>
-                    <span className="text-gray-600">TC No:</span>
-                    <span className="ml-2 font-medium text-gray-900">
+                    <span className="text-muted-foreground">TC No:</span>
+                    <span className="ml-2 font-medium text-foreground">
                       {selectedPartyData.tcNumber}
                     </span>
                   </div>
                 )}
                 {selectedPartyData.phone && (
                   <div>
-                    <span className="text-gray-600">Telefon:</span>
-                    <span className="ml-2 font-medium text-gray-900">
+                    <span className="text-muted-foreground">Telefon:</span>
+                    <span className="ml-2 font-medium text-foreground">
                       {selectedPartyData.phone}
                     </span>
                   </div>
                 )}
                 {selectedPartyData.email && (
                   <div>
-                    <span className="text-gray-600">E-posta:</span>
-                    <span className="ml-2 font-medium text-gray-900">
+                    <span className="text-muted-foreground">E-posta:</span>
+                    <span className="ml-2 font-medium text-foreground">
                       {selectedPartyData.email}
                     </span>
                   </div>
                 )}
                 {selectedPartyData.addressFull && (
                   <div className="col-span-2">
-                    <span className="text-gray-600">Adres:</span>
-                    <span className="ml-2 font-medium text-gray-900">
+                    <span className="text-muted-foreground">Adres:</span>
+                    <span className="ml-2 font-medium text-foreground">
                       {selectedPartyData.addressFull}
                     </span>
                   </div>
                 )}
               </div>
               <div className="mt-2 flex items-center gap-2">
-                <CheckCircle className="text-green-600" size={16} />
-                <p className="text-xs text-green-700">
+                <CheckCircle className="text-success" size={16} />
+                <p className="text-xs text-success">
                   Hasta bilgileri faturaya otomatik olarak aktarıldı
                 </p>
               </div>

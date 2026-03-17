@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/invoice_service_new.py
+# hypothesis_version: 6.151.9
+
+[500, '0', 'ALREADY_CONVERTED', 'Bilinmeyen Alıcı', 'Bilinmeyen Tedarikçi', 'CONVERSION_ERROR', 'DRAFT', 'DocumentNo', 'E-Arşiv', 'E-Fatura', 'E-İrsaliye', 'EARSIV', 'EFATURA', 'EIRSALIYE', 'INCOMING', 'INVOICE_NOT_FOUND', 'Invoice not found', 'InvoiceTypeCode', 'NO_SUPPLIER_MAPPING', 'OUTGOING', 'PAID', 'PROCESSED', 'ProfileId', 'RECEIVED', 'SENT', 'SEVK', 'SUPPLIER_NOT_FOUND', 'Supplier not found', 'TEMELIRSALIYE', 'TRY', 'Taslak', 'Unknown', 'active', 'approved', 'deleted', 'despatch', 'documentType', 'document_kind', 'document_kind_label', 'document_type', 'invoice', 'invoiceType', 'invoiceTypeCode', 'invoice_type_code', 'processed', 'profileId', 'profile_id', 'systemType', 'systemTypeCode', 'system_type_code']

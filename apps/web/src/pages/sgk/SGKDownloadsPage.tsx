@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Select } from '@x-ear/ui-web';
 import { Download, Eye, FileText, Filter, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { useListSgkEReceiptDelivered } from '../../api/generated/sgk/sgk.ts';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
 
 interface DeliveredEReceipt {
   id: string;
@@ -34,6 +36,7 @@ interface PartyWithEReceipts {
 }
 
 export const SGKDownloadsPage: React.FC = () => {
+  const { t } = useTranslation('sgk');
   const { success: showSuccess, error: showError } = useToastHelpers();
   const [parties, setParties] = useState<PartyWithEReceipts[]>([]);
   const [filteredParties, setFilteredParties] = useState<PartyWithEReceipts[]>([]);
@@ -137,12 +140,12 @@ export const SGKDownloadsPage: React.FC = () => {
       // Simulate download
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const docName = docType === 'report' ? 'Rapor' :
-        docType === 'prescription' ? 'Reçete' : 'İşlem Formu';
+      const docName = docType === 'report' ? t('report', 'Rapor') :
+        docType === 'prescription' ? t('prescription', 'Reçete') : t('processForm', 'İşlem Formu');
 
-      showSuccess('Başarılı', `${party.name} için ${docName} indirildi`);
+      showSuccess(t('success', 'Başarılı'), t('documentDownloaded', '{{name}} için {{docName}} indirildi', { name: party.name, docName }));
     } catch (error) {
-      showError('Hata', 'Belge indirilirken bir hata oluştu');
+      showError(t('error', 'Hata'), t('downloadError', 'Belge indirilirken bir hata oluştu'));
     }
   };
 
@@ -155,24 +158,24 @@ export const SGKDownloadsPage: React.FC = () => {
 
     try {
       const docs: string[] = [];
-      if (bulkOptions.reports) docs.push('Rapor');
-      if (bulkOptions.prescriptions) docs.push('Reçete');
-      if (bulkOptions.processForms) docs.push('İşlem Formu');
+      if (bulkOptions.reports) docs.push(t('report', 'Rapor'));
+      if (bulkOptions.prescriptions) docs.push(t('prescription', 'Reçete'));
+      if (bulkOptions.processForms) docs.push(t('processForm', 'İşlem Formu'));
 
       setDownloadProgress({ current: 0, total: docs.length });
 
       for (let i = 0; i < docs.length; i++) {
-        setDownloadLogs(prev => [...prev, `${party.name} - ${docs[i]} hazırlanıyor...`]);
+        setDownloadLogs(prev => [...prev, `${party.name} - ${docs[i]} ${t('preparing', 'hazırlanıyor')}...`]);
         setDownloadProgress({ current: i + 1, total: docs.length });
 
         // Simulate download delay
         await new Promise(resolve => setTimeout(resolve, 800));
-        setDownloadLogs(prev => [...prev.slice(0, -1), `✓ ${party.name} - ${docs[i]} indirildi`]);
+        setDownloadLogs(prev => [...prev.slice(0, -1), `${party.name} - ${docs[i]} ${t('downloaded', 'indirildi')}`]);
       }
 
-      showSuccess('Başarılı', `${party.name} için ${docs.length} belge indirildi`);
+      showSuccess(t('success', 'Başarılı'), t('documentsDownloadedCount', '{{name}} için {{count}} belge indirildi', { name: party.name, count: docs.length }));
     } catch (error) {
-      showError('Hata', 'Belgeler indirilirken bir hata oluştu');
+      showError(t('error', 'Hata'), t('documentsDownloadError', 'Belgeler indirilirken bir hata oluştu'));
     } finally {
       setDownloading(false);
       setDownloadProgress({ current: 0, total: 0 });
@@ -182,7 +185,7 @@ export const SGKDownloadsPage: React.FC = () => {
   const startBulkDownload = async () => {
     const selectedPartyList = filteredParties.filter(p => selectedParties.has(p.id));
     if (selectedPartyList.length === 0) {
-      showError('Hata', 'Lütfen en az bir hasta seçin');
+      showError(t('error', 'Hata'), t('selectAtLeastOnePatient', 'Lütfen en az bir hasta seçin'));
       return;
     }
 
@@ -202,26 +205,26 @@ export const SGKDownloadsPage: React.FC = () => {
 
       for (const party of selectedPartyList) {
         const docs: string[] = [];
-        if (bulkOptions.reports) docs.push('Rapor');
-        if (bulkOptions.prescriptions) docs.push('Reçete');
-        if (bulkOptions.processForms) docs.push('İşlem Formu');
+        if (bulkOptions.reports) docs.push(t('report', 'Rapor'));
+        if (bulkOptions.prescriptions) docs.push(t('prescription', 'Reçete'));
+        if (bulkOptions.processForms) docs.push(t('processForm', 'İşlem Formu'));
 
         for (const doc of docs) {
-          setDownloadLogs(prev => [...prev, `${party.name} - ${doc} hazırlanıyor...`]);
+          setDownloadLogs(prev => [...prev, `${party.name} - ${doc} ${t('preparing', 'hazırlanıyor')}...`]);
           setDownloadProgress({ current: completed + 1, total: totalDocs });
 
           // Simulate download delay
           await new Promise(resolve => setTimeout(resolve, 600));
 
           completed++;
-          setDownloadLogs(prev => [...prev.slice(0, -1), `✓ ${party.name} - ${doc} indirildi`]);
+          setDownloadLogs(prev => [...prev.slice(0, -1), `${party.name} - ${doc} ${t('downloaded', 'indirildi')}`]);
         }
       }
 
-      showSuccess('Başarılı', `${selectedPartyList.length} hasta için ${totalDocs} belge indirildi`);
+      showSuccess(t('success', 'Başarılı'), t('bulkDownloadSuccess', '{{patientCount}} hasta için {{docCount}} belge indirildi', { patientCount: selectedPartyList.length, docCount: totalDocs }));
       setSelectedParties(new Set());
     } catch (error) {
-      showError('Hata', 'Toplu indirme sırasında bir hata oluştu');
+      showError(t('error', 'Hata'), t('bulkDownloadError', 'Toplu indirme sırasında bir hata oluştu'));
     } finally {
       setDownloading(false);
       setDownloadProgress({ current: 0, total: 0 });
@@ -231,62 +234,61 @@ export const SGKDownloadsPage: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'processing':
         return <Clock className="w-4 h-4 text-yellow-500" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-500" />;
+        return <Clock className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case 'success':
-        return 'SGK Onaylandı';
+        return t('sgkApproved', 'SGK Onaylandı');
       case 'processing':
-        return 'SGK İşleniyor';
+        return t('sgkProcessing', 'SGK İşleniyor');
       case 'error':
-        return 'SGK Hatası';
+        return t('sgkError', 'SGK Hatası');
       default:
-        return 'Bilinmiyor';
+        return t('unknown', 'Bilinmiyor');
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <span className="ml-3 text-lg text-gray-600">Yükleniyor...</span>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="ml-3 text-lg text-muted-foreground">{t('loading', 'Yükleniyor...')}</span>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SGK Belge İndir</h1>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Bu ay kaydedilen e-reçeteler için belgelerinizi indirin</p>
-            </div>
-            <div className="flex items-center space-x-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <DesktopPageHeader
+          title={t('downloads.title', 'SGK Belge İndir')}
+          description={t('downloads.description', 'Bu ay kaydedilen e-reçeteler için belgelerinizi indirin')}
+          icon={<FileText className="w-6 h-6" />}
+          eyebrow={{ tr: t('downloads.eyebrow', 'Belge İndirme'), en: 'Document Downloads' }}
+          actions={(
+            <>
               <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-gray-500" />
+                <Filter className="w-4 h-4 text-muted-foreground" />
                 <Select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
                   options={[
-                    { value: '', label: 'Tüm Aylar' },
+                    { value: '', label: t('allMonths', 'Tüm Aylar') },
                     ...availableMonths.map(month => ({
                       value: month,
                       label: formatMonthName(month)
                     }))
                   ]}
-                  className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white"
+                  className="rounded-xl border-border shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white"
                 />
               </div>
               <Button
@@ -295,17 +297,17 @@ export const SGKDownloadsPage: React.FC = () => {
                 className="bg-primary hover:bg-primary-dark text-white"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Toplu İndir ({selectedParties.size})
+                {t('bulkDownload', 'Toplu İndir')} ({selectedParties.size})
               </Button>
-            </div>
-          </div>
-        </div>
+            </>
+          )}
+        />
       </div>
 
       {/* Bulk Download Panel */}
       {showBulkDownload && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mx-4 sm:mx-6 lg:mx-8 mt-6 p-4">
-          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">Toplu İndirme</h3>
+        <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl mx-4 sm:mx-6 lg:mx-8 mt-6 p-4">
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">{t('bulkDownloadTitle', 'Toplu İndirme')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="space-y-2">
               <label className="flex items-center">
@@ -316,9 +318,9 @@ export const SGKDownloadsPage: React.FC = () => {
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, reports: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="font-medium dark:text-gray-200">Rapor Belgeleri</span>
+                <span className="font-medium dark:text-gray-200">{t('reportDocuments', 'Rapor Belgeleri')}</span>
               </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">SGK onaylı rapor belgelerini indir</p>
+              <p className="text-sm text-muted-foreground">{t('downloadApprovedReports', 'SGK onaylı rapor belgelerini indir')}</p>
             </div>
             <div className="space-y-2">
               <label className="flex items-center">
@@ -329,9 +331,9 @@ export const SGKDownloadsPage: React.FC = () => {
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, prescriptions: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="font-medium dark:text-gray-200">E-Reçete Belgeleri</span>
+                <span className="font-medium dark:text-gray-200">{t('eReceiptDocuments', 'E-Reçete Belgeleri')}</span>
               </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">E-reçete onay belgelerini indir</p>
+              <p className="text-sm text-muted-foreground">{t('downloadEReceiptApprovals', 'E-reçete onay belgelerini indir')}</p>
             </div>
             <div className="space-y-2">
               <label className="flex items-center">
@@ -342,27 +344,27 @@ export const SGKDownloadsPage: React.FC = () => {
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, processForms: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="font-medium dark:text-gray-200">Hasta İşlem Formları</span>
+                <span className="font-medium dark:text-gray-200">{t('patientProcessForms', 'Hasta İşlem Formları')}</span>
               </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Hasta işlem ve teslim formlarını indir</p>
+              <p className="text-sm text-muted-foreground">{t('downloadPatientForms', 'Hasta işlem ve teslim formlarını indir')}</p>
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Toplam <span className="font-semibold">{selectedParties.size}</span> hasta için belgeler indirilecek
+            <p className="text-sm text-muted-foreground">
+              {t('totalPatientsToDownload', 'Toplam {{count}} hasta için belgeler indirilecek', { count: selectedParties.size })}
             </p>
             <div className="space-x-2">
               <Button
                 onClick={() => setShowBulkDownload(false)}
                 variant="outline"
               >
-                İptal
+                {t('cancel', 'İptal')}
               </Button>
               <Button
                 onClick={startBulkDownload}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                İndirmeyi Başlat
+                {t('startDownload', 'İndirmeyi Başlat')}
               </Button>
             </div>
           </div>
@@ -372,23 +374,23 @@ export const SGKDownloadsPage: React.FC = () => {
       {/* Download Progress Modal */}
       {downloading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Belgeler İndiriliyor</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('downloadingDocuments', 'Belgeler İndiriliyor')}</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm dark:text-gray-300">
-                  <span>İlerleme</span>
+                  <span>{t('progress', 'İlerleme')}</span>
                   <span>{downloadProgress.current}/{downloadProgress.total}</span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-accent rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${downloadProgress.total > 0 ? (downloadProgress.current / downloadProgress.total) * 100 : 0}%` }}
                   ></div>
                 </div>
-                <div className="max-h-32 overflow-y-auto text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-2 rounded">
+                <div className="max-h-32 overflow-y-auto text-xs text-muted-foreground bg-gray-50 dark:bg-gray-900 p-2 rounded">
                   {downloadLogs.map((log, index) => (
                     <div key={index}>{log}</div>
                   ))}
@@ -401,12 +403,12 @@ export const SGKDownloadsPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow border border-border">
+          <div className="px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                E-Reçete Belgeleri
-                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">({filteredParties.length})</span>
+                {t('eReceiptDocumentsTitle', 'E-Reçete Belgeleri')}
+                <span className="ml-2 text-sm font-normal text-muted-foreground">({filteredParties.length})</span>
               </h2>
               <div className="flex items-center space-x-2">
                 <label className="flex items-center text-sm">
@@ -417,7 +419,7 @@ export const SGKDownloadsPage: React.FC = () => {
                     onChange={toggleSelectAll}
                     className="mr-2"
                   />
-                  Tümünü Seç
+                  {t('selectAll', 'Tümünü Seç')}
                 </label>
               </div>
             </div>
@@ -426,7 +428,7 @@ export const SGKDownloadsPage: React.FC = () => {
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {filteredParties.length > 0 ? (
               filteredParties.map((party) => (
-                <div key={party.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <div key={party.id} className="p-4 hover:bg-muted dark:hover:bg-gray-700/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <label className="flex items-center">
@@ -440,8 +442,8 @@ export const SGKDownloadsPage: React.FC = () => {
                       </label>
                       <div>
                         <h3 className="font-medium text-gray-900 dark:text-white">{party.name}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">TC: {party.tcNumber}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{party.currentMonthReceipts.length} e-reçete</p>
+                        <p className="text-sm text-muted-foreground">TC: {party.tcNumber}</p>
+                        <p className="text-sm text-muted-foreground">{party.currentMonthReceipts.length} e-reçete</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -449,7 +451,7 @@ export const SGKDownloadsPage: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => downloadPartyDocument(party.id, 'report')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        className="premium-gradient tactile-press text-white"
                       >
                         📄 Rapor
                       </Button>
@@ -475,7 +477,7 @@ export const SGKDownloadsPage: React.FC = () => {
                         className="bg-orange-600 hover:bg-orange-700 text-white"
                       >
                         <Download className="w-3 h-3 mr-1" />
-                        Tümü
+                        {t('all', 'Tümü')}
                       </Button>
                     </div>
                   </div>
@@ -483,7 +485,7 @@ export const SGKDownloadsPage: React.FC = () => {
                   {/* E-receipt details */}
                   <div className="mt-3 pl-7">
                     <details className="text-sm">
-                      <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
+                      <summary className="cursor-pointer text-muted-foreground hover:text-gray-900 dark:hover:text-gray-200">
                         E-reçete detayları ({party.currentMonthReceipts.length})
                       </summary>
                       <div className="mt-2 space-y-2">
@@ -492,14 +494,14 @@ export const SGKDownloadsPage: React.FC = () => {
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <p className="font-medium text-gray-900 dark:text-white">E-Reçete #{receipt.number}</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">{receipt.doctorName}</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">{new Date(receipt.date).toLocaleDateString('tr-TR')}</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">{receipt.materials.length} malzeme</p>
+                                <p className="text-xs text-muted-foreground">{receipt.doctorName}</p>
+                                <p className="text-xs text-muted-foreground">{new Date(receipt.date).toLocaleDateString('tr-TR')}</p>
+                                <p className="text-xs text-muted-foreground">{receipt.materials.length} malzeme</p>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <div className="flex items-center space-x-1">
                                   {getStatusIcon(receipt.sgkStatus)}
-                                  <span className="text-xs text-gray-600">{getStatusText(receipt.sgkStatus)}</span>
+                                  <span className="text-xs text-muted-foreground">{getStatusText(receipt.sgkStatus)}</span>
                                 </div>
                                 <Button
                                   size="sm"
@@ -518,9 +520,9 @@ export const SGKDownloadsPage: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <FileText className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                <p>Seçilen ay için e-reçete bulunamadı.</p>
+                <p>{t('noEReceiptsFound', 'Seçilen ay için e-reçete bulunamadı.')}</p>
               </div>
             )}
           </div>
@@ -530,15 +532,15 @@ export const SGKDownloadsPage: React.FC = () => {
       {/* E-Receipt Detail Modal */}
       {selectedEReceipt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold dark:text-white">E-Reçete Detayları - {selectedEReceipt.number}</h3>
+                <h3 className="text-lg font-semibold dark:text-white">{t('eReceiptDetails', 'E-Reçete Detayları')} - {selectedEReceipt.number}</h3>
                 <Button
                   onClick={() => setSelectedEReceipt(null)}
                   variant="ghost"
                   size="sm"
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-muted-foreground"
                 >
                   ✕
                 </Button>
@@ -548,27 +550,27 @@ export const SGKDownloadsPage: React.FC = () => {
                 {/* Basic Info */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hasta</label>
+                    <label className="block text-sm font-medium text-foreground">{t('patient', 'Hasta')}</label>
                     <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.partyName}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TC Kimlik</label>
+                    <label className="block text-sm font-medium text-foreground">{t('tcId', 'TC Kimlik')}</label>
                     <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.partyTcNumber}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Doktor</label>
+                    <label className="block text-sm font-medium text-foreground">{t('doctor', 'Doktor')}</label>
                     <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.doctorName}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tarih</label>
+                    <label className="block text-sm font-medium text-foreground">{t('date', 'Tarih')}</label>
                     <p className="text-sm text-gray-900 dark:text-white">{new Date(selectedEReceipt.date).toLocaleDateString('tr-TR')}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Geçerlilik</label>
+                    <label className="block text-sm font-medium text-foreground">{t('validity', 'Geçerlilik')}</label>
                     <p className="text-sm text-gray-900 dark:text-white">{new Date(selectedEReceipt.validUntil).toLocaleDateString('tr-TR')}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SGK Durumu</label>
+                    <label className="block text-sm font-medium text-foreground">{t('sgkStatus', 'SGK Durumu')}</label>
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(selectedEReceipt.sgkStatus)}
                       <span className="text-sm text-gray-900 dark:text-white">{getStatusText(selectedEReceipt.sgkStatus)}</span>
@@ -578,18 +580,18 @@ export const SGKDownloadsPage: React.FC = () => {
 
                 {/* Materials */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Teslim Edilen Malzemeler</label>
+                  <label className="block text-sm font-medium text-foreground mb-4">{t('deliveredMaterials', 'Teslim Edilen Malzemeler')}</label>
                   <div className="space-y-3">
                     {selectedEReceipt.materials.map((material, index) => (
-                      <div key={`${material.code}-${index}`} className="border rounded-lg p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                      <div key={`${material.code}-${index}`} className="border rounded-2xl p-4 bg-success/10 border-green-200 dark:border-green-800">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <p className="font-medium text-green-800 dark:text-green-300">{material.name}</p>
-                            <p className="text-sm text-green-600 dark:text-green-400">Kod: {material.code}</p>
-                            <p className="text-sm text-green-600 dark:text-green-400">Başvuru Tarihi: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
+                            <p className="font-medium text-success">{material.name}</p>
+                            <p className="text-sm text-success">Kod: {material.code}</p>
+                            <p className="text-sm text-success">Başvuru Tarihi: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
                           </div>
-                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
-                            Teslim Edildi
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-success/10 text-success">
+                            {t('delivered', 'Teslim Edildi')}
                           </span>
                         </div>
                       </div>
@@ -605,11 +607,11 @@ export const SGKDownloadsPage: React.FC = () => {
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Hasta İşlem Formunu İndir
+                      {t('downloadPatientForm', 'Hasta İşlem Formunu İndir')}
                     </Button>
                   )}
                   <Button onClick={() => setSelectedEReceipt(null)} variant="outline">
-                    Kapat
+                    {t('close', 'Kapat')}
                   </Button>
                 </div>
               </div>

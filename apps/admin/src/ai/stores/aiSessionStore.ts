@@ -173,7 +173,7 @@ export const useAISessionStore = create<AISessionStore>()(
           // Deduplicate by planId - prevent duplicate submissions
           const exists = state.pendingActions.some((p) => p.planId === plan.planId);
           if (exists) {
-            console.warn(`[aiSessionStore] Duplicate action prevented: ${plan.planId}`);
+            if (import.meta.env.DEV) console.warn(`[aiSessionStore] Duplicate action prevented: ${plan.planId}`);
             return state;
           }
           return { pendingActions: [...state.pendingActions, plan] };
@@ -218,7 +218,7 @@ export const useAISessionStore = create<AISessionStore>()(
         const partyChanged = state.currentPartyId !== partyId;
 
         if (tenantChanged || partyChanged) {
-          console.log('[aiSessionStore] Context changed, resetting store:', {
+          if (import.meta.env.DEV) console.log('[aiSessionStore] Context changed, resetting store:', {
             previousTenant: state.currentTenantId,
             newTenant: tenantId,
             previousParty: state.currentPartyId,
@@ -263,7 +263,7 @@ export const useAISessionStore = create<AISessionStore>()(
 
           const removedCount = originalCount - filteredHistory.length;
           if (removedCount > 0) {
-            console.log(`[aiSessionStore] Cleaned up ${removedCount} old messages`);
+            if (import.meta.env.DEV) console.log(`[aiSessionStore] Cleaned up ${removedCount} old messages`);
           }
 
           return { chatHistory: filteredHistory };
@@ -291,7 +291,7 @@ export const useAISessionStore = create<AISessionStore>()(
        */
       onRehydrateStorage: () => (state) => {
         if (state) {
-          console.log('[aiSessionStore] Rehydrating, running cleanup...');
+          if (import.meta.env.DEV) console.log('[aiSessionStore] Rehydrating, running cleanup...');
           state.cleanupOldMessages();
         }
       },
@@ -319,7 +319,7 @@ export const useAISessionStore = create<AISessionStore>()(
  * ```
  */
 export function clearAISessionOnLogout(): void {
-  console.log('[aiSessionStore] Clearing session on logout');
+  if (import.meta.env.DEV) console.log('[aiSessionStore] Clearing session on logout');
   useAISessionStore.getState().clearAll();
 }
 

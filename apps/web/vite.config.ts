@@ -6,6 +6,7 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.VITE_BASE || '/',
   plugins: [
     react(),
     TanStackRouterVite() as Plugin,
@@ -106,6 +107,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
-    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', 'src/tests/e2e/**', '**/*.e2e.spec.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', 'src/tests/e2e/**', '**/*.e2e.spec.ts', 'tests/**'],
   },
 })

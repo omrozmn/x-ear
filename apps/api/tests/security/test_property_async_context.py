@@ -5,7 +5,7 @@ Tests that tenant context propagates correctly in async operations
 import pytest
 import asyncio
 from utils.async_context import gather_with_tenant_context
-from core.database import _current_tenant_id, set_tenant_context, reset_tenant_context, get_current_tenant_id
+from core.database import set_tenant_context, reset_tenant_context, get_current_tenant_id
 
 
 @pytest.mark.asyncio

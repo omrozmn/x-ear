@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, Button, Input } from '@x-ear/ui-web';
 import { Search, User, Check } from 'lucide-react';
 import { useParties } from '../../hooks/useParties';
 import { type Party } from '../../types/party';
 import { type ProcessingResult } from './DocumentPreview';
+import { fuzzySearch } from '../../utils/fuzzy-search';
+import { normalizeTurkishChars } from '../../utils/stringUtils';
 
 interface PartySearchProps {
   isOpen: boolean;
@@ -21,31 +23,40 @@ const PartySearch: React.FC<PartySearchProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const { data: partiesData, isLoading } = useParties({});
-  const parties = partiesData?.parties || [];
+  const parties = useMemo(() => partiesData?.parties || [], [partiesData?.parties]);
 
   // Auto-suggest based on OCR result
   useEffect(() => {
     if (ocrResult?.matched_party?.party) {
       setSelectedParty(ocrResult.matched_party.party);
+    } else if (ocrResult?.matched_party?.name) {
+      setSearchTerm(ocrResult.matched_party.name);
     }
   }, [ocrResult]);
 
-  const filteredParties =
-    parties?.filter((party: Party): party is Party & { id: string } => {
-      if (!party.id) {
-        return false;
-      }
-      const fullName = `${party.firstName} ${party.lastName}`.toLowerCase();
-      const tc = party.tcNumber || '';
-      const phone = party.phone || '';
-      const search = searchTerm.toLowerCase();
+  // Fuzzy search with Turkish normalization
+  const filteredParties = useMemo(() => {
+    const validParties = parties?.filter((p: Party) => !!p.id) || [];
+    
+    if (!searchTerm.trim()) return validParties.slice(0, 20);
 
-      return (
-        fullName.includes(search) ||
-        tc.includes(search) ||
-        phone.includes(search)
-      );
-    }) || [];
+    // Prepare searchable items with normalized full names
+    const searchableParties = validParties.map((party: Party) => ({
+      ...party,
+      fullName: `${party.firstName || ''} ${party.lastName || ''}`.trim(),
+      normalizedName: normalizeTurkishChars(`${party.firstName || ''} ${party.lastName || ''}`).trim(),
+      normalizedTc: party.tcNumber || '',
+      normalizedPhone: party.phone || '',
+    }));
+
+    const results = fuzzySearch(searchableParties, searchTerm, {
+      threshold: 0.25,
+      keys: ['fullName', 'normalizedName', 'tcNumber', 'phone'],
+      maxResults: 20,
+    });
+
+    return results.map(r => r.item as unknown as Party);
+  }, [parties, searchTerm]);
 
   const handleSelect = () => {
     if (selectedParty) {
@@ -58,11 +69,11 @@ const PartySearch: React.FC<PartySearchProps> = ({
       <div className="space-y-4">
         {/* OCR Suggestion */}
         {ocrResult?.matched_party && (
-          <div className="p-3 bg-blue-50 rounded-lg">
+          <div className="p-3 bg-primary/10 rounded-2xl">
             <div className="text-sm font-medium text-blue-800 mb-1">
               OCR Önerisi
             </div>
-            <div className="text-sm text-blue-700">
+            <div className="text-sm text-primary">
               {ocrResult.matched_party.party?.fullName}
               {ocrResult.matched_party.match_details?.confidence && (
                 <span className="ml-2 text-xs">
@@ -79,7 +90,7 @@ const PartySearch: React.FC<PartySearchProps> = ({
             Hasta Ara
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="İsim, TC veya telefon ile ara..."
               value={searchTerm}
@@ -90,37 +101,37 @@ const PartySearch: React.FC<PartySearchProps> = ({
         </div>
 
         {/* Party List */}
-        <div className="max-h-64 overflow-y-auto border rounded-lg">
+        <div className="max-h-64 overflow-y-auto border rounded-2xl">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">Yükleniyor...</div>
+            <div className="p-4 text-center text-muted-foreground">Yükleniyor...</div>
           ) : filteredParties.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center text-muted-foreground">
               {searchTerm ? 'Hasta bulunamadı' : 'Arama yapmak için yazın'}
             </div>
           ) : (
             <div className="divide-y">
-              {filteredParties.slice(0, 10).map((party: Party) => (
+              {filteredParties.map((party: Party) => (
                 <div
                   key={party.id}
-                  className={`p-3 cursor-pointer hover:bg-gray-50 flex items-center justify-between ${
-                    selectedParty?.id === party.id ? 'bg-blue-50' : ''
+                  className={`p-3 cursor-pointer hover:bg-muted flex items-center justify-between ${
+                    selectedParty?.id === party.id ? 'bg-primary/10' : ''
                   }`}
                   onClick={() => setSelectedParty(party)}
                 >
                   <div className="flex items-center gap-3">
-                    <User className="w-4 h-4 text-gray-400" />
+                    <User className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <div className="font-medium">
                         {party.firstName} {party.lastName}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {party.tcNumber && `TC: ${party.tcNumber}`}
                         {party.phone && ` • Tel: ${party.phone}`}
                       </div>
                     </div>
                   </div>
                   {selectedParty?.id === party.id && (
-                    <Check className="w-4 h-4 text-blue-600" />
+                    <Check className="w-4 h-4 text-primary" />
                   )}
                 </div>
               ))}

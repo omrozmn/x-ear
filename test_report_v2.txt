@@ -1,0 +1,89 @@
+================================================================================
+API TEST EXECUTION REPORT
+================================================================================
+Generated: 2026-02-18 23:55:07
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Tests:    513
+Passed:         219
+Failed:         294
+Success Rate:   42.7%
+
+CATEGORY STATISTICS
+--------------------------------------------------------------------------------
+ADMIN_PANEL          | Passed:  64 | Failed:  75 | Total: 139 | Success:  46.0%
+AFFILIATE            | Passed:   0 | Failed:   5 | Total:   5 | Success:   0.0%
+SYSTEM               | Passed:  11 | Failed:  26 | Total:  37 | Success:  29.7%
+TENANT_WEB_APP       | Passed: 144 | Failed: 188 | Total: 332 | Success:  43.4%
+
+FAILURE PATTERNS
+--------------------------------------------------------------------------------
+Connection/Timeout Error                 | Count: 123
+Validation Error (Invalid request data)  | Count: 115
+Not Found (Missing resource or unimplemented) | Count: 33
+HTTP 400                                 | Count: 11
+Internal Server Error (Backend bug)      | Count: 9
+Unauthorized (Auth issue)                | Count: 2
+HTTP 403                                 | Count: 1
+
+FAILED TESTS DETAIL
+--------------------------------------------------------------------------------
+POST   /api/campaigns                                     | 422 | Validation error
+POST   /api/campaigns/camp_90a289f2/send                  | 500 | name 'tenant_id' is not defined
+POST   /api/parties                                       | 422 | Validation error
+POST   /api/parties/bulk-upload                           | 422 | Validation error
+POST   /api/parties/bulk-update                           | 422 | Validation error
+POST   /api/parties/bulk-email                            | 422 | Validation error
+POST   /api/inventory                                     | 422 | Validation error
+POST   /api/inventory/bulk-upload                         | 422 | Validation error
+POST   /api/inventory/item_18022026205450_5cf2bf/serials  | 404 | Item not found
+GET    /api/inventory/item_18022026205450_5cf2bf/movements | 404 | Item not found
+POST   /api/sales                                         | 422 | Validation error
+GET    /api/sales/{sale_id}                               | 0 | Missing required resource ID
+PUT    /api/sales/{sale_id}                               | 0 | Missing required resource ID
+GET    /api/sales/{sale_id}/payments                      | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/payments                      | 0 | Missing required resource ID
+GET    /api/sales/{sale_id}/payment-plan                  | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/payment-plan                  | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/installments/{installment_id}/pay | 0 | Missing required resource ID
+POST   /api/parties/pat_13a1bf50/device-assignments       | 422 | Validation error
+PATCH  /api/device-assignments/{assignment_id}            | 0 | Missing required resource ID
+POST   /api/device-assignments/{assignment_id}/return-loaner | 0 | Missing required resource ID
+POST   /api/pricing-preview                               | 422 | Validation error
+POST   /api/hearing-profiles                              | 422 | Validation error
+GET    /api/hearing-profiles/pat_13a1bf50                 | 404 | Hearing profile not found
+PUT    /api/hearing-profiles/pat_13a1bf50                 | 422 | Validation error
+POST   /api/auth/lookup-phone                             | 422 | Validation error
+POST   /api/auth/forgot-password                          | 422 | Validation error
+POST   /api/auth/verify-otp                               | 422 | Validation error
+POST   /api/auth/reset-password                           | 422 | Validation error
+POST   /api/auth/login                                    | 422 | Validation error
+POST   /api/auth/refresh                                  | 401 | Invalid token type
+POST   /api/auth/send-verification-otp                    | 401 | User context required
+POST   /api/auth/set-password                             | 422 | Validation error
+POST   /api/appointments                                  | 422 | Validation error
+GET    /api/appointments/{appointment_id}                 | 0 | Missing required resource ID
+PUT    /api/appointments/{appointment_id}                 | 0 | Missing required resource ID
+DELETE /api/appointments/{appointment_id}                 | 0 | Missing required resource ID
+POST   /api/appointments/{appointment_id}/reschedule      | 0 | Missing required resource ID
+POST   /api/appointments/{appointment_id}/cancel          | 0 | Missing required resource ID
+POST   /api/appointments/{appointment_id}/complete        | 0 | Missing required resource ID
+POST   /api/devices                                       | 422 | Validation error
+POST   /api/devices/brands                                | 422 | Validation error
+GET    /api/devices/dev_20260218_235450_556066_436906     | 404 | Device not found
+PUT    /api/devices/dev_20260218_235450_556066_436906     | 404 | Device not found
+DELETE /api/devices/dev_20260218_235450_556066_436906     | 404 | Device not found
+POST   /api/devices/dev_20260218_235450_556066_436906/stock-update | 422 | Validation error
+POST   /api/notifications                                 | 422 | Validation error
+PUT    /api/notifications/{notification_id}/read          | 0 | Missing required resource ID
+PUT    /api/notifications/{notification_id}               | 0 | Missing required resource ID
+DELETE /api/notifications/{notification_id}               | 0 | Missing required resource ID
+... and 244 more failures
+
+EXECUTION TIME STATISTICS
+--------------------------------------------------------------------------------
+Average:  0.03s
+Maximum:  8.34s
+
+================================================================================

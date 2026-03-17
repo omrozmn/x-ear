@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps
 from threading import Lock
-from typing import Any, Callable, Dict, Optional, TypeVar, Generic
+from typing import Any, Callable, Dict, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -369,7 +369,7 @@ class GracefulDegradationService:
             else:
                 message = "AI service is temporarily unavailable. Please try again later."
         elif state.status == AIAvailabilityStatus.DEGRADED:
-            message = f"AI service is operating in degraded mode. Some features may be unavailable."
+            message = "AI service is operating in degraded mode. Some features may be unavailable."
         else:
             message = f"AI operation '{operation}' could not be completed."
         

@@ -1,6 +1,6 @@
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Union, Dict
 from enum import Enum
-from pydantic import Field, EmailStr, field_validator
+from pydantic import Field, EmailStr, field_validator, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
@@ -15,6 +15,8 @@ class SmsHeaderStatus(str, Enum):
     PENDING = 'pending'
     APPROVED = 'approved'
     REJECTED = 'rejected'
+    CANCELLED = 'cancelled'
+    ACTIVE = 'active'
 
 class SmsSourceType(str, Enum):
     EXCEL = 'excel'
@@ -48,7 +50,7 @@ class SmsProviderConfigUpdate(AppBaseModel):
 
 class SmsProviderConfigRead(SmsProviderConfigBase, IDMixin):
     tenant_id: str = Field(..., alias="tenantId")
-    documents: List[Any] = Field(default_factory=list)
+    documents: Union[List[Any], str, Dict] = Field(default_factory=list)  # Can be list, string, or dict
     documents_submitted_at: Optional[str] = Field(None, alias="documentsSubmittedAt")
     # Password explicitly excluded
     
@@ -56,6 +58,18 @@ class SmsProviderConfigRead(SmsProviderConfigBase, IDMixin):
     @classmethod
     def convert_none_to_list(cls, v):
         return v if v is not None else []
+    
+    @field_validator('documents_submitted_at', mode='before')
+    @classmethod
+    def serialize_datetime(cls, v):
+        """Convert datetime to ISO string"""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            return v
+        if hasattr(v, 'isoformat'):
+            return v.isoformat()
+        return str(v)
 
 # --- Sms Header Request Schemas ---
 class SmsHeaderRequestBase(AppBaseModel):
@@ -76,6 +90,23 @@ class SmsHeaderRequestRead(SmsHeaderRequestBase, IDMixin, TimestampMixin):
     status: SmsHeaderStatus = SmsHeaderStatus.PENDING
     rejection_reason: Optional[str] = Field(None, alias="rejectionReason")
     is_default: bool = Field(False, alias="isDefault")
+    
+    @field_validator('documents', mode='before')
+    @classmethod
+    def parse_documents(cls, v):
+        """Convert string '{}' or '[]' to empty list, parse JSON strings"""
+        if v is None:
+            return []
+        if isinstance(v, str):
+            if v in ('{}', '[]', ''):
+                return []
+            try:
+                import json
+                parsed = json.loads(v)
+                return parsed if isinstance(parsed, list) else []
+            except:
+                return []
+        return v if isinstance(v, list) else []
 
 # --- Sms Package Schemas ---
 class SmsPackageBase(AppBaseModel):
@@ -84,10 +115,19 @@ class SmsPackageBase(AppBaseModel):
     sms_count: int = Field(..., gt=0, alias="smsCount")
     price: float = Field(..., gt=0)
     currency: str = "TRY"
+    country_code: Optional[str] = Field(None, alias="countryCode", description="ISO 3166-1 alpha-2 country code")
     is_active: bool = Field(True, alias="isActive")
 
 class SmsPackageCreate(SmsPackageBase):
-    pass
+    model_config = ConfigDict(populate_by_name=True)
+        
+    @property
+    def smsCount(self):
+        return self.sms_count
+    
+    @property
+    def isActive(self):
+        return self.is_active
 
 class SmsPackageUpdate(AppBaseModel):
     name: Optional[str] = None
@@ -95,6 +135,7 @@ class SmsPackageUpdate(AppBaseModel):
     sms_count: Optional[int] = Field(None, gt=0, alias="smsCount")
     price: Optional[float] = Field(None, gt=0)
     currency: Optional[str] = None
+    country_code: Optional[str] = Field(None, alias="countryCode")
     is_active: Optional[bool] = Field(None, alias="isActive")
 
 class SmsPackageRead(SmsPackageBase, IDMixin, TimestampMixin):

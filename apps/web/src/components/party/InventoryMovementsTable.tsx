@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { DatePicker } from '@x-ear/ui-web';
+import { DatePicker, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { useListInventoryMovements, getListInventoryMovementsQueryKey } from '@/api/client/inventory.client';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ArrowUpRight, ArrowDownLeft, Calendar, User } from 'lucide-react';
-
 interface StockMovement {
     id: string;
     movementType?: string;
@@ -11,6 +11,7 @@ interface StockMovement {
     serialNumber?: string;
     partyId?: string;
     partyName?: string;
+    prescriptionStatus?: string;
     createdAt?: string;
     createdBy?: string;
 }
@@ -26,7 +27,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     // Use orval-generated hook with CORRECT endpoint (path param, not query)
     // Note: Backend supports startTime/endTime
-    const { data: movementsResponseRaw, isLoading, error } = useListInventoryMovements(
+    const { data: movementsResponseRaw, isLoading } = useListInventoryMovements(
         inventoryId || '', // item_id as path parameter
         {},
         {
@@ -37,21 +38,13 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
         }
     );
 
-    // DEBUG: Log movements data to diagnose empty table issue
-    console.log('🔍 [InventoryMovementsTable] inventoryId:', inventoryId);
-    console.log('🔍 [InventoryMovementsTable] isLoading:', isLoading);
-    console.log('🔍 [InventoryMovementsTable] error:', error);
-    console.log('🔍 [InventoryMovementsTable] movementsResponseRaw:', JSON.stringify(movementsResponseRaw, null, 2));
-
     // Cast to expected paginated response structure
     const movementsResponse = movementsResponseRaw as { data: StockMovement[]; meta: { total: number } } | undefined;
     const movements = movementsResponse?.data || [];
-    console.log('🔍 [InventoryMovementsTable] movements array:', movements, 'length:', movements.length);
 
-
-    const getMovementIcon = (type: string, quantity: number) => {
-        if (quantity > 0) return <ArrowDownLeft className="w-4 h-4 text-green-600" />;
-        return <ArrowUpRight className="w-4 h-4 text-red-600" />;
+    const getMovementIcon = (quantity: number) => {
+        if (quantity > 0) return <ArrowDownLeft className="w-4 h-4 text-success" />;
+        return <ArrowUpRight className="w-4 h-4 text-destructive" />;
     };
 
     const getMovementLabel = (type: string) => {
@@ -64,6 +57,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             'loaner_out': 'Emanet Verildi',
             'loaner_return': 'Emanet İade',
             'manual_add': 'Manuel Eklendi',
+            'uts_alma': 'UTS Alma',
+            'uts_verme': 'UTS Verme',
         };
         return labels[type] || type;
     };
@@ -84,7 +79,11 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
         const partyName = movement.partyName || movement.partyId;
         const type = movement.movementType || '';
 
-        if (!partyName) return '-';
+        if (!partyName) {
+            if (type === 'uts_alma') return 'UTS alma bildirimi ile eklendi';
+            if (type === 'uts_verme') return 'UTS verme bildirimi ile çıktı';
+            return '-';
+        }
 
         if (type === 'sale' || type === 'delivery') {
             return `Hastaya çıktı: ${partyName}`;
@@ -106,16 +105,93 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     if (!movements || movements.length === 0) {
         return (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">Henüz stok hareketi bulunmuyor.</p>
+            <div className="text-center py-12 bg-muted rounded-2xl">
+                <p className="text-muted-foreground">Henüz stok hareketi bulunmuyor.</p>
             </div>
         );
     }
 
+    const columns: Column<StockMovement>[] = [
+        {
+            key: 'createdAt',
+            title: 'Tarih',
+            render: (_: unknown, record: StockMovement) => (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    {record.createdAt ? formatDate(record.createdAt) : '-'}
+                </div>
+            )
+        },
+        {
+            key: 'movementType',
+            title: 'İşlem',
+            render: (_: unknown, record: StockMovement) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
+                    ${(record.quantity ?? 0) > 0 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800'}`}>
+                    {getMovementLabel(record.movementType ?? 'unknown')}
+                </span>
+            )
+        },
+        {
+            key: 'quantity',
+            title: 'Miktar',
+            render: (_: unknown, record: StockMovement) => (
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    {getMovementIcon(record.quantity ?? 0)}
+                    <span className={(record.quantity ?? 0) > 0 ? 'text-success' : 'text-destructive'}>
+                        {(record.quantity ?? 0) > 0 ? '+' : ''}{record.quantity ?? 0}
+                    </span>
+                </div>
+            )
+        },
+        {
+            key: 'serialNumber',
+            title: 'Seri No',
+            render: (_: unknown, record: StockMovement) => (
+                <span className="text-sm text-muted-foreground font-mono">{record.serialNumber || '-'}</span>
+            )
+        },
+        {
+            key: 'partyName',
+            title: 'Açıklama',
+            render: (_: unknown, record: StockMovement) => (
+                <span className="text-sm text-muted-foreground">{getMovementDescription(record)}</span>
+            )
+        },
+        {
+            key: 'prescriptionStatus',
+            title: 'Reçete',
+            render: (_: unknown, record: StockMovement) => {
+                if (!record.prescriptionStatus) return <span className="text-sm text-muted-foreground">-</span>;
+                const statusLabels: Record<string, { label: string; className: string }> = {
+                    'raporlu': { label: 'Raporlu', className: 'bg-success/10 text-success' },
+                    'raporsuz': { label: 'Raporsuz', className: 'bg-muted text-foreground' },
+                    'bekleniyor': { label: 'Bekliyor', className: 'bg-warning/10 text-yellow-800' },
+                };
+                const info = statusLabels[record.prescriptionStatus] || { label: record.prescriptionStatus, className: 'bg-primary/10 text-blue-800' };
+                return (
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${info.className}`}>
+                        {info.label}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'createdBy',
+            title: 'Kullanıcı',
+            render: (_: unknown, record: StockMovement) => (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    {record.createdBy || 'System'}
+                </div>
+            )
+        },
+    ];
+
     return (
         <div className="space-y-4">
             {/* Filters */}
-            <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 items-end">
+            <div className="flex flex-wrap gap-4 p-4 bg-muted rounded-2xl border border-border items-end">
                 <div className="w-full sm:w-auto">
                     <DatePicker
                         label="Başlangıç Tarihi"
@@ -159,132 +235,28 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                             setEndDate('');
                             setPage(1);
                         }}
-                        className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 h-[38px] mb-[2px]"
+                        className="px-4 py-2 text-sm font-medium text-destructive bg-card border border-red-300 rounded-xl hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 h-[38px] mb-[2px]"
                     >
                         Filtreyi Temizle
                     </button>
                 )}
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miktar</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seri No</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {movements.map((movement) => (
-                            <tr key={movement.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        {movement.createdAt ? formatDate(movement.createdAt) : '-'}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
-                    ${(movement.quantity ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {getMovementLabel(movement.movementType ?? 'unknown')}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                        {getMovementIcon(movement.movementType ?? 'unknown', movement.quantity ?? 0)}
-                                        <span className={(movement.quantity ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}>
-                                            {(movement.quantity ?? 0) > 0 ? '+' : ''}{movement.quantity ?? 0}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                                    {movement.serialNumber || '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {getMovementDescription(movement)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div className="flex items-center gap-2">
-                                        <User className="w-4 h-4 text-gray-400" />
-                                        {movement.createdBy || 'System'}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Pagination Controls */}
-            {movementsResponse?.meta && (
-                <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg sm:px-6">
-                    <div className="flex items-center justify-between w-full sm:hidden">
-                        <button data-allow-raw="true"
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${page === 1
-                                ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                                : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
-                                }`}
-                        >
-                            Önceki
-                        </button>
-                        <button data-allow-raw="true"
-                            onClick={() => setPage((p) => p + 1)}
-                            disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
-                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md ${page * 20 >= (movementsResponse?.meta?.total || 0)
-                                ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                                : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
-                                }`}
-                        >
-                            Sonraki
-                        </button>
-                    </div>
-                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                        <div>
-                            <p className="text-sm text-gray-700">
-                                Toplam <span className="font-medium">{movementsResponse?.meta?.total}</span> sonuçtan{' '}
-                                <span className="font-medium">{(page - 1) * 20 + 1}</span> -{' '}
-                                <span className="font-medium">
-                                    {Math.min(page * 20, movementsResponse?.meta?.total || 0)}
-                                </span>{' '}
-                                arası gösteriliyor
-                            </p>
-                        </div>
-                        <div>
-                            <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                                <button data-allow-raw="true"
-                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'text-gray-500 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <span className="sr-only">Önceki</span>
-                                    {/* ChevronLeft equivalent */}
-                                    &larr; Önceki
-                                </button>
-                                <button data-allow-raw="true"
-                                    onClick={() => setPage((p) => p + 1)}
-                                    disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page * 20 >= (movementsResponse?.meta?.total || 0)
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'text-gray-500 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    Sonraki &rarr;
-                                    <span className="sr-only">Sonraki</span>
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DataTable<StockMovement>
+                    data={movements}
+                    columns={columns}
+                    rowKey="id"
+                    emptyText="Stok hareketi bulunamadı"
+                    striped
+                    hoverable
+                    size="medium"
+                    pagination={movementsResponse?.meta?.total ? {
+                        current: page,
+                        pageSize: 20,
+                        total: movementsResponse.meta.total,
+                        onChange: (p: number) => setPage(p)
+                    } : undefined}
+                />
         </div>
     );
 };

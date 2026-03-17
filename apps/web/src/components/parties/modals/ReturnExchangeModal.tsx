@@ -66,18 +66,18 @@ interface ReturnInvoice {
 }
 
 // interface Sale {
-//   id: string;
-//   productName: string;
-//   brand: string;
-//   model: string;
-//   serialNumber?: string;
-//   salePrice: number;
-//   saleDate: string;
-//   paymentMethod: string;
-//   status: string;
-//   productId?: string;
-//   totalAmount?: number;
-//   notes?: string;
+// id: string;
+// productName: string;
+// brand: string;
+// model: string;
+// serialNumber?: string;
+// salePrice: number;
+// saleDate: string;
+// paymentMethod: string;
+// status: string;
+// productId?: string;
+// totalAmount?: number;
+// notes?: string;
 // }
 
 interface ReturnExchangeData {
@@ -174,11 +174,11 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
   // Placeholder for product selection UI - currently incomplete
   // const filteredProducts: LocalInventoryItem[] = useMemo(() => {
-  //   if (!showProductSearch) return [];
-  //   if (!productSearchTerm.trim()) {
-  //     return products.slice(0, 10);
-  //   }
-  //   return results.slice(0, 10).map(r => r.item);
+  // if (!showProductSearch) return [];
+  // if (!productSearchTerm.trim()) {
+  // return products.slice(0, 10);
+  // }
+  // return results.slice(0, 10).map(r => r.item);
   // }, [results, products, productSearchTerm, showProductSearch]);
 
   useEffect(() => {
@@ -410,23 +410,23 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between border-b pb-4">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">İade/Değişim İşlemi</h2>
-                <p className="text-gray-600 mt-1">
+                <h2 className="text-2xl font-bold text-foreground">İade/Değişim İşlemi</h2>
+                <p className="text-muted-foreground mt-1">
                   {party.firstName} {party.lastName} - Satış #{sale.id}
                 </p>
               </div>
               <Button
                 type="button"
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-muted rounded-2xl transition-colors"
               >
-                <X className="w-6 h-6 text-gray-600" />
+                <X className="w-6 h-6 text-muted-foreground" />
               </Button>
             </div>
 
@@ -444,36 +444,36 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
-                  <Package className="w-5 h-5 mr-2 text-gray-600" />
+                  <Package className="w-5 h-5 mr-2 text-muted-foreground" />
                   Satış Bilgileri
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-600">Ürün ID:</span>
-                    <span className="text-gray-900">{sale.productId}</span>
+                    <span className="font-medium text-muted-foreground">Ürün ID:</span>
+                    <span className="text-foreground">{sale.productId}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-600">Satış Fiyatı:</span>
-                    <span className="text-gray-900 font-bold">{formatCurrency(sale.totalAmount || 0)}</span>
+                    <span className="font-medium text-muted-foreground">Satış Fiyatı:</span>
+                    <span className="text-foreground font-bold">{formatCurrency(sale.totalAmount || 0)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-600">Satış Tarihi:</span>
-                    <span className="text-gray-900">{formatDate(sale.saleDate || '')}</span>
+                    <span className="font-medium text-muted-foreground">Satış Tarihi:</span>
+                    <span className="text-foreground">{formatDate(sale.saleDate || '')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-600">Ödeme Yöntemi:</span>
-                    <span className="text-gray-900">{sale.paymentMethod}</span>
+                    <span className="font-medium text-muted-foreground">Ödeme Yöntemi:</span>
+                    <span className="text-foreground">{sale.paymentMethod}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-600">Durum:</span>
-                    <span className="text-gray-900">{sale.status}</span>
+                    <span className="font-medium text-muted-foreground">Durum:</span>
+                    <span className="text-foreground">{sale.status}</span>
                   </div>
                   {sale.notes && (
                     <div className="col-span-2">
-                      <span className="font-medium text-gray-600">Notlar:</span>
-                      <p className="text-gray-900 mt-1">{sale.notes}</p>
+                      <span className="font-medium text-muted-foreground">Notlar:</span>
+                      <p className="text-foreground mt-1">{sale.notes}</p>
                     </div>
                   )}
                 </div>
@@ -484,38 +484,38 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
-                  <ArrowLeftRight className="w-5 h-5 mr-2 text-gray-600" />
+                  <ArrowLeftRight className="w-5 h-5 mr-2 text-muted-foreground" />
                   İşlem Türü
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
-                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center space-x-3 p-4 border rounded-2xl cursor-pointer hover:bg-muted">
                     <input data-allow-raw="true"
                       type="radio"
                       name="type"
                       value="return"
                       checked={type === 'return'}
                       onChange={(e) => setType(e.target.value as 'return' | 'exchange')}
-                      className="text-red-600 focus:ring-red-500"
+                      className="text-destructive focus:ring-red-500"
                     />
                     <div>
-                      <div className="font-medium text-gray-900">İade</div>
-                      <div className="text-sm text-gray-600">Ürünü iade et ve para iadesi yap</div>
+                      <div className="font-medium text-foreground">İade</div>
+                      <div className="text-sm text-muted-foreground">Ürünü iade et ve para iadesi yap</div>
                     </div>
                   </label>
-                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center space-x-3 p-4 border rounded-2xl cursor-pointer hover:bg-muted">
                     <input data-allow-raw="true"
                       type="radio"
                       name="type"
                       value="exchange"
                       checked={type === 'exchange'}
                       onChange={(e) => setType(e.target.value as 'return' | 'exchange')}
-                      className="text-blue-600 focus:ring-blue-500"
+                      className="text-primary focus:ring-ring"
                     />
                     <div>
-                      <div className="font-medium text-gray-900">Değişim</div>
-                      <div className="text-sm text-gray-600">Ürünü başka bir ürünle değiştir</div>
+                      <div className="font-medium text-foreground">Değişim</div>
+                      <div className="text-sm text-muted-foreground">Ürünü başka bir ürünle değiştir</div>
                     </div>
                   </label>
                 </div>
@@ -557,7 +557,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                     onChange={(e) => setRefundAmount(e.target.value)}
                     className="w-full"
                   />
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-muted-foreground mt-2">
                     Maksimum iade tutarı: {formatCurrency(sale.totalAmount || 0)}
                   </p>
                 </CardContent>
@@ -572,19 +572,19 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Yeni Ürün Seçimi
                     </label>
                     {selectedNewProduct ? (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="bg-success/10 border border-green-200 rounded-2xl p-3">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="font-medium text-green-900">{selectedNewProduct.name}</p>
-                            <p className="text-sm text-green-700">
+                            <p className="text-sm text-success">
                               {selectedNewProduct.brand} - {selectedNewProduct.model}
                               {selectedNewProduct.barcode && ` (Barkod: ${selectedNewProduct.barcode})`}
                             </p>
-                            <p className="text-sm text-green-700 font-medium">
+                            <p className="text-sm text-success font-medium">
                               Stok: {selectedNewProduct.availableInventory || 0} adet - {formatCurrency(selectedNewProduct.price || 0)}
                             </p>
                           </div>
@@ -606,9 +606,9 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         type="button"
                         variant="outline"
                         onClick={() => setShowProductSearch(true)}
-                        className="w-full h-12 border-2 border-dashed border-gray-300 hover:border-blue-400"
+                        className="w-full h-12 border-2 border-dashed border-border hover:border-blue-400"
                       >
-                        <Package className="w-5 h-5 mr-2 text-gray-400" />
+                        <Package className="w-5 h-5 mr-2 text-muted-foreground" />
                         Yeni Ürün Seç
                       </Button>
                     )}
@@ -616,7 +616,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
                   {selectedNewProduct && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Fiyat Farkı
                       </label>
                       <Input
@@ -627,10 +627,10 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         onChange={(e) => setPriceDifference(e.target.value)}
                         className="w-full"
                       />
-                      <p className="text-sm text-gray-600 mt-2">
+                      <p className="text-sm text-muted-foreground mt-2">
                         Pozitif değer ek ödeme, negatif değer iade anlamına gelir
                       </p>
-                      <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                      <div className="mt-2 p-3 bg-primary/10 rounded-2xl">
                         <div className="flex justify-between text-sm">
                           <span>Eski ürün fiyatı:</span>
                           <span>{formatCurrency(sale.totalAmount || 0)}</span>
@@ -641,7 +641,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         </div>
                         <div className="flex justify-between text-sm font-medium border-t pt-1 mt-1">
                           <span>Fiyat farkı:</span>
-                          <span className={(selectedNewProduct.price || 0) - (sale.totalAmount || 0) >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          <span className={(selectedNewProduct.price || 0) - (sale.totalAmount || 0) >= 0 ? 'text-success' : 'text-destructive'}>
                             {formatCurrency((selectedNewProduct.price || 0) - (sale.totalAmount || 0))}
                           </span>
                         </div>
@@ -657,7 +657,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center">
-                    <FileText className="w-5 h-5 mr-2 text-gray-600" />
+                    <FileText className="w-5 h-5 mr-2 text-muted-foreground" />
                     İade Faturası
                   </CardTitle>
                 </CardHeader>
@@ -668,9 +668,9 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       id="createReturnInvoice"
                       checked={createReturnInvoice}
                       onChange={(e) => setCreateReturnInvoice(e.target.checked)}
-                      className="text-blue-600 focus:ring-blue-500"
+                      className="text-primary focus:ring-ring"
                     />
-                    <label htmlFor="createReturnInvoice" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="createReturnInvoice" className="text-sm font-medium text-foreground">
                       İade faturası oluştur ve GİB'e gönder
                     </label>
                   </div>
@@ -678,7 +678,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                   {createReturnInvoice && (
                     <div className="space-y-3 pl-6 border-l-2 border-blue-200">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           Tedarikçi Adı
                         </label>
                         <Input data-allow-raw="true"
@@ -691,7 +691,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           Tedarikçi Fatura Numarası
                         </label>
                         <Input data-allow-raw="true"
@@ -704,7 +704,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           Tedarikçi Fatura Tarihi
                         </label>
                         <Input data-allow-raw="true"
@@ -716,7 +716,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           Fatura Notu
                         </label>
                         <Textarea
@@ -729,7 +729,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           Fatura Türü
                         </label>
                         <Select
@@ -744,28 +744,28 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </div>
 
                       {returnInvoice && (
-                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <div className="bg-primary/10 p-3 rounded-2xl border border-blue-200">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-blue-900">
                               İade Faturası: {returnInvoice.invoiceNumber}
                             </span>
                             <span className={`text-xs px-2 py-1 rounded-full ${returnInvoice.status === 'gib_sent'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-success/10 text-success'
+                              : 'bg-warning/10 text-yellow-800'
                               }`}>
                               {returnInvoice.status === 'gib_sent' ? 'GİB\'e Gönderildi' : 'Hazırlanıyor'}
                             </span>
                           </div>
 
                           {returnInvoice.gibSent && returnInvoice.gibSentDate && (
-                            <p className="text-xs text-green-700 flex items-center">
+                            <p className="text-xs text-success flex items-center">
                               <CheckCircle className="w-3 h-3 mr-1" />
                               GİB'e gönderildi: {new Date(returnInvoice.gibSentDate).toLocaleString('tr-TR')}
                             </p>
                           )}
 
                           {gibError && (
-                            <p className="text-xs text-red-600 flex items-center mt-1">
+                            <p className="text-xs text-destructive flex items-center mt-1">
                               <AlertCircle className="w-3 h-3 mr-1" />
                               {gibError}
                             </p>
@@ -833,18 +833,18 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
             )}
 
             {/* Form Actions */}
-            <div className="flex justify-end space-x-4 pt-6 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+            <div className="flex justify-end space-x-4 pt-6 border-t bg-muted -mx-6 -mb-6 px-6 py-4">
               <Button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors"
+                className="px-6 py-2 border border-border text-foreground bg-card hover:bg-muted rounded-2xl transition-colors"
               >
                 İptal
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-2"
+                className="px-6 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-2xl transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
                 {isLoading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                 <span>{type === 'return' ? 'İade İşlemini Tamamla' : 'Değişim İşlemini Tamamla'}</span>

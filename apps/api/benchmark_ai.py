@@ -20,7 +20,7 @@ async def benchmark():
     user_message = "Create new patient Ahmet Mehmet 5551234567"
     
     # 1. Benchmark Intent Refiner
-    print(f"\n1️⃣  Testing Intent Refiner (Layer 1)...")
+    print("\n1️⃣  Testing Intent Refiner (Layer 1)...")
     start = time.time()
     try:
         refiner = get_intent_refiner()
@@ -38,7 +38,7 @@ async def benchmark():
         return
 
     # 2. Benchmark Action Planner
-    print(f"\n2️⃣  Testing Action Planner (Layer 2)...")
+    print("\n2️⃣  Testing Action Planner (Layer 2)...")
     start = time.time()
     try:
         if intent_result.intent.intent_type == IntentType.ACTION:
@@ -60,7 +60,7 @@ async def benchmark():
         return
         
     print("-" * 50)
-    print(f"\n📊 Summary:")
+    print("\n📊 Summary:")
     print(f"   Intent Refiner: {duration_intent:.2f}s")
     print(f"   Action Planner: {duration_plan:.2f}s")
     print(f"   Total AI Time:  {duration_intent + duration_plan:.2f}s")

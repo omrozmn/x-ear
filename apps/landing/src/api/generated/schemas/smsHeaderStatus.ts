@@ -14,4 +14,6 @@ export const SmsHeaderStatus = {
   pending: 'pending',
   approved: 'approved',
   rejected: 'rejected',
+  cancelled: 'cancelled',
+  active: 'active',
 } as const;

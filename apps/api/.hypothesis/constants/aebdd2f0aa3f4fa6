@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/whatsapp.py
+# hypothesis_version: 6.151.9
+
+['90', 'aiTargetPhone', 'autoReplied', 'autoReplyEnabled', 'autoReplyPrompt', 'bridgePid', 'chatId', 'chatTitle', 'createdAt', 'defaultCountryCode', 'externalMessageId', 'lastError', 'lastEventAt', 'messageText', 'partyId', 'partyIds', 'phoneNumber', 'phoneNumbers', 'profilePath', 'qrCode', 'qrUpdatedAt']

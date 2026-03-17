@@ -29,7 +29,6 @@ from hypothesis import given, strategies as st, settings
 from ai.utils.prompt_sanitizer import (
     PromptSanitizer,
     InjectionType,
-    SanitizationResult,
     sanitize_prompt,
     build_safe_prompt,
     detect_injection,

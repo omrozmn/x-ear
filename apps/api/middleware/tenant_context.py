@@ -24,12 +24,9 @@ from fastapi import FastAPI, Request, Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from core.database import (
-    set_tenant_context, 
-    reset_tenant_context,
     get_current_tenant_id,
     _current_tenant_id, 
     _skip_tenant_filter,
-    TenantContextToken,
     SkipFilterToken
 )
 
@@ -61,19 +58,19 @@ def register_tenant_context_middleware(app: FastAPI) -> None:
         call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         """
-        Middleware to ensure tenant ContextVar is properly cleaned up after each request.
+        Middleware to ensure tenant ContextVar and thread-local are properly cleaned up after each request.
         
         This prevents cross-tenant data leaks that could occur when:
         1. Request A sets tenant_id to "tenant_A"
-        2. Request A completes but ContextVar is not cleared
+        2. Request A completes but ContextVar/thread-local is not cleared
         3. Request B (different tenant or anonymous) inherits "tenant_A" context
         4. Request B can now access Tenant A's data (SECURITY BREACH)
         
         CRITICAL: Uses token-based reset, NOT set(None)
         """
+        from middleware.unified_access import _thread_local
+        
         # Store tokens for proper reset
-        # Note: We don't set tenant here - UnifiedAccess dependency does that
-        # We only ensure cleanup happens
         skip_filter_token: SkipFilterToken | None = None
         
         try:
@@ -100,6 +97,11 @@ def register_tenant_context_middleware(app: FastAPI) -> None:
                     temp_token = _current_tenant_id.set(None)
                     # This effectively clears the context
                     logger.debug(f"Tenant context cleared: {current_tenant} -> None")
+                
+                # CRITICAL: Also clear thread-local
+                if hasattr(_thread_local, 'tenant_id'):
+                    delattr(_thread_local, 'tenant_id')
+                    logger.debug("Thread-local tenant_id cleared")
                 
                 logger.debug("Tenant context cleanup completed")
                 

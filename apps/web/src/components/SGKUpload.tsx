@@ -228,28 +228,28 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
         {/* Party Selection */}
         {!partyId && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Hasta <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Hasta <span className="text-destructive">*</span>
             </label>
             <Input
               type="text"
               value={formData.partyId}
               onChange={(e) => setFormData(prev => ({ ...prev, partyId: e.target.value }))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                validation?.errors.partyId ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring ${
+                validation?.errors.partyId ? 'border-red-300' : 'border-border'
               }`}
               placeholder="Hasta ID'si girin"
             />
             {validation?.errors.partyId && (
-              <p className="mt-1 text-sm text-red-600">{validation.errors.partyId}</p>
+              <p className="mt-1 text-sm text-destructive">{validation.errors.partyId}</p>
             )}
           </div>
         )}
 
         {/* Document Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Belge Türü <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Belge Türü <span className="text-destructive">*</span>
           </label>
           <Select
             value={formData.documentType}
@@ -258,23 +258,23 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
               value: type,
               label: getDocumentTypeLabel(type)
             }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         {/* File Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Dosya {!formData.notes && <span className="text-red-500">*</span>}
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Dosya {!formData.notes && <span className="text-destructive">*</span>}
           </label>
           
           <div
-            className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
+            className={`relative border-2 border-dashed rounded-2xl p-6 transition-colors ${
               dragActive 
-                ? 'border-blue-400 bg-blue-50' 
+                ? 'border-blue-400 bg-primary/10' 
                 : validation?.errors.file
-                ? 'border-red-300 bg-red-50'
-                : 'border-gray-300 hover:border-gray-400'
+                ? 'border-red-300 bg-destructive/10'
+                : 'border-border hover:border-gray-400'
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -293,12 +293,12 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
             {selectedFile ? (
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-                <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
+                <p className="text-sm font-medium text-foreground">{selectedFile.name}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
                 <Button
                   type="button"
                   onClick={() => {
@@ -309,22 +309,22 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
                       fileInputRef.current.value = '';
                     }
                   }}
-                  className="mt-2 text-sm text-red-600 hover:text-red-500"
+                  className="mt-2 text-sm text-destructive hover:text-destructive"
                   variant='default'>
                   Kaldır
                 </Button>
               </div>
             ) : (
               <div className="text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <svg className="mx-auto h-12 w-12 text-muted-foreground" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                   <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <div className="mt-4">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium text-blue-600 hover:text-blue-500">Dosya seçin</span>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-primary hover:text-primary">Dosya seçin</span>
                     {' '}veya sürükleyip bırakın
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     PNG, JPG, PDF dosyaları (max {Math.round(maxFileSize / 1024 / 1024)}MB)
                   </p>
                 </div>
@@ -333,17 +333,17 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
           </div>
           
           {validation?.errors.file && (
-            <p className="mt-1 text-sm text-red-600">{validation.errors.file}</p>
+            <p className="mt-1 text-sm text-destructive">{validation.errors.file}</p>
           )}
         </div>
 
         {/* Preview */}
         {previewUrl && !compact && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Önizleme
             </label>
-            <div className="border border-gray-200 rounded-lg p-4">
+            <div className="border border-border rounded-2xl p-4">
               <img
                 src={previewUrl}
                 alt="Preview"
@@ -356,17 +356,17 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
         {/* OCR Results */}
         {ocrResult && !compact && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               OCR Sonuçları
             </label>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-muted border border-border rounded-2xl p-4">
               <div className="text-sm">
                 <div className="mb-2">
                   <span className="font-medium">Güven Skoru:</span>
                   <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                    ocrResult.confidence > 0.8 ? 'bg-green-100 text-green-800' :
-                    ocrResult.confidence > 0.6 ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
+                    ocrResult.confidence > 0.8 ? 'bg-success/10 text-success' :
+                    ocrResult.confidence > 0.6 ? 'bg-warning/10 text-yellow-800' :
+                    'bg-destructive/10 text-red-800'
                   }`}>
                     {Math.round(ocrResult.confidence * 100)}%
                   </span>
@@ -392,7 +392,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
                 {ocrResult.extractedText && (
                   <details className="mt-3">
                     <summary className="cursor-pointer font-medium">Çıkarılan Metin</summary>
-                    <div className="mt-2 p-2 bg-white border rounded text-xs whitespace-pre-wrap">
+                    <div className="mt-2 p-2 bg-card border rounded text-xs whitespace-pre-wrap">
                       {ocrResult.extractedText}
                     </div>
                   </details>
@@ -404,14 +404,14 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Notlar
           </label>
           <Textarea
             value={formData.notes || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Belge ile ilgili notlar..."
           />
         </div>
@@ -424,9 +424,9 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
               id="autoProcess"
               checked={formData.autoProcess || false}
               onChange={(e) => setFormData(prev => ({ ...prev, autoProcess: e.target.checked }))}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary focus:ring-ring border-border rounded"
             />
-            <label htmlFor="autoProcess" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="autoProcess" className="ml-2 block text-sm text-foreground">
               Otomatik OCR işlemi yap (görüntü dosyaları için)
             </label>
           </div>
@@ -437,7 +437,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
           <Button
             type="submit"
             disabled={uploading || processing}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50"
             variant='default'>
             {uploading ? (
               <>

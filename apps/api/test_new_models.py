@@ -5,7 +5,6 @@ Tests compatibility between old models.py and new models_new/ structure
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add backend to path
@@ -17,11 +16,9 @@ def test_imports():
     
     try:
         # Test old imports
-        from models import db as old_db, Patient as OldPatient, Device as OldDevice
         print("✅ Old models import successful")
         
         # Test new imports
-        from models import db as new_db, Patient as NewPatient, Device as NewDevice
         print("✅ New models import successful")
         
         return True
@@ -75,7 +72,7 @@ def test_id_generation():
     print("\n🧪 Testing ID generation...")
     
     try:
-        from models import Patient, Device, gen_id
+        from models import gen_id
         
         # Test gen_id function
         patient_id = gen_id("pat")

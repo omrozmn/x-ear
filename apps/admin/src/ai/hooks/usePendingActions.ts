@@ -281,7 +281,7 @@ export function usePendingActions(
   // Handle errors
   useEffect(() => {
     if (query.error) {
-      console.error('[usePendingActions] Error fetching pending actions:', query.error);
+      if (import.meta.env.DEV) console.error('[usePendingActions] Error fetching pending actions:', query.error);
       onError?.(query.error);
     }
   }, [query.error, onError]);

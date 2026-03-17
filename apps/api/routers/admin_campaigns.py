@@ -2,17 +2,17 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.campaign import Campaign
 from models.user import User
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.campaigns import CampaignCreate, CampaignUpdate, CampaignRead
 from schemas.base import ResponseEnvelope
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/campaigns", tags=["Admin-Campaigns"])
@@ -26,7 +26,7 @@ class CampaignDetailResponse(ResponseEnvelope):
 
 @router.get("", response_model=CampaignListResponse, operation_id="adminGetCampaigns")
 async def get_campaigns(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     status: Optional[str] = None,
@@ -35,24 +35,25 @@ async def get_campaigns(
 ):
     """Get list of campaigns"""
     try:
-        query = db.query(Campaign)
-        
-        if search:
-            query = query.filter(
-                or_(
-                    Campaign.name.ilike(f"%{search}%"),
-                    Campaign.description.ilike(f"%{search}%")
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Campaign)
+            
+            if search:
+                query = query.filter(
+                    or_(
+                        Campaign.name.ilike(f"%{search}%"),
+                        Campaign.description.ilike(f"%{search}%")
+                    )
                 )
-            )
-        
-        if status:
-            if status == "active":
-                query = query.filter(Campaign.is_active == True)
-            elif status == "inactive":
-                query = query.filter(Campaign.is_active == False)
-        
-        total = query.count()
-        campaigns = query.order_by(Campaign.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            if status:
+                if status == "active":
+                    query = query.filter(Campaign.is_active == True)
+                elif status == "inactive":
+                    query = query.filter(Campaign.is_active == False)
+            
+            total = query.count()
+            campaigns = query.order_by(Campaign.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {
@@ -79,10 +80,11 @@ async def create_campaign(
 ):
     """Create a new campaign"""
     try:
-        if not data.name:
-            raise HTTPException(status_code=400, detail="Campaign name is required")
+        with unbound_session(reason="admin-cross-tenant"):
+            if not data.name:
+                raise HTTPException(status_code=400, detail="Campaign name is required")
         
-        user = db.get(User, access.user.get("id"))
+            user = db.get(User, access.user.id)
         access.tenant_id = user.tenant_id if user else None
         
         scheduled_at = None
@@ -122,7 +124,8 @@ async def get_campaign(
 ):
     """Get single campaign"""
     try:
-        campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
         if not campaign:
             raise HTTPException(status_code=404, detail="Campaign not found")
         
@@ -143,7 +146,8 @@ async def update_campaign(
 ):
     """Update a campaign"""
     try:
-        campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
         if not campaign:
             raise HTTPException(status_code=404, detail="Campaign not found")
         
@@ -185,7 +189,8 @@ async def delete_campaign(
 ):
     """Delete a campaign"""
     try:
-        campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
         if not campaign:
             raise HTTPException(status_code=404, detail="Campaign not found")
         

@@ -1,10 +1,13 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Textarea, Checkbox, Radio } from '@x-ear/ui-web';
+import { useNavigate } from '@tanstack/react-router';
 import { InventoryFormData, InventoryCategory, InventoryType, EarDirection, InventoryItem } from '../../../types/inventory';
 
 import { FeatureTagInput } from './FeatureTagInput';
 import { SupplierAutocomplete } from './SupplierAutocomplete';
 import { BrandAutocomplete } from './BrandAutocomplete';
+import toast from 'react-hot-toast';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -15,7 +18,7 @@ interface ProductFormProps {
 }
 
 const CATEGORIES: { value: InventoryCategory; label: string; icon: string }[] = [
-  { value: 'hearing_aid', label: 'İşitme Cihazı', icon: '🦻' },
+  { value: 'hearing_aid', label: t('categories.title'), icon: '🦻' },
   { value: 'battery', label: 'Pil', icon: '🔋' },
   { value: 'accessory', label: 'Aksesuar', icon: '🔌' },
   { value: 'ear_mold', label: 'Kulak Kalıbı', icon: '👂' },
@@ -44,6 +47,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   initialData,
   mode
 }) => {
+  const navigate = useNavigate();
+  const { t } = useTranslation('inventory');
+  const { t } = useTranslation('inventory');
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '',
     brand: '',
@@ -186,11 +192,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
-      alert('Ürün adı gereklidir');
+      toast(t('validation.name_required'));
       return false;
     }
     if (!formData.brand.trim()) {
-      alert('Marka gereklidir');
+      toast(t('validation.name_required'));
       return false;
     }
     return true;
@@ -208,7 +214,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       onClose();
     } catch (error) {
       console.error('Form submission error:', error);
-      alert('Kayıt sırasında hata oluştu');
+      toast.error(t('messages.save_failed'));
     }
   };
 
@@ -216,11 +222,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            {mode === 'create' ? 'Yeni Ürün Ekle' : 'Ürün Düzenle'}
+            {mode === 'create' ? t('form.add_product') : t('form.edit_product')}
           </h2>
           <Button
             onClick={onClose}
@@ -237,7 +243,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           {/* Temel Bilgiler */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Temel Bilgiler
             </h3>
 
@@ -254,8 +260,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Ürün Adı *
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  {t('form.product_name')} *
                 </label>
                 <Input
                   key="product-name"
@@ -279,7 +285,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Model
                 </label>
                 <Input
@@ -293,7 +299,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Barkod No
                 </label>
                 <Input
@@ -307,7 +313,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Cihaz Yönü
                 </label>
                 <div className="flex gap-4">
@@ -328,13 +334,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Özellikler ve Tedarikçi */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Ek Bilgiler
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Özellikler
                 </label>
                 <FeatureTagInput
@@ -345,18 +351,25 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Tedarikçi
                 </label>
                 <SupplierAutocomplete
                   value={formData.supplier || ''}
                   onChange={(value) => handleInputChange('supplier', value)}
                   placeholder="Tedarikçi seçin veya ekleyin"
+                  onSupplierCreated={(_name, id) => {
+                    if (id) {
+                      navigate({ to: '/suppliers/$supplierId', params: { supplierId: id } });
+                    } else {
+                      navigate({ to: '/suppliers' });
+                    }
+                  }}
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Seri Numaraları
                 </label>
                 <div className="flex items-center gap-2">
@@ -380,7 +393,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Açıklama
                 </label>
                 <Textarea
@@ -396,49 +409,52 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Stok Bilgileri */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Stok Bilgileri
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Mevcut Stok
                 </label>
                 <Input
                   key="available-inventory"
                   type="number"
-                  value={formData.availableInventory}
+                  value={formData.availableInventory === 0 ? '' : formData.availableInventory}
                   onChange={(e) => handleInputChange('availableInventory', parseInt(e.target.value) || 0)}
                   min="0"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Minimum Stok
                 </label>
                 <Input
                   key="reorder-level"
                   type="number"
-                  value={formData.reorderLevel}
+                  value={formData.reorderLevel === 0 ? '' : formData.reorderLevel}
                   onChange={(e) => handleInputChange('reorderLevel', parseInt(e.target.value) || 0)}
                   min="0"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Denemede
                 </label>
                 <Input
                   key="on-trial-quantity"
                   type="number"
-                  value={extendedData.onTrialQuantity}
+                  value={extendedData.onTrialQuantity === 0 ? '' : extendedData.onTrialQuantity}
                   onChange={(e) => handleExtendedChange('onTrialQuantity', parseInt(e.target.value) || 0)}
                   min="0"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
@@ -447,29 +463,30 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Fiyat Bilgileri */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Fiyat Bilgileri
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Birim Fiyat (₺)
                 </label>
                 <Input
                   key="unit-price"
                   type="number"
-                  value={formData.price}
+                  value={formData.price === 0 ? '' : formData.price}
                   onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
                   min="0"
                   step="0.01"
+                  placeholder="0.00"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
               <div>
                 <Select
-                  label="KDV Oranı"
+                  label={t('form.vat_rate')}
                   value={extendedData.vatRate}
                   onChange={(e) => handleExtendedChange('vatRate', e.target.value)}
                   options={VAT_RATES.map(rate => ({ value: rate.value, label: rate.label }))}
@@ -478,7 +495,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   KDV Dahil Birim Fiyat (₺)
                 </label>
                 <Input
@@ -490,7 +507,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Toplam Stok Değeri (₺)
                 </label>
                 <Input
@@ -505,28 +522,29 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Garanti Bilgileri */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Garanti Bilgileri
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Garanti Süresi (Ay)
                 </label>
                 <Input
                   key="warranty-period"
                   type="number"
-                  value={formData.warranty}
+                  value={formData.warranty === 0 ? '' : formData.warranty}
                   onChange={(e) => handleInputChange('warranty', parseInt(e.target.value) || 0)}
                   min="0"
                   max="120"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   SGK Kodu
                 </label>
                 <Input
@@ -547,14 +565,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 onChange={(e) => handleInputChange('isMinistryTracked', e.target.checked)}
                 className="mr-2"
               />
-              <label htmlFor="isMinistryTracked" className="text-sm text-gray-700 dark:text-gray-300">
+              <label htmlFor="isMinistryTracked" className="text-sm text-foreground">
                 Bakanlık takipli ürün
               </label>
             </div>
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-6 border-t border-border">
             <Button
               type="button"
               variant="outline"
@@ -564,9 +582,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="premium-gradient tactile-press text-white"
             >
-              {mode === 'create' ? 'Kaydet' : 'Güncelle'}
+              {mode === 'create' ? t('form.save') : t('form.save')}
             </Button>
           </div>
         </form>

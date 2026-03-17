@@ -6,8 +6,7 @@ from datetime import datetime
 import logging
 
 from database import get_db
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.automation import (
     AutomationStatusResponse, AutomationJobResponse, AutomationLogsResponse,
@@ -92,7 +91,7 @@ async def get_automation_logs(
     service: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())

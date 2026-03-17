@@ -8,9 +8,8 @@ from datetime import datetime
 # Path setup for backend imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from database import engine, SessionLocal
+from database import engine
 from sqlalchemy import inspect
-from models.base import Base
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

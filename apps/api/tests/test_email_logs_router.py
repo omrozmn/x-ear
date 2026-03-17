@@ -198,6 +198,8 @@ def test_get_email_logs_tenant_isolation(client: TestClient, auth_headers, db_se
 
 def test_send_manual_email_success(client: TestClient, auth_headers, smtp_config):
     """Test sending manual email queues successfully."""
+    from unittest.mock import patch
+
     request_data = {
         "recipients": ["test1@example.com", "test2@example.com"],
         "subject": "Manual Test Email",
@@ -205,11 +207,13 @@ def test_send_manual_email_success(client: TestClient, auth_headers, smtp_config
         "bodyText": "Hello\n\nThis is a test email."
     }
     
-    response = client.post(
-        "/admin/emails/send",
-        headers=auth_headers,
-        json=request_data
-    )
+    # Mock the background task to avoid it creating a separate DB session
+    with patch("routers.email_logs._send_manual_email_task"):
+        response = client.post(
+            "/admin/emails/send",
+            headers=auth_headers,
+            json=request_data
+        )
     
     assert response.status_code == 202
     data = response.json()

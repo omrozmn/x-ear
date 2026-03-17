@@ -8,7 +8,6 @@ Tests:
 - parties.delete permission enforcement
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 from jose import jwt
@@ -24,7 +23,8 @@ def create_token_with_permissions(user_id: str, tenant_id: str, permissions: lis
         'role': 'user',
         'tenant_id': tenant_id,
         'user_type': 'tenant',
-        'permissions': permissions,
+        'role_permissions': permissions,  # Changed from 'permissions' to 'role_permissions'
+        'perm_ver': 1,
         'exp': datetime.utcnow() + timedelta(hours=1)
     }
     return jwt.encode(payload, TEST_SECRET, algorithm='HS256')
@@ -44,21 +44,18 @@ class TestPartyPermissions:
     behavior of the require_access dependency.
     """
     
-    def test_list_parties_without_permission_returns_401(self, client: TestClient, db_session):
+    def test_list_parties_without_permission_returns_403(self, client: TestClient, db_session):
         """
         🔴 NEGATIVE TEST (ZORUNLU): 
-        Party exists, User has NO parties.view → 401 (auth/authz failure)
-        
-        Note: System returns 401 for missing permissions, not 403.
-        This is the current behavior of require_access.
+        Party exists, User has NO parties.view → 403 (Forbidden)
         """
         # Create headers with NO parties.view permission
         headers = create_headers_with_permissions(['dashboard.view'])
         
         response = client.get("/api/parties", headers=headers)
         
-        # Should be unauthorized (401) - system doesn't distinguish 403
-        assert response.status_code == 401
+        # Should be forbidden (403) - user is authenticated but lacks permission
+        assert response.status_code == 403
     
     def test_list_parties_with_permission_succeeds(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user with parties.view can list parties"""
@@ -67,7 +64,7 @@ class TestPartyPermissions:
         # Admin has all permissions, should succeed
         assert response.status_code == 200
     
-    def test_create_party_without_permission_returns_401(self, client: TestClient, db_session):
+    def test_create_party_without_permission_returns_403(self, client: TestClient, db_session):
         """Test that user without parties.create cannot create party"""
         # Create headers with only view permission
         headers = create_headers_with_permissions(['parties.view'])
@@ -82,7 +79,7 @@ class TestPartyPermissions:
             headers=headers
         )
         
-        assert response.status_code == 401
+        assert response.status_code == 403
     
     def test_create_party_with_permission_succeeds(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user with parties.create can create party"""
@@ -98,7 +95,7 @@ class TestPartyPermissions:
         
         assert response.status_code == 201
     
-    def test_update_party_without_permission_returns_401(self, client: TestClient, auth_headers: dict, db_session):
+    def test_update_party_without_permission_returns_403(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user without parties.edit cannot update party"""
         # First create a party with admin
         create_response = client.post(
@@ -121,7 +118,7 @@ class TestPartyPermissions:
             headers=headers
         )
         
-        assert response.status_code == 401
+        assert response.status_code == 403
     
     def test_update_party_with_permission_succeeds(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user with parties.edit can update party"""
@@ -146,7 +143,7 @@ class TestPartyPermissions:
         
         assert response.status_code == 200
     
-    def test_delete_party_without_permission_returns_401(self, client: TestClient, auth_headers: dict, db_session):
+    def test_delete_party_without_permission_returns_403(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user without parties.delete cannot delete party"""
         # Create party
         create_response = client.post(
@@ -165,7 +162,7 @@ class TestPartyPermissions:
         
         response = client.delete(f"/api/parties/{party_id}", headers=headers)
         
-        assert response.status_code == 401
+        assert response.status_code == 403
     
     def test_delete_party_with_permission_succeeds(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user with parties.delete can delete party"""
@@ -186,7 +183,7 @@ class TestPartyPermissions:
         
         assert response.status_code == 200
     
-    def test_get_party_without_permission_returns_401(self, client: TestClient, auth_headers: dict, db_session):
+    def test_get_party_without_permission_returns_403(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user without parties.view cannot get party details"""
         # Create party
         create_response = client.post(
@@ -205,15 +202,15 @@ class TestPartyPermissions:
         
         response = client.get(f"/api/parties/{party_id}", headers=headers)
         
-        assert response.status_code == 401
+        assert response.status_code == 403
     
-    def test_export_parties_without_permission_returns_401(self, client: TestClient, db_session):
+    def test_export_parties_without_permission_returns_403(self, client: TestClient, db_session):
         """Test that user without parties.export cannot export parties"""
         headers = create_headers_with_permissions(['parties.view'])
         
         response = client.get("/api/parties/export", headers=headers)
         
-        assert response.status_code == 401
+        assert response.status_code == 403
     
     def test_export_parties_with_permission_succeeds(self, client: TestClient, auth_headers: dict, db_session):
         """Test that user with parties.export can export parties"""

@@ -24,17 +24,11 @@ os.environ["AI_APPROVAL_SECRET_KEY"] = "test_secret_key_for_approval_tokens_1234
 import pytest
 from hypothesis import given, strategies as st, settings, assume
 from datetime import datetime, timedelta, timezone
-import hashlib
-import json
 
 from ai.utils.approval_token import (
     ApprovalToken,
-    ApprovalTokenRegistry,
-    ApprovalTokenValidator,
-    TokenValidationResult,
     generate_approval_token,
     validate_approval_token,
-    get_token_registry,
     reset_token_registry,
     _compute_action_plan_hash,
 )
@@ -249,7 +243,7 @@ class TestApprovalTokenExpiration:
         
         # Create token with past expiration
         token = ApprovalToken(
-            token_id=f"aptok_test",
+            token_id="aptok_test",
             action_id=action_id,
             action_plan_hash=action_plan_hash,
             tenant_id=tenant_id,

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Phase A Banner Component
  * 
@@ -137,7 +138,7 @@ export function PhaseABanner({
         flex items-center justify-between gap-3 
         px-4 py-3 
         bg-blue-50 border border-blue-200 
-        rounded-lg
+        rounded-2xl
         ${className}
       `.trim()}
       role="alert"

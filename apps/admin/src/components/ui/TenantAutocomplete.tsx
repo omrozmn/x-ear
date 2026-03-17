@@ -16,6 +16,27 @@ interface TenantAutocompleteProps {
     error?: string;
 }
 
+interface TenantsResponseData {
+    tenants?: Tenant[];
+}
+
+interface TenantsResponseShape {
+    data?: TenantsResponseData;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function extractTenants(value: unknown): Tenant[] {
+    if (!isRecord(value)) {
+        return [];
+    }
+
+    const response = value as TenantsResponseShape;
+    return response.data?.tenants ?? [];
+}
+
 export function TenantAutocomplete({
     value = '',
     onSelect,
@@ -37,7 +58,17 @@ export function TenantAutocomplete({
         }
     });
 
-    const tenants = (tenantsData as any)?.data?.tenants || [];
+    const tenants = extractTenants(tenantsData);
+
+    useEffect(() => {
+        if (!value) {
+            return;
+        }
+        const selectedTenant = tenants.find((tenant) => tenant.id === value);
+        if (selectedTenant) {
+            setSearchQuery(selectedTenant.name);
+        }
+    }, [tenants, value]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -68,7 +99,7 @@ export function TenantAutocomplete({
                     }}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 pr-10 ${error ? 'border-red-500' : ''}`}
+                    className={`block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 pr-10 ${error ? 'border-red-500' : ''}`}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     {isLoading ? (
@@ -82,7 +113,7 @@ export function TenantAutocomplete({
             {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
 
             {isOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                     {isLoading ? (
                         <div className="p-3 text-sm text-gray-500">Yükleniyor...</div>
                     ) : tenants.length === 0 ? (
@@ -90,7 +121,7 @@ export function TenantAutocomplete({
                             Sonuç bulunamadı
                         </div>
                     ) : (
-                        tenants.map((tenant: any) => (
+                        tenants.map((tenant) => (
                             <div
                                 key={tenant.id}
                                 className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center space-x-3"

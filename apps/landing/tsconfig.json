@@ -44,6 +44,8 @@
   ],
   "exclude": [
     "node_modules",
-    "public"
+    "src/api/generated",
+    "public",
+    "out"
   ]
 }

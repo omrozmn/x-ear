@@ -26,31 +26,31 @@ interface PermissionGateProps {
  * @example
  * // Single permission
  * <PermissionGate permission="parties.create">
- *   <CreatePartyButton />
+ * <CreatePartyButton />
  * </PermissionGate>
  * 
  * @example
  * // Any of multiple permissions
  * <PermissionGate anyOf={['parties.edit', 'parties.delete']}>
- *   <PartyActions />
+ * <PartyActions />
  * </PermissionGate>
  * 
  * @example
  * // All permissions required
  * <PermissionGate allOf={['finance.view', 'finance.reports']}>
- *   <FinancialReports />
+ * <FinancialReports />
  * </PermissionGate>
  * 
  * @example
  * // Category access
  * <PermissionGate category="settings">
- *   <SettingsPanel />
+ * <SettingsPanel />
  * </PermissionGate>
  * 
  * @example
  * // With fallback
  * <PermissionGate permission="team.delete" fallback={<DisabledButton />}>
- *   <DeleteTeamMemberButton />
+ * <DeleteTeamMemberButton />
  * </PermissionGate>
  */
 export function PermissionGate({
@@ -99,7 +99,7 @@ export function PermissionGate({
  */
 function PermissionLoadingSkeleton() {
   return (
-    <div className="animate-pulse bg-gray-200 rounded h-8 w-24" />
+    <div className="animate-pulse bg-accent rounded h-8 w-24" />
   );
 }
 

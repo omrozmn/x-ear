@@ -1,31 +1,31 @@
-from .base import db, BaseModel, gen_id, JSONMixin
+from sqlalchemy import Column, Boolean, DateTime, Float, Integer, String, Text
+from .base import BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
-from datetime import datetime, timezone
 
 class SMSProviderConfig(BaseModel, JSONMixin, TenantScopedMixin):
     """SMS Provider Configuration for a Tenant (VatanSMS)"""
     __tablename__ = 'sms_provider_configs'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smscfg"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("smscfg"))
     # tenant_id is now inherited from TenantScopedMixin
     
     # VatanSMS Credentials
-    api_username = db.Column(db.String(100))
-    api_password = db.Column(db.String(100))
+    api_username = Column(String(100))
+    api_password = Column(String(100))
     
     # Documents submission email (VatanSMS provided)
-    documents_email = db.Column(db.String(200))
+    documents_email = Column(String(200))
     
     # Uploaded documents (JSON array of document metadata)
-    documents = db.Column(db.Text)
+    documents = Column(Text)
     
     # Document submission status
-    documents_submitted = db.Column(db.Boolean, default=False)
-    documents_submitted_at = db.Column(db.DateTime)
-    all_documents_approved = db.Column(db.Boolean, default=False)
+    documents_submitted = Column(Boolean, default=False)
+    documents_submitted_at = Column(DateTime)
+    all_documents_approved = Column(Boolean, default=False)
     
     # Status
-    is_active = db.Column(db.Boolean, default=True)
+    is_active = Column(Boolean, default=True)
 
     @property
     def documents_json(self):
@@ -56,21 +56,21 @@ class SMSHeaderRequest(BaseModel, JSONMixin, TenantScopedMixin):
     """SMS Header (Sender ID) Request"""
     __tablename__ = 'sms_header_requests'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smshdr"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("smshdr"))
     # tenant_id is now inherited from TenantScopedMixin
     
-    header_text = db.Column(db.String(11), nullable=False) # Max 11 chars
-    header_type = db.Column(db.String(20), nullable=False) # company_title, trademark, domain, other
+    header_text = Column(String(11), nullable=False) # Max 11 chars
+    header_type = Column(String(20), nullable=False) # company_title, trademark, domain, other
     
     # Status: pending, approved, rejected
-    status = db.Column(db.String(20), default='pending')
-    rejection_reason = db.Column(db.String(500))
+    status = Column(String(20), default='pending')
+    rejection_reason = Column(String(500))
     
     # Is this the default header for the tenant
-    is_default = db.Column(db.Boolean, default=False)
+    is_default = Column(Boolean, default=False)
     
     # Documents for this specific header (if trademark/domain)
-    documents = db.Column(db.Text)
+    documents = Column(Text)
     
     @property
     def documents_json(self):
@@ -97,13 +97,13 @@ class SMSPackage(BaseModel, JSONMixin):
     """SMS Package available for purchase (Platform Global)"""
     __tablename__ = 'sms_packages'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smspkg"))
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    sms_count = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    currency = db.Column(db.String(3), default='TRY')
-    is_active = db.Column(db.Boolean, default=True)
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("smspkg"))
+    name = Column(String(100), nullable=False)
+    description = Column(Text)
+    sms_count = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)
+    currency = Column(String(3), default='TRY')
+    is_active = Column(Boolean, default=True)
 
     def to_dict(self):
         base = self.to_dict_base()
@@ -122,12 +122,12 @@ class TenantSMSCredit(BaseModel, JSONMixin, TenantScopedMixin):
     """Tenant's SMS Credit Balance"""
     __tablename__ = 'tenant_sms_credits'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smsbal"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("smsbal"))
     # tenant_id is now inherited from TenantScopedMixin
     
-    balance = db.Column(db.Integer, default=0)
-    total_purchased = db.Column(db.Integer, default=0)
-    total_used = db.Column(db.Integer, default=0)
+    balance = Column(Integer, default=0)
+    total_purchased = Column(Integer, default=0)
+    total_used = Column(Integer, default=0)
     
     def to_dict(self):
         base = self.to_dict_base()
@@ -143,18 +143,18 @@ class TargetAudience(BaseModel, JSONMixin, TenantScopedMixin):
     """Saved Target Audience Group (e.g. from Excel)"""
     __tablename__ = 'target_audiences'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("aud"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("aud"))
     # tenant_id is now inherited from TenantScopedMixin
     
-    name = db.Column(db.String(100), nullable=False)
-    source_type = db.Column(db.String(20), default='excel') # excel, filter
+    name = Column(String(100), nullable=False)
+    source_type = Column(String(20), default='excel') # excel, filter
     
     # If excel
-    file_path = db.Column(db.String(500))
-    total_records = db.Column(db.Integer, default=0)
+    file_path = Column(String(500))
+    total_records = Column(Integer, default=0)
     
     # If filter
-    filter_criteria = db.Column(db.Text)
+    filter_criteria = Column(Text)
     
     @property
     def filter_criteria_json(self):

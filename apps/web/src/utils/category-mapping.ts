@@ -4,6 +4,8 @@
 
 export const CATEGORY_MAPPING: Record<string, string> = {
   'hearing_aid': 'İşitme Cihazı',
+  'hearing_aid_battery': 'İşitme Cihazı Pili',
+  'implant_battery': 'İmplant Pili',
   'battery': 'Pil',
   'accessory': 'Aksesuar',
   'maintenance': 'Bakım Ürünleri',
@@ -14,6 +16,8 @@ export const CATEGORY_MAPPING: Record<string, string> = {
 
 export const REVERSE_CATEGORY_MAPPING: Record<string, string> = {
   'İşitme Cihazı': 'hearing_aid',
+  'İşitme Cihazı Pili': 'hearing_aid_battery',
+  'İmplant Pili': 'implant_battery',
   'Pil': 'battery',
   'Aksesuar': 'accessory',
   'Bakım Ürünleri': 'maintenance',

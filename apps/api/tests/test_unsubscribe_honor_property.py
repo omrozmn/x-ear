@@ -25,6 +25,8 @@ class TestUnsubscribeHonorProperty:
     @pytest.fixture(scope="function")
     def db_session(self):
         """Create in-memory SQLite database for testing."""
+        from core.database import _skip_tenant_filter
+        _skip_tenant_filter.set(True)
         engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
@@ -47,6 +49,7 @@ class TestUnsubscribeHonorProperty:
         
         session.close()
         engine.dispose()
+        _skip_tenant_filter.set(False)
     
     @given(
         recipient=st.emails(),
@@ -71,6 +74,13 @@ class TestUnsubscribeHonorProperty:
         # Get tenant
         tenant = db_session.query(Tenant).first()
         tenant_id = tenant.id
+        
+        # Clean up any leftover unsubscribe records from previous hypothesis runs
+        db_session.query(EmailUnsubscribe).filter(
+            EmailUnsubscribe.recipient == recipient,
+            EmailUnsubscribe.scenario == scenario
+        ).delete()
+        db_session.commit()
         
         service = UnsubscribeService(db_session)
         
@@ -292,6 +302,13 @@ class TestUnsubscribeHonorProperty:
         """
         tenant = db_session.query(Tenant).first()
         tenant_id = tenant.id
+        
+        # Clean up any leftover unsubscribe records from previous hypothesis runs
+        db_session.query(EmailUnsubscribe).filter(
+            EmailUnsubscribe.recipient == recipient,
+            EmailUnsubscribe.scenario == scenario
+        ).delete()
+        db_session.commit()
         
         service = UnsubscribeService(db_session)
         

@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import SessionLocal, engine, Base, init_db
+from database import SessionLocal, init_db
 # Import all models to ensure metadata is populated for init_db
 from models import * 
 from utils.tenant_security import set_current_tenant_id
@@ -74,7 +74,7 @@ def verify_tenant_isolation():
         
         logger.info("Tenant Isolation (DB Layer) PASSED")
         return True
-    except Exception as e:
+    except Exception:
         logger.exception("Tenant isolation verification failed with exception:")
         return False
     finally:

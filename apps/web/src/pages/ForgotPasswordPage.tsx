@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Input, Button } from '@x-ear/ui-web';
 import { ArrowLeft, Phone, Lock, CheckCircle, Eye, EyeOff, User, ShieldCheck } from 'lucide-react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useAuthStore } from '../stores/authStore';
 import '../styles/login-animations.css';
 
@@ -9,6 +10,7 @@ type Step = 'identifier' | 'confirmPhone' | 'otp' | 'newPassword' | 'success';
 
 export function ForgotPasswordPage() {
   const [step, setStep] = useState<Step>('identifier');
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   // State for identifier (username/email/phone)
   const [identifier, setIdentifier] = useState('');
@@ -132,10 +134,31 @@ export function ForgotPasswordPage() {
     try {
       setIsLoading(true);
       setError(null);
-      await resetPassword(workingPhone, otp, newPassword);
+
+      // Execute reCAPTCHA
+      if (!executeRecaptcha) {
+        setError('reCAPTCHA yüklenemedi. Lütfen sayfayı yenileyin.');
+        return;
+      }
+
+      const captchaToken = await executeRecaptcha('password_reset');
+
+      if (!captchaToken) {
+        setError('Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.');
+        return;
+      }
+
+      await resetPassword(workingPhone, otp, newPassword, captchaToken);
       setStep('success');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Şifre sıfırlanamadı');
+      // Check if error is captcha-related
+      const errorMessage = error instanceof Error ? error.message : 'Şifre sıfırlanamadı';
+      
+      if (errorMessage.toLowerCase().includes('captcha')) {
+        setError('Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -147,21 +170,21 @@ export function ForgotPasswordPage() {
         return (
           <form onSubmit={handleLookup} className="space-y-6">
             <div className="text-center mb-6">
-              <User className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Şifremi Unuttum</h2>
-              <p className="text-gray-600 text-sm">
+              <User className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Şifremi Unuttum</h2>
+              <p className="text-muted-foreground text-sm">
                 Kullanıcı adı, e-posta veya telefon numaranızı girin
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Kullanıcı Bilgisi
               </label>
               <Input
                 type="text"
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-card/50 backdrop-blur-sm"
                 placeholder="Kullanıcı adı / E-posta / 0555..."
                 value={identifier}
                 onChange={(e) => {
@@ -189,20 +212,20 @@ export function ForgotPasswordPage() {
           <form onSubmit={handleConfirmPhone} className="space-y-6">
             <div className="text-center mb-6">
               <ShieldCheck className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Güvenlik Doğrulaması</h2>
-              <p className="text-gray-600 text-sm">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Güvenlik Doğrulaması</h2>
+              <p className="text-muted-foreground text-sm">
                 Hesabınızın güvenliği için, {maskedPhone} ile biten telefon numaranızın tamamını giriniz.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Telefon Numarası
               </label>
               <Input
                 type="tel"
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-card/50 backdrop-blur-sm"
                 placeholder="0555..."
                 value={fullPhone}
                 onChange={(e) => {
@@ -238,15 +261,15 @@ export function ForgotPasswordPage() {
         return (
           <form onSubmit={handleVerifyOtp} className="space-y-6">
             <div className="text-center mb-6">
-              <Phone className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Doğrulama Kodu</h2>
-              <p className="text-gray-600 text-sm">
+              <Phone className="h-12 w-12 text-success mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Doğrulama Kodu</h2>
+              <p className="text-muted-foreground text-sm">
                 {workingPhone} numarasına gönderilen 6 haneli kodu girin
               </p>
             </div>
 
             <div>
-              <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="otp" className="block text-sm font-medium text-foreground mb-2">
                 Doğrulama Kodu
               </label>
               <Input
@@ -254,7 +277,7 @@ export function ForgotPasswordPage() {
                 type="text"
                 required
                 maxLength={6}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-center text-2xl tracking-widest"
+                className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-card/50 backdrop-blur-sm text-center text-2xl tracking-widest"
                 placeholder="000000"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
@@ -287,15 +310,15 @@ export function ForgotPasswordPage() {
         return (
           <form onSubmit={handleResetPassword} className="space-y-6">
             <div className="text-center mb-6">
-              <Lock className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Yeni Şifre</h2>
-              <p className="text-gray-600 text-sm">
+              <Lock className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Yeni Şifre</h2>
+              <p className="text-muted-foreground text-sm">
                 Hesabınız için yeni bir şifre belirleyin
               </p>
             </div>
 
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="newPassword" className="block text-sm font-medium text-foreground mb-2">
                 Yeni Şifre
               </label>
               <div className="relative">
@@ -303,7 +326,7 @@ export function ForgotPasswordPage() {
                   id="newPassword"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                  className="w-full px-4 py-3 pr-12 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-card/50 backdrop-blur-sm"
                   placeholder="En az 6 karakter"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -312,7 +335,7 @@ export function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-muted-foreground transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
                 >
@@ -326,7 +349,7 @@ export function ForgotPasswordPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
                 Şifre Tekrarı
               </label>
               <div className="relative">
@@ -334,7 +357,7 @@ export function ForgotPasswordPage() {
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   required
-                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                  className="w-full px-4 py-3 pr-12 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-card/50 backdrop-blur-sm"
                   placeholder="Şifrenizi tekrar girin"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -343,7 +366,7 @@ export function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-muted-foreground transition-colors"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   disabled={isLoading}
                 >
@@ -371,14 +394,14 @@ export function ForgotPasswordPage() {
       case 'success':
         return (
           <div className="text-center space-y-6">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
-            <h2 className="text-2xl font-bold text-gray-900">Şifre Başarıyla Güncellendi!</h2>
-            <p className="text-gray-600">
+            <CheckCircle className="h-16 w-16 text-success mx-auto" />
+            <h2 className="text-2xl font-bold text-foreground">Şifre Başarıyla Güncellendi!</h2>
+            <p className="text-muted-foreground">
               Şifreniz başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.
             </p>
             <a
               href="/"
-              className="inline-block w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg text-center"
+              className="inline-block w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 shadow-lg text-center"
             >
               Giriş Sayfasına Dön
             </a>
@@ -407,7 +430,7 @@ export function ForgotPasswordPage() {
       </div>
 
       <div className="relative z-10 max-w-md w-full mx-4">
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8 glass-effect">
+        <div className="bg-card/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8 glass-effect">
           {/* Logo Section */}
           <div className="text-center mb-8">
             <div className="mx-auto mb-6">
@@ -420,8 +443,8 @@ export function ForgotPasswordPage() {
           </div>
 
           {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4 mb-6 animate-shake">
-              <p className="text-sm text-red-700 text-center font-medium">{error}</p>
+            <div className="rounded-xl bg-destructive/10 border border-red-200 p-4 mb-6 animate-shake">
+              <p className="text-sm text-destructive text-center font-medium">{error}</p>
             </div>
           )}
 
@@ -431,7 +454,7 @@ export function ForgotPasswordPage() {
             <div className="mt-6 text-center">
               <a
                 href="/"
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
                 onClick={(e) => {
                   e.preventDefault();
                   window.location.href = '/';

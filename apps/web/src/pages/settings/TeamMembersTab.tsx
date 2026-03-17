@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Mail, User, Shield, AlertCircle, CheckCircle2, Lock, Eye, EyeOff, Building2, Pencil, AlertTriangle } from 'lucide-react';
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
     useListTenantUsers,
     useCreateTenantUsers,
@@ -20,6 +21,8 @@ import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
 import { generateUsername } from '../../utils/stringUtils';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmationModal {
     isOpen: boolean;
@@ -30,6 +33,7 @@ interface ConfirmationModal {
 }
 
 export function TeamMembersTab() {
+  const { t } = useTranslation('settings_extra');
     const queryClient = useQueryClient();
     const { user: currentUser } = useAuthStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -137,8 +141,8 @@ export function TeamMembersTab() {
     const handleDelete = (userId: string) => {
         setConfirmationModal({
             isOpen: true,
-            title: 'Kullaniciyi Sil',
-            message: 'Bu kullaniciyi silmek istediginize emin misiniz? Bu islem geri alinamaz.',
+            title: t('deleteUser', 'Kullaniciyi Sil'),
+            message: t('deleteUserConfirm', 'Bu kullaniciyi silmek istediginize emin misiniz? Bu islem geri alinamaz.'),
             type: 'danger',
             onConfirm: () => {
                 deleteMutation.mutate({ userId });
@@ -247,32 +251,101 @@ export function TeamMembersTab() {
         const styles: Record<string, string> = {
             'admin': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
             'tenant_admin': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-            'doctor': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            'doctor': 'bg-primary/10 text-blue-800 dark:text-blue-300',
             'secretary': 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
-            'user': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            'user': 'bg-success/10 text-success'
         };
-        return styles[role] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+        return styles[role] || 'bg-muted text-foreground/30';
     };
+
+    const teamMemberColumns: Column<UserRead>[] = [
+        {
+            key: 'name',
+            title: t('user', 'Kullanıcı'),
+            render: (_, user) => (
+                <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold mr-3">
+                        {user.firstName?.[0] || user.email?.[0] || '?'}
+                    </div>
+                    <div>
+                        <div className="font-medium text-gray-900 dark:text-white">{user.firstName} {user.lastName}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            key: 'role',
+            title: t('role', 'Rol'),
+            render: (_, user) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleStyle(user.role || '')}`}>
+                    {getRoleLabel(user.role || '')}
+                </span>
+            ),
+        },
+        {
+            key: 'isActive',
+            title: t('status', 'Durum'),
+            render: (_, user) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800 dark:text-red-300'}`}>
+                    {user.isActive ? 'Aktif' : 'Pasif'}
+                </span>
+            ),
+        },
+        {
+            key: 'createdAt',
+            title: t('joinDate', 'Katılma Tarihi'),
+            render: (_, user) => (
+                <span className="text-sm text-muted-foreground">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
+            ),
+        },
+        {
+            key: '_actions',
+            title: t('actions', 'İşlemler'),
+            align: 'right',
+            render: (_, user) => (
+                <div className="flex justify-end items-center space-x-2">
+                    {user.isActive ? (
+                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-yellow-700 bg-warning/10 hover:bg-yellow-200 focus:ring-yellow-500">
+                            Pasife Al
+                        </Button>
+                    ) : (
+                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-success bg-success/10 hover:bg-green-200 focus:ring-green-500">
+                            Aktifleştir
+                        </Button>
+                    )}
+                    <Button onClick={() => handleEditClick(user)} variant="ghost" size="sm" className="text-primary hover:text-blue-800 p-1" title="Düzenle">
+                        <Pencil className="w-5 h-5" />
+                    </Button>
+                    <Button onClick={() => handleDelete(user.id)} variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive p-1" title="Kullanıcıyı Sil">
+                        <Trash2 className="w-5 h-5" />
+                    </Button>
+                </div>
+            ),
+        },
+    ];
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ekip Uyeleri</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Sistemdeki tum kullanicilari yonetin</p>
-                </div>
-                <Button
-                    onClick={() => setIsModalOpen(true)}
-                    variant="primary"
-                    className="flex items-center"
-                >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Yeni Kullanici Ekle
-                </Button>
-            </div>
+            <SettingsSectionHeader
+                className="mb-6"
+                title="Ekip Üyeleri"
+                description="Sistemdeki tüm kullanıcıları yönetin"
+                icon={<User className="w-6 h-6" />}
+                actions={(
+                    <Button
+                        onClick={() => setIsModalOpen(true)}
+                        variant="primary"
+                        className="flex items-center"
+                    >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Yeni Kullanıcı Ekle
+                    </Button>
+                )}
+            />
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center">
+                <div className="mb-6 p-4 bg-destructive/10 border border-red-200 text-destructive rounded-2xl flex items-center">
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Kullanicilar yuklenirken bir hata olustu.</div>
@@ -283,103 +356,13 @@ export function TeamMembersTab() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kullanici</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rol</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Durum</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Katilma Tarihi</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Islemler</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {loading ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Yukleniyor...</td>
-                            </tr>
-                        ) : users.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Henuz ekip uyesi eklenmemis.</td>
-                            </tr>
-                        ) : (
-                            users.map((user: UserRead) => (
-                                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold mr-3">
-                                                {user.firstName?.[0] || user.email?.[0] || '?'}
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-gray-900 dark:text-white">
-                                                    {user.firstName} {user.lastName}
-                                                </div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleStyle(user.role || '')} `}>
-                                            {getRoleLabel(user.role || '')}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                                            } `}>
-                                            {user.isActive ? 'Aktif' : 'Pasif'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}
-                                    </td>
-                                    <td className="px-6 py-4 text-right flex justify-end items-center space-x-2">
-                                        {user.isActive ? (
-                                            <Button
-                                                onClick={() => handleToggleStatus(user)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="border-transparent text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500"
-                                            >
-                                                Pasife Al
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                onClick={() => handleToggleStatus(user)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="border-transparent text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500"
-                                            >
-                                                Aktiflestir
-                                            </Button>
-                                        )}
-                                        <Button
-                                            onClick={() => handleEditClick(user)}
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-blue-600 hover:text-blue-800 p-1"
-                                            title="Duzenle"
-                                        >
-                                            <Pencil className="w-5 h-5" />
-                                        </Button>
-                                        <Button
-                                            onClick={() => handleDelete(user.id)}
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-gray-400 hover:text-red-600 p-1"
-                                            title="Kullaniciyi Sil"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+            <DataTable<UserRead>
+                data={users}
+                columns={teamMemberColumns}
+                loading={loading}
+                rowKey="id"
+                emptyText=t('noTeamMembers', 'Henuz ekip uyesi eklenmemis.')
+            />
 
             {/* Invite Modal */}
             {isModalOpen && (
@@ -388,12 +371,12 @@ export function TeamMembersTab() {
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Yeni Kullanici Olustur</h2>
 
                         {inviteSuccess ? (
-                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <div className="flex items-center text-green-700 mb-2">
+                            <div className="mb-6 p-4 bg-success/10 border border-green-200 rounded-2xl">
+                                <div className="flex items-center text-success mb-2">
                                     <CheckCircle2 className="w-5 h-5 mr-2" />
                                     Davet Basarili!
                                 </div>
-                                <p className="text-sm text-green-600 break-all">{inviteSuccess}</p>
+                                <p className="text-sm text-success break-all">{inviteSuccess}</p>
                                 <Button
                                     onClick={() => { setIsModalOpen(false); setInviteSuccess(''); }}
                                     fullWidth
@@ -407,7 +390,7 @@ export function TeamMembersTab() {
                             <form onSubmit={handleInvite} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ad</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Ad</label>
                                         <Input
                                             type="text"
                                             required
@@ -424,7 +407,7 @@ export function TeamMembersTab() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Soyad</label>
                                         <Input
                                             type="text"
                                             required
@@ -443,7 +426,7 @@ export function TeamMembersTab() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kullanici Adi *</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Kullanici Adi *</label>
                                     <div className="relative">
 
                                         <Input
@@ -458,7 +441,7 @@ export function TeamMembersTab() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sifre *</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Sifre *</label>
                                     <div className="relative">
 
                                         <Input
@@ -481,11 +464,11 @@ export function TeamMembersTab() {
                                             minLength={6}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Minimum 6 karakter</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Minimum 6 karakter</p>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-posta Adresi (Opsiyonel)</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">E-posta Adresi (Opsiyonel)</label>
                                     <div className="relative">
                                         <Input
                                             type="email"
@@ -497,7 +480,7 @@ export function TeamMembersTab() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
                                         <div className="relative">
                                             <Select
                                                 value={inviteData.role}
@@ -512,13 +495,13 @@ export function TeamMembersTab() {
                                                 ]}
                                             />
                                             <div className="absolute left-3 top-2.5 pointer-events-none">
-                                                <Shield className="w-5 h-5 text-gray-400" />
+                                                <Shield className="w-5 h-5 text-muted-foreground" />
                                             </div>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Sube</label>
                                         <div className="relative">
                                             <Select
                                                 value={inviteData.branchId}
@@ -531,14 +514,14 @@ export function TeamMembersTab() {
                                                 }))}
                                             />
                                             <div className="absolute left-3 top-2.5 pointer-events-none">
-                                                <Building2 className="w-5 h-5 text-gray-400" />
+                                                <Building2 className="w-5 h-5 text-muted-foreground" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {inviteError && (
-                                    <div className="text-sm text-red-600 flex items-center">
+                                    <div className="text-sm text-destructive flex items-center">
                                         <AlertCircle className="w-4 h-4 mr-1" />
                                         {inviteError}
                                     </div>
@@ -577,7 +560,7 @@ export function TeamMembersTab() {
                         <form onSubmit={handleUpdateUser} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ad</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Ad</label>
                                     <Input
                                         type="text"
                                         value={editData.firstName}
@@ -585,7 +568,7 @@ export function TeamMembersTab() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Soyad</label>
                                     <Input
                                         type="text"
                                         value={editData.lastName}
@@ -595,7 +578,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kullanici Adi</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Kullanici Adi</label>
                                 <div className="relative">
 
                                     <Input
@@ -609,7 +592,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Yeni Sifre (Opsiyonel)</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Yeni Sifre (Opsiyonel)</label>
                                 <div className="relative">
 
                                     <Input
@@ -634,7 +617,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-posta Adresi</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">E-posta Adresi</label>
                                 <div className="relative">
 
                                     <Input
@@ -647,7 +630,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
                                 <div className="relative">
                                     <Select
                                         value={editData.role}
@@ -666,7 +649,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Sube</label>
                                 <div className="relative">
                                     <Select
                                         value={editData.branchId}
@@ -683,7 +666,7 @@ export function TeamMembersTab() {
                             </div>
 
                             {updateError && (
-                                <div className="text-sm text-red-600 flex items-center">
+                                <div className="text-sm text-destructive flex items-center">
                                     <AlertCircle className="w-4 h-4 mr-1" />
                                     {updateError}
                                 </div>
@@ -717,8 +700,8 @@ export function TeamMembersTab() {
             {confirmationModal.isOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all">
-                        <div className={`flex items - center mb - 4 ${confirmationModal.type === 'danger' ? 'text-red-600' :
-                            confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-blue-600'
+                        <div className={`flex items - center mb - 4 ${confirmationModal.type === 'danger' ? 'text-destructive' :
+                            confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-primary'
                             } `}>
                             <AlertTriangle className="w-6 h-6 mr-2" />
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -726,7 +709,7 @@ export function TeamMembersTab() {
                             </h3>
                         </div>
 
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                        <p className="text-muted-foreground mb-6">
                             {confirmationModal.message}
                         </p>
 

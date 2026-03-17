@@ -15,10 +15,10 @@ Requirements tested:
 
 import pytest
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 
 from ai.services.conversation_memory import (
-    ConversationMemory,
+    MemoryConversationMemory as ConversationMemory,
     ConversationTurn,
     get_conversation_memory,
 )
@@ -29,7 +29,7 @@ class TestConversationMemoryBasics:
     
     def test_add_and_retrieve_turn(self):
         """Test adding a turn and retrieving it."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-1"
         
         # Add a turn
@@ -52,7 +52,7 @@ class TestConversationMemoryBasics:
     
     def test_multiple_turns(self):
         """Test adding multiple turns."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-2"
         
         # Add multiple turns
@@ -91,7 +91,7 @@ class TestConversationMemoryBasics:
     
     def test_get_history_with_max_turns_parameter(self):
         """Test retrieving limited history."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-4"
         
         # Add 5 turns
@@ -107,7 +107,7 @@ class TestConversationMemoryBasics:
     
     def test_empty_session(self):
         """Test retrieving history for non-existent session."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         
         history = memory.get_history("non-existent-session")
         
@@ -120,7 +120,7 @@ class TestConversationMemorySessionManagement:
     
     def test_clear_session(self):
         """Test clearing a session."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-5"
         
         # Add turns
@@ -180,7 +180,7 @@ class TestConversationMemorySessionManagement:
     
     def test_multiple_sessions_isolated(self):
         """Test that sessions are isolated from each other."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         
         # Add turns to different sessions
         memory.add_turn("session-a", "Hello A", "Hi A!")
@@ -202,7 +202,7 @@ class TestConversationMemoryContextGeneration:
     
     def test_get_context_summary(self):
         """Test generating a text summary of conversation."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-8"
         
         # Add turns
@@ -219,7 +219,7 @@ class TestConversationMemoryContextGeneration:
     
     def test_get_context_summary_empty_session(self):
         """Test context summary for empty session."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         
         summary = memory.get_context_summary("non-existent")
         
@@ -227,7 +227,7 @@ class TestConversationMemoryContextGeneration:
     
     def test_get_context_summary_limits_turns(self):
         """Test that context summary only includes recent turns."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-9"
         
         # Add 5 turns
@@ -248,7 +248,7 @@ class TestConversationMemoryContextGeneration:
     
     def test_get_accumulated_entities(self):
         """Test accumulating entities across turns."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-10"
         
         # Add turns with different entities
@@ -280,7 +280,7 @@ class TestConversationMemoryContextGeneration:
     
     def test_accumulated_entities_override(self):
         """Test that later entities override earlier ones."""
-        memory = ConversationMemory()
+        memory = get_conversation_memory()
         session_id = "test-session-11"
         
         # Add turns with overlapping entities

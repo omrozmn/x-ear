@@ -9,6 +9,7 @@ import {
 import { useListSubscriptionCurrent } from '@/api/client/subscriptions.client';
 import { useListAddons } from '@/api/client/sms.client';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from 'react-i18next';
 
 type FeatureUsageStats = {
     used?: number;
@@ -16,6 +17,7 @@ type FeatureUsageStats = {
 };
 
 const Subscription: React.FC = () => {
+    const { t } = useTranslation('settings_extra');
     const { token, user } = useAuthStore();
     const { data: subscriptionData, isLoading, isError } = useListSubscriptionCurrent();
     const { data: creditData } = useListSmCredit({
@@ -32,29 +34,28 @@ const Subscription: React.FC = () => {
     }
     const info = (subscriptionData as unknown as { data: SubscriptionResponse['data'] })?.data;
 
-    if (isLoading) return <div className="p-6">Yükleniyor...</div>;
-    if (isError) return <div className="p-6">Abonelik bilgisi yüklenirken hata oluştu.</div>;
+    if (isLoading) return <div className="p-6">{t('loading', 'Yükleniyor...')}</div>;
+    if (isError) return <div className="p-6">{t('subscriptionLoadError', 'Abonelik bilgisi yüklenirken hata oluştu.')}</div>;
 
     // Super admin check
     if (info?.is_super_admin || user?.role === 'super_admin') {
         return (
-            <div className="p-6 max-w-4xl mx-auto">
-                <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Abonelik ve Paket Bilgileri</h1>
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-8 text-center">
+            <div className="space-y-6">
+                <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-xl p-8 text-center">
                     <div className="text-6xl mb-4">👑</div>
                     <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-300 mb-2">Super Admin</h2>
-                    <p className="text-blue-700 dark:text-blue-400">
-                        Platform yöneticisi olarak tüm özelliklere sınırsız erişiminiz var.
+                    <p className="text-primary">
+                        {t('superAdminAccess', 'Platform yöneticisi olarak tüm özelliklere sınırsız erişiminiz var.')}
                     </p>
-                    <p className="text-sm text-blue-600 dark:text-blue-500 mt-4">
-                        Tenant aboneliklerini yönetmek için Admin Panel'i kullanın.
+                    <p className="text-sm text-primary mt-4">
+                        {t('useAdminPanelForTenants', "Tenant aboneliklerini yönetmek için Admin Panel'i kullanın.")}
                     </p>
                 </div>
             </div>
         );
     }
 
-    if (!info) return <div className="p-6">Abonelik bilgisi bulunamadı.</div>;
+    if (!info) return <div className="p-6">{t('subscriptionNotFound', 'Abonelik bilgisi bulunamadı.')}</div>;
 
     const { plan, tenant, isExpired, daysRemaining } = info;
 
@@ -93,46 +94,45 @@ const Subscription: React.FC = () => {
     const featureUsage = (tenant?.featureUsage ?? {}) as Record<string, FeatureUsageStats>;
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Abonelik ve Paket Bilgileri</h1>
+        <div className="space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Plan Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6">
                     {/* ... existing plan card content ... */}
                     {plan ? (
                         <div>
-                            <div className="text-3xl font-bold text-blue-600 mb-2">{plan.name}</div>
-                            <p className="text-gray-500 mb-4">{plan.description || 'Plan açıklaması bulunmuyor.'}</p>
-                            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-3xl font-bold text-primary mb-2">{plan.name}</div>
+                            <p className="text-muted-foreground mb-4">{plan.description || t('noPlanDescription', 'Plan açıklaması bulunmuyor.')}</p>
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                                 <Clock className="w-4 h-4" />
-                                <span>Bitiş Tarihi: {subscriptionEndsAt}</span>
+                                <span>{t('endDate', 'Bitiş Tarihi')}: {subscriptionEndsAt}</span>
                             </div>
-                            <div className={`mt-4 p-3 rounded-lg flex items-center ${isExpired ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                            <div className={`mt-4 p-3 rounded-2xl flex items-center ${isExpired ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'}`}>
                                 {isExpired ? (
                                     <>
                                         <AlertTriangle className="w-5 h-5 mr-2" />
-                                        <span>Aboneliğiniz sona ermiş. Lütfen yenileyin.</span>
+                                        <span>{t('subscriptionExpired', 'Aboneliğiniz sona ermiş. Lütfen yenileyin.')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <CheckCircle className="w-5 h-5 mr-2" />
-                                        <span>Aktif - {daysRemaining ?? 0} gün kaldı</span>
+                                        <span>{t('activeSubscription', 'Aktif')} - {daysRemaining ?? 0} {t('daysRemaining', 'gün kaldı')}</span>
                                     </>
                                 )}
                             </div>
                         </div>
                     ) : (
-                        <div className="text-gray-500">Herhangi bir paket tanımlı değil.</div>
+                        <div className="text-muted-foreground">{t('noPlanDefined', 'Herhangi bir paket tanımlı değil.')}</div>
                     )}
                 </div>
 
                 {/* Usage Stats & SMS Credit */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Kullanım Hakları</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6">
+                    <h2 className="text-lg font-semibold mb-4 text-foreground">{t('usageRights', 'Kullanım Hakları')}</h2>
 
                     {/* SMS Credit Display */}
-                    <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800">
+                    <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800">
                         <div className="flex justify-between items-center mb-1">
                             <span className="font-medium text-indigo-900 dark:text-indigo-300">SMS Kredisi</span>
                             <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
@@ -140,7 +140,7 @@ const Subscription: React.FC = () => {
                             </span>
                         </div>
                         <div className="text-xs text-indigo-600/70 dark:text-indigo-400/70">
-                            Kalan SMS hakkınız
+                            {t('remainingSmsCredits', 'Kalan SMS hakkınız')}
                         </div>
                     </div>
 
@@ -153,10 +153,10 @@ const Subscription: React.FC = () => {
                             return (
                                 <div key={key}>
                                     <div className="flex justify-between text-sm mb-1">
-                                        <span className="font-medium text-gray-700 dark:text-gray-300 capitalize">{key.replace(/_/g, ' ')}</span>
-                                        <span className="text-gray-500">{used} / {limit > 0 ? limit : 'Sınırsız'}</span>
+                                        <span className="font-medium text-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                                        <span className="text-muted-foreground">{used} / {limit > 0 ? limit : t('unlimited', 'Sınırsız')}</span>
                                     </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                    <div className="w-full bg-accent rounded-full h-2.5">
                                         <div
                                             className="bg-blue-600 h-2.5 rounded-full"
                                             style={{ width: `${percentage}%` }}
@@ -166,21 +166,21 @@ const Subscription: React.FC = () => {
                             );
                         })}
                         {Object.keys(featureUsage).length === 0 && (
-                            <div className="text-gray-500 text-sm">Kullanım limiti olan özellik bulunmuyor.</div>
+                            <div className="text-muted-foreground text-sm">{t('noUsageLimits', 'Kullanım limiti olan özellik bulunmuyor.')}</div>
                         )}
                     </div>
                 </div>
             </div>
 
             {/* SMS Packages Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-                <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">SMS Paketleri</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6 mb-8">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">{t('smsPackages', 'SMS Paketleri')}</h2>
                 <SmsPackagesList />
             </div>
 
             {/* Add-ons Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-                <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Ek Özellikler (Add-ons)</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6 mb-8">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">{t('addOns', 'Ek Özellikler (Add-ons)')}</h2>
                 <AddOnsList />
             </div>
         </div>
@@ -188,9 +188,10 @@ const Subscription: React.FC = () => {
 };
 
 function SmsPackagesList() {
+  const { t } = useTranslation('settings_extra');
     const { data: packagesData, isLoading, isError } = useListSmPackages();
-    if (isLoading) return <div className="text-gray-500">SMS Paketleri yükleniyor...</div>;
-    if (isError) return <div className="text-gray-500">SMS paketleri yüklenemedi.</div>;
+    if (isLoading) return <div className="text-muted-foreground">{t('smsPackagesLoading', 'SMS Paketleri yükleniyor...')}</div>;
+    if (isError) return <div className="text-muted-foreground">{t('smsPackagesLoadFailed', 'SMS paketleri yüklenemedi.')}</div>;
 
     // Extract packages from nested response structure
     interface SmsPackage {
@@ -201,7 +202,7 @@ function SmsPackagesList() {
     }
     const packagesResponse = packagesData as unknown as { data?: { data?: SmsPackage[] } } | undefined;
     const packages: SmsPackage[] = packagesResponse?.data?.data ?? [];
-    if (packages.length === 0) return <div className="text-gray-500">Mevcut SMS paketi bulunmuyor.</div>;
+    if (packages.length === 0) return <div className="text-muted-foreground">{t('noSmsPackages', 'Mevcut SMS paketi bulunmuyor.')}</div>;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -210,9 +211,9 @@ function SmsPackagesList() {
                 const price = pkg.price ?? 0;
 
                 return (
-                    <div key={pkg.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col relative overflow-hidden">
+                    <div key={pkg.id} className="border border-border rounded-2xl p-4 flex flex-col relative overflow-hidden">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-800 dark:text-white">{pkg.name}</h3>
+                            <h3 className="font-semibold text-foreground">{pkg.name}</h3>
                             <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">
                                 {smsCount.toLocaleString('tr-TR')} SMS
                             </span>
@@ -221,7 +222,7 @@ function SmsPackagesList() {
                             ₺{price.toLocaleString('tr-TR')}
                         </div>
                         <Button variant="primary" className="mt-auto w-full">
-                            Satın Al
+                            {t('purchase', 'Satın Al')}
                         </Button>
                     </div>
                 );
@@ -231,9 +232,10 @@ function SmsPackagesList() {
 }
 
 function AddOnsList() {
+    const { t } = useTranslation('settings_extra');
     const { data: addonsData, isLoading, isError } = useListAddons();
-    if (isLoading) return <div className="text-gray-500">Eklentiler yükleniyor...</div>;
-    if (isError) return <div className="text-gray-500">Eklentiler yüklenemedi.</div>;
+    if (isLoading) return <div className="text-muted-foreground">{t('addOnsLoading', 'Eklentiler yükleniyor...')}</div>;
+    if (isError) return <div className="text-muted-foreground">{t('addOnsLoadFailed', 'Eklentiler yüklenemedi.')}</div>;
 
     // Extract addons from nested response structure
     interface Addon {
@@ -244,9 +246,10 @@ function AddOnsList() {
         description?: string;
         addonType?: string;
     }
-    const addonsResponse = addonsData as unknown as { data?: { data?: Addon[] } } | undefined;
-    const addons: Addon[] = (addonsResponse?.data?.data || []).filter((addon) => addon.isActive);
-    if (addons.length === 0) return <div className="text-gray-500">Mevcut eklenti bulunmuyor.</div>;
+    // Backend returns ResponseEnvelope: {success: true, data: [...]}
+    // Orval unwraps to {data: [...]}
+    const addons = (Array.isArray(addonsData?.data) ? addonsData.data : []).filter((addon) => addon.isActive) as Addon[];
+    if (addons.length === 0) return <div className="text-muted-foreground">{t('noAddOns', 'Mevcut eklenti bulunmuyor.')}</div>;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -254,10 +257,10 @@ function AddOnsList() {
                 const price = addon.price ?? 0;
 
                 return (
-                    <div key={addon.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col">
+                    <div key={addon.id} className="border border-border rounded-2xl p-4 flex flex-col">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-800 dark:text-white">{addon.name}</h3>
-                            <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                            <h3 className="font-semibold text-foreground">{addon.name}</h3>
+                            <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-blue-800 rounded-full">
                                 {addon.addonType === 'FLAT_FEE' ? 'Tek Seferlik' :
                                     addon.addonType === 'PER_USER' ? 'Kullanıcı Başına' : 'Kullanım Bazlı'}
                             </span>
@@ -266,7 +269,7 @@ function AddOnsList() {
                             ₺{price.toLocaleString('tr-TR')}
                         </div>
                         <Button variant="primary" className="mt-auto w-full">
-                            Satın Al
+                            {t('purchase', 'Satın Al')}
                         </Button>
                     </div>
                 );

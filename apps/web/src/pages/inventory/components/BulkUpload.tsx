@@ -1,7 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef } from 'react';
-import { Card, Button, Badge } from '@x-ear/ui-web';
+import { Card, Button, Badge, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { Upload, Download, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { InventoryItem } from '../../../types/inventory';
+import toast from 'react-hot-toast';
 
 interface BulkUploadProps {
   isOpen: boolean;
@@ -34,6 +37,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { t } = useTranslation('inventory');
   if (!isOpen) return null;
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +53,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
       file.name.endsWith('.xls');
 
     if (!isValidFile) {
-      alert('Lütfen CSV veya Excel dosyası seçin');
+      toast('Lütfen CSV veya Excel dosyası seçin');
       return;
     }
 
@@ -72,7 +76,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
     try {
       const lines = csvContent.split('\n').filter(line => line.trim());
       if (lines.length < 2) {
-        alert('CSV dosyası en az 2 satır içermelidir (başlık + veri)');
+        toast('CSV dosyası en az 2 satır içermelidir (başlık + veri)');
         return;
       }
 
@@ -93,7 +97,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
             case 'ürün adı':
             case 'product name':
               item.name = value;
-              if (!value) errors.push('Ürün adı gerekli');
+              if (!value) errors.push(t('validation.name_required'));
               break;
             case 'brand':
             case 'marka':
@@ -117,7 +121,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               if (!isNaN(stock)) {
                 item.availableInventory = stock;
               } else if (value) {
-                errors.push('Stok sayısı geçersiz');
+                errors.push(t('validation.stock_positive'));
               }
               break;
             }
@@ -137,7 +141,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               if (!isNaN(price)) {
                 item.price = price;
               } else if (value) {
-                errors.push('Fiyat geçersiz');
+                errors.push(t('validation.price_positive'));
               }
               break;
             }
@@ -189,7 +193,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
       setShowPreview(true);
     } catch (error) {
       console.error('CSV preview error:', error);
-      alert('CSV dosyası önizlenirken hata oluştu');
+      toast.error('CSV dosyası önizlenirken hata oluştu');
     }
   };
 
@@ -392,13 +396,56 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
     }
   };
 
+  const previewColumns: Column<PreviewItem>[] = [
+    {
+      key: 'row',
+      title: t('form.description'),
+      render: (_, item) => item.row,
+    },
+    {
+      key: '_name',
+      title: t('form.product_name'),
+      render: (_, item) => String(item.data.name || '-'),
+    },
+    {
+      key: '_brand',
+      title: t('form.brand'),
+      render: (_, item) => String(item.data.brand || '-'),
+    },
+    {
+      key: '_stock',
+      title: t('columns.stock'),
+      render: (_, item) => String(item.data.availableInventory || '-'),
+    },
+    {
+      key: '_price',
+      title: t('columns.sale_price'),
+      render: (_, item) => item.data.price ? `₺${item.data.price}` : '-',
+    },
+    {
+      key: '_status',
+      title: t('columns.status'),
+      render: (_, item) => item.isValid ? (
+        <Badge variant="success" className="flex items-center">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          Gecerli
+        </Badge>
+      ) : (
+        <Badge variant="danger" className="flex items-center">
+          <AlertCircle className="w-3 h-3 mr-1" />
+          Hata
+        </Badge>
+      ),
+    },
+  ];
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center space-x-3">
-            <Upload className="w-6 h-6 text-blue-600 dark:text-blue-500" />
+            <Upload className="w-6 h-6 text-primary" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Toplu Ürün Yükleme
             </h2>
@@ -407,7 +454,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="p-2 text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-300"
           >
             <X className="w-6 h-6" />
           </Button>
@@ -416,21 +463,21 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
         {/* Body */}
         <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Instructions */}
-          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+          <Card className="p-4 bg-primary/10 border-blue-200 dark:border-blue-800">
             <div className="flex items-start space-x-3">
-              <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+              <FileText className="w-5 h-5 text-primary mt-0.5" />
               <div>
                 <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">
                   Dosya Formatı
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-200 mt-1">
+                <p className="text-sm text-primary mt-1">
                   CSV dosyanız şu sütunları içermelidir: Ürün Adı, Marka, Model, Kategori, Barkod, Stok, Min Stok, Fiyat, Maliyet, Tedarikçi, Garanti, Açıklama, Konum, SGK Kodu
                 </p>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={downloadSampleFile}
-                  className="mt-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="mt-2 text-primary hover:text-primary dark:hover:text-blue-300"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Örnek Dosyayı İndir
@@ -441,10 +488,10 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
 
           {/* File Upload */}
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-foreground">
               CSV/Excel Dosyası Seç
             </label>
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+            <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
               <input
                 data-allow-raw="true"
                 ref={fileInputRef}
@@ -453,8 +500,8 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <Upload className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">
                 Dosyayı sürükleyip bırakın veya seçmek için tıklayın
               </p>
               <Button
@@ -467,14 +514,14 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
 
             {/* Selected File Info */}
             {selectedFile && (
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
                 <div className="flex items-center space-x-3">
-                  <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <FileText className="w-5 h-5 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {selectedFile.name}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       {(selectedFile.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
@@ -483,7 +530,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={clearFile}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-muted-foreground"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -497,66 +544,12 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Önizleme (İlk 10 satır)
               </h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Satır
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Ürün Adı
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Marka
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Stok
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Fiyat
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Durum
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {previewData.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.row}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.name || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.brand || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.availableInventory || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.price ? `₺${item.data.price}` : '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          {item.isValid ? (
-                            <Badge variant="success" className="flex items-center">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Geçerli
-                            </Badge>
-                          ) : (
-                            <Badge variant="danger" className="flex items-center">
-                              <AlertCircle className="w-3 h-3 mr-1" />
-                              Hata
-                            </Badge>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable<PreviewItem>
+                data={previewData}
+                columns={previewColumns}
+                rowKey={(item) => item.row}
+                emptyText="Önizleme verisi bulunamadı"
+              />
             </div>
           )}
 
@@ -568,25 +561,25 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               </h4>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {uploadResult.success} ürün başarıyla yüklendi
+                  <CheckCircle className="w-5 h-5 text-success" />
+                  <span className="text-sm text-foreground">
+                    {t('import_export.import_completed')}
                   </span>
                 </div>
                 {uploadResult.errors > 0 && (
                   <div className="flex items-center space-x-2">
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      {uploadResult.errors} hatada ürün yüklenemedi
+                    <AlertCircle className="w-5 h-5 text-destructive" />
+                    <span className="text-sm text-foreground">
+                      {t('import_export.import_failed')}
                     </span>
                   </div>
                 )}
                 {uploadResult.errorDetails.length > 0 && (
-                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <div className="mt-3 p-3 bg-destructive/10 rounded-2xl">
                     <h5 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
                       Hata Detayları:
                     </h5>
-                    <ul className="text-xs text-red-700 dark:text-red-300 space-y-1">
+                    <ul className="text-xs text-destructive space-y-1">
                       {uploadResult.errorDetails.slice(0, 10).map((error, index) => (
                         <li key={index}>• {error}</li>
                       ))}
@@ -602,7 +595,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-end space-x-3 p-6 border-t border-border">
           <Button variant="outline" onClick={onClose}>
             İptal
           </Button>
@@ -611,7 +604,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
             disabled={!selectedFile || isUploading}
             loading={isUploading}
           >
-            {isUploading ? 'Yükleniyor...' : 'Ürünleri Yükle'}
+            {isUploading ? t('import_export.import_started') : t('actions.import')}
           </Button>
         </div>
       </div>

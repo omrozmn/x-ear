@@ -25,7 +25,7 @@ def create_simple_admin():
     else:
         # Create new admin
         admin = AdminUser(
-            id=f'usr_admin_{uuid.uuid4()}',
+            id=f'adm_{uuid.uuid4().hex[:8]}',
             email='admin@x-ear.com',
             password_hash=generate_password_hash('admin123', method='pbkdf2:sha256'),
             first_name='Admin',

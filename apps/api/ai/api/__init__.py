@@ -14,6 +14,7 @@ from ai.api.actions import router as actions_router
 from ai.api.audit import router as audit_router
 from ai.api.status import router as status_router
 from ai.api.admin import router as admin_router
+from ai.api.opportunities import router as opportunities_router
 from ai.api.errors import (
     AIErrorCode,
     AIErrorResponse,
@@ -27,6 +28,7 @@ __all__ = [
     "audit_router",
     "status_router",
     "admin_router",
+    "opportunities_router",
     "AIErrorCode",
     "AIErrorResponse",
     "AILayerException",

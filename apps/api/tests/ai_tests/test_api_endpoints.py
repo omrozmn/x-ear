@@ -36,7 +36,7 @@ from ai.api import (
     status_router,
     admin_router,
 )
-from ai.services.kill_switch import KillSwitch, get_kill_switch
+from ai.services.kill_switch import get_kill_switch
 
 
 # =============================================================================
@@ -44,9 +44,12 @@ from ai.services.kill_switch import KillSwitch, get_kill_switch
 # =============================================================================
 
 @pytest.fixture
-def app(mock_auth_middleware, db_session):
+def app(mock_auth_middleware, db_session, auth_context):
     """Create a test FastAPI app with AI routers and authentication middleware."""
     from core.database import get_db
+    from middleware.unified_access import oauth2_scheme
+    from jose import jwt as jose_jwt
+    from datetime import datetime, timezone, timedelta
     
     test_app = FastAPI(title="AI Layer Test App")
     
@@ -57,7 +60,21 @@ def app(mock_auth_middleware, db_session):
         finally:
             pass  # Don't close - managed by fixture
     
+    # Create a valid JWT token for test auth
+    _test_token = jose_jwt.encode(
+        {
+            "sub": auth_context["user_id"],
+            "tenant_id": auth_context["tenant_id"],
+            "role": "tenant_admin",
+            "permissions": auth_context["permissions"],
+            "exp": datetime.now(timezone.utc) + timedelta(hours=1),
+        },
+        "test-secret",
+        algorithm="HS256",
+    )
+    
     test_app.dependency_overrides[get_db] = override_get_db
+    test_app.dependency_overrides[oauth2_scheme] = lambda: _test_token
     
     # Add mock authentication middleware
     @test_app.middleware("http")
@@ -285,11 +302,11 @@ class TestStatusEndpoint:
         response = client.get("/api/ai/status")
         data = response.json()
         
-        # Check required fields
+        # Check required fields (camelCase from AppBaseModel alias_generator)
         assert "enabled" in data
         assert "available" in data
         assert "phase" in data
-        assert "kill_switch" in data
+        assert "killSwitch" in data
         assert "usage" in data
         assert "model" in data
         assert "timestamp" in data
@@ -300,20 +317,20 @@ class TestStatusEndpoint:
         data = response.json()
         
         phase = data["phase"]
-        assert "current_phase" in phase
-        assert "phase_name" in phase
-        assert "execution_allowed" in phase
-        assert "proposal_allowed" in phase
+        assert "currentPhase" in phase
+        assert "phaseName" in phase
+        assert "executionAllowed" in phase
+        assert "proposalAllowed" in phase
     
     def test_status_kill_switch_info(self, client):
         """Status should include kill switch information."""
         response = client.get("/api/ai/status")
         data = response.json()
         
-        ks = data["kill_switch"]
-        assert "global_active" in ks
-        assert "tenant_active" in ks
-        assert "capabilities_disabled" in ks
+        ks = data["killSwitch"]
+        assert "globalActive" in ks
+        assert "tenantActive" in ks
+        assert "capabilitiesDisabled" in ks
     
     def test_health_endpoint_exists(self, client):
         """Health endpoint should exist."""
@@ -578,7 +595,7 @@ class TestEndpointIntegration:
         # Check initial status
         response = client.get("/api/ai/status")
         data = response.json()
-        assert data["kill_switch"]["global_active"] is False
+        assert data["killSwitch"]["globalActive"] is False
         
         # Activate kill switch
         client.post(
@@ -593,4 +610,4 @@ class TestEndpointIntegration:
         # Check updated status
         response = client.get("/api/ai/status")
         data = response.json()
-        assert data["kill_switch"]["global_active"] is True
+        assert data["killSwitch"]["globalActive"] is True

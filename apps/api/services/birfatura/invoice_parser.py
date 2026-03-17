@@ -57,11 +57,20 @@ def extract_sender_info(invoice_data: Dict[str, Any]) -> Dict[str, str]:
         sender_info['address'] = address.get('streetName', '')
         sender_info['city'] = address.get('cityName', '')
     
-    # Fallback to top-level fields
+    # Fallback to top-level fields (API returns PascalCase: SenderName, SenderKN)
     if not sender_info['name']:
-        sender_info['name'] = invoice_data.get('supplierName', invoice_data.get('senderName', ''))
+        sender_info['name'] = (
+            invoice_data.get('SenderName') or
+            invoice_data.get('senderName') or
+            invoice_data.get('supplierName', '')
+        )
     if not sender_info['tax_number']:
-        sender_info['tax_number'] = invoice_data.get('supplierTaxNumber', invoice_data.get('senderVKN', ''))
+        sender_info['tax_number'] = (
+            invoice_data.get('SenderKN') or
+            invoice_data.get('senderKN') or
+            invoice_data.get('senderVKN') or
+            invoice_data.get('supplierTaxNumber', '')
+        )
     if not sender_info['tax_office']:
         sender_info['tax_office'] = invoice_data.get('supplierTaxOffice', '')
     
@@ -95,57 +104,151 @@ def extract_invoice_amounts(invoice_data: Dict[str, Any]) -> Dict[str, Decimal]:
     if amounts['tax_amount'] == 0:
         amounts['tax_amount'] = amounts['total_amount'] - amounts['subtotal']
     
-    # Fallback to top-level fields
-    if amounts['total_amount'] == 0 and 'payableAmount' in invoice_data:
-        amounts['total_amount'] = Decimal(str(invoice_data['payableAmount']))
+    # Fallback to top-level fields (API returns PascalCase)
+    if amounts['total_amount'] == 0:
+        amounts['total_amount'] = Decimal(str(
+            invoice_data.get('PayableAmount') or
+            invoice_data.get('payableAmount') or 0
+        ))
+    if amounts['subtotal'] == 0:
+        amounts['subtotal'] = Decimal(str(
+            invoice_data.get('TaxExclusiveAmount') or
+            invoice_data.get('taxExclusiveAmount') or
+            invoice_data.get('LineExtensionAmount') or
+            invoice_data.get('lineExtensionAmount') or 0
+        ))
+    if amounts['currency'] == 'TRY':
+        amounts['currency'] = (
+            invoice_data.get('DocumentCurrencyCode') or
+            invoice_data.get('documentCurrencyCode') or 'TRY'
+        )
+    if amounts['tax_amount'] == 0 and amounts['total_amount'] > 0 and amounts['subtotal'] > 0:
+        amounts['tax_amount'] = amounts['total_amount'] - amounts['subtotal']
     
     return amounts
 
 
+def _get_ubl_value(obj: Any, default: Any = '') -> Any:
+    """Extract value from UBL-style nested object like {"Value": x} or return plain value."""
+    if isinstance(obj, dict):
+        return obj.get('Value', default)
+    return obj if obj is not None else default
+
+
 def extract_invoice_items(invoice_data: Dict[str, Any]) -> list:
-    """Extract invoice line items"""
+    """Extract invoice line items from both flat (camelCase) and UBL (PascalCase) formats."""
     items = []
     
+    # Try flat format first (from get_inbox_documents summary)
     invoice_lines = invoice_data.get('invoiceLines', invoice_data.get('invoiceLine', []))
+    
+    # Try UBL format (from get_inbox_documents_with_detail jsonData)
+    if not invoice_lines:
+        invoice_lines = invoice_data.get('InvoiceLine', [])
     
     if not invoice_lines:
         return items
     
     for line in invoice_lines:
-        # Extract item data
-        item = {
-            'product_code': line.get('sellersItemIdentification', line.get('itemCode', '')),
-            'product_name': line.get('itemName', line.get('name', '')),
-            'product_description': line.get('itemDescription', line.get('description', '')),
-            'quantity': Decimal(str(line.get('quantity', 1))),
-            'unit': line.get('unitCode', 'Adet'),
-            'unit_price': Decimal(str(line.get('priceAmount', line.get('unitPrice', 0)))),
-            'line_total': Decimal(str(line.get('lineExtensionAmount', line.get('lineTotal', 0)))),
-            'tax_rate': 18,  # Default
-            'tax_amount': Decimal('0'),
-        }
+        # Detect format: UBL has nested objects with "Value" keys
+        is_ubl = isinstance(line.get('Item'), dict) or isinstance(line.get('InvoicedQuantity'), dict)
         
-        # Extract tax info
-        if 'taxTotal' in line:
-            tax_info = line['taxTotal']
-            if isinstance(tax_info, list) and len(tax_info) > 0:
-                tax_subtotal = tax_info[0]
-            elif isinstance(tax_info, dict):
-                tax_subtotal = tax_info
-            else:
-                tax_subtotal = {}
-            
-            if 'taxSubtotal' in tax_subtotal:
-                subtotal = tax_subtotal['taxSubtotal']
-                if isinstance(subtotal, list) and len(subtotal) > 0:
-                    subtotal = subtotal[0]
-                
-                item['tax_rate'] = int(subtotal.get('percent', 18))
-                item['tax_amount'] = Decimal(str(subtotal.get('taxAmount', 0)))
+        if is_ubl:
+            item = _extract_ubl_line_item(line)
+        else:
+            item = _extract_flat_line_item(line)
         
-        items.append(item)
+        if item.get('product_name'):
+            items.append(item)
     
     return items
+
+
+def _extract_ubl_line_item(line: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract item data from UBL/e-fatura format (PascalCase with nested Value objects)."""
+    item_obj = line.get('Item', {}) or {}
+    
+    # Product name from Item.Name.Value
+    name = _get_ubl_value(item_obj.get('Name'), '')
+    
+    # Product description from Item.Description.Value
+    description = _get_ubl_value(item_obj.get('Description'), '')
+    
+    # Product code from Item.SellersItemIdentification.ID.Value
+    seller_id = item_obj.get('SellersItemIdentification', {}) or {}
+    product_code = _get_ubl_value(seller_id.get('ID'), '')
+    
+    # Quantity from InvoicedQuantity.Value, unit from InvoicedQuantity.unitCode
+    qty_obj = line.get('InvoicedQuantity', {}) or {}
+    quantity = Decimal(str(_get_ubl_value(qty_obj, 1)))
+    unit_code = qty_obj.get('unitCode', 'C62') if isinstance(qty_obj, dict) else 'C62'
+    # Map UBL unit codes to Turkish
+    unit_map = {'C62': 'Adet', 'KGM': 'Kg', 'LTR': 'Litre', 'MTR': 'Metre', 'BX': 'Kutu', 'PR': 'Çift'}
+    unit = unit_map.get(unit_code, unit_code)
+    
+    # Price from Price.PriceAmount.Value
+    price_obj = line.get('Price', {}) or {}
+    price_amount = Decimal(str(_get_ubl_value((price_obj.get('PriceAmount') or {}), 0)))
+    
+    # Line total from LineExtensionAmount.Value
+    line_total = Decimal(str(_get_ubl_value(line.get('LineExtensionAmount', {}), 0)))
+    
+    # Tax info from TaxTotal
+    tax_rate = 18
+    tax_amount = Decimal('0')
+    tax_total = line.get('TaxTotal', {}) or {}
+    if isinstance(tax_total, dict):
+        tax_amount = Decimal(str(_get_ubl_value(tax_total.get('TaxAmount', {}), 0)))
+        tax_subtotals = tax_total.get('TaxSubtotal', [])
+        if isinstance(tax_subtotals, list) and tax_subtotals:
+            percent_val = _get_ubl_value(tax_subtotals[0].get('Percent', {}), 18)
+            tax_rate = int(float(percent_val)) if percent_val else 18
+    
+    return {
+        'product_code': product_code,
+        'product_name': name,
+        'product_description': description,
+        'quantity': quantity,
+        'unit': unit,
+        'unit_price': price_amount,
+        'line_total': line_total,
+        'tax_rate': tax_rate,
+        'tax_amount': tax_amount,
+    }
+
+
+def _extract_flat_line_item(line: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract item data from flat/camelCase format."""
+    item = {
+        'product_code': line.get('sellersItemIdentification', line.get('itemCode', '')),
+        'product_name': line.get('itemName', line.get('name', '')),
+        'product_description': line.get('itemDescription', line.get('description', '')),
+        'quantity': Decimal(str(line.get('quantity', 1))),
+        'unit': line.get('unitCode', 'Adet'),
+        'unit_price': Decimal(str(line.get('priceAmount', line.get('unitPrice', 0)))),
+        'line_total': Decimal(str(line.get('lineExtensionAmount', line.get('lineTotal', 0)))),
+        'tax_rate': 18,
+        'tax_amount': Decimal('0'),
+    }
+    
+    if 'taxTotal' in line:
+        tax_info = line['taxTotal']
+        if isinstance(tax_info, list) and len(tax_info) > 0:
+            tax_subtotal = tax_info[0]
+        elif isinstance(tax_info, dict):
+            tax_subtotal = tax_info
+        else:
+            tax_subtotal = {}
+        
+        if 'taxSubtotal' in tax_subtotal:
+            subtotal = tax_subtotal['taxSubtotal']
+            if isinstance(subtotal, list) and len(subtotal) > 0:
+                subtotal = subtotal[0]
+            
+            item['tax_rate'] = int(subtotal.get('percent', 18))
+            item['tax_amount'] = Decimal(str(subtotal.get('taxAmount', 0)))
+    
+    return item
 
 
 def create_invoice_summary(invoice_data: Dict[str, Any]) -> str:

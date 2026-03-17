@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Modal, Button, Alert } from '@x-ear/ui-web';
 
@@ -17,6 +18,7 @@ interface WarningModalProps {
 }
 
 const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'Uyarı', message, failures = [] }) => {
+  const { t } = useTranslation('inventory');
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
       <div className="space-y-4">
@@ -24,7 +26,7 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
           <div>
             {message && <p className="font-medium">{message}</p>}
             {!message && failures.length > 0 && (
-              <p className="font-medium">{failures.length} işlem başarısız oldu.</p>
+              <p className="font-medium">{t('messages.save_failed')}</p>
             )}
           </div>
         </Alert>
@@ -36,14 +38,14 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium dark:text-gray-100">ID: {f.id}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">{f.message}</div>
+                    <div className="text-sm text-muted-foreground">{f.message}</div>
                   </div>
-                  <div className="text-right text-xs text-gray-500 dark:text-gray-500">
+                  <div className="text-right text-xs text-muted-foreground">
                     {f.status && <div>Status: {f.status}</div>}
                   </div>
                 </div>
                 {f.data ? (
-                  <pre className="text-xs text-gray-700 dark:text-gray-300 mt-1 bg-white dark:bg-gray-700 p-2 rounded overflow-x-auto">
+                  <pre className="text-xs text-foreground mt-1 bg-white dark:bg-gray-700 p-2 rounded overflow-x-auto">
                     {String(JSON.stringify(f.data as Record<string, unknown>, null, 2))}
                   </pre>
                 ) : null}
@@ -53,7 +55,7 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
         )}
 
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>Kapat</Button>
+          <Button variant="outline" onClick={onClose}>{t('form.cancel')}</Button>
         </div>
       </div>
     </Modal>

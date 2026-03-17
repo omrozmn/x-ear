@@ -1,0 +1,14 @@
+AI İşlem Hatası
+
+Merhaba,
+
+AI işlemi sırasında bir hata oluştu:
+
+İşlem ID: {{ action_id }}
+Hata: {{ error_message }}
+Zaman: {{ timestamp }}
+
+Lütfen sistemi kontrol edin.
+
+---
+Bu otomatik bir mesajdır. Lütfen yanıtlamayın.

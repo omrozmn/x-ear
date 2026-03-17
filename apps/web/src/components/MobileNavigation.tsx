@@ -6,6 +6,7 @@ import {
   Calendar,
   MessageSquare,
   Settings,
+  FileSpreadsheet,
   Menu,
   X,
   Bell,
@@ -46,6 +47,11 @@ const navigationItems = [
     href: '/settings',
     icon: Settings,
   },
+  {
+    name: 'nav.invoice_normalizer',
+    href: '/invoice-normalizer',
+    icon: FileSpreadsheet,
+  },
 ];
 
 export const MobileNavigation: React.FC<MobileNavigationProps> = ({
@@ -72,7 +78,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   return (
     <>
       {/* Top Mobile Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 ${className}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-border ${className}`}>
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
             <Button
@@ -118,16 +124,16 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
         {/* Menu Content */}
         <div className="relative w-80 max-w-sm h-full bg-white dark:bg-gray-900 shadow-xl">
           {/* Menu Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">X</span>
               </div>
               <div>
                 <h2 className="font-semibold text-gray-900 dark:text-white">
                   X-Ear
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   {t('app.title_desc')}
                 </p>
               </div>
@@ -153,9 +159,9 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   key={item.name}
                   to={item.href}
                   onClick={closeMenu}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${isActive
-                      ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  className={`flex items-center space-x-3 px-3 py-3 rounded-2xl transition-colors ${isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-foreground hover:bg-muted dark:hover:bg-gray-800'
                     }`}
                 >
                   <Icon className="h-5 w-5" />
@@ -166,8 +172,8 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
           </nav>
 
           {/* Menu Footer */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+          <div className="p-4 border-t border-border">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>Durum: {isOnline ? t('status.online', { ns: 'common' }) : t('status.offline', { ns: 'common' })}</span>
               <span>v1.0.0</span>
             </div>
@@ -176,7 +182,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-border">
         <div className="flex items-center justify-around py-2">
           {navigationItems.slice(0, 4).map((item) => {
             const Icon = item.icon;
@@ -186,9 +192,9 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-colors ${isActive
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-gray-500 dark:text-gray-400'
+                className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-2xl transition-colors ${isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground'
                   }`}
               >
                 <Icon className="h-5 w-5" />
@@ -233,7 +239,7 @@ export const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
   return (
     <div className={`px-4 py-3 bg-gray-50 dark:bg-gray-800 ${className}`}>
       <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}

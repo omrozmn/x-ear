@@ -1,13 +1,11 @@
-import pytest
 import uuid
 from datetime import datetime
 import json
 
 from core.models.user import User
 from core.models.inventory import InventoryItem
-from core.models.sales import Sale, DeviceAssignment
+from core.models.sales import Sale
 from core.models.stock_movement import StockMovement
-from core.models.base import db
 from routers.sales import _create_single_device_assignment
 
 def test_stock_flow(db_session):
@@ -46,26 +44,28 @@ def test_stock_flow(db_session):
     db_session.commit()
     
     # Sale of Serialized Item
-    sale = Sale(id=f"sale_{suffix}", tenant_id=tenant_id, patient_id="p1", total_amount=1000, final_amount=1000, sale_date=datetime.utcnow())
+    sale = Sale(id=f"sale_{suffix}", tenant_id=tenant_id, party_id="p1", total_amount=1000, final_amount=1000, sale_date=datetime.utcnow())
     db_session.add(sale)
     db_session.commit()
     
     assignment_data = {
         'inventoryId': inv_serial.id,
         'serial_number': 'SN123',
-        'ear': 'Right'
+        'ear': 'Right',
+        'delivery_status': 'delivered'
     }
     
     # Call internal logic
-    assignment, err = _create_single_device_assignment(
-        assignment_data, 
-        patient_id="p1", 
+    assignment, err, warning = _create_single_device_assignment(
+        db=db_session,
+        assignment_data=assignment_data, 
+        party_id="p1", 
         sale_id=sale.id, 
         sgk_scheme="standard", 
         pricing_calculation={}, 
+        index=0,
         tenant_id=tenant_id,
         created_by=user.id,
-        session=db_session
     )
     
     assert err is None, f"Assignment failed: {err}"

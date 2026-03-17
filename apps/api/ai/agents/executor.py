@@ -17,20 +17,28 @@ Requirements:
 """
 
 import hashlib
-import json
 import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Dict, List, Optional
 from enum import Enum
 
 from ai.config import get_ai_config, AIPhase
 from ai.agents.action_planner import ActionPlan, ActionStep
 from ai.tools import (
-    ToolRegistry, get_tool_registry, 
+    ToolRegistry, get_tool_registry,
     ToolExecutionMode, ToolExecutionResult,
     ToolNotFoundError, ToolNotAllowedError, ToolSchemaDriftError, ToolValidationError,
+)
+from ai.utils.approval_token import (
+    ApprovalToken,
+    ApprovalTokenError,
+    TokenExpiredError,
+    TokenAlreadyUsedError,
+    TokenInvalidSignatureError,
+    PlanDriftError,
+    validate_approval_token,
 )
 from core.database import simulate_rollback
 
@@ -260,11 +268,36 @@ class Executor:
                     error_message="High-risk action requires approval token",
                     total_execution_time_ms=(time.time() - start_time) * 1000,
                 )
-            # TODO: Validate approval token (Task 14)
-        
-        # Execute steps
-        step_results = []
-        failed_step = None
+            # Validate approval token: decode, verify HMAC signature, check expiry, detect plan drift
+            try:
+                token = ApprovalToken.decode(approval_token)
+                validation = validate_approval_token(
+                    token=token,
+                    action_plan=plan.to_dict(),
+                    consume=True,
+                    expected_action_id=plan.plan_id,
+                )
+                if not validation.valid:
+                    return ExecutionResult(
+                        status=ExecutorStatus.APPROVAL_REQUIRED,
+                        plan_id=plan.plan_id,
+                        request_id=request_id,
+                        idempotency_key=computed_idempotency_key,
+                        mode=mode,
+                        error_message=f"Approval token invalid: {validation.error}",
+                        total_execution_time_ms=(time.time() - start_time) * 1000,
+                    )
+            except ApprovalTokenError as e:
+                logger.warning(f"Approval token validation failed: {e}")
+                return ExecutionResult(
+                    status=ExecutorStatus.APPROVAL_REQUIRED,
+                    plan_id=plan.plan_id,
+                    request_id=request_id,
+                    idempotency_key=computed_idempotency_key,
+                    mode=mode,
+                    error_message=f"Approval token error: {str(e)}",
+                    total_execution_time_ms=(time.time() - start_time) * 1000,
+                )
         
         # Execute steps
         step_results = []
@@ -425,25 +458,53 @@ class Executor:
     ) -> List[StepExecutionResult]:
         """
         Rollback executed steps in reverse order.
-        
-        Only rolls back steps that succeeded.
+
+        Only rolls back steps that succeeded and have a rollback_procedure.
+        Rollback procedures are executed via the Tool API when they contain
+        a tool_name and parameters; otherwise they are logged as manual actions.
         """
-        rollback_results = []
-        
         # Get steps that need rollback (succeeded steps in reverse order)
         steps_to_rollback = []
         for result, step in zip(executed_results, steps):
             if result.status == "success" and step.rollback_procedure:
                 steps_to_rollback.append((result, step))
-        
+
         steps_to_rollback.reverse()
-        
+
         for result, step in steps_to_rollback:
-            logger.info(f"Rolling back step {step.step_number}: {step.rollback_procedure}")
-            # Mark as rolled back
-            result.rollback_executed = True
-            result.status = "rolled_back"
-        
+            rollback = step.rollback_procedure
+            logger.info(f"Rolling back step {step.step_number}: {rollback}")
+
+            # Execute rollback if it's a structured tool call
+            if isinstance(rollback, dict) and rollback.get("tool_name"):
+                try:
+                    rollback_tool_result = self.tool_registry.execute_tool(
+                        tool_id=rollback["tool_name"],
+                        parameters=rollback.get("parameters", {}),
+                        mode=ToolExecutionMode.EXECUTE,
+                    )
+                    if rollback_tool_result.success:
+                        result.rollback_executed = True
+                        result.status = "rolled_back"
+                        logger.info(f"Step {step.step_number} rolled back successfully")
+                    else:
+                        result.rollback_executed = False
+                        result.error_message = (
+                            f"Rollback failed: {rollback_tool_result.error}. "
+                            f"Manual intervention required."
+                        )
+                        logger.error(f"Rollback failed for step {step.step_number}: {rollback_tool_result.error}")
+                except Exception as e:
+                    result.rollback_executed = False
+                    result.error_message = f"Rollback exception: {str(e)}. Manual intervention required."
+                    logger.error(f"Rollback exception for step {step.step_number}: {e}")
+            else:
+                # Text-based rollback procedure — mark for manual action
+                result.rollback_executed = False
+                result.status = "rollback_pending"
+                result.error_message = f"Manual rollback required: {rollback}"
+                logger.warning(f"Step {step.step_number} requires manual rollback: {rollback}")
+
         return executed_results
     
     def simulate_plan(self, plan: ActionPlan) -> ExecutionResult:

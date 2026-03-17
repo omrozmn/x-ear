@@ -13,9 +13,9 @@ Key Features:
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List
+from typing import Dict
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Response
 from pydantic import EmailStr, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -106,7 +106,8 @@ def _check_quota(tenant_id: str, db: Session) -> tuple[bool, str]:
     warmup_phase = rate_limit_service.get_current_warmup_phase()
     
     # Stricter limits during warm-up
-    if warmup_phase != "COMPLETE":
+    from services.rate_limit_service import WarmupPhase
+    if warmup_phase != WarmupPhase.POST_WARMUP:
         ai_limit = 10  # 10 per hour during warm-up
         if count >= ai_limit:
             return False, f"AI email quota exceeded during warm-up ({ai_limit} per hour)"
@@ -224,7 +225,7 @@ async def send_ai_email_notification(
         within_quota, quota_error = _check_quota(tenant_id, db)
         if not within_quota:
             logger.warning(
-                f"AI email quota exceeded",
+                "AI email quota exceeded",
                 extra={
                     "tenant_id": tenant_id,
                     "scenario": request.scenario,
@@ -249,21 +250,25 @@ async def send_ai_email_notification(
         approval_service = get_email_approval_service(db)
         
         # Render template to get email content for AI safety check
-        template = template_service.get_template(request.scenario, request.language)
-        if not template:
-            error_msg = f"Email template not found for scenario: {request.scenario}"
+        try:
+            subject, html_content, text_content = template_service.render_template(
+                scenario=request.scenario,
+                language=request.language,
+                variables=request.variables or {}
+            )
+        except Exception as e:
+            error_msg = f"Failed to render email template: {str(e)}"
             logger.error(error_msg, extra={"tenant_id": tenant_id, "scenario": request.scenario})
-            response.status_code = 404
+            response.status_code = 500
             return ResponseEnvelope(
                 success=False,
-                error={"message": error_msg, "code": "TEMPLATE_NOT_FOUND"},
+                error={"message": error_msg, "code": "TEMPLATE_RENDER_ERROR"},
                 message=error_msg
             )
         
-        # Render subject and body
-        subject = template_service.render_template(template.subject, request.variables)
-        body_text = template_service.render_template(template.body_text, request.variables)
-        body_html = template_service.render_template(template.body_html, request.variables) if template.body_html else None
+        # Use rendered values from above
+        body_text = text_content
+        body_html = html_content
         
         # AI safety check
         requires_approval, risk_level, risk_reasons = approval_service.requires_approval(

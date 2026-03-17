@@ -30,10 +30,8 @@ from ai.schemas.llm_outputs import (
     IntentOutput,
     IntentType,
     OperationOutput,
-    ActionPlanOutput,
     ChatResponseOutput,
     RiskLevel,
-    OperationParameter,
 )
 from ai.utils.llm_validator import (
     LLMOutputValidator,

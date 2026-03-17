@@ -1,0 +1,23 @@
+# Example configuration file for Automated API Testing System
+# Copy this file to config.yaml and customize as needed
+
+# Backend API settings
+base_url: http://localhost:5003
+openapi_file: openapi.yaml
+
+# Authentication credentials
+admin_email: admin@xear.com
+admin_password: admin123
+
+# Request settings
+timeout: 15              # Request timeout in seconds
+connect_timeout: 5       # Connection timeout in seconds
+max_retries: 3          # Maximum retries for failed requests
+
+# Output settings
+output_report: null     # Path to save report (null = print to console)
+failed_log: failed_endpoints.txt
+verbose: false          # Enable verbose logging
+
+# Execution settings
+parallel: false         # Enable parallel execution (experimental)

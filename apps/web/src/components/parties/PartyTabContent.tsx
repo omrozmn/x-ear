@@ -10,10 +10,14 @@ import PartySalesTab from './PartySalesTab';
 import { PartyTimelineTab } from './PartyTimelineTab';
 import { PartyDocumentsTab } from './PartyDocumentsTab';
 import { PartyAppointmentsTab } from './PartyAppointmentsTab';
-import { PartyHearingTestsTab } from './PartyHearingTestsTab';
+
 import { PartyNotesTab } from './PartyNotesTab';
 import { PartySGKTab } from './PartySGKTab';
+import { PartyHearingTestsTab } from './PartyHearingTestsTab';
 import { Clock } from 'lucide-react';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useSector } from '../../hooks/useSector';
+import { NoPermissionPlaceholder } from '../ui/NoPermissionPlaceholder';
 
 interface PartyTabContentProps {
   party: Party;
@@ -41,6 +45,16 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   showNoteModal,
   onCloseNoteModal
 }) => {
+  const { hasPermission, isSuperAdmin } = usePermissions();
+  const { isModuleEnabled } = useSector();
+
+  // Module-gated tabs: if the module is disabled, treat as no permission
+  const tabModuleMap: Record<string, string> = {
+    'hearing-tests': 'hearing_tests',
+    'devices': 'devices',
+    'sgk': 'sgk',
+  };
+
   if (isLoading || !party) {
     return (
       <div className="p-6" role="status" aria-label="Hasta bilgileri yükleniyor">
@@ -51,9 +65,9 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   const renderComingSoon = (tabName: string) => (
     <div className="p-6 text-center">
       <div className="max-w-sm mx-auto">
-        <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">{tabName} Yakında Gelecek</h3>
-        <p className="text-gray-500">
+        <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-foreground mb-2">{tabName} Yakında Gelecek</h3>
+        <p className="text-muted-foreground">
           Bu özellik şu anda geliştirme aşamasında. Yakında kullanıma sunulacak.
         </p>
       </div>
@@ -62,7 +76,33 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
 
   // _formatDate function removed - not used
 
+  // Permission-based tab content guard
+  const tabPermissionMap: Record<string, string> = {
+    'general': 'parties.detail.general.view',
+    'overview': 'parties.detail.general.view',
+    'devices': 'parties.detail.devices.view',
+    'sales': 'parties.detail.sales.view',
+    'timeline': 'parties.detail.timeline.view',
+    'documents': 'parties.detail.documents.view',
+    'appointments': 'parties.detail.appointments.view',
+    'hearing-tests': 'parties.detail.hearing_tests.view',
+    'sgk': 'parties.detail.sgk.view',
+    'notes': 'parties.detail.notes.view',
+  };
+
+  // Check module gating first
+  const requiredModule = tabModuleMap[activeTab];
+  if (requiredModule && !isModuleEnabled(requiredModule)) {
+    return null; // Module disabled for this sector — tab shouldn't be visible
+  }
+
+  const requiredPerm = tabPermissionMap[activeTab];
+  if (requiredPerm && !isSuperAdmin && !hasPermission(requiredPerm)) {
+    return <NoPermissionPlaceholder message="Bu sekmeyi görüntüleme izniniz yok" />;
+  }
+
   switch (activeTab) {
+    case 'general':
     case 'overview':
       return (
         <ErrorBoundary>
@@ -94,7 +134,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
     case 'documents':
       return (
         <ErrorBoundary>
-          <PartyDocumentsTab partyId={party?.id || ''} />
+          <PartyDocumentsTab partyId={party?.id || ''} party={party} />
         </ErrorBoundary>
       );
     case 'appointments':
@@ -106,7 +146,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
     case 'hearing-tests':
       return (
         <ErrorBoundary>
-          <PartyHearingTestsTab />
+          <PartyHearingTestsTab partyId={party?.id || ''} />
         </ErrorBoundary>
       );
     case 'sgk':

@@ -266,6 +266,23 @@ def createAppointment(
     notes = params.get("notes", "")
     tenant_id = params.get("tenant_id", "default")
 
+    if mode == ToolExecutionMode.SIMULATE:
+        return ToolExecutionResult(
+            tool_id="createAppointment",
+            success=True,
+            mode=mode,
+            simulated_changes={
+                "action": "create_appointment",
+                "party_id": party_id,
+                "date": date_str,
+                "time": time_str,
+                "appointment_type": appointment_type,
+                "duration": duration,
+                "notes": notes,
+                "status": "Appointment Created (Simulated)",
+            },
+        )
+
     try:
         # Parse date
         date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))

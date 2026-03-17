@@ -2,7 +2,7 @@
 FastAPI Permissions Router - Migrated from Flask routes/permissions.py
 Handles permission management and role-permission assignments
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List
 from pydantic import BaseModel
 import logging
@@ -10,14 +10,14 @@ import logging
 from sqlalchemy.orm import Session
 
 from database import get_db
-from schemas.base import ResponseEnvelope, ApiError
+from schemas.base import ResponseEnvelope
 from schemas.roles import (
     PermissionRead, RoleRead, 
     PermissionListResponse, UserPermissionsResponse,
     RolePermissionsResponse
 )
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
+from config.permission_catalog import STATIC_PERMISSION_CATALOG, STATIC_PERMISSION_MAP
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ PERMISSION_CATEGORIES = {
     'team': {'label': 'Ekip', 'icon': 'users-round'},
     'reports': {'label': 'Raporlar', 'icon': 'bar-chart'},
     'dashboard': {'label': 'Dashboard', 'icon': 'layout-dashboard'},
+    'activity_logs': {'label': 'İşlem Dökümü', 'icon': 'clipboard-list'},
 }
 
 # --- Schemas ---
@@ -62,14 +63,23 @@ def list_permissions(
         # Get all permissions, filter out admin/system ones for tenant context
         all_perms = db.query(Permission).order_by(Permission.name).all()
         perms = [p for p in all_perms if not p.name.startswith('admin.') 
-                 and not p.name.startswith('system.') 
-                 and not p.name.startswith('activity_logs.')]
+                 and not p.name.startswith('system.')]
+
+        seen_names = {p.name for p in perms}
+        merged_perms = list(perms)
+        for item in STATIC_PERMISSION_CATALOG:
+            if item['name'] not in seen_names:
+                merged_perms.append(PermissionRead(
+                    id=f"static:{item['name']}",
+                    name=item['name'],
+                    description=item.get('description')
+                ))
         
         # Group permissions by category
         grouped = {}
         ungrouped = []
         
-        for p in perms:
+        for p in merged_perms:
             # Use Pydantic schema for type-safe serialization (NO to_dict())
             pdict = PermissionRead.model_validate(p).model_dump(by_alias=True)
             if '.' in p.name:
@@ -99,8 +109,8 @@ def list_permissions(
         
         return ResponseEnvelope(data=PermissionListResponse(
             data=result,
-            all=[PermissionRead.model_validate(p) for p in perms],
-            total=len(perms)
+            all=[PermissionRead.model_validate(p) for p in merged_perms],
+            total=len(merged_perms)
         ))
         
     except Exception as e:
@@ -130,30 +140,33 @@ def get_my_permissions(
         user = access.user
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+
+        role_value = getattr(user, 'role', '') or ''
+        role_normalized = str(role_value).strip().lower()
         
         # Super admin checks (users table with super_admin role)
-        if user.role == 'super_admin':
+        if role_normalized == 'super_admin':
             perms = db.query(Permission).order_by(Permission.name).all()
             return ResponseEnvelope(data=UserPermissionsResponse(
                 permissions=[p.name for p in perms],
-                role=user.role,
+                role=role_value,
                 is_super_admin=True
             ))
 
-        if user.role == 'admin':
-            # Tenant Admin - return full tenant permissions
+        if role_normalized in {'admin', 'tenant_admin'} or access.is_tenant_admin:
+            # Tenant admins get full tenant permissions regardless of role casing.
             return ResponseEnvelope(data=UserPermissionsResponse(
                 permissions=list(_FULL_ADMIN_PERMISSIONS),
-                role=user.role,
+                role=role_value,
                 is_super_admin=False
             ))
 
         # For Tenant Users, verify against role map in code
-        mapped_perms = get_permissions_for_role(user.role)
+        mapped_perms = get_permissions_for_role(role_normalized)
         
         return ResponseEnvelope(data=UserPermissionsResponse(
             permissions=list(mapped_perms),
-            role=user.role,
+            role=role_value,
             is_super_admin=False
         ))
         
@@ -210,6 +223,12 @@ def update_role_permissions(
         # Add new permissions
         for pname in request_data.permissions:
             perm = db.query(Permission).filter_by(name=pname).first()
+            if not perm and pname in STATIC_PERMISSION_MAP:
+                perm = Permission()
+                perm.name = pname
+                perm.description = STATIC_PERMISSION_MAP[pname].get('description')
+                db.add(perm)
+                db.flush()
             if perm:
                 role.permissions.append(perm)
         

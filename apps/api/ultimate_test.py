@@ -6,14 +6,11 @@ Handles parameterized routes by attempting to find/guess valid IDs.
 """
 import requests
 import sys
-import json
-import base64
 from collections import defaultdict
 
 # Add backend directory to path
 sys.path.insert(0, '.')
 from app import app
-from models.base import db
 from models.user import User
 from models.patient import Patient
 from models.sales import Sale

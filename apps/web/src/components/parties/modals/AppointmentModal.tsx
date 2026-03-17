@@ -166,10 +166,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled': return 'text-blue-700 bg-blue-50';
-      case 'completed': return 'text-green-700 bg-green-50';
-      case 'cancelled': return 'text-red-700 bg-red-50';
-      default: return 'text-gray-700 bg-gray-50';
+      case 'scheduled': return 'text-primary bg-primary/10';
+      case 'completed': return 'text-success bg-success/10';
+      case 'cancelled': return 'text-destructive bg-destructive/10';
+      default: return 'text-foreground bg-muted';
     }
   };
 
@@ -184,15 +184,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <h3 className="text-lg font-medium text-foreground flex items-center">
             <Calendar className="w-5 h-5 mr-2" />
             {isEditing ? 'Randevuyu Düzenle' : 'Yeni Randevu'}
           </h3>
           <Button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-muted-foreground hover:text-muted-foreground"
           >
             <X className="w-5 h-5" />
           </Button>
@@ -201,8 +201,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {/* Party Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+            <div className="bg-muted p-4 rounded-2xl">
+              <h4 className="font-medium text-foreground mb-2 flex items-center">
                 <User className="w-4 h-4 mr-2" />
                 Hasta Bilgileri
               </h4>
@@ -224,14 +224,14 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
             {/* Appointment Details */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 flex items-center">
+              <h4 className="font-medium text-foreground flex items-center">
                 <Clock className="w-4 h-4 mr-2" />
                 Randevu Detayları
               </h4>
 
               {/* Date and Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Tarih ve Saat *
                 </label>
                 <Input
@@ -241,13 +241,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   className={errors.date ? 'border-red-500' : ''}
                 />
                 {errors.date && (
-                  <div className="flex items-center mt-1 text-sm text-red-600">
+                  <div className="flex items-center mt-1 text-sm text-destructive">
                     <AlertCircle className="w-4 h-4 mr-1" />
                     {errors.date}
                   </div>
                 )}
                 {formData.date && (
-                  <div className="mt-1 text-sm text-gray-600">
+                  <div className="mt-1 text-sm text-muted-foreground">
                     Seçilen tarih: {formatDateTime(formData.date)}
                   </div>
                 )}
@@ -255,13 +255,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Durum
                 </label>
                 <select data-allow-raw="true"
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="scheduled">Planlandı</option>
                   <option value="completed">Tamamlandı</option>
@@ -274,7 +274,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <label className="block text-sm font-medium text-foreground mb-1 flex items-center">
                   <FileText className="w-4 h-4 mr-1" />
                   Notlar (Opsiyonel)
                 </label>
@@ -285,7 +285,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   rows={4}
                   className="resize-none"
                 />
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {formData.note.length}/500 karakter
                 </div>
               </div>
@@ -293,8 +293,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
             {/* Existing Appointment Info */}
             {isEditing && appointment && (
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">Mevcut Randevu Bilgileri</h4>
+              <div className="bg-primary/10 p-4 rounded-2xl">
+                <h4 className="font-medium text-foreground mb-2">Mevcut Randevu Bilgileri</h4>
                 <div className="text-sm space-y-1">
                   <div>
                     <span className="font-medium">Oluşturulma:</span> {
@@ -311,8 +311,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             )}
 
             {/* Quick Actions for Common Appointment Types */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Hızlı Notlar</h4>
+            <div className="bg-muted p-4 rounded-2xl">
+              <h4 className="font-medium text-foreground mb-2">Hızlı Notlar</h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   'Kontrol muayenesi',
@@ -332,7 +332,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         : `• ${quickNote}`;
                       handleInputChange('note', newNote);
                     }}
-                    className="text-left p-2 text-sm border border-gray-200 rounded hover:bg-gray-100 transition-colors"
+                    className="text-left p-2 text-sm border border-border rounded hover:bg-muted transition-colors"
                   >
                     + {quickNote}
                   </button>
@@ -342,15 +342,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
             {/* Status Messages */}
             {error && (
-              <Alert variant="error" className="border-red-200 bg-red-50">
-                <AlertCircle className="h-4 w-4 text-red-600" />
+              <Alert variant="error" className="border-red-200 bg-destructive/10">
+                <AlertCircle className="h-4 w-4 text-destructive" />
                 {error}
               </Alert>
             )}
 
             {success && (
-              <Alert variant="success" className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+              <Alert variant="success" className="border-green-200 bg-success/10">
+                <CheckCircle className="h-4 w-4 text-success" />
                 {success}
               </Alert>
             )}
@@ -360,13 +360,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="px-4 py-2 text-foreground bg-muted hover:bg-accent rounded-xl"
             >
               İptal
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+              className="px-6 py-2 premium-gradient tactile-press text-white rounded-xl flex items-center"
               disabled={loading || isLoading}
             >
               {(loading || isLoading) && <Spinner className="w-4 h-4 mr-2" />}

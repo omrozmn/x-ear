@@ -1,14 +1,11 @@
-import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.commission_ledger import CommissionLedger
 from services.commission_service import CommissionService
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-from models.affiliate_user import AffiliateUser
 from models.base import Base
 Base.metadata.create_all(bind=engine)
 

@@ -5,7 +5,7 @@ Handles cash register records for cashflow management
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
 import logging
 
 from sqlalchemy.orm import Session
@@ -13,9 +13,7 @@ from sqlalchemy import or_
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
-
+from middleware.unified_access import UnifiedAccess, require_access
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["CashRecords"])
@@ -32,6 +30,12 @@ class CashRecordCreate(BaseModel):
     date: Optional[str] = None
     id: Optional[str] = None
     tenant_id: Optional[str] = None
+    
+    model_config = ConfigDict(populate_by_name=True)
+        
+    @property
+    def party_id(self):
+        return self.partyId
 
 class CashRecordResponse(BaseModel):
     id: str
@@ -68,6 +72,8 @@ def derive_record_type(notes: str) -> str:
 def get_cash_records(
     limit: int = Query(200, ge=1, le=1000),
     status: Optional[str] = None,
+    transaction_type: Optional[str] = None,
+    record_type: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     search: Optional[str] = None,
@@ -123,7 +129,7 @@ def get_cash_records(
                     'transactionType': 'income' if (r.amount or 0) >= 0 else 'expense',
                     'recordType': derive_record_type(r.notes or ''),
                     'partyId': r.party_id,
-                    'partyName': patient_name,
+                    'partyName': party_name,
                     'amount': float(r.amount or 0),
                     'description': r.notes or ''
                 }
@@ -138,7 +144,13 @@ def get_cash_records(
             records = [r for r in records if 
                       search_term in (r['partyName'] or '').lower() or 
                       search_term in (r['description'] or '').lower()]
-        
+
+        if transaction_type in {'income', 'expense'}:
+            records = [r for r in records if r['transactionType'] == transaction_type]
+
+        if record_type:
+            records = [r for r in records if r['recordType'] == record_type]
+
         return ResponseEnvelope(data=records, meta={'count': len(records)})
         
     except Exception as e:
@@ -155,7 +167,7 @@ def create_cash_record(
     try:
         from models.sales import PaymentRecord
         from core.models.party import Party
-        from database import gen_id
+        from core.database import gen_id
         
         if not request_data.transactionType:
             raise HTTPException(status_code=400, detail="Transaction type is required")
@@ -173,7 +185,7 @@ def create_cash_record(
                 raise HTTPException(status_code=400, detail="access.tenant_id is required")
         
         # Find patient by name if provided
-        party_id = request_data.partyId
+        party_id = request_data.party_id
         if not party_id and request_data.partyName and request_data.partyName.strip():
             party_name = request_data.partyName.strip()
             patient_query = db.query(Party)
@@ -220,7 +232,7 @@ def create_cash_record(
         
         # Get party name for response
         patient = db.get(Party, payment.party_id) if payment.party_id else None
-        patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
+        party_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
         
         record = {
             'id': payment.id,
@@ -228,7 +240,7 @@ def create_cash_record(
             'transactionType': request_data.transactionType,
             'recordType': request_data.recordType,
             'partyId': payment.party_id,
-            'partyName': patient_name,
+            'partyName': party_name,
             'amount': float(payment.amount),
             'description': request_data.description or ''
         }

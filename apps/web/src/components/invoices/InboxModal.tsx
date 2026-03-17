@@ -42,7 +42,7 @@ export const InboxModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow max-w-3xl w-full max-h-[80vh] overflow-auto">
+      <div className="bg-card rounded-2xl shadow max-w-3xl w-full max-h-[80vh] overflow-auto">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold">Gelen Faturalar (Inbox)</h3>
           <div className="flex items-center gap-2">
@@ -55,12 +55,12 @@ export const InboxModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
             <div>Yükleniyor...</div>
           ) : (
             <ul className="divide-y">
-              {files.length === 0 && <li className="py-6 text-center text-gray-500">Inbox boş</li>}
+              {files.length === 0 && <li className="py-6 text-center text-muted-foreground">Inbox boş</li>}
               {files.map(f => (
                 <li key={f.filename} className="py-3 flex items-center justify-between">
                   <div>
                     <div className="font-medium">{f.filename}</div>
-                    <div className="text-xs text-gray-500">{new Date(f.mtime * 1000).toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(f.mtime * 1000).toLocaleString()}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button onClick={() => handlePreviewPdf(f)} className="px-3 py-1">PDF Önizle</Button>

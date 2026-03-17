@@ -9,20 +9,26 @@
 // Status Indicator
 export {
   AIStatusIndicator,
-  getStatusType,
-  getDetailedStatusLabel,
   type AIStatusIndicatorProps,
   type AIStatusIndicatorSize,
-  type AIStatusType,
 } from './AIStatusIndicator';
+
+export {
+  getStatusType,
+  getDetailedStatusLabel,
+  type AIStatusType,
+} from '../utils/aiStatusHelpers';
 
 // Phase A Banner
 export {
   PhaseABanner,
-  resetPhaseABannerDismissed,
-  shouldShowPhaseABanner,
   type PhaseABannerProps,
 } from './PhaseABanner';
+
+export {
+  resetPhaseABannerDismissed,
+  shouldShowPhaseABanner,
+} from '../utils/aiPhaseHelpers';
 
 // AI Chat Widget
 export {
@@ -43,23 +49,29 @@ export {
 export {
   PendingActionBadge,
   PendingActionCountBadge,
-  shouldBlockActionSubmission,
-  getPendingActionByType,
   type PendingActionBadgeProps,
   type PendingActionBadgeSize,
   type PendingActionBadgeVariant,
 } from './PendingActionBadge';
 
+export {
+  shouldBlockActionSubmission,
+  getPendingActionByType,
+} from '../utils/pendingActionHelpers';
+
 // AI Feature Wrapper
 export {
   AIFeatureWrapper,
-  useAIFeatureAvailability,
+  type AIFeatureWrapperProps,
+} from './AIFeatureWrapper';
+
+export { useAIFeatureAvailability } from '../hooks/useAIFeatureAvailability';
+export {
   checkAIAvailability,
   getUnavailableMessage,
-  type AIFeatureWrapperProps,
   type AIUnavailableReason,
   type AIAvailabilityResult,
-} from './AIFeatureWrapper';
+} from '../utils/aiAvailability';
 
 // AI Feature Examples (for reference)
 export {

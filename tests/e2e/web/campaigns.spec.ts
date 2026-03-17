@@ -19,7 +19,7 @@ test.describe('Campaigns & SMS Module', () => {
         const tabs = tenantPage.locator('[role="tab"], [class*="tab"], button').filter({
             hasText: /Toplu|Tekli|Otomasyon|Bulk|Single|Automation/i
         });
-        const hasTabs = await tabs.count() > 0;
+        await tabs.count();
 
         // At least page should have some content
         const content = tenantPage.locator('main, [class*="content"]').first();

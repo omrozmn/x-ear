@@ -1,9 +1,8 @@
 # Sales Models (formerly Patient sales models)
-from .base import db, BaseModel, gen_id, gen_sale_id, JSONMixin
+from sqlalchemy import Column, Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text, Index
+from sqlalchemy.orm import relationship, backref
+from .base import BaseModel, gen_id, gen_sale_id
 from .mixins import TenantScopedMixin
-from .enums import DeviceSide
-from .device import Device
-from decimal import Decimal
 import sqlalchemy as sa
 
 class PaymentRecord(BaseModel, TenantScopedMixin):
@@ -11,37 +10,38 @@ class PaymentRecord(BaseModel, TenantScopedMixin):
     __tablename__ = "payment_records"
     
     # Primary key
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("payment"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("payment"))
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
-    sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'))  # Optional: link to sale
-    promissory_note_id = db.Column(db.String(50))  # Link to promissory note if applicable
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=True)
+    sale_id = Column(String(50), ForeignKey('sales.id'))  # Optional: link to sale
+    promissory_note_id = Column(String(50))  # Link to promissory note if applicable
     # tenant_id is now inherited from TenantScopedMixin
-    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Payment details
-    amount = db.Column(sa.Numeric(12, 2), nullable=False)
-    payment_date = db.Column(db.DateTime, nullable=False)  # When payment was made/recorded
-    due_date = db.Column(db.DateTime)  # For promissory notes or installments
-    payment_method = db.Column(db.String(20), nullable=False)  # cash, card, transfer, promissory_note
-    payment_type = db.Column(db.String(20), default='payment')  # payment, down_payment, installment, promissory_note
+    amount = Column(sa.Numeric(12, 2), nullable=False)
+    payment_date = Column(DateTime, nullable=False)  # When payment was made/recorded
+    due_date = Column(DateTime)  # For promissory notes or installments
+    payment_method = Column(String(20), nullable=False)  # cash, card, transfer, promissory_note
+    payment_type = Column(String(20), default='payment')  # payment, down_payment, installment, promissory_note
     
     # Status
-    status = db.Column(db.String(20), default='pending')  # pending, paid, partial, overdue, cancelled
+    status = Column(String(20), default='pending')  # pending, paid, partial, overdue, cancelled
     
     # Reference info
-    reference_number = db.Column(db.String(100))  # Check number, transaction ID, etc.
+    reference_number = Column(String(100))  # Check number, transaction ID, etc.
+    notes = Column(Text)  # Additional notes about the payment
     # POS / Online Payment details
-    pos_provider = db.Column(db.String(50))  # e.g., paytr, iyzico
-    pos_transaction_id = db.Column(db.String(100), index=True)
-    pos_status = db.Column(db.String(50))  # success, failed, refund
-    installment_count = db.Column(db.Integer, default=1)
-    is_3d_secure = db.Column(db.Boolean, default=False)
-    pos_raw_response = db.Column(db.JSON)  # Store full callback for audit
-    gross_amount = db.Column(sa.Numeric(12, 2))  # Amount charged to card
-    net_amount = db.Column(sa.Numeric(12, 2))  # Amount after commission
-    error_message = db.Column(db.Text)
+    pos_provider = Column(String(50))  # e.g., paytr, iyzico
+    pos_transaction_id = Column(String(100), index=True)
+    pos_status = Column(String(50))  # success, failed, refund
+    installment_count = Column(Integer, default=1)
+    is_3d_secure = Column(Boolean, default=False)
+    pos_raw_response = Column(JSON)  # Store full callback for audit
+    gross_amount = Column(sa.Numeric(12, 2))  # Amount charged to card
+    net_amount = Column(sa.Numeric(12, 2))  # Amount after commission
+    error_message = Column(Text)
 
     def to_dict(self):
         base_dict = self.to_dict_base()
@@ -73,62 +73,62 @@ class DeviceAssignment(BaseModel, TenantScopedMixin):
     __tablename__ = "device_assignments"
     
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("assign"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("assign"))
     
     # User-facing ID (e.g., ATM-123456)
-    assignment_uid = db.Column(db.String(20), unique=True, nullable=True)
+    assignment_uid = Column(String(20), unique=True, nullable=True)
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    device_id = db.Column(db.String(50), nullable=True)  # Can be inventory_id or actual device_id
-    sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=True)  # Link to sale
-    inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory item
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
+    device_id = Column(String(50), nullable=True)  # Can be inventory_id or actual device_id
+    sale_id = Column(String(50), ForeignKey('sales.id'), nullable=True)  # Link to sale
+    inventory_id = Column(String(50), ForeignKey('inventory.id'), nullable=True)  # Link to inventory item
     # tenant_id is now inherited from TenantScopedMixin
-    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Assignment details
-    ear = db.Column(db.String(1))  # L, R, B for Left, Right, Both/Bilateral
-    reason = db.Column(db.String(50))  # Sale, Trial, Replacement, etc.
-    from_inventory = db.Column(db.Boolean, default=False)
+    ear = Column(String(1))  # L, R, B for Left, Right, Both/Bilateral
+    reason = Column(String(50))  # Sale, Trial, Replacement, etc.
+    from_inventory = Column(Boolean, default=False)
     
     # Serial numbers for bilateral assignments
-    serial_number = db.Column(db.String(100))  # For single ear assignments
-    serial_number_left = db.Column(db.String(100))  # For bilateral - left ear
-    serial_number_right = db.Column(db.String(100))  # For bilateral - right ear
+    serial_number = Column(String(100))  # For single ear assignments
+    serial_number_left = Column(String(100))  # For bilateral - left ear
+    serial_number_right = Column(String(100))  # For bilateral - right ear
     
     # Pricing details
-    list_price = db.Column(sa.Numeric(12, 2))
-    sale_price = db.Column(sa.Numeric(12, 2))
-    sgk_scheme = db.Column(db.String(50))
-    sgk_support = db.Column(sa.Numeric(12, 2))
-    discount_type = db.Column(db.String(10))
-    discount_value = db.Column(sa.Numeric(12, 2))
-    net_payable = db.Column(sa.Numeric(12, 2))
-    payment_method = db.Column(db.String(20))
+    list_price = Column(sa.Numeric(12, 2))
+    sale_price = Column(sa.Numeric(12, 2))
+    sgk_scheme = Column(String(50))
+    sgk_support = Column(sa.Numeric(12, 2))
+    discount_type = Column(String(10))
+    discount_value = Column(sa.Numeric(12, 2))
+    net_payable = Column(sa.Numeric(12, 2))
+    payment_method = Column(String(20))
     
     # Delivery and loaner tracking
-    delivery_status = db.Column(db.String(20), default='pending')  # pending, delivered
-    is_loaner = db.Column(db.Boolean, default=False)  # Is this assignment using a loaner device
-    loaner_inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Loaner device from inventory
-    loaner_serial_number = db.Column(db.String(100))  # Serial number of loaner device
-    loaner_serial_number_left = db.Column(db.String(100))  # Serial number of loaner device (Left)
-    loaner_serial_number_right = db.Column(db.String(100))  # Serial number of loaner device (Right)
-    loaner_brand = db.Column(db.String(100))  # Brand of loaner device
-    loaner_model = db.Column(db.String(100))  # Model of loaner device
+    delivery_status = Column(String(20), default='pending')  # pending, delivered
+    is_loaner = Column(Boolean, default=False)  # Is this assignment using a loaner device
+    loaner_inventory_id = Column(String(50), ForeignKey('inventory.id'), nullable=True)  # Loaner device from inventory
+    loaner_serial_number = Column(String(100))  # Serial number of loaner device
+    loaner_serial_number_left = Column(String(100))  # Serial number of loaner device (Left)
+    loaner_serial_number_right = Column(String(100))  # Serial number of loaner device (Right)
+    loaner_brand = Column(String(100))  # Brand of loaner device
+    loaner_model = Column(String(100))  # Model of loaner device
     
     # Additional info
-    report_status = db.Column(db.String(50))  # raporlu, raporsuz, bekleniyor
-    notes = db.Column(db.Text)
+    report_status = Column(String(50))  # raporlu, raporsuz, bekleniyor
+    notes = Column(Text)
 
     # Relationships
     # Note: device_id is not a foreign key, we use inventory relationship instead
-    inventory = db.relationship('InventoryItem', foreign_keys=[inventory_id], backref='device_assignments', lazy=True)
-    loaner_inventory = db.relationship('InventoryItem', foreign_keys=[loaner_inventory_id], backref='loaner_assignments', lazy=True)
+    inventory = relationship('InventoryItem', foreign_keys=[inventory_id], backref='device_assignments', lazy=True)
+    loaner_inventory = relationship('InventoryItem', foreign_keys=[loaner_inventory_id], backref='loaner_assignments', lazy=True)
     
     # We keep 'device' relationship for Manual/Virtual assignments that don't have inventory_id
     # FIX: Explicitly specify foreign_keys because device_id is not a DB ForeignKey
     # AND specify primaryjoin so SQLAlchemy knows how to join despite missing FK
-    device = db.relationship(
+    device = relationship(
         'Device', 
         foreign_keys=[device_id], 
         primaryjoin="DeviceAssignment.device_id == Device.id",
@@ -175,7 +175,7 @@ class DeviceAssignment(BaseModel, TenantScopedMixin):
             'branchId': self.branch_id,
             'ear': self.ear,
             'reason': self.reason,
-            'fromInventory': self.from_inventory,
+            'fromInventory': bool(self.from_inventory) if self.from_inventory is not None else False,
             'listPrice': float(self.list_price) if self.list_price else None,
             'salePrice': float(self.sale_price) if self.sale_price else None,
             'sgkScheme': self.sgk_scheme,
@@ -189,7 +189,7 @@ class DeviceAssignment(BaseModel, TenantScopedMixin):
             'serialNumberLeft': self.serial_number_left,
             'serialNumberRight': self.serial_number_right,
             'deliveryStatus': self.delivery_status,
-            'isLoaner': self.is_loaner,
+            'isLoaner': bool(self.is_loaner) if self.is_loaner is not None else False,
             'loanerInventoryId': self.loaner_inventory_id,
             'loanerSerialNumber': self.loaner_serial_number,
             'loanerSerialNumberLeft': self.loaner_serial_number_left,
@@ -207,40 +207,48 @@ class Sale(BaseModel, TenantScopedMixin):
     __tablename__ = "sales"
     
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=gen_sale_id)
+    id = Column(String(50), primary_key=True, default=gen_sale_id)
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    product_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory product
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
+    product_id = Column(String(50), ForeignKey('inventory.id'), nullable=True)  # Link to inventory product
+    sales_owner_user_id = Column(String(50), ForeignKey('users.id'), nullable=True, index=True)
     # tenant_id is now inherited from TenantScopedMixin
-    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Sale details
-    sale_date = db.Column(db.DateTime, nullable=False)
-    list_price_total = db.Column(sa.Numeric(12,2))  # Total list price (before discount)
-    total_amount = db.Column(sa.Numeric(12,2))  # Precise money handling
-    discount_amount = db.Column(sa.Numeric(12,2), default=0.0)  # Precise money handling
-    final_amount = db.Column(sa.Numeric(12,2))  # Precise money handling
-    paid_amount = db.Column(sa.Numeric(12,2), default=0.0)  # Track paid amount for partial payments
+    sale_date = Column(DateTime, nullable=False)
+    list_price_total = Column(sa.Numeric(12,2))  # NOTE: This is UNIT price, not total! For bilateral sales, multiply by device count
+    unit_list_price = Column(sa.Numeric(12,2))  # Informational: Same as list_price_total, added for clarity
+    total_amount = Column(sa.Numeric(12,2))  # Precise money handling
+    discount_amount = Column(sa.Numeric(12,2), default=0.0)  # Precise money handling
+    discount_type = Column(String(20), default='none')  # 'none', 'percentage', 'amount'
+    discount_value = Column(sa.Numeric(12,2), default=0.0)  # Percentage value (e.g., 10 for 10%) or amount value
+    final_amount = Column(sa.Numeric(12,2))  # Precise money handling
+    paid_amount = Column(sa.Numeric(12,2), default=0.0)  # Track paid amount for partial payments
     
     # Device assignments (will be replaced by sale_items table in future)
-    right_ear_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id', use_alter=True))
-    left_ear_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id', use_alter=True))
+    right_ear_assignment_id = Column(String(50), ForeignKey('device_assignments.id', use_alter=True))
+    left_ear_assignment_id = Column(String(50), ForeignKey('device_assignments.id', use_alter=True))
     
     # Status and payment
-    status = db.Column(db.String(20), default='pending')  # pending, completed, cancelled, refunded
-    payment_method = db.Column(db.String(20), default='cash')  # cash, card, installment, insurance
+    status = Column(String(20), default='pending')  # pending, completed, cancelled, refunded
+    payment_method = Column(String(20), default='cash')  # cash, card, installment, insurance
     
     # SGK integration
-    sgk_coverage = db.Column(sa.Numeric(12,2), default=0.0)  # Precise money handling
-    patient_payment = db.Column(sa.Numeric(12,2))  # Precise money handling
+    sgk_coverage = Column(sa.Numeric(12,2), default=0.0)  # Precise money handling
+    patient_payment = Column(sa.Numeric(12,2))  # Precise money handling
     
     # Additional info
-    report_status = db.Column(db.String(50))
-    notes = db.Column(db.Text)
+    report_status = Column(String(50))
+    notes = Column(Text)
+    
+    # KDV (VAT) information
+    kdv_rate = Column(Float, default=20.0)  # KDV oranı (%)
+    kdv_amount = Column(sa.Numeric(12,2), default=0.0)  # KDV tutarı
     
     # Relationships
-    party = db.relationship('Party', backref=db.backref('sales', cascade='all, delete-orphan'), lazy=True)
+    party = relationship('Party', backref=backref('sales', cascade='all, delete-orphan'), lazy=True)
 
     def to_dict(self):
         base_dict = self.to_dict_base()
@@ -248,11 +256,15 @@ class Sale(BaseModel, TenantScopedMixin):
             'id': self.id,
             'partyId': self.party_id,
             'productId': self.product_id,
+            'salesOwnerUserId': self.sales_owner_user_id,
             'branchId': self.branch_id,
             'saleDate': self.sale_date.isoformat() if self.sale_date else None,
             'listPriceTotal': float(self.list_price_total) if self.list_price_total else None,
+            'unitListPrice': float(self.unit_list_price) if self.unit_list_price else None,
             'totalAmount': float(self.total_amount) if self.total_amount else None,
             'discountAmount': float(self.discount_amount) if self.discount_amount else 0.0,
+            'discountType': self.discount_type,
+            'discountValue': float(self.discount_value) if self.discount_value else 0.0,
             'finalAmount': float(self.final_amount) if self.final_amount else None,
             'paidAmount': float(self.paid_amount) if self.paid_amount else 0.0,
             'rightEarAssignmentId': self.right_ear_assignment_id,
@@ -262,7 +274,9 @@ class Sale(BaseModel, TenantScopedMixin):
             'sgkCoverage': float(self.sgk_coverage) if self.sgk_coverage else 0.0,
             'patientPayment': float(self.patient_payment) if self.patient_payment else None,
             'reportStatus': self.report_status,
-            'notes': self.notes
+            'notes': self.notes,
+            'kdvRate': float(self.kdv_rate) if self.kdv_rate else 20.0,
+            'kdvAmount': float(self.kdv_amount) if self.kdv_amount else 0.0
         }
         sale_dict.update(base_dict)
         return sale_dict
@@ -271,18 +285,18 @@ class PaymentPlan(BaseModel, TenantScopedMixin):
     __tablename__ = "payment_plans"
     
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("plan"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("plan"))
     
     # Foreign keys
-    sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=False)
+    sale_id = Column(String(50), ForeignKey('sales.id'), nullable=False)
     # tenant_id is now inherited from TenantScopedMixin
-    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Plan details
-    plan_name = db.Column(db.String(100), nullable=False)
-    total_amount = db.Column(db.Float, nullable=False)  # TODO: Change to Numeric(12,2)
-    installment_count = db.Column(db.Integer, nullable=False)
-    installment_amount = db.Column(db.Float, nullable=False)  # TODO: Change to Numeric(12,2)
+    plan_name = Column(String(100), nullable=False)
+    total_amount = Column(Float, nullable=False)  # TODO: Change to Numeric(12,2)
+    installment_count = Column(Integer, nullable=False)
+    installment_amount = Column(Float, nullable=False)  # TODO: Change to Numeric(12,2)
     
     # Backwards-compatible alias expected by older tests and frontend code
     @property
@@ -298,12 +312,12 @@ class PaymentPlan(BaseModel, TenantScopedMixin):
             self.installment_count = value
 
     # Interest and fees
-    interest_rate = db.Column(db.Float, default=0.0)
-    processing_fee = db.Column(db.Float, default=0.0)  # TODO: Change to Numeric(12,2)
+    interest_rate = Column(Float, default=0.0)
+    processing_fee = Column(Float, default=0.0)  # TODO: Change to Numeric(12,2)
     
     # Status
-    status = db.Column(db.String(20), default='active')  # active, completed, cancelled
-    start_date = db.Column(db.DateTime, nullable=False)
+    status = Column(String(20), default='active')  # active, completed, cancelled
+    start_date = Column(DateTime, nullable=False)
 
     def to_dict(self):
         base_dict = self.to_dict_base()
@@ -329,25 +343,25 @@ class PaymentInstallment(BaseModel, TenantScopedMixin):
     __tablename__ = "payment_installments"
     
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("inst"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("inst"))
     
     # Foreign keys
-    payment_plan_id = db.Column(db.String(50), db.ForeignKey('payment_plans.id'), nullable=False)
+    payment_plan_id = Column(String(50), ForeignKey('payment_plans.id'), nullable=False)
     # tenant_id is now inherited from TenantScopedMixin
     
     # Installment details
-    installment_number = db.Column(db.Integer, nullable=False)
-    due_date = db.Column(db.DateTime, nullable=False)
-    amount = db.Column(db.Float, nullable=False)  # TODO: Change to Numeric(12,2)
+    installment_number = Column(Integer, nullable=False)
+    due_date = Column(DateTime, nullable=False)
+    amount = Column(Float, nullable=False)  # TODO: Change to Numeric(12,2)
     
     # Payment tracking
-    paid_date = db.Column(db.DateTime)
-    paid_amount = db.Column(db.Float)  # TODO: Change to Numeric(12,2)
-    status = db.Column(db.String(20), default='pending')  # pending, paid, overdue, cancelled
+    paid_date = Column(DateTime)
+    paid_amount = Column(Float)  # TODO: Change to Numeric(12,2)
+    status = Column(String(20), default='pending')  # pending, paid, overdue, cancelled
     
     # Late fees
-    late_fee = db.Column(db.Float, default=0.0)  # TODO: Change to Numeric(12,2)
-    notes = db.Column(db.Text)
+    late_fee = Column(Float, default=0.0)  # TODO: Change to Numeric(12,2)
+    notes = Column(Text)
 
     def to_dict(self):
         base_dict = self.to_dict_base()
@@ -368,7 +382,7 @@ class PaymentInstallment(BaseModel, TenantScopedMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_installment_plan', 'payment_plan_id'),
-        db.Index('ix_installment_due_date', 'due_date'),
-        db.Index('ix_installment_status', 'status'),
+        Index('ix_installment_plan', 'payment_plan_id'),
+        Index('ix_installment_due_date', 'due_date'),
+        Index('ix_installment_status', 'status'),
     )

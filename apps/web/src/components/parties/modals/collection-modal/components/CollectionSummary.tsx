@@ -35,29 +35,29 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Toplam Tutar:</span>
+                <span className="text-muted-foreground">Toplam Tutar:</span>
                 <span className="font-medium">{formatCurrency(sale.totalAmount)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">SGK Katkısı:</span>
-                <span className="font-medium text-blue-600">{formatCurrency(sale.sgkCoverage || 0)}</span>
+                <span className="text-muted-foreground">SGK Katkısı:</span>
+                <span className="font-medium text-primary">{formatCurrency(sale.sgkCoverage || 0)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">İndirim:</span>
+                <span className="text-muted-foreground">İndirim:</span>
                 <span className="font-medium text-orange-600">{formatCurrency(sale.discountAmount || 0)}</span>
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Ödenen:</span>
-                <span className="font-medium text-green-600">{formatCurrency(calculations.totalPaid)}</span>
+                <span className="text-muted-foreground">Ödenen:</span>
+                <span className="font-medium text-success">{formatCurrency(calculations.totalPaid)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Kalan:</span>
-                <span className="font-medium text-red-600">{formatCurrency(calculations.remainingBalance)}</span>
+                <span className="text-muted-foreground">Kalan:</span>
+                <span className="font-medium text-destructive">{formatCurrency(calculations.remainingBalance)}</span>
               </div>
               <div className="flex justify-between text-sm border-t pt-2">
-                <span className="text-gray-600">Durum:</span>
+                <span className="text-muted-foreground">Durum:</span>
                 <Badge variant={calculations.remainingBalance > 0 ? 'warning' : 'success'}>
                   {calculations.remainingBalance > 0 ? 'Bekleyen Ödeme' : 'Tamamlandı'}
                 </Badge>
@@ -78,7 +78,7 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
         <CardContent>
           <div className="space-y-3">
             {calculations.pendingInstallments.length > 0 && (
-              <div className="p-3 bg-yellow-50 rounded-lg">
+              <div className="p-3 bg-warning/10 rounded-2xl">
                 <div className="flex items-center gap-2 text-yellow-700 mb-2">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">Bekleyen Taksitler</span>
@@ -93,8 +93,8 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
             )}
 
             {calculations.overdueInstallments.length > 0 && (
-              <div className="p-3 bg-red-50 rounded-lg">
-                <div className="flex items-center gap-2 text-red-700 mb-2">
+              <div className="p-3 bg-destructive/10 rounded-2xl">
+                <div className="flex items-center gap-2 text-destructive mb-2">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">Vadesi Geçen Taksitler</span>
                 </div>
@@ -108,8 +108,8 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
             )}
 
             {calculations.pendingInstallments.length === 0 && calculations.overdueInstallments.length === 0 && (
-              <div className="p-3 bg-green-50 rounded-lg">
-                <div className="flex items-center gap-2 text-green-700">
+              <div className="p-3 bg-success/10 rounded-2xl">
+                <div className="flex items-center gap-2 text-success">
                   <span className="font-medium">Tüm taksitler güncel</span>
                 </div>
               </div>
@@ -131,29 +131,29 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-600">Toplam Senet:</span>
+                  <span className="text-muted-foreground">Toplam Senet:</span>
                   <div className="font-medium">{promissoryNotes.length}</div>
                 </div>
                 <div>
-                  <span className="text-gray-600">Aktif:</span>
-                  <div className="font-medium text-blue-600">{activePromissoryNotes.length}</div>
+                  <span className="text-muted-foreground">Aktif:</span>
+                  <div className="font-medium text-primary">{activePromissoryNotes.length}</div>
                 </div>
                 <div>
-                  <span className="text-gray-600">Vadesi Geçen:</span>
-                  <div className="font-medium text-red-600">{overduePromissoryNotes.length}</div>
+                  <span className="text-muted-foreground">Vadesi Geçen:</span>
+                  <div className="font-medium text-destructive">{overduePromissoryNotes.length}</div>
                 </div>
               </div>
 
               <div className="pt-2 border-t">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Toplam Senet Tutarı:</span>
+                  <span className="text-muted-foreground">Toplam Senet Tutarı:</span>
                   <span className="font-medium">{formatCurrency(totalPromissoryAmount)}</span>
                 </div>
               </div>
 
               {overduePromissoryNotes.length > 0 && (
-                <div className="p-3 bg-red-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-red-700">
+                <div className="p-3 bg-destructive/10 rounded-2xl">
+                  <div className="flex items-center gap-2 text-destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <span className="font-medium">
                       {overduePromissoryNotes.length} senetin vadesi geçmiş

@@ -1,4 +1,4 @@
-import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
+import { Button, Input, Select, Checkbox, DatePicker } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { InvoiceFilters as IInvoiceFilters, InvoiceStatus, PaymentMethod } from '../../types/invoice';
 
@@ -24,13 +24,13 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
   }).length;
 
   return (
-    <div className="bg-white rounded-lg shadow mb-6">
-      <div className="px-6 py-4 border-b border-gray-200">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow mb-6">
+      <div className="px-6 py-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <h2 className="text-lg font-semibold text-gray-900">Filtreler</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Filtreler</h2>
             {activeFilterCount > 0 && (
-              <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+              <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-300 rounded-full">
                 {activeFilterCount} aktif
               </span>
             )}
@@ -38,13 +38,13 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
           <div className="flex items-center space-x-3">
             <Button
               onClick={onReset}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-muted-foreground hover:text-foreground dark:hover:text-gray-200"
               variant="default">
               Temizle
             </Button>
             <Button
               onClick={() => setShowFilters(!showFilters)}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-muted-foreground hover:text-foreground dark:hover:text-gray-200"
               variant="default">
               {showFilters ? 'Gizle' : 'Göster'}
             </Button>
@@ -55,15 +55,15 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
       {showFilters && (
         <div className="p-6">
           {/* Filter Tabs */}
-          <div className="border-b border-gray-200 mb-6">
+          <div className="border-b border-border mb-6">
             <nav className="flex space-x-8">
               <Button
                 variant="ghost"
                 onClick={() => setActiveTab('basic')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'basic'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-500 text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-gray-200'
                 }`}>
                 Temel Filtreler
               </Button>
@@ -72,8 +72,8 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
                 onClick={() => setActiveTab('advanced')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'advanced'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-500 text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-gray-200'
                 }`}>
                 Gelişmiş Filtreler
               </Button>
@@ -84,7 +84,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
           {activeTab === 'basic' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Genel Arama
                 </label>
                 <Input
@@ -117,25 +117,19 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Başlangıç Tarihi
-                </label>
-                <Input
-                  type="date"
-                  value={filters.issueDateFrom || ''}
-                  onChange={(e) => handleFilterChange('issueDateFrom', e.target.value)}
+                <DatePicker
+                  label="Başlangıç Tarihi"
+                  value={filters.issueDateFrom ? new Date(filters.issueDateFrom) : null}
+                  onChange={(date) => handleFilterChange('issueDateFrom', date ? date.toISOString().split('T')[0] : '')}
                   className="w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bitiş Tarihi
-                </label>
-                <Input
-                  type="date"
-                  value={filters.issueDateTo || ''}
-                  onChange={(e) => handleFilterChange('issueDateTo', e.target.value)}
+                <DatePicker
+                  label="Bitiş Tarihi"
+                  value={filters.issueDateTo ? new Date(filters.issueDateTo) : null}
+                  onChange={(date) => handleFilterChange('issueDateTo', date ? date.toISOString().split('T')[0] : '')}
                   className="w-full"
                 />
               </div>
@@ -146,7 +140,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
           {activeTab === 'advanced' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Hasta Adı
                 </label>
                 <Input
@@ -159,7 +153,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Fatura Numarası
                 </label>
                 <Input
@@ -190,7 +184,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Min Tutar
                 </label>
                 <Input
@@ -204,7 +198,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Max Tutar
                 </label>
                 <Input
@@ -250,17 +244,16 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
           )}
 
           {/* Filter Actions */}
-          <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-border">
             <Button
               onClick={onReset}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-foreground bg-white dark:bg-gray-700 border border-border rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-600"
               variant="default">
               Sıfırla
             </Button>
             <Button
               onClick={onApply}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
-              style={{ backgroundColor: '#2563eb', color: 'white' }}
+              className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-2xl shadow-sm"
               variant="default">
               Filtrele
             </Button>

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/noah_imports.py
+# hypothesis_version: 6.151.9
+
+['agentVersion', 'allowedFormats', 'audiogramType', 'batteryType', 'branchId', 'completedAt', 'conductionType', 'deviceBrand', 'deviceCategory', 'deviceFingerprint', 'deviceId', 'deviceModel', 'deviceName', 'deviceSerial', 'deviceToken', 'earMold', 'enrollmentToken', 'existingPartyId', 'expiresAt', 'exportFolder', 'exportedAt', 'externalIds', 'fileMeta', 'fileSha256', 'firstName', 'fittingType', 'importedData', 'lastName', 'lastSeenAt', 'matchReason', 'matchScore', 'nationalId', 'noahPatientId', 'normalizedPayload', 'parserVersion', 'patientNo', 'patientRef', 'pointStatuses', 'recordsCreated', 'recordsUpdated', 'requestingUserId', 'resolvedAt', 'resolvedBy', 'sessionId', 'targetPartyId', 'tenantId', 'userId', 'workTelephone', 'zipCode']

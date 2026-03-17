@@ -10,6 +10,7 @@ export type ListNotificationsParams = {
 user_id?: string | null;
 /**
  * @minimum 1
+ * @maximum 1000000
  */
 page?: number;
 /**

@@ -1,6 +1,5 @@
 import re
 from decimal import Decimal
-from datetime import datetime
 
 
 def test_sale_id_format():

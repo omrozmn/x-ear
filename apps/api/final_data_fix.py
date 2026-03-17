@@ -1,6 +1,6 @@
 
 from app import create_app, db
-from models.sales import Sale, DeviceAssignment
+from models.sales import Sale
 
 app = create_app()
 
@@ -13,7 +13,7 @@ def fix_sale():
             print(f"Sale {sale_id} not found!")
             return
 
-        print(f"--- Before Fix ---")
+        print("--- Before Fix ---")
         print(f"List: {sale.total_amount}, SGK: {sale.sgk_coverage}, Disc: {sale.discount_amount}, Final: {sale.final_amount}")
 
         # Target Values based on User Feedback and preserving 'Final Amount'
@@ -27,7 +27,7 @@ def fix_sale():
         calculated_sgk = target_list - target_final - target_discount
         # 25996 - 12408.41 - 1000 = 12587.59
         
-        print(f"--- Target Values ---")
+        print("--- Target Values ---")
         print(f"List: {target_list}")
         print(f"Final (Total): {target_final}")
         print(f"Discount: {target_discount}")

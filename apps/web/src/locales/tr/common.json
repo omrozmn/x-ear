@@ -43,5 +43,25 @@
         "select": "Dil Seçin",
         "tr": "Türkçe",
         "en": "English"
+    },
+    "ai": {
+        "assistant": "AI Asistan",
+        "welcomeMessage": "Merhaba. Hasta, satış, cihaz, randevu ve fatura işlemlerini buradan yapabilirsin.",
+        "quickActions": {
+            "title": "Hızlı İşlemler",
+            "footer": "veya aşağıya yazarak herhangi bir işlem yapabilirsiniz",
+            "newPatient": "Yeni Hasta",
+            "newPatientMsg": "Yeni hasta oluştur",
+            "newSale": "Yeni Satış",
+            "newSaleMsg": "Yeni satış başlat",
+            "appointments": "Randevular",
+            "appointmentsMsg": "Bugünkü randevularımı göster",
+            "invoices": "Faturalar",
+            "invoicesMsg": "Bekleyen faturaları listele",
+            "queryDevice": "Cihaz Sorgula",
+            "queryDeviceMsg": "Stoktaki cihazları listele",
+            "collectPayment": "Tahsilat Yap",
+            "collectPaymentMsg": "Yeni tahsilat ekle"
+        }
     }
 }

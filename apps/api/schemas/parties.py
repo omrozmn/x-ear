@@ -1,24 +1,8 @@
 from typing import Optional, List, Dict, Any, Union
-from enum import Enum
 from datetime import date, datetime
 from pydantic import Field, EmailStr, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
-
-# Enums
-class PartyStatus(str, Enum):
-    ACTIVE = 'active'
-    INACTIVE = 'inactive'
-    LEAD = 'lead'
-    TRIAL = 'trial'
-    CUSTOMER = 'customer'
-    NEW = 'new'
-    DECEASED = 'deceased'
-    ARCHIVED = 'archived'
-
-class Gender(str, Enum):
-    MALE = 'M'
-    FEMALE = 'F'
-    OTHER = 'O'
+from .enums import PartyStatus, Gender
 
 class AddressSchema(AppBaseModel):
     city: Optional[str] = None
@@ -67,6 +51,9 @@ class PartyUpdate(AppBaseModel):
     last_name: Optional[str] = Field(None, alias="lastName")
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
+    tc_number: Optional[str] = Field(None, min_length=11, max_length=11, alias="tcNumber")
+    gender: Optional[str] = None
+    birth_date: Optional[str] = Field(None, alias="birthDate")
     status: Optional[PartyStatus] = None
     # CRM fields
     segment: Optional[str] = None
@@ -74,6 +61,8 @@ class PartyUpdate(AppBaseModel):
     branch_id: Optional[str] = Field(None, alias="branchId")
     tags: Optional[List[str]] = None
     # Address fields
+    city: Optional[str] = None
+    district: Optional[str] = None
     address_city: Optional[str] = Field(None, alias="addressCity")
     address_district: Optional[str] = Field(None, alias="addressDistrict")
     address_full: Optional[str] = Field(None, alias="addressFull")
@@ -215,3 +204,35 @@ class BulkUploadResponse(AppBaseModel):
 # Update forward refs
 PartyRead.model_rebuild()
 
+
+# --- Bulk Operations Schemas ---
+class BulkUpdateRequest(AppBaseModel):
+    party_ids: List[str] = Field(..., alias="partyIds")
+    updates: PartyUpdate
+
+class BulkUpdateResult(AppBaseModel):
+    party_id: str = Field(..., alias="partyId")
+    success: bool
+    error: Optional[str] = None
+
+class BulkUpdateResponse(AppBaseModel):
+    success_count: int = Field(..., alias="successCount")
+    failure_count: int = Field(..., alias="failureCount")
+    results: List[BulkUpdateResult]
+
+class BulkEmailRequest(AppBaseModel):
+    party_ids: List[str] = Field(..., alias="partyIds")
+    subject: str
+    body: str
+    template_id: Optional[str] = Field(None, alias="templateId")
+
+class BulkEmailResult(AppBaseModel):
+    party_id: str = Field(..., alias="partyId")
+    email: Optional[str] = None
+    success: bool
+    error: Optional[str] = None
+
+class BulkEmailResponse(AppBaseModel):
+    success_count: int = Field(..., alias="successCount")
+    failure_count: int = Field(..., alias="failureCount")
+    results: List[BulkEmailResult]

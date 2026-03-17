@@ -8,8 +8,3 @@ SUNSET DATE: 2026-04-01
 This shim will be removed in a future release.
 """
 from core.database import * # noqa: F401, F403
-from core.database import (
-    _skip_tenant_filter,
-    _current_tenant_id,
-    _default_sqlite_path
-)

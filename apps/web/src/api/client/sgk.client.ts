@@ -13,7 +13,7 @@ export {
   listSgkEReceiptDownloadPatientForm,
   listSgkDocuments,
   createSgkDocuments,
-  deleteSgkDocument,
+  // deleteSgkDocument, // Endpoint disabled in backend
   createSgkWorkflowCreate,
   updateSgkWorkflowStatus,
   getListSgkDocumentsQueryKey,
@@ -21,7 +21,7 @@ export {
   useListSgkEReceiptDownloadPatientForm,
   useListSgkDocuments,
   useCreateSgkDocuments,
-  useDeleteSgkDocument,
+  // useDeleteSgkDocument, // Endpoint disabled in backend
 } from '@/api/generated/index';
 
 export type { UploadSGKDocumentRequest } from '@/api/generated/schemas';

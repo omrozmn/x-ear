@@ -8,7 +8,6 @@ import {
   Download, 
   RotateCw, 
   Move,
-  X,
   FileText,
   Eye
 } from 'lucide-react';
@@ -198,33 +197,34 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       isOpen={isOpen} 
       onClose={onClose}
       title=""
-      className={`${isFullscreen ? 'fixed inset-0 z-50 bg-black' : 'max-w-6xl'}`}
+      closable={false}
+      className={`${isFullscreen ? 'fixed inset-0 z-50 bg-black w-full h-full max-w-none' : 'max-w-7xl w-[95vw]'}`}
     >
-      <div className={`flex flex-col h-full ${isFullscreen ? 'h-screen' : 'max-h-[90vh]'}`}>
+      <div className={`flex flex-col ${isFullscreen ? 'h-screen w-full' : 'h-[95vh]'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gray-50 flex-shrink-0">
-          <div className="flex items-center space-x-3">
+        <div className="flex items-center justify-between p-4 border-b bg-muted flex-shrink-0 w-full">
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
             <div className="flex-shrink-0 h-8 w-8">
-              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="h-8 w-8 bg-primary/10 rounded-2xl flex items-center justify-center">
                 {isPDF ? (
-                  <FileText className="h-4 w-4 text-blue-600" />
+                  <FileText className="h-4 w-4 text-primary" />
                 ) : (
-                  <Eye className="h-4 w-4 text-blue-600" />
+                  <Eye className="h-4 w-4 text-primary" />
                 )}
               </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 truncate max-w-md">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-semibold text-foreground truncate">
                 {document.filename}
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground truncate">
                 {document.documentType} • {document.fileSize ? `${Math.round(document.fileSize / 1024)} KB` : 'Boyut bilinmiyor'}
               </p>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             {isImage && (
               <>
                 <Button
@@ -237,7 +237,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
                   <ZoomOut className="w-4 h-4" />
                 </Button>
                 
-                <span className="text-sm text-gray-600 min-w-[60px] text-center">
+                <span className="text-sm text-muted-foreground min-w-[60px] text-center">
                   {Math.round(zoom * 100)}%
                 </span>
                 
@@ -290,22 +290,13 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
                 <Download className="w-4 h-4" />
               </Button>
             )}
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              title="Kapat (Esc)"
-            >
-              <X className="w-4 h-4" />
-            </Button>
           </div>
         </div>
 
         {/* Content */}
         <div 
           ref={containerRef}
-          className="flex-1 overflow-hidden bg-gray-100 relative"
+          className="flex-1 overflow-hidden bg-muted relative w-full"
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -358,9 +349,9 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
-                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Önizleme mevcut değil</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Önizleme mevcut değil</p>
+                <p className="text-sm text-muted-foreground mt-2">
                   Bu dosya türü için önizleme desteklenmiyor
                 </p>
               </div>
@@ -369,7 +360,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         </div>
 
         {/* Footer with shortcuts */}
-        <div className="px-4 py-2 bg-gray-50 border-t text-xs text-gray-500 flex-shrink-0">
+        <div className="px-4 py-2 bg-muted border-t text-xs text-muted-foreground flex-shrink-0 w-full">
           <div className="flex items-center justify-between">
             <div>
               {isImage && (

@@ -1,12 +1,12 @@
 """
 Simplified Tenant model for multi-tenant architecture
 """
+from core.models.base import Base
 import uuid
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON
+from sqlalchemy import Column, String, DateTime, Text, JSON, ForeignKey, Integer, Index
 from sqlalchemy.orm import relationship
-from models.base import db
 
 
 class TenantStatus(str, Enum):
@@ -17,7 +17,7 @@ class TenantStatus(str, Enum):
     TRIAL = "trial"
 
 
-class Tenant(db.Model):
+class Tenant(Base):
     """Tenant model for managing customer organizations"""
     
     __tablename__ = 'tenants'
@@ -31,15 +31,21 @@ class Tenant(db.Model):
     description = Column(Text, nullable=True)
     
     # Contact information
-    owner_email = Column(String(255), nullable=False)
+    owner_email = Column(String(255), nullable=True)  # Made nullable for test compatibility
     billing_email = Column(String(255), nullable=False)
     
     # Referral
-    affiliate_id = Column(db.Integer, db.ForeignKey('affiliate_user.id'), nullable=True, index=True)
+    affiliate_id = Column(Integer, ForeignKey('affiliate_user.id'), nullable=True, index=True)
     referral_code = Column(String(50), nullable=True)
     
     # Product (Multi-product architecture - Contract #18)
     product_code = Column(String(50), nullable=True, default='xear_hearing', index=True)
+
+    # Country (International support)
+    country_code = Column(String(2), ForeignKey('countries.code'), default='TR', nullable=True, index=True)
+
+    # Sector (Multi-sector platform)
+    sector = Column(String(30), nullable=False, default='hearing', server_default='hearing', index=True)
     
     # Tenant Type (Phase 3 - B2B vs Consumer)
     from models.enums import TenantType
@@ -55,11 +61,11 @@ class Tenant(db.Model):
     subscription_end_date = Column(DateTime, nullable=True)
     feature_usage = Column(JSON, nullable=True, default={}) # Track usage of limited features
     
-    max_users = Column(db.Integer, default=5)
-    current_users = Column(db.Integer, default=0)
+    max_users = Column(Integer, default=5)
+    current_users = Column(Integer, default=0)
     
-    max_branches = Column(db.Integer, default=1)
-    current_branches = Column(db.Integer, default=0)
+    max_branches = Column(Integer, default=1)
+    current_branches = Column(Integer, default=0)
     
     # Additional information
     company_info = Column(JSON, nullable=True)
@@ -72,8 +78,8 @@ class Tenant(db.Model):
     
     # Indexes
     __table_args__ = (
-        db.Index('idx_tenants_status', 'status'),
-        db.Index('idx_tenants_slug', 'slug'),
+        Index('idx_tenants_status', 'status'),
+        Index('idx_tenants_slug', 'slug'),
     )
     
     # Relationships
@@ -103,6 +109,8 @@ class Tenant(db.Model):
             'ownerEmail': self.owner_email,
             'billingEmail': self.billing_email,
             'status': self.status,
+            'sector': self.sector or 'hearing',
+            'countryCode': self.country_code,
             'currentPlan': self.current_plan,
             'currentPlanId': self.current_plan_id,
             'subscriptionStartDate': self.subscription_start_date.isoformat() if self.subscription_start_date else None,

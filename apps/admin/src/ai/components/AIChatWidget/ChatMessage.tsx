@@ -236,7 +236,7 @@ export function ChatMessage({ message, className = '' }: ChatMessageProps): Reac
 
           {/* Action Preview */}
           {message.actionPlan && (
-            <div className="mt-2 mb-1 bg-white rounded-lg overflow-hidden border border-gray-200">
+            <div className="mt-2 mb-1 bg-white rounded-2xl overflow-hidden border border-gray-200">
               <AIActionPreview
                 plan={message.actionPlan}
                 className="text-left border-0 shadow-none"

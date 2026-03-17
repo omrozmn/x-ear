@@ -15,7 +15,7 @@ export default function SGKList() {
       {partyId ? (
         <DocumentList partyId={partyId} />
       ) : (
-        <div className="p-4 bg-gray-50 rounded">Hasta ID girin veya bir hasta seçin.</div>
+        <div className="p-4 bg-muted rounded">Hasta ID girin veya bir hasta seçin.</div>
       )}
     </div>
   );

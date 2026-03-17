@@ -1,10 +1,10 @@
 """
 Affiliate Schemas - Pydantic models for Affiliate domain
 """
-from typing import Optional, List, Any
+from typing import Optional, Any
 from datetime import datetime
 from pydantic import Field, EmailStr
-from .base import AppBaseModel, IDMixin, TimestampMixin
+from .base import AppBaseModel, TimestampMixin
 
 
 class AffiliateBase(AppBaseModel):

@@ -1,0 +1,10 @@
+AI İşlem Tamamlandı
+
+Merhaba,
+
+AI işleminiz başarıyla tamamlandı.
+
+İşlem detayları için sisteme giriş yapın.
+
+---
+Bu otomatik bir mesajdır. Lütfen yanıtlamayın.

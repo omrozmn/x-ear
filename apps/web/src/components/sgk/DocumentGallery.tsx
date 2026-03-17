@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Grid, List, Download, Trash2, Eye, Filter, RotateCcw, Clock, CheckCircle, AlertCircle, FileText } from 'lucide-react';
-import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
+import { Button, Input, Select, Checkbox, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import DocumentViewer from './DocumentViewer';
 import DocumentPreview from './DocumentPreview';
 import { SGKDocument, SGKDocumentType } from '../../types/sgk';
@@ -147,15 +148,15 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'completed':
-        return { color: 'text-green-600 bg-green-100', icon: CheckCircle, label: 'Tamamlandı' };
+        return { color: 'text-success bg-success/10', icon: CheckCircle, label: 'Tamamlandı' };
       case 'processing':
-        return { color: 'text-blue-600 bg-blue-100', icon: Clock, label: 'İşleniyor' };
+        return { color: 'text-primary bg-primary/10', icon: Clock, label: 'İşleniyor' };
       case 'pending':
-        return { color: 'text-yellow-600 bg-yellow-100', icon: Clock, label: 'Bekliyor' };
+        return { color: 'text-yellow-600 bg-warning/10', icon: Clock, label: 'Bekliyor' };
       case 'failed':
-        return { color: 'text-red-600 bg-red-100', icon: AlertCircle, label: 'Hata' };
+        return { color: 'text-destructive bg-destructive/10', icon: AlertCircle, label: 'Hata' };
       default:
-        return { color: 'text-gray-600 bg-gray-100', icon: FileText, label: status };
+        return { color: 'text-muted-foreground bg-muted', icon: FileText, label: status };
     }
   };
 
@@ -191,6 +192,88 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
     });
   };
 
+  const documentColumns: Column<SGKDocument>[] = [
+    {
+      key: '_document',
+      title: 'Belge',
+      render: (_: unknown, document: SGKDocument) => (
+        <div className="flex items-center">
+          <FileText className="w-5 h-5 text-muted-foreground mr-3" />
+          <div className="text-sm font-medium text-foreground truncate max-w-xs">
+            {document.filename}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: '_type',
+      title: 'Tür',
+      render: (_: unknown, document: SGKDocument) => (
+        <span className="text-sm text-foreground">{getDocumentTypeLabel(document.documentType)}</span>
+      ),
+    },
+    {
+      key: '_status',
+      title: 'Durum',
+      render: (_: unknown, document: SGKDocument) => {
+        const statusInfo = getStatusInfo(document.processingStatus);
+        const StatusIcon = statusInfo.icon;
+        return (
+          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusInfo.color}`}>
+            <StatusIcon className="w-3 h-3" />
+            {statusInfo.label}
+          </div>
+        );
+      },
+    },
+    {
+      key: '_size',
+      title: 'Boyut',
+      render: (_: unknown, document: SGKDocument) => (
+        <span className="text-sm text-muted-foreground">{formatFileSize(document.fileSize)}</span>
+      ),
+    },
+    {
+      key: '_date',
+      title: 'Tarih',
+      render: (_: unknown, document: SGKDocument) => (
+        <span className="text-sm text-muted-foreground">{formatDate(document.uploadedAt)}</span>
+      ),
+    },
+    {
+      key: '_actions',
+      title: 'İşlemler',
+      render: (_: unknown, document: SGKDocument) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewDocument(document)}
+            className="text-primary hover:text-primary"
+          >
+            <Eye className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDownloadDocument(document)}
+            className="text-success hover:text-success"
+          >
+            <Download className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handlePreviewDocument(document)}
+            className="text-purple-600 hover:text-purple-700"
+          >
+            <Search className="w-4 h-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       {/* Header with controls */}
@@ -198,7 +281,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">Belgeler ({filteredDocuments.length})</h2>
           {selectedDocuments.size > 0 && (
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               ({selectedDocuments.size} seçili)
             </span>
           )}
@@ -221,7 +304,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={handleBulkDelete}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                className="flex items-center gap-1 text-destructive hover:text-destructive"
               >
                 <Trash2 className="w-4 h-4" />
                 Sil ({selectedDocuments.size})
@@ -230,7 +313,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
           )}
 
           {/* View mode toggle */}
-          <div className="flex border rounded-lg">
+          <div className="flex border rounded-2xl">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
@@ -276,7 +359,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+        <div className="bg-muted p-4 rounded-2xl space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <Input
@@ -344,12 +427,12 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
           {/* Advanced Filters */}
           {showAdvancedFilters && (
             <div className="border-t pt-4 space-y-4">
-              <h3 className="text-sm font-medium text-gray-700">Gelişmiş Filtreler</h3>
+              <h3 className="text-sm font-medium text-foreground">Gelişmiş Filtreler</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Date Range Filter */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Tarih Aralığı</label>
+                  <label className="text-sm font-medium text-foreground">Tarih Aralığı</label>
                   <div className="flex gap-2">
                     <Input
                       type="date"
@@ -368,12 +451,12 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
 
                 {/* File Size Filter */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-foreground">
                     Dosya Boyutu (MB): {fileSizeRange.min} - {fileSizeRange.max}
                   </label>
                   <div className="space-y-2">
                     <div>
-                      <label className="text-xs text-gray-500">Min: {fileSizeRange.min} MB</label>
+                      <label className="text-xs text-muted-foreground">Min: {fileSizeRange.min} MB</label>
                       <input
                         data-allow-raw="true"
                         type="range"
@@ -381,11 +464,11 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                         max={100}
                         value={fileSizeRange.min}
                         onChange={(e) => setFileSizeRange(prev => ({ ...prev, min: parseInt(e.target.value) }))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        className="w-full h-2 bg-accent rounded-2xl appearance-none cursor-pointer"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500">Max: {fileSizeRange.max} MB</label>
+                      <label className="text-xs text-muted-foreground">Max: {fileSizeRange.max} MB</label>
                       <input
                         data-allow-raw="true"
                         type="range"
@@ -393,11 +476,11 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                         max={100}
                         value={fileSizeRange.max}
                         onChange={(e) => setFileSizeRange(prev => ({ ...prev, max: parseInt(e.target.value) }))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        className="w-full h-2 bg-accent rounded-2xl appearance-none cursor-pointer"
                       />
                     </div>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500">
+                  <div className="flex justify-between text-xs text-muted-foreground">
                     <span>0 MB</span>
                     <span>100 MB</span>
                   </div>
@@ -440,13 +523,13 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-gray-600">Belgeler yükleniyor...</span>
+          <span className="ml-2 text-muted-foreground">Belgeler yükleniyor...</span>
         </div>
       ) : filteredDocuments.length === 0 ? (
         <div className="text-center py-12">
-          <FileText className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Belge bulunamadı</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Belge bulunamadı</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             {searchTerm || selectedType !== 'all' || selectedStatus !== 'all'
               ? 'Arama kriterlerinize uygun belge bulunamadı.'
               : 'Henüz belge yüklenmemiş.'}
@@ -461,7 +544,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
             return (
               <div
                 key={document.id}
-                className={`relative bg-white border rounded-lg p-4 hover:shadow-md transition-shadow ${selectedDocuments.has(document.id) ? 'ring-2 ring-blue-500' : ''
+                className={`relative bg-card border rounded-2xl p-4 hover:shadow-md transition-shadow ${selectedDocuments.has(document.id) ? 'ring-2 ring-blue-500' : ''
                   }`}
               >
                 {/* Selection checkbox */}
@@ -472,7 +555,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 />
 
                 {/* Document thumbnail/icon */}
-                <div className="flex items-center justify-center h-32 bg-gray-100 rounded-lg mb-3 mt-6">
+                <div className="flex items-center justify-center h-32 bg-muted rounded-2xl mb-3 mt-6">
                   {document.fileUrl ? (
                     <img
                       src={document.fileUrl}
@@ -484,7 +567,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                       }}
                     />
                   ) : null}
-                  <FileText className="w-12 h-12 text-gray-400" />
+                  <FileText className="w-12 h-12 text-muted-foreground" />
                 </div>
 
                 {/* Document info */}
@@ -493,7 +576,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     {document.filename}
                   </h3>
 
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{getDocumentTypeLabel(document.documentType)}</span>
                     <span>{formatFileSize(document.fileSize)}</span>
                   </div>
@@ -503,7 +586,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     {statusInfo.label}
                   </div>
 
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     {formatDate(document.uploadedAt)}
                   </div>
                 </div>
@@ -534,115 +617,17 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
           })}
         </div>
       ) : (
-        /* List view */
-        <div className="bg-white border rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <Checkbox
-                      checked={selectedDocuments.size === filteredDocuments.length}
-                      onChange={handleSelectAll}
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Belge
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tür
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Durum
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Boyut
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tarih
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    İşlemler
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredDocuments.map((document) => {
-                  const statusInfo = getStatusInfo(document.processingStatus);
-                  const StatusIcon = statusInfo.icon;
-
-                  return (
-                    <tr
-                      key={document.id}
-                      className={`hover:bg-gray-50 ${selectedDocuments.has(document.id) ? 'bg-blue-50' : ''
-                        }`}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Checkbox
-                          checked={selectedDocuments.has(document.id)}
-                          onChange={() => handleSelectDocument(document.id)}
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <FileText className="w-5 h-5 text-gray-400 mr-3" />
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                              {document.filename}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {getDocumentTypeLabel(document.documentType)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusInfo.color}`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {statusInfo.label}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatFileSize(document.fileSize)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(document.uploadedAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDocument(document)}
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDownloadDocument(document)}
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePreviewDocument(document)}
-                            className="text-purple-600 hover:text-purple-700"
-                          >
-                            <Search className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable<SGKDocument>
+          data={filteredDocuments}
+          columns={documentColumns}
+          rowKey={(doc) => doc.id}
+          loading={loading}
+          rowSelection={{
+            selectedRowKeys: Array.from(selectedDocuments),
+            onChange: (newKeys) => setSelectedDocuments(new Set(newKeys.map(String))),
+          }}
+          emptyText="Belge bulunamadı"
+        />
       )}
 
       {/* Document Viewer Modal */}

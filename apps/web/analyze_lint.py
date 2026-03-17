@@ -1,7 +1,6 @@
 
 import json
 import os
-import sys
 from collections import defaultdict
 
 def analyze_lint_report(file_path):

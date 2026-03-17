@@ -13,7 +13,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 
 import sys
 import os
-import json
 import requests
 import re
 from datetime import datetime
@@ -163,7 +162,7 @@ def fetch_real_ids(headers):
                              ids[id_key] = str(r_create.json().get('data', {}).get('id'))
                              print(f"✅ Created dummy user: {ids[id_key]}")
 
-        except Exception as e:
+        except Exception:
             # print(f"Error fetching {id_key}: {e}")
             pass
     
@@ -474,7 +473,7 @@ def run_tests():
     with open('api_verification_results.md', 'w') as f:
         f.write("# API Verification Results\n\n")
         f.write(f"**Generated**: {datetime.now().isoformat()}\n\n")
-        f.write(f"## Summary\n")
+        f.write("## Summary\n")
         f.write(f"- **Total Endpoints**: {total}\n")
         f.write(f"- **200-299 OK**: {ok_count}\n")
         f.write(f"- **4xx Client Errors**: {passed - ok_count}\n")
@@ -486,7 +485,7 @@ def run_tests():
             path = r['path'].replace('|', '\\|')
             f.write(f"| **{r['method']}** | `{path}` | {r['status']} | {r['indicator']} | `{r['details'][:50]}` |\n")
     
-    print(f"\n📝 Report saved to api_verification_results.md")
+    print("\n📝 Report saved to api_verification_results.md")
 
 if __name__ == "__main__":
     run_tests()

@@ -1,4 +1,3 @@
-import json
 
 
 def test_patients_list_contract(client):

@@ -13,7 +13,6 @@ import hashlib
 import logging
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
-from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
@@ -92,7 +91,7 @@ class RequestLogger:
             
             if existing:
                 logger.info(
-                    f"Duplicate request detected via idempotency key",
+                    "Duplicate request detected via idempotency key",
                     extra={
                         "tenant_id": tenant_id,
                         "user_id": user_id,
@@ -129,7 +128,7 @@ class RequestLogger:
         self.db.refresh(ai_request)
         
         logger.info(
-            f"AI request logged to database",
+            "AI request logged to database",
             extra={
                 "request_id": ai_request.id,
                 "tenant_id": tenant_id,
@@ -210,7 +209,7 @@ class RequestLogger:
         self.db.refresh(ai_request)
         
         logger.info(
-            f"AI request status updated",
+            "AI request status updated",
             extra={
                 "request_id": request_id,
                 "status": status.value,
@@ -239,7 +238,7 @@ class RequestLogger:
         # Count and delete requests older than cutoff without legal hold
         query = self.db.query(AIRequest).filter(
             AIRequest.created_at < cutoff,
-            AIRequest.legal_hold == False
+            AIRequest.legal_hold.is_(False)
         )
         count = query.delete(synchronize_session=False)
         self.db.commit()

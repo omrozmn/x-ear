@@ -23,7 +23,7 @@ export const InventorySelector: React.FC<InventorySelectorProps> = ({
   return (
     <div className="space-y-4">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
           type="text"
           placeholder="Cihaz ara (marka, model, isim)..."
@@ -35,7 +35,7 @@ export const InventorySelector: React.FC<InventorySelectorProps> = ({
 
       <div className="max-h-64 overflow-y-auto space-y-2">
         {inventoryItems.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
             <p>Uygun cihaz bulunamadı</p>
           </div>
@@ -45,16 +45,16 @@ export const InventorySelector: React.FC<InventorySelectorProps> = ({
               key={item.id}
               className={`cursor-pointer transition-all hover:shadow-md ${
                 selectedItem?.id === item.id
-                  ? 'ring-2 ring-blue-500 bg-blue-50'
-                  : 'hover:bg-gray-50'
+                  ? 'ring-2 ring-blue-500 bg-primary/10'
+                  : 'hover:bg-muted'
               }`}
               onClick={() => onItemSelect(item)}
             >
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{item.name}</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-medium text-foreground">{item.name}</h4>
+                    <p className="text-sm text-muted-foreground">
                       {item.brand} {item.model && `- ${item.model}`}
                     </p>
                     <div className="flex items-center gap-2 mt-2">

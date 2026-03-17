@@ -24,10 +24,10 @@ if str(_api_dir) not in sys.path:
     sys.path.insert(0, str(_api_dir))
 
 import pytest
-from hypothesis import given, strategies as st, settings, assume
-from unittest.mock import patch, MagicMock
+from hypothesis import given, strategies as st, settings
+from unittest.mock import patch
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from dataclasses import dataclass
 
 
@@ -169,7 +169,7 @@ class TestSystemResilienceProperty:
         """
         op_name, op_func, op_input = operation_tuple
         
-        from ai.services.graceful_degradation import GracefulDegradationService, DegradationReason
+        from ai.services.graceful_degradation import GracefulDegradationService
         from ai.services.feature_flags import AIFeatureFlagService, AIFeatureFlag
         
         # Disable AI via feature flag
@@ -231,7 +231,6 @@ class TestSystemResilienceProperty:
         from ai.services.kill_switch import KillSwitch
         from ai.services.graceful_degradation import (
             GracefulDegradationService,
-            DegradationReason,
         )
         
         # Activate kill switch
@@ -360,7 +359,6 @@ class TestGracefulDegradationService:
         """Successful operation resets failure count."""
         from ai.services.graceful_degradation import (
             GracefulDegradationService,
-            AIAvailabilityStatus,
             DegradationReason,
         )
         
@@ -584,7 +582,6 @@ class TestKillSwitchIntegration:
         from ai.services.graceful_degradation import (
             GracefulDegradationService,
             AIAvailabilityStatus,
-            DegradationReason,
         )
         
         kill_switch = KillSwitch.get()

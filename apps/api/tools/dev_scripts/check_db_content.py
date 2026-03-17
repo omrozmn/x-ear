@@ -2,7 +2,7 @@ import sys
 import os
 # Add backend root to path to allow imports from app, models, etc.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-from app import app, db
+from app import app
 from models.tenant import Tenant
 from models.user import User
 from models.admin_user import AdminUser

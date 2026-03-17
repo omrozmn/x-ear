@@ -1,10 +1,14 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Input, Textarea, Select, Card } from '@x-ear/ui-web';
+import { useNavigate } from '@tanstack/react-router';
 import { InventoryItem } from '../../../types/inventory';
 import { CategoryAutocomplete } from './CategoryAutocomplete';
 import { BrandAutocomplete } from './BrandAutocomplete';
 import { SupplierAutocomplete } from './SupplierAutocomplete';
 import { FeaturesTagManager } from '../../../components/inventory/FeaturesTagManager';
+import { getCategoryDisplay } from '../../../utils/category-mapping';
+import { BarcodeInput } from '../../../components/barcode';
 
 interface ProductInfoSectionProps {
   item: InventoryItem;
@@ -21,6 +25,8 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
   onEditChange,
   onFeaturesChange,
 }) => {
+  const { t } = useTranslation('inventory');
+  const navigate = useNavigate();
   return (
     <Card>
       <div className="p-6">
@@ -30,7 +36,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Ürün Adı
             </label>
             {isEditMode ? (
@@ -54,7 +60,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
                 />
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Marka
                   </label>
                   <p className="text-gray-900 dark:text-white">{item.brand}</p>
@@ -63,7 +69,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Model
               </label>
               {isEditMode ? (
@@ -87,24 +93,27 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
               />
             ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Kategori
                 </label>
-                <p className="text-gray-900 dark:text-white">{item.category}</p>
+                <p className="text-gray-900 dark:text-white">{getCategoryDisplay(item.category)}</p>
               </div>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Barkod
               </label>
               {isEditMode ? (
-                <Input
+                <BarcodeInput
                   value={editedItem.barcode || ''}
-                  onChange={(e) => onEditChange({ barcode: e.target.value })}
-                  fullWidth
+                  onChange={(value) => onEditChange({ barcode: value })}
+                  showScanButton={true}
+                  showGenerateButton={true}
+                  showPrintButton={true}
+                  item={item}
                 />
               ) : (
                 <p className="text-gray-900 dark:text-white font-mono">{item.barcode || '-'}</p>
@@ -112,7 +121,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Stok Kodu
               </label>
               {isEditMode ? (
@@ -134,10 +143,17 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
                   value={editedItem.supplier || ''}
                   onChange={(value) => onEditChange({ supplier: value })}
                   label="Tedarikçi"
+                  onSupplierCreated={(_name, id) => {
+                    if (id) {
+                      navigate({ to: '/suppliers/$supplierId', params: { supplierId: id } });
+                    } else {
+                      navigate({ to: '/suppliers' });
+                    }
+                  }}
                 />
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Tedarikçi
                   </label>
                   <p className="text-gray-900 dark:text-white">{item.supplier || '-'}</p>
@@ -146,7 +162,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Birim
               </label>
               {isEditMode ? (
@@ -181,7 +197,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 
           {item.description && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Açıklama
               </label>
               {isEditMode ? (
@@ -203,13 +219,13 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
             isEditMode={isEditMode}
           />
 
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Oluşturulma: {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
+          <div className="pt-4 border-t border-border">
+            <p className="text-sm text-muted-foreground">
+              {t('columns.created_at')}: {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
             </p>
             {item.lastUpdated && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Son Güncelleme: {new Date(item.lastUpdated).toLocaleDateString('tr-TR')}
+              <p className="text-sm text-muted-foreground mt-1">
+                {t('columns.updated_at')}: {new Date(item.lastUpdated).toLocaleDateString('tr-TR')}
               </p>
             )}
           </div>

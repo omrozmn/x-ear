@@ -1,5 +1,5 @@
 """Admin Marketplaces Router - FastAPI"""
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -7,10 +7,11 @@ from datetime import datetime
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.marketplace import MarketplaceIntegration, MarketplaceProduct
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
-from schemas.marketplaces import MarketplaceIntegrationRead, MarketplaceIntegrationCreate
+from schemas.marketplaces import MarketplaceIntegrationRead
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/api/admin/marketplaces", tags=["Admin Marketplaces"]
 
 # Response models
 class MarketplaceListResponse(ResponseEnvelope):
-    data: Optional[dict] = None
+    data: Optional[list] = None
 
 class MarketplaceDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
@@ -56,12 +57,13 @@ async def get_integrations(
 ):
     """Get list of marketplace integrations"""
     try:
-        query = db.query(MarketplaceIntegration)
-        if access.tenant_id:
-            query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
-        integrations = query.all()
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(MarketplaceIntegration)
+            if access.tenant_id:
+                query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
+            integrations = query.all()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i) for i in integrations]}
+        return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i).model_dump(by_alias=True) for i in integrations]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -73,8 +75,14 @@ async def create_integration(
 ):
     """Create a new marketplace integration"""
     try:
+        # Use tenant_id from data if provided, otherwise from access context
+        tenant_id = data.tenantId or access.effective_tenant_id or access.tenant_id
+        
+        if not tenant_id:
+            raise HTTPException(status_code=400, detail="Tenant ID is required")
+        
         integration = MarketplaceIntegration(
-            tenant_id=data.tenantId,
+            tenant_id=tenant_id,
             platform=data.platform,
             name=data.name,
             api_key=data.apiKey,
@@ -88,7 +96,9 @@ async def create_integration(
         db.commit()
         db.refresh(integration)
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return {"success": True, "data": MarketplaceIntegrationRead.model_validate(integration)}
+        return {"success": True, "data": MarketplaceIntegrationRead.model_validate(integration).model_dump(by_alias=True)}
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
@@ -101,9 +111,10 @@ async def sync_integration(
 ):
     """Trigger sync for an integration"""
     try:
-        integration = db.query(MarketplaceIntegration).filter(
-            MarketplaceIntegration.id == integration_id
-        ).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            integration = db.query(MarketplaceIntegration).filter(
+                MarketplaceIntegration.id == integration_id
+            ).first()
         if not integration:
             raise HTTPException(status_code=404, detail="Integration not found")
         

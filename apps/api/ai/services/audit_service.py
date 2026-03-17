@@ -21,11 +21,10 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
-from ai.models.ai_audit_log import AIAuditLog, AuditEventType, IncidentTag
+from ai.models.ai_audit_log import AuditEventType, IncidentTag
 
 logger = logging.getLogger(__name__)
 
@@ -306,19 +305,19 @@ class AuditService:
         """
         missing = []
         
-        # Check base required fields
-        for field in REQUIRED_BASE_FIELDS:
-            if not entry.get(field):
-                missing.append(field)
+        # Check base required field
+        for required_field in REQUIRED_BASE_FIELDS:
+            if not entry.get(required_field):
+                missing.append(required_field)
         
         # Check event-specific required fields
         if event_type in [
             AuditEventType.REQUEST_RECEIVED,
             AuditEventType.INTENT_CLASSIFIED,
         ]:
-            for field in REQUIRED_REQUEST_FIELDS:
-                if not entry.get(field):
-                    missing.append(field)
+            for required_field in REQUIRED_REQUEST_FIELDS:
+                if not entry.get(required_field):
+                    missing.append(required_field)
         
         if event_type in [
             AuditEventType.ACTION_PLANNED,
@@ -326,18 +325,18 @@ class AuditService:
             AuditEventType.APPROVAL_GRANTED,
             AuditEventType.APPROVAL_REJECTED,
         ]:
-            for field in REQUIRED_ACTION_FIELDS:
-                if not entry.get(field):
-                    missing.append(field)
+            for required_field in REQUIRED_ACTION_FIELDS:
+                if not entry.get(required_field):
+                    missing.append(required_field)
         
         if event_type in [
             AuditEventType.EXECUTION_COMPLETED,
             AuditEventType.EXECUTION_FAILED,
             AuditEventType.ROLLBACK_EXECUTED,
         ]:
-            for field in REQUIRED_EXECUTION_FIELDS:
-                if not entry.get(field):
-                    missing.append(field)
+            for required_field in REQUIRED_EXECUTION_FIELDS:
+                if not entry.get(required_field):
+                    missing.append(required_field)
         
         return missing
 
@@ -369,10 +368,11 @@ class AuditService:
         if validate:
             missing = self._validate_required_fields(entry_dict, entry.event_type)
             if missing:
-                logger.warning(f"Audit entry missing required fields: {missing}")
-                # Log anyway but mark as incomplete
-                entry_dict["extra_data"] = entry_dict.get("extra_data", {})
-                entry_dict["extra_data"]["_missing_fields"] = missing
+                logger.error(f"Audit entry missing required fields: {missing}")
+                raise ValueError(
+                    f"Audit entry incomplete: missing required fields {missing} "
+                    f"for event type {entry.event_type.value}"
+                )
         
         # Compute entry hash
         entry_dict["_entry_hash"] = self._compute_entry_hash(entry_dict)

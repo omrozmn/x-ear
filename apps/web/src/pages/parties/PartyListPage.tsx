@@ -10,7 +10,9 @@ import { PartyCard } from '../../components/parties/PartyCard';
 import { PartySearch } from '../../components/parties/PartySearch';
 import { PartyFilters } from '../../components/parties/PartyFilters';
 import { PartyFormModal } from '../../components/parties/PartyFormModal';
+import { usePermissions } from '../../hooks/usePermissions';
 import { Button } from '@x-ear/ui-web';
+import { useTranslation } from 'react-i18next';
 import type { PartyCreate } from '@/api/generated/schemas';
 
 interface PartyCreateRequest {
@@ -41,6 +43,7 @@ interface PartyListPageProps {
  */
 export function PartyListPage({ className = '' }: PartyListPageProps) {
   // Hooks
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const navigate = useNavigate();
   const partiesQuery = useParties();
   const {
@@ -59,6 +62,9 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     isOnline,
     clearError: clearMutationError
   } = usePartyMutations();
+  const { hasPermission } = usePermissions();
+  const canViewListContact = hasPermission('sensitive.parties.list.contact.view');
+  const canViewListIdentity = hasPermission('sensitive.parties.list.identity.view');
 
   // Extract data from query result
   const parties = partiesData?.parties || [];
@@ -95,9 +101,15 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     id: party.id || '',
     firstName: party.firstName || '',
     lastName: party.lastName || '',
-    tcNumber: party.tcNumber || party.tc_number || '',
-    phone: party.phone || '',
-    email: party.email || '',
+    tcNumber: canViewListIdentity
+      ? (party.tcNumber || party.tc_number || '')
+      : 'Bu rol icin gizli',
+    phone: canViewListContact
+      ? (party.phone || '')
+      : 'Bu rol icin gizli',
+    email: canViewListContact
+      ? (party.email || '')
+      : 'Bu rol icin gizli',
     status: (party.status as PartyStatus) || 'active',
     segment: (party.segment as PartySegment) || 'NEW',
     labels: party.label ? [party.label as PartyLabel] : [],
@@ -105,9 +117,9 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     lastVisitDate: party.updatedAt || party.updated_at || '',
     deviceCount: party.devices?.length || 0,
     hasInsurance: !!(party.sgkInfo || party.sgk_info),
-    outstandingBalance: 0, // This would need to be calculated
+    outstandingBalance: 0,
     priority: party.priorityScore || party.priority_score || 0
-  }), []);
+  }), [canViewListContact, canViewListIdentity]);
   const [selectedParties, setSelectedParties] = useState<Set<string>>(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingParty, setEditingParty] = useState<Party | null>(null);
@@ -215,12 +227,12 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     <div className="flex flex-col gap-4 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Hastalar ({parties.length})
+          <h1 className="text-2xl font-bold text-foreground">
+            {t('page.patients_count', { count: parties.length })}
           </h1>
           {!isOnline && (
-            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
-              Çevrimdışı
+            <span className="px-2 py-1 text-xs bg-warning/10 text-yellow-800 rounded-full">
+              {t('page.offline_badge')}
             </span>
           )}
         </div>
@@ -230,7 +242,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
             variant="ghost"
             size="sm"
-            title={`${viewMode === 'grid' ? 'Liste' : 'Kart'} görünümüne geç`}
+            title={viewMode === 'grid' ? t('page.view_switch_list') : t('page.view_switch_grid')}
           >
             {viewMode === 'grid' ? '☰' : '⊞'}
           </Button>
@@ -240,35 +252,36 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
             disabled={isLoading}
             variant="outline"
           >
-            {isLoading ? 'Yenileniyor...' : 'Yenile'}
+            {isLoading ? t('page.refreshing') : t('page.refresh')}
           </Button>
 
           <Button
             onClick={() => setShowCreateModal(true)}
+            data-testid="party-create-button"
           >
-            Yeni Hasta
+            {t('page.new_patient')}
           </Button>
         </div>
       </div>
 
       {hasSelectedParties && (
-        <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-          <span className="text-sm text-blue-700">
-            {selectedParties.size} hasta seçildi
+        <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-2xl">
+          <span className="text-sm text-primary">
+            {t('bulk_actions.selected_count_alt', { count: selectedParties.size })}
           </span>
           <Button
             onClick={handleBulkDelete}
             variant="ghost"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
           >
-            Seçilenleri Sil
+            {t('bulk_actions.delete_selected')}
           </Button>
           <Button
             onClick={() => setSelectedParties(new Set())}
             variant="ghost"
-            className="text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
           >
-            Seçimi Temizle
+            {t('bulk_actions.clear_selection_alt')}
           </Button>
         </div>
       )}
@@ -280,7 +293,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
       <PartySearch
         value={searchTerm}
         onChange={setSearchTerm}
-        placeholder="Hasta ara (isim, telefon, TC)..."
+        placeholder={t('search.placeholder_with_tc')}
         className="flex-1"
       />
 
@@ -297,24 +310,25 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     if (parties.length === 0) {
       return (
         <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">👥</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="text-muted-foreground text-6xl mb-4">👥</div>
+          <h3 className="text-lg font-medium text-foreground mb-2">
             {searchTerm || Object.keys(filters).length > 0
-              ? 'Arama kriterlerine uygun hasta bulunamadı'
-              : 'Henüz hasta eklenmemiş'
+              ? t('messages.no_matching_patients')
+              : t('messages.no_patients_yet')
             }
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             {searchTerm || Object.keys(filters).length > 0
-              ? 'Farklı arama terimleri veya filtreler deneyin'
-              : 'İlk hastanızı ekleyerek başlayın'
+              ? t('messages.try_different_search')
+              : t('messages.start_adding')
             }
           </p>
           {!searchTerm && Object.keys(filters).length === 0 && (
             <Button
               onClick={() => setShowCreateModal(true)}
+              data-testid="party-create-button-empty-state"
             >
-              Yeni Hasta Ekle
+              {t('messages.add_new_patient')}
             </Button>
           )}
         </div>
@@ -337,6 +351,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
             onClick={handlePartyClick}
             onEdit={() => setEditingParty(party)}
             onDelete={() => party.id && handleDeleteParty(party.id)}
+            showSelection={true}
             className="hover:shadow-md transition-shadow"
           />
         ))}
@@ -354,7 +369,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
           disabled={isLoading}
           variant="outline"
         >
-          {isLoading ? 'Yükleniyor...' : 'Daha Fazla Göster'}
+          {isLoading ? t('messages.loading_more') : t('page.load_more')}
         </Button>
       </div>
     );
@@ -364,11 +379,11 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     if (!currentError) return null;
 
     return (
-      <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <div className="mb-6 p-4 bg-destructive/10 border border-red-200 rounded-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <span className="text-red-600 mr-2">⚠️</span>
-            <span className="text-sm text-red-700">{typeof currentError === 'string' ? currentError : (currentError as Error)?.message || String(currentError)}</span>
+            <span className="text-destructive mr-2">⚠️</span>
+            <span className="text-sm text-destructive">{typeof currentError === 'string' ? currentError : (currentError as Error)?.message || String(currentError)}</span>
           </div>
           <Button
             onClick={() => {
@@ -386,7 +401,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
   };
 
   return (
-    <div className={`min-h-screen bg-gray-50 p-6 ${className}`}>
+    <div className={`min-h-screen bg-muted p-6 ${className}`}>
       <div className="max-w-7xl mx-auto">
         {renderHeader()}
         {renderError()}
@@ -401,7 +416,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCreateParty}
-          title="Yeni Hasta Ekle"
+          title={t('form.new_patient_add')}
         />
       )}
 
@@ -411,7 +426,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
           onClose={() => setEditingParty(null)}
           onSubmit={(data) => handleUpdateParty(editingParty.id || '', data)}
           initialData={editingParty}
-          title="Hasta Düzenle"
+          title={t('form.edit_patient')}
         />
       )}
     </div>

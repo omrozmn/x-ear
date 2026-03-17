@@ -8,9 +8,7 @@ Tests:
 - Role permissions inheritance
 """
 
-import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime
 
 
 def create_test_party(client: TestClient, auth_headers: dict, suffix: str = "") -> dict:
@@ -47,7 +45,6 @@ class TestPartyRole:
     def test_assign_role_to_party(self, client: TestClient, auth_headers: dict, db_session):
         """Test assigning a role to a party via service"""
         from services.party_service import PartyService
-        from database import get_db
         
         party = create_test_party(client, auth_headers, "002")
         

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Navigate } from '@tanstack/react-router';
+import { useLocation, Navigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye as EyeIcon, EyeOff as EyeSlashIcon, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -14,6 +14,18 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+type LoginLocationState = { from?: { pathname?: string } };
+type ApiFieldErrors = Partial<Record<keyof LoginFormData, string>>;
+type LoginApiError = {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+        fields?: ApiFieldErrors;
+      };
+    };
+  };
+};
 
 const Login: React.FC = () => {
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -34,7 +46,7 @@ const Login: React.FC = () => {
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    const from = (location.state as any)?.from?.pathname || '/dashboard';
+    const from = (location.state as LoginLocationState | undefined)?.from?.pathname || '/dashboard';
     return <Navigate to={from} replace />;
   }
 
@@ -48,12 +60,14 @@ const Login: React.FC = () => {
       if (result.requires_mfa) {
         setRequiresMFA(true);
         toast.success('Please enter your MFA code');
-      } else if (result.tokens) {
-        // Login successful, redirect will happen automatically via isAuthenticated change
+      } else if (result.token) {
+        // Login successful — full page reload to reinitialize auth state
+        // (useNavigate cannot be used here because auth context needs a fresh load)
+        await new Promise(resolve => setTimeout(resolve, 100));
         window.location.href = '/';
       }
-    } catch (error: any) {
-      const apiError = error.response?.data?.error;
+    } catch (error: unknown) {
+      const apiError = (error as LoginApiError).response?.data?.error;
 
       if (apiError?.fields) {
         Object.entries(apiError.fields).forEach(([field, message]) => {
@@ -117,7 +131,7 @@ const Login: React.FC = () => {
                   type="email"
                   autoComplete="email"
                   className={`appearance-none block w-full px-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   placeholder="admin@example.com"
                 />
               </div>
@@ -136,7 +150,7 @@ const Login: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10`}
+                    } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10`}
                   placeholder="••••••••"
                 />
                 <button
@@ -167,7 +181,7 @@ const Login: React.FC = () => {
                     type="text"
                     autoComplete="one-time-code"
                     className={`appearance-none block w-full px-3 py-2 border ${errors.mfa_token ? 'border-red-300' : 'border-gray-300'
-                      } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                     placeholder="123456"
                     maxLength={6}
                   />
@@ -183,7 +197,7 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors shadow-sm"
+              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-xl text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
               {isSubmitting ? (
                 <>

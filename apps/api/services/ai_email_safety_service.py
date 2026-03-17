@@ -5,7 +5,7 @@ Enforces safety controls on AI-generated emails to prevent abuse and maintain re
 
 import logging
 import re
-from typing import List, Tuple
+from typing import List
 
 logger = logging.getLogger(__name__)
 

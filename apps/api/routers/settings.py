@@ -3,18 +3,16 @@ FastAPI Settings Router - Migrated from Flask routes/settings.py (via app.py log
 Handles system settings and pricing configuration
 """
 from fastapi import APIRouter, Depends, HTTPException, Body
-from typing import Optional, Dict, Any
-from datetime import datetime
+from typing import Dict, Any
 from pydantic import BaseModel
 import logging
 import json
 import os
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
 
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 from schemas.system_settings import SystemSettingsResponse, PricingSettingsResponse
 from core.models.system import Settings
@@ -32,12 +30,12 @@ def _merge_sgk(base, extra):
         if not isinstance(extra, dict):
             return base
         base.setdefault('sgk', {})
-        base['sgk'].setdefault('schemes', {})
         extra_sgk = extra.get('sgk', {})
-        # Merge schemes
-        schemes_extra = extra_sgk.get('schemes', {})
-        if isinstance(schemes_extra, dict):
-            base['sgk']['schemes'] = {**base['sgk'].get('schemes', {}), **schemes_extra}
+        # Only use file schemes as fallback when DB has NO schemes saved
+        if not base['sgk'].get('schemes'):
+            schemes_extra = extra_sgk.get('schemes', {})
+            if isinstance(schemes_extra, dict):
+                base['sgk']['schemes'] = schemes_extra
         # Merge flags/defaults without overwriting explicit DB values
         if 'enabled' in extra_sgk and 'enabled' not in base['sgk']:
             base['sgk']['enabled'] = extra_sgk.get('enabled')
@@ -209,3 +207,280 @@ def update_settings(
         db_session.rollback()
         logger.error(f"Update settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Party Segments & Acquisition Types ---
+
+class PartySegmentOption(BaseModel):
+    value: str
+    label: str
+
+class AcquisitionTypeOption(BaseModel):
+    value: str
+    label: str
+
+class PartySegmentsResponse(BaseModel):
+    segments: list[PartySegmentOption]
+    acquisitionTypes: list[AcquisitionTypeOption]
+
+@router.get("/settings/party-segments", operation_id="getPartySegments", response_model=ResponseEnvelope[PartySegmentsResponse])
+def get_party_segments(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get party segments and acquisition types"""
+    try:
+        settings_record = db_session.get(Settings, 'party_segments')
+        
+        # Default segments and acquisition types
+        default_segments = [
+            {"value": "new", "label": "Yeni"},
+            {"value": "lead", "label": "Potansiyel Müşteri"},
+            {"value": "trial", "label": "Deneme Aşamasında"},
+            {"value": "customer", "label": "Müşteri"},
+            {"value": "control", "label": "Kontrol Hastası"},
+            {"value": "renewal", "label": "Yenileme"},
+            {"value": "existing", "label": "Mevcut Hasta"},
+            {"value": "vip", "label": "VIP"},
+        ]
+        
+        default_acquisitions = [
+            {"value": "referral", "label": "Referans"},
+            {"value": "online", "label": "Online"},
+            {"value": "walk-in", "label": "Ziyaret"},
+            {"value": "social-media", "label": "Sosyal Medya"},
+            {"value": "advertisement", "label": "Reklam"},
+            {"value": "tabela", "label": "Tabela"},
+            {"value": "other", "label": "Diğer"},
+        ]
+        
+        if settings_record:
+            data = json.loads(settings_record.settings_data)
+            segments = data.get('segments', default_segments)
+            acquisition_types = data.get('acquisitionTypes', default_acquisitions)
+        else:
+            segments = default_segments
+            acquisition_types = default_acquisitions
+            
+        return ResponseEnvelope(data=PartySegmentsResponse(
+            segments=[PartySegmentOption(**s) for s in segments],
+            acquisitionTypes=[AcquisitionTypeOption(**a) for a in acquisition_types]
+        ))
+        
+    except Exception as e:
+        logger.error(f"Get party segments error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/settings/party-segments", operation_id="updatePartySegments", response_model=ResponseEnvelope[PartySegmentsResponse])
+def update_party_segments(
+    segments_data: Dict[str, Any] = Body(...),
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Update party segments and acquisition types"""
+    try:
+        settings_record = db_session.get(Settings, 'party_segments')
+        if not settings_record:
+            settings_record = Settings(id='party_segments', settings_data="{}")
+            db_session.add(settings_record)
+        
+        # Validate and save the data
+        segments = segments_data.get('segments', [])
+        acquisition_types = segments_data.get('acquisitionTypes', [])
+        
+        data = {
+            'segments': segments,
+            'acquisitionTypes': acquisition_types
+        }
+        
+        settings_record.settings_data = json.dumps(data)
+        db_session.commit()
+        
+        return ResponseEnvelope(data=PartySegmentsResponse(
+            segments=[PartySegmentOption(**s) for s in segments],
+            acquisitionTypes=[AcquisitionTypeOption(**a) for a in acquisition_types]
+        ))
+        
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update party segments error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/settings/party-segments/usage/{segment_type}/{value}", operation_id="getSegmentUsage", response_model=ResponseEnvelope[Dict[str, Any]])
+def get_segment_usage(
+    segment_type: str,  # 'segment' or 'acquisition'
+    value: str,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get usage count for a specific segment or acquisition type"""
+    try:
+        # Import Party model here to avoid circular imports
+        from core.models.party import Party
+        
+        if segment_type == 'segment':
+            count = db_session.query(Party).filter(
+                Party.segment == value,
+                Party.tenant_id == access.tenant_id
+            ).count()
+        elif segment_type == 'acquisition':
+            count = db_session.query(Party).filter(
+                Party.acquisition_type == value,
+                Party.tenant_id == access.tenant_id
+            ).count()
+        else:
+            raise HTTPException(status_code=400, detail="Invalid segment_type. Must be 'segment' or 'acquisition'")
+        
+        return ResponseEnvelope(data={
+            "count": count,
+            "canDelete": count == 0,
+            "message": f"Bu {'segment' if segment_type == 'segment' else 'kazanım türü'} {count} hasta tarafından kullanılıyor." if count > 0 else "Güvenle silinebilir."
+        })
+        
+    except Exception as e:
+        logger.error(f"Get segment usage error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Automation Settings ---
+
+class AutomationSettingsResponse(BaseModel):
+    auto_add_suppliers: bool = False
+    auto_add_invoice_products: bool = False
+    auto_update_stock: bool = False
+    auto_receive_uts_pending: bool = False
+    auto_accept_uts_transfers: bool = False
+
+class AutomationSettingsUpdate(BaseModel):
+    auto_add_suppliers: bool | None = None
+    auto_add_invoice_products: bool | None = None
+    auto_update_stock: bool | None = None
+    auto_receive_uts_pending: bool | None = None
+    auto_accept_uts_transfers: bool | None = None
+
+AUTOMATION_KEYS = [
+    'auto_add_suppliers',
+    'auto_add_invoice_products',
+    'auto_update_stock',
+    'auto_receive_uts_pending',
+    'auto_accept_uts_transfers',
+]
+
+@router.get("/settings/automation", operation_id="getAutomationSettings", response_model=ResponseEnvelope[AutomationSettingsResponse])
+def get_automation_settings(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get automation settings for current tenant"""
+    from core.models.integration_config import IntegrationConfig
+
+    configs = db_session.query(IntegrationConfig).filter(
+        IntegrationConfig.tenant_id == access.tenant_id,
+        IntegrationConfig.integration_type == 'automation',
+        IntegrationConfig.config_key.in_(AUTOMATION_KEYS)
+    ).all()
+
+    result = {}
+    for c in configs:
+        result[c.config_key] = c.config_value == 'true'
+
+    return ResponseEnvelope(data=AutomationSettingsResponse(**result))
+
+@router.put("/settings/automation", operation_id="updateAutomationSettings", response_model=ResponseEnvelope[AutomationSettingsResponse])
+def update_automation_settings(
+    payload: AutomationSettingsUpdate = Body(...),
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Update automation settings for current tenant"""
+    from core.models.integration_config import IntegrationConfig
+
+    updates = payload.model_dump(exclude_unset=True)
+    for key, value in updates.items():
+        if key not in AUTOMATION_KEYS:
+            continue
+        existing = db_session.query(IntegrationConfig).filter(
+            IntegrationConfig.tenant_id == access.tenant_id,
+            IntegrationConfig.integration_type == 'automation',
+            IntegrationConfig.config_key == key
+        ).first()
+        if existing:
+            existing.config_value = 'true' if value else 'false'
+        else:
+            new_config = IntegrationConfig(
+                integration_type='automation',
+                config_key=key,
+                config_value='true' if value else 'false',
+                tenant_id=access.tenant_id,
+                is_active=True,
+                description=f'Automation: {key}'
+            )
+            db_session.add(new_config)
+
+    db_session.commit()
+
+    # Return current state
+    configs = db_session.query(IntegrationConfig).filter(
+        IntegrationConfig.tenant_id == access.tenant_id,
+        IntegrationConfig.integration_type == 'automation',
+        IntegrationConfig.config_key.in_(AUTOMATION_KEYS)
+    ).all()
+
+    result = {}
+    for c in configs:
+        result[c.config_key] = c.config_value == 'true'
+
+    return ResponseEnvelope(data=AutomationSettingsResponse(**result))
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Anamnesis Question Templates (tenant-level)
+# ──────────────────────────────────────────────────────────────────────
+
+@router.get("/settings/anamnesis-questions", operation_id="getAnamnesisQuestions")
+def get_anamnesis_questions(
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db),
+):
+    """Get tenant-level anamnesis question templates"""
+    try:
+        record = db_session.get(Settings, 'anamnesis_questions')
+        if record and record.settings_data:
+            data = json.loads(record.settings_data) if isinstance(record.settings_data, str) else record.settings_data
+            return ResponseEnvelope(data=data)
+        return ResponseEnvelope(data={"questions": [], "useDefaults": True})
+    except Exception as e:
+        logger.error(f"Get anamnesis questions error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/settings/anamnesis-questions", operation_id="updateAnamnesisQuestions")
+def update_anamnesis_questions(
+    payload: Dict[str, Any] = Body(...),
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db),
+):
+    """Update tenant-level anamnesis question templates"""
+    try:
+        record = db_session.get(Settings, 'anamnesis_questions')
+        if not record:
+            record = Settings(id='anamnesis_questions', settings_data="{}")
+            db_session.add(record)
+
+        record.settings_data = json.dumps(payload, ensure_ascii=False)
+        db_session.commit()
+        return ResponseEnvelope(data=payload)
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update anamnesis questions error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/settings/anamnesis-questions/defaults", operation_id="getAnamnesisDefaults")
+def get_anamnesis_defaults(
+    access: UnifiedAccess = Depends(require_access()),
+):
+    """Get default anamnesis questions (built-in odyoloji standards)"""
+    from routers.party_subresources import DEFAULT_ANAMNESIS_QUESTIONS
+    return ResponseEnvelope(data={"questions": DEFAULT_ANAMNESIS_QUESTIONS})

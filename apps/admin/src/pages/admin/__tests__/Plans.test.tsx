@@ -3,6 +3,32 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import Plans from '../Plans';
 import { useQueryClient } from '@tanstack/react-query';
 import * as ApiClient from '@/lib/api-client';
+import type { ReactNode } from 'react';
+
+type UseQueryClientMock = typeof useQueryClient & {
+    mockReturnValue: (value: unknown) => void;
+};
+
+type UseListAdminPlansResult = ReturnType<typeof ApiClient.useListAdminPlans>;
+type UseCreateAdminPlanResult = ReturnType<typeof ApiClient.useCreateAdminPlan>;
+type UseUpdateAdminPlanResult = ReturnType<typeof ApiClient.useUpdateAdminPlan>;
+type UseDeleteAdminPlanResult = ReturnType<typeof ApiClient.useDeleteAdminPlan>;
+
+function createListAdminPlansResult(overrides: Partial<UseListAdminPlansResult>): UseListAdminPlansResult {
+    return {
+        data: undefined,
+        error: null,
+        isLoading: false,
+        ...overrides,
+    } as unknown as UseListAdminPlansResult;
+}
+
+function createMutationResult<T>(overrides: Partial<T>): T {
+    return {
+        mutateAsync: vi.fn(),
+        ...overrides,
+    } as T;
+}
 
 // Mock dependencies
 vi.mock('@/components/Layout', () => ({
@@ -30,12 +56,12 @@ vi.mock('@/lib/api-client', () => ({
 
 // Mock Radix UI Dialog
 vi.mock('@radix-ui/react-dialog', () => ({
-    Root: ({ children, open }: any) => open ? <div>{children}</div> : null,
-    Portal: ({ children }: any) => <div>{children}</div>,
+    Root: ({ children, open }: { children: ReactNode; open?: boolean }) => open ? <div>{children}</div> : null,
+    Portal: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     Overlay: () => <div />,
-    Content: ({ children }: any) => <div role="dialog">{children}</div>,
-    Title: ({ children }: any) => <h2>{children}</h2>,
-    Close: ({ children }: any) => <button>{children}</button>,
+    Content: ({ children }: { children: ReactNode }) => <div role="dialog">{children}</div>,
+    Title: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
+    Close: ({ children }: { children: ReactNode }) => <button>{children}</button>,
 }));
 
 describe('Plans Component', () => {
@@ -48,10 +74,10 @@ describe('Plans Component', () => {
             id: '1',
             name: 'Basic Plan',
             price: 100,
-            plan_type: 'BASIC',
-            billing_interval: 'MONTHLY',
-            max_users: 5,
-            is_active: true,
+            planType: 'BASIC',
+            billingInterval: 'MONTHLY',
+            maxUsers: 5,
+            isActive: true,
             description: 'Basic features',
         },
     ];
@@ -68,24 +94,19 @@ describe('Plans Component', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useQueryClient as any).mockReturnValue(mockQueryClient);
-        (ApiClient.useListAdminPlans as any).mockReturnValue({
-            data: { data: { plans: mockPlans } },
+        (useQueryClient as UseQueryClientMock).mockReturnValue(mockQueryClient);
+        // Orval mutator already unwraps ResponseEnvelope, so hook returns inner data directly
+        vi.mocked(ApiClient.useListAdminPlans).mockReturnValue(createListAdminPlansResult({
+            data: { plans: mockPlans } as unknown as ReturnType<typeof ApiClient.useListAdminPlans>['data'],
             isLoading: false,
             error: null,
-        });
-        (ApiClient.useListAdminSettings as any).mockReturnValue({
+        }));
+        vi.mocked(ApiClient.useListAdminSettings).mockReturnValue({
             data: mockSettings,
-        });
-        (ApiClient.useCreateAdminPlan as any).mockReturnValue({
-            mutateAsync: vi.fn(),
-        });
-        (ApiClient.useUpdateAdminPlan as any).mockReturnValue({
-            mutateAsync: vi.fn(),
-        });
-        (ApiClient.useDeleteAdminPlan as any).mockReturnValue({
-            mutateAsync: vi.fn(),
-        });
+        } as ReturnType<typeof ApiClient.useListAdminSettings>);
+        vi.mocked(ApiClient.useCreateAdminPlan).mockReturnValue(createMutationResult<UseCreateAdminPlanResult>({}));
+        vi.mocked(ApiClient.useUpdateAdminPlan).mockReturnValue(createMutationResult<UseUpdateAdminPlanResult>({}));
+        vi.mocked(ApiClient.useDeleteAdminPlan).mockReturnValue(createMutationResult<UseDeleteAdminPlanResult>({}));
     });
 
     it('renders plans list correctly', () => {
@@ -93,8 +114,9 @@ describe('Plans Component', () => {
 
         expect(screen.getByText('Planlar')).toBeInTheDocument();
         expect(screen.getByText('Basic Plan')).toBeInTheDocument();
-        expect(screen.getByText('100 TRY')).toBeInTheDocument();
-        expect(screen.getByText('BASIC / MONTHLY')).toBeInTheDocument();
+        expect(screen.getByText(/100\s*₺/)).toBeInTheDocument();
+        expect(screen.getByText('BASIC')).toBeInTheDocument();
+        expect(screen.getByText('MONTHLY')).toBeInTheDocument();
     });
 
     it('opens create modal when "Plan Ekle" is clicked', () => {
@@ -109,16 +131,20 @@ describe('Plans Component', () => {
 
     it('fills form and submits new plan', async () => {
         const mutateAsync = vi.fn().mockResolvedValue({});
-        (ApiClient.useCreateAdminPlan as any).mockReturnValue({ mutateAsync });
+        vi.mocked(ApiClient.useCreateAdminPlan).mockReturnValue(
+            createMutationResult<UseCreateAdminPlanResult>({ mutateAsync })
+        );
 
         render(<Plans />);
 
         // Open modal
         fireEvent.click(screen.getByText('Plan Ekle'));
 
-        // Fill form
-        fireEvent.change(screen.getByLabelText('Plan Adı'), { target: { value: 'Pro Plan' } });
-        fireEvent.change(screen.getByLabelText('Fiyat (TRY)'), { target: { value: '200' } });
+        // Fill form - labels don't use htmlFor, so find inputs via their parent label text
+        const nameInput = screen.getByText('Plan Adı').closest('div')!.querySelector('input')!;
+        const priceInput = screen.getByText('Fiyat (TRY)').closest('div')!.querySelector('input')!;
+        fireEvent.change(nameInput, { target: { value: 'Pro Plan' } });
+        fireEvent.change(priceInput, { target: { value: '200' } });
 
         // Submit
         fireEvent.click(screen.getByText('Oluştur'));

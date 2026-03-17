@@ -6,6 +6,10 @@ import { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Scene } from "@/components/canvas/Scene";
+import { HyperGlassCard } from "@/components/ui/HyperGlassCard";
 
 // Card Icons  
 const VisaIcon = () => (
@@ -30,17 +34,6 @@ function CheckoutContent() {
     const paramPlanId = searchParams.get("plan");
     const billingCycle = searchParams.get("billing") || "monthly";
 
-    // Form State
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        password: "",
-        confirmPassword: "",
-        referralCode: "",
-    });
-
     // Payment State
     const [cardData, setCardData] = useState({
         number: "",
@@ -50,22 +43,9 @@ function CheckoutContent() {
     });
     const [cardType, setCardType] = useState<"visa" | "mastercard" | "unknown">("unknown");
 
-    // OTP State
-    const [otp, setOtp] = useState("");
-    const [showOtpInput, setShowOtpInput] = useState(false);
-    const [otpTimer, setOtpTimer] = useState(0);
-    const [isPhoneVerified, setIsPhoneVerified] = useState(false);
-
-    // Affiliate State
-    const [affiliateName, setAffiliateName] = useState<string | null>(null);
-    const [checkingAffiliate, setCheckingAffiliate] = useState(false);
-
     // Loading States
     const [loading, setLoading] = useState(false);
-    const [verifyingPhone, setVerifyingPhone] = useState(false);
-    const [verifyingOtp, setVerifyingOtp] = useState(false);
     const [error, setError] = useState("");
-    const [otpError, setOtpError] = useState("");
 
     // Plan State
     const [planId, setPlanId] = useState<string | null>(paramPlanId);
@@ -75,7 +55,6 @@ function CheckoutContent() {
 
     // Auth State
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isGuestFlow, setIsGuestFlow] = useState(true);
 
     // Addons & SMS Packages State
     const [addons, setAddons] = useState<any[]>([]);
@@ -86,14 +65,13 @@ function CheckoutContent() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem('auth_token');
-            if (token) {
-                setIsLoggedIn(true);
-                setIsGuestFlow(false);
+            if (!token) {
+                router.push('/register?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
             } else {
-                setIsGuestFlow(true);
+                setIsLoggedIn(true);
             }
         }
-    }, []);
+    }, [router]);
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -156,107 +134,18 @@ function CheckoutContent() {
     };
 
     const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length >= 2) {
-            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length >= 2) {
+            val = val.substring(0, 2) + '/' + val.substring(2, 4);
         }
-        setCardData({ ...cardData, expiry: value });
-    };
-
-    // Affiliate Check - FIXED TO USE CORRECT ENDPOINT
-    const handleAffiliateCheck = async () => {
-        if (!formData.referralCode || formData.referralCode.length < 3) return;
-
-        setCheckingAffiliate(true);
-        setAffiliateName(null);
-        try {
-            const code = formData.referralCode.trim();
-            const res = await apiClient.get(`/api/affiliate/lookup?code=${code}`);
-            if (res.data.success) {
-                setAffiliateName(res.data.name);
-            }
-        } catch (e) {
-            console.error("Affiliate check failed", e);
-        } finally {
-            setCheckingAffiliate(false);
-        }
-    }
-
-    // Timer
-    useEffect(() => {
-        let interval: any;
-        if (otpTimer > 0) {
-            interval = setInterval(() => {
-                setOtpTimer((prev) => prev - 1);
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [otpTimer]);
-
-    const handleSendOtp = async () => {
-        if (!formData.phone) {
-            setOtpError("Lütfen telefon numarasını girin");
-            return;
-        }
-        setOtpError("");
-        setVerifyingPhone(true);
-        try {
-            const cleanPhone = formData.phone.replace(/[\s()-]/g, '');
-            const res = await apiClient.post('/api/register-phone', { phone: cleanPhone });
-            if (res.data.success) {
-                setShowOtpInput(true);
-                setOtpTimer(180);
-            } else {
-                setOtpError(res.data.message || "SMS gönderilemedi");
-            }
-        } catch (err: any) {
-            setOtpError(err.response?.data?.error?.message || "SMS gönderilemedi");
-        } finally {
-            setVerifyingPhone(false);
-        }
-    };
-
-    const handleVerifyOtp = async () => {
-        if (!otp) {
-            setOtpError("Lütfen kodu girin");
-            return;
-        }
-        setOtpError("");
-        setVerifyingOtp(true);
-        try {
-            const cleanPhone = formData.phone.replace(/[\s()-]/g, '');
-            const res = await apiClient.post('/api/verify-registration-otp', {
-                phone: cleanPhone,
-                otp_code: otp,
-                affiliate_code: formData.referralCode
-            });
-
-            if (res.data.success) {
-                const token = res.data.access_token;
-                localStorage.setItem('auth_token', token);
-                setIsLoggedIn(true);
-                setIsPhoneVerified(true);
-                setShowOtpInput(false);
-            } else {
-                setOtpError(res.data.message || "Kod doğrulanamadı");
-            }
-        } catch (err: any) {
-            setOtpError(err.response?.data?.error?.message || "Kod hatalı");
-        } finally {
-            setVerifyingOtp(false);
-        }
+        setCardData({ ...cardData, expiry: val });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!isLoggedIn) {
-            setError("Lütfen önce telefon numaranızı doğrulayın.");
-            return;
-        }
-
-        if (formData.password !== formData.confirmPassword) {
-            setError("Şifreler eşleşmiyor");
+            router.push('/register?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
             return;
         }
 
@@ -264,31 +153,25 @@ function CheckoutContent() {
         setError("");
 
         try {
-            const generatedCompanyName = `${formData.firstName} ${formData.lastName} Klinik`;
-
-            const res = await apiClient.post('/api/subscriptions/complete-signup', {
+            const res = await apiClient.post('/api/subscriptions/subscribe', {
                 plan_id: planId,
                 billing_interval: billingCycle.toUpperCase(),
-                company_name: generatedCompanyName,
-                email: formData.email,
-                password: formData.password,
-                first_name: formData.firstName,
-                last_name: formData.lastName,
                 addon_ids: selectedAddons,
                 sms_package_id: selectedSmsPackageId,
-                referral_code: formData.referralCode
+                card_number: cardData.number || "4242424242424242" // mock fallback
             });
 
             const data = res.data;
 
-            if (data.success) {
+            if (data.success || data.data) {
                 const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080';
                 window.location.href = `${webUrl}/login?subscribed=true`;
             } else {
                 setError(data.error?.message || data.message || "Bir hata oluştu.");
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || "Bağlantı hatası.");
+            const errMsg = err.response?.data?.error?.message || err.response?.data?.message || err.response?.data?.detail || err.message || "Bağlantı hatası.";
+            setError(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
         } finally {
             setLoading(false);
         }
@@ -310,358 +193,251 @@ function CheckoutContent() {
     const fmt = (v: number) => v.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-gray-300 font-sans selection:bg-indigo-500 selection:text-white">
-            {/* Header - Logo Only */}
-            <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-xl border-b border-gray-800" style={{ paddingTop: 'var(--safe-area-top)' }}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center space-x-2">
-                        <Image src="/logo/x.svg" alt="X-Ear Logo" width={32} height={32} className="w-8 h-8" />
-                        <span className="text-white font-bold text-xl">x-ear</span>
+        <div className="min-h-screen bg-background text-foreground relative flex flex-col">
+            <Header />
+            <div className="fixed inset-0 z-0">
+                <Scene />
+            </div>
+
+            <main className="relative z-10 flex-grow pt-24 pb-20">
+
+                <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-28" style={{ paddingBottom: 'max(3rem, calc(3rem + var(--safe-area-bottom)))' }}>
+                    <Link href="/pricing" className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition group">
+                        <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                        Listeye Dön
                     </Link>
-                </div>
-            </header>
 
-            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-28" style={{ paddingBottom: 'max(3rem, calc(3rem + var(--safe-area-bottom)))' }}>
-                <Link href="/pricing" className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition group">
-                    <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Listeye Dön
-                </Link>
+                    <h1 className="text-4xl md:text-5xl font-display font-medium text-foreground mb-4">Hesap ve Abonelik</h1>
+                    <p className="text-foreground/60 text-lg mb-12">Ödemenizi tamamlayın ve hemen kullanmaya başlayın.</p>
 
-                <h1 className="text-3xl font-bold text-white mb-2">Hesap ve Abonelik</h1>
-                <p className="text-gray-400 mb-12">Ödemenizi tamamlayın ve hemen kullanmaya başlayın.</p>
+                    {/* MAIN FORM WRAPPER - Flex on Mobile, Grid on Desktop */}
+                    <form onSubmit={handleSubmit} className="flex flex-col md:grid md:grid-cols-2 gap-8 items-start">
 
-                {/* MAIN FORM WRAPPER - Flex on Mobile, Grid on Desktop */}
-                <form onSubmit={handleSubmit} className="flex flex-col md:grid md:grid-cols-2 gap-8 items-start">
-
-                    {/* ORDER 1: PLANS (Full Width on Desktop via col-span-2) */}
-                    <div className="order-1 md:col-span-2 mb-8 w-full max-w-[calc(100vw-2rem)] md:max-w-none">
-                        <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Planınızı Seçin</h2>
-                        <div className="overflow-x-auto pb-4 -mx-4 px-4 md:overflow-visible md:px-0 md:mx-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] snap-x snap-mandatory md:snap-none">
-                            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 min-w-max md:min-w-0">
+                        {/* ORDER 1: PLANS (Full Width on Desktop via col-span-2) */}
+                        <div className="order-1 md:col-span-2 mb-8 w-full">
+                            <h2 className="text-2xl font-display font-medium text-foreground mb-6">Planınızı Seçin</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {allPlans.map(p => (
-                                    <div key={p.id} onClick={() => setPlanId(p.id)} className={`w-80 md:w-auto flex-shrink-0 p-6 border rounded-2xl cursor-pointer transition hover:-translate-y-1 active:scale-98 group snap-start ${planId === p.id ? 'bg-indigo-900/20 border-indigo-500 shadow-xl shadow-indigo-500/10' : 'bg-[#151515] border-gray-800 hover:border-gray-700'}`}>
-                                        <h3 className={`text-xl font-bold mb-2 ${planId === p.id ? 'text-white' : 'text-gray-300'}`}>{p.name}</h3>
-                                        <div className="text-2xl font-bold text-white mb-2">₺{p.price}<span className="text-sm text-gray-500 font-normal">/yıl</span></div>
-                                        <p className="text-sm text-gray-500 mb-4">{p.description}</p>
-                                        <div className={`w-full py-2 rounded-lg font-medium transition text-center ${planId === p.id ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 group-hover:bg-gray-700'}`}>
-                                            {planId === p.id ? '✓ Seçili Plan' : 'Seç'}
+                                    <HyperGlassCard
+                                        key={p.id}
+                                        onClick={() => setPlanId(p.id)}
+                                        className={`cursor-pointer transition-all duration-300 ${planId === p.id ? 'ring-2 ring-accent-blue bg-accent-blue/5' : 'hover:bg-white/5'}`}
+                                    >
+                                        <div className="w-full">
+                                            <h3 className={`text-xl font-bold mb-2 ${planId === p.id ? 'text-accent-blue' : 'text-foreground'}`}>{p.name}</h3>
+                                            <div className="text-2xl font-bold text-foreground mb-2">₺{p.price}<span className="text-sm text-foreground/50 font-normal">/yıl</span></div>
+                                            <p className="text-sm text-foreground/60 mb-4 h-12 line-clamp-2">{p.description}</p>
+                                            <div className={`w-full py-2.5 rounded-xl font-semibold transition-all text-center ${planId === p.id ? 'bg-accent-blue text-white shadow-[0_0_20px_rgba(34,211,238,0.3)]' : 'bg-foreground/5 text-foreground/60 group-hover:bg-foreground/10'}`}>
+                                                {planId === p.id ? '✓ Seçili Plan' : 'Seç'}
+                                            </div>
                                         </div>
-                                    </div>
+                                    </HyperGlassCard>
                                 ))}
                             </div>
                         </div>
-                    </div>
 
-                    {/* NEW ORDER 2: Addons & SMS (Full Width Below Plans) */}
-                    <div className="order-2 md:col-span-2 w-full space-y-8 max-w-[calc(100vw-2rem)] md:max-w-none">
-                        {/* Add-ons Section */}
-                        {addons.length > 0 && (
-                            <div>
-                                <h2 className="text-xl font-bold text-white mb-4">Ekstra Özellikler</h2>
-                                <div className="overflow-x-auto pb-4 -mx-4 px-4 md:px-0 md:mx-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] snap-x snap-mandatory md:snap-none">
-                                    <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-max md:min-w-0">
+                        {/* NEW ORDER 2: Addons & SMS (Full Width Below Plans) */}
+                        <div className="order-2 md:col-span-2 w-full space-y-8 max-w-[calc(100vw-2rem)] md:max-w-none">
+                            {/* Add-ons Section */}
+                            {addons.length > 0 && (
+                                <div>
+                                    <h2 className="text-xl font-display font-medium text-foreground mb-4">Ekstra Özellikler</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {addons.map(addon => (
-                                            <div key={addon.id} onClick={() => {
-                                                if (selectedAddons.includes(addon.id)) {
-                                                    setSelectedAddons(selectedAddons.filter(id => id !== addon.id));
-                                                } else {
-                                                    setSelectedAddons([...selectedAddons, addon.id]);
-                                                }
-                                            }} className={`w-[85vw] md:w-auto flex-shrink-0 flex items-center justify-between p-5 md:p-4 border rounded-xl cursor-pointer transition active:scale-98 snap-start min-h-[72px]
-                                                ${selectedAddons.includes(addon.id) ? 'bg-indigo-900/20 border-indigo-500' : 'bg-[#151515] border-gray-800 hover:border-gray-700'}`}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-6 h-6 md:w-5 md:h-5 rounded flex items-center justify-center border transition ${selectedAddons.includes(addon.id) ? 'bg-indigo-600 border-indigo-600' : 'border-gray-600'}`}>
-                                                        {selectedAddons.includes(addon.id) && <CheckCircle2 className="w-4 h-4 md:w-3.5 md:h-3.5 text-white" />}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="font-medium text-white text-base md:text-sm">{addon.name}</div>
-                                                        <div className="text-sm md:text-xs text-gray-500 line-clamp-1">{addon.description}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="font-bold text-white text-base md:text-sm ml-4 whitespace-nowrap">+₺{addon.price}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* SMS Packages Section */}
-                        {smsPackages.length > 0 && (
-                            <div>
-                                <h2 className="text-xl font-bold text-emerald-400 mb-4">SMS Paketleri</h2>
-                                <div className="overflow-x-auto pb-4 -mx-4 px-4 md:px-0 md:mx-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] snap-x snap-mandatory md:snap-none">
-                                    <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 min-w-max md:min-w-0">
-                                        {smsPackages.map(pkg => (
-                                            <div
-                                                key={pkg.id}
-                                                onClick={() => setSelectedSmsPackageId(selectedSmsPackageId === pkg.id ? null : pkg.id)}
-                                                className={`w-[85vw] md:w-auto flex-shrink-0 p-5 md:p-4 border rounded-xl cursor-pointer transition relative overflow-hidden group active:scale-98 snap-start min-h-[88px]
-                                                    ${selectedSmsPackageId === pkg.id
-                                                        ? 'bg-emerald-900/10 border-emerald-500'
-                                                        : 'bg-[#151515] border-gray-800 hover:border-gray-700'}`}
+                                            <HyperGlassCard
+                                                key={addon.id}
+                                                onClick={() => {
+                                                    if (selectedAddons.includes(addon.id)) {
+                                                        setSelectedAddons(selectedAddons.filter(id => id !== addon.id));
+                                                    } else {
+                                                        setSelectedAddons([...selectedAddons, addon.id]);
+                                                    }
+                                                }}
+                                                className={`cursor-pointer min-h-0 py-6 px-6 transition-all duration-300 ${selectedAddons.includes(addon.id) ? 'ring-1 ring-accent-blue bg-accent-blue/5' : ''}`}
                                             >
-                                                <div className="flex items-center justify-between relative z-10">
+                                                <div className="flex items-center justify-between w-full">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-10 h-10 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-colors
-                                                            ${selectedSmsPackageId === pkg.id ? 'bg-emerald-500 text-white' : 'bg-gray-800 text-gray-500'}`}>
-                                                            <MessageSquare className="w-5 h-5 md:w-4 md:h-4" />
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${selectedAddons.includes(addon.id) ? 'bg-accent-blue border-accent-blue' : 'border-foreground/20'}`}>
+                                                            {selectedAddons.includes(addon.id) && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                                                         </div>
                                                         <div>
-                                                            <div className="font-bold text-white text-base md:text-sm">{pkg.name}</div>
-                                                            <div className="text-sm md:text-xs text-gray-400">{pkg.sms_count} SMS</div>
+                                                            <div className="font-semibold text-foreground">{addon.name}</div>
+                                                            <div className="text-xs text-foreground/50 line-clamp-1">{addon.description}</div>
                                                         </div>
                                                     </div>
-                                                    <div className={`font-bold text-base md:text-sm ml-4 whitespace-nowrap ${selectedSmsPackageId === pkg.id ? 'text-emerald-400' : 'text-white'}`}>+₺{pkg.price}</div>
+                                                    <div className="font-bold text-accent-blue ml-4 whitespace-nowrap">+₺{addon.price}</div>
                                                 </div>
-                                            </div>
+                                            </HyperGlassCard>
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* ORDER 3: Identity Form (Desktop: Top Left) */}
-                    <div className="order-3 md:col-start-1 md:row-start-3 space-y-6 w-full">
-                        {/* Authenticated Status */}
-                        {isLoggedIn && (
-                            <div className="p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-lg flex items-center gap-3">
-                                <UserIcon className="w-5 h-5 text-indigo-400" />
-                                <div>
-                                    <div className="text-sm text-gray-400">Giriş Yapıldı</div>
-                                    <div className="text-white font-medium">
-                                        {isPhoneVerified ? 'Bilgiler doğrulandı.' : 'Doğrulama gerekli.'}
-                                    </div>
-                                </div>
-                                {isPhoneVerified && <CheckCircle2 className="w-5 h-5 text-green-500 ml-auto" />}
-                            </div>
-                        )}
-
-                        <div className="bg-[#151515] border border-gray-800 rounded-2xl p-4 md:p-6 space-y-5">
-                            <h3 className="text-lg md:text-xl font-bold text-white mb-2">Kimlik Bilgileri</h3>
-
-                            {/* Guest Flow Inputs */}
-                            {isGuestFlow && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm md:text-base font-medium text-gray-400 mb-2">Ad</label>
-                                        <input type="text" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full bg-[#0A0A0A] border border-gray-700 rounded-xl px-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 transition min-h-[48px]" placeholder="Adınız" required={isGuestFlow} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm md:text-base font-medium text-gray-400 mb-2">Soyad</label>
-                                        <input type="text" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full bg-[#0A0A0A] border border-gray-700 rounded-xl px-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 transition min-h-[48px]" placeholder="Soyadınız" required={isGuestFlow} />
-                                    </div>
-                                </div>
                             )}
 
-                            {/* Phone & OTP */}
-                            {(!isLoggedIn || (isGuestFlow && !isPhoneVerified)) && (
-                                <div className="space-y-3">
-                                    <label className="block text-sm md:text-base font-medium text-gray-400 mb-2">Telefon Numarası</label>
-                                    <div className="flex flex-col md:flex-row gap-3">
-                                        <div className="relative flex-1">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <Phone className="h-5 w-5 text-gray-500" />
-                                            </div>
-                                            <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} onKeyDown={() => setOtpError("")} className={`w-full bg-[#0A0A0A] border rounded-xl pl-12 pr-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 disabled:opacity-50 transition min-h-[48px] ${otpError ? 'border-red-500/50' : 'border-gray-700'}`} placeholder="XX XXX XX XX" disabled={isPhoneVerified} />
-                                        </div>
-                                        {!isPhoneVerified && !showOtpInput && (
-                                            <button type="button" onClick={handleSendOtp} disabled={verifyingPhone || !formData.phone} className="w-full md:w-auto px-6 py-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-xl text-white font-semibold transition whitespace-nowrap min-h-[48px] text-base md:text-sm">
-                                                {verifyingPhone ? <Loader2 className="w-5 h-5 animate-spin" /> : "Doğrula"}
-                                            </button>
-                                        )}
-                                    </div>
-                                    {showOtpInput && !isPhoneVerified && (
-                                        <div className="flex flex-col md:flex-row gap-3 animate-in fade-in slide-in-from-top-2">
-                                            <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} className={`flex-1 bg-[#0A0A0A] border rounded-xl px-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 min-h-[48px] ${otpError ? 'border-red-500/50' : 'border-indigo-500/50'}`} placeholder="Doğrulama Kodu" />
-                                            <button type="button" onClick={handleVerifyOtp} disabled={verifyingOtp || !otp} className="w-full md:w-auto px-6 py-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-xl text-white font-semibold transition min-h-[48px] text-base md:text-sm">
-                                                {verifyingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Onayla"}
-                                            </button>
-                                        </div>
-                                    )}
-                                    {otpError && <div className="text-sm md:text-base text-red-400 mt-2 flex items-center"><AlertCircle className="w-5 h-5 mr-2" />{otpError}</div>}
-                                </div>
-                            )}
-
-                            {/* Email */}
-                            <div>
-                                <label className="block text-sm md:text-base font-medium text-gray-400 mb-2">E-posta Adresi</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Mail className="h-5 w-5 text-gray-500" /></div>
-                                    <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full bg-[#0A0A0A] border border-gray-700 rounded-xl pl-12 pr-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 transition min-h-[48px]" placeholder="ornek@sirket.com" required />
-                                </div>
-                            </div>
-
-                            {/* Password */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* SMS Packages Section */}
+                            {smsPackages.length > 0 && (
                                 <div>
-                                    <label className="block text-sm md:text-base font-medium text-gray-400 mb-2">Şifre</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="h-5 w-5 text-gray-500" /></div>
-                                        <input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full bg-[#0A0A0A] border border-gray-700 rounded-xl pl-12 pr-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 transition min-h-[48px]" placeholder="Şifre" required />
+                                    <h2 className="text-xl font-display font-medium text-emerald-400 mb-4">SMS Paketleri</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        {smsPackages.map(pkg => (
+                                            <HyperGlassCard
+                                                key={pkg.id}
+                                                onClick={() => setSelectedSmsPackageId(selectedSmsPackageId === pkg.id ? null : pkg.id)}
+                                                className={`cursor-pointer min-h-0 py-6 px-6 transition-all duration-300 ${selectedSmsPackageId === pkg.id ? 'ring-1 ring-emerald-500 bg-emerald-500/5' : ''}`}
+                                            >
+                                                <div className="flex items-center justify-between w-full">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${selectedSmsPackageId === pkg.id ? 'bg-emerald-500 text-white' : 'bg-foreground/5 text-foreground/40'}`}>
+                                                            <MessageSquare className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-foreground">{pkg.name}</div>
+                                                            <div className="text-xs text-foreground/50">{pkg.sms_count} SMS</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`font-bold ml-4 whitespace-nowrap ${selectedSmsPackageId === pkg.id ? 'text-emerald-400' : 'text-foreground'}`}>+₺{pkg.price}</div>
+                                                </div>
+                                            </HyperGlassCard>
+                                        ))}
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm md:text-base font-medium text-gray-400 mb-2">Tekrar</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="h-5 w-5 text-gray-500" /></div>
-                                        <input type="password" value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} className="w-full bg-[#0A0A0A] border border-gray-700 rounded-xl pl-12 pr-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 transition min-h-[48px]" placeholder="Onay" required />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Referral Code */}
-                            {isGuestFlow && (
-                                <div className="pt-4 border-t border-gray-800">
-                                    <label className="block text-sm md:text-base font-medium text-gray-400 mb-2">Referans Kodu (İsteğe bağlı)</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Tag className="h-5 w-5 text-gray-500" /></div>
-                                        <input type="text" value={formData.referralCode} onChange={(e) => { setFormData({ ...formData, referralCode: e.target.value }); setAffiliateName(null); }} onBlur={handleAffiliateCheck} className="w-full bg-[#0A0A0A] border border-gray-700 rounded-xl pl-12 pr-4 py-4 text-base md:text-sm text-white focus:outline-none focus:border-indigo-500 transition min-h-[48px]" placeholder="Varsa referans kodunuz" />
-                                        {checkingAffiliate && <div className="absolute right-4 top-1/2 -translate-y-1/2"><Loader2 className="w-5 h-5 animate-spin text-gray-500" /></div>}
-                                    </div>
-                                    {affiliateName && (
-                                        <div className="mt-2 flex items-center gap-2 text-sm text-green-400 bg-green-500/10 p-2 rounded">
-                                            <CheckCircle2 className="w-4 h-4" />
-                                            <span>{affiliateName} ile kayıt oluyorsunuz</span>
-                                        </div>
-                                    )}
                                 </div>
                             )}
                         </div>
-                    </div>
 
-                    {/* ORDER 4 Mobile / ORDER 5 Desktop (Right Col) */}
-                    <div className="order-4 md:col-start-2 md:row-start-3 md:row-span-2 space-y-6 w-full">
-                        {/* 1. Credit Card Form */}
-                        <div className="bg-gradient-to-br from-[#1A1A1A] to-zinc-900 border border-gray-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden group min-h-[420px] flex flex-col justify-between">
-                            <div className="absolute top-0 right-0 p-32 bg-indigo-600/10 blur-[100px] rounded-full group-hover:bg-indigo-600/20 transition duration-1000"></div>
-
-                            <div className="relative z-10 space-y-6">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                        <CreditCard className="w-5 h-5 text-indigo-400" />
-                                        Kart Bilgileri
-                                    </h2>
-                                    <div className="flex gap-2">
-                                        <div className={`transition-all duration-300 ${cardType === 'visa' ? 'opacity-100 scale-110' : 'opacity-30 scale-90'}`}>
+                        {/* ORDER 3: Payment & Summary (Centered) */}
+                        <div className="order-3 md:col-span-2 space-y-6 w-full max-w-3xl mx-auto mt-8">
+                            {/* 1. Credit Card Form */}
+                            <HyperGlassCard className="flex-col items-start px-8 py-8 space-y-8 bg-gradient-to-br from-white/5 to-white/[0.02]">
+                                <div className="flex justify-between items-center w-full">
+                                    <h3 className="text-xl font-display font-medium text-foreground flex items-center gap-3">
+                                        <CreditCard className="w-5 h-5 text-accent-blue" />
+                                        Ödeme Yöntemi
+                                    </h3>
+                                    <div className="flex gap-3">
+                                        <div className={`transition-all duration-300 ${cardType === 'visa' ? 'opacity-100 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.3)]' : 'opacity-20 grayscale scale-90'}`}>
                                             <VisaIcon />
                                         </div>
-                                        <div className={`transition-all duration-300 ${cardType === 'mastercard' ? 'opacity-100 scale-110' : 'opacity-30 scale-90'}`}>
+                                        <div className={`transition-all duration-300 ${cardType === 'mastercard' ? 'opacity-100 scale-110 shadow-[0_0_15px_rgba(235,0,27,0.3)]' : 'opacity-20 grayscale scale-90'}`}>
                                             <MastercardIcon />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Kart Numarası</label>
+                                <div className="space-y-5 w-full">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-foreground/50 uppercase tracking-widest ml-1">Kart Numarası</label>
                                         <div className="relative group/input">
-                                            <input type="text" placeholder="0000 0000 0000 0000" maxLength={19} value={cardData.number} onChange={handleCardNumberChange} className="w-full bg-black/40 border border-gray-700 rounded-xl px-4 py-3.5 text-lg font-mono text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner" />
-                                            <Smartphone className="w-5 h-5 text-gray-600 absolute right-4 top-4 group-focus-within/input:text-indigo-500 transition" />
+                                            <input type="text" placeholder="0000 0000 0000 0000" maxLength={19} value={cardData.number} onChange={handleCardNumberChange} className="w-full bg-foreground/5 border border-white/10 rounded-xl px-4 py-4 text-xl font-mono text-foreground placeholder-foreground/10 focus:outline-none focus:ring-1 focus:ring-accent-blue/50 transition-all tracking-wider" />
+                                            <Smartphone className="w-5 h-5 text-foreground/20 absolute right-4 top-4 group-focus-within/input:text-accent-blue transition-colors" />
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Son Kullanma Tarihi</label>
-                                            <input type="text" placeholder="MM/YY" maxLength={5} value={cardData.expiry} onChange={handleExpiryChange} className="w-full bg-black/40 border border-gray-700 rounded-xl px-4 py-3.5 text-lg font-mono text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner" />
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-foreground/50 uppercase tracking-widest ml-1">SKT</label>
+                                            <input type="text" placeholder="MM/YY" maxLength={5} value={cardData.expiry} onChange={handleExpiryChange} className="w-full bg-foreground/5 border border-white/10 rounded-xl px-4 py-4 text-lg font-mono text-foreground placeholder-foreground/10 focus:outline-none focus:ring-1 focus:ring-accent-blue/50 transition-all text-center" />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">CVC / CVV</label>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-foreground/50 uppercase tracking-widest ml-1">CVC</label>
                                             <div className="relative">
-                                                <input type="text" placeholder="123" maxLength={3} value={cardData.cvc} onChange={(e) => setCardData({ ...cardData, cvc: e.target.value.replace(/\D/g, '') })} className="w-full bg-black/40 border border-gray-700 rounded-xl px-4 py-3.5 text-lg font-mono text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner" />
-                                                <Lock className="w-4 h-4 text-gray-600 absolute right-4 top-4" />
+                                                <input type="text" placeholder="123" maxLength={3} value={cardData.cvc} onChange={(e) => setCardData({ ...cardData, cvc: e.target.value.replace(/\D/g, '') })} className="w-full bg-foreground/5 border border-white/10 rounded-xl px-4 py-4 text-lg font-mono text-foreground placeholder-foreground/10 focus:outline-none focus:ring-1 focus:ring-accent-blue/50 transition-all text-center" />
+                                                <Lock className="w-4 h-4 text-foreground/20 absolute right-4 top-5" />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Kart Üzerindeki İsim</label>
-                                        <input type="text" placeholder="AD SOYAD" value={cardData.name} onChange={(e) => setCardData({ ...cardData, name: e.target.value.toUpperCase() })} className="w-full bg-black/40 border border-gray-700 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner" />
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-foreground/50 uppercase tracking-widest ml-1">Kart Üzerindeki İsim</label>
+                                        <input type="text" placeholder="AD SOYAD" value={cardData.name} onChange={(e) => setCardData({ ...cardData, name: e.target.value.toUpperCase() })} className="w-full bg-foreground/5 border border-white/10 rounded-xl px-4 py-4 text-foreground placeholder-foreground/10 focus:outline-none focus:ring-1 focus:ring-accent-blue/50 transition-all font-medium uppercase" />
                                     </div>
                                 </div>
-                            </div>
+                            </HyperGlassCard>
+
+                            {/* 2. Order Summary */}
+                            <HyperGlassCard className="flex-col items-start px-8 py-8 space-y-6">
+                                <h3 className="text-xl font-display font-medium text-foreground">Sipariş Özeti</h3>
+
+                                <div className="w-full space-y-4">
+                                    <div className="flex justify-between items-start pb-4 border-b border-white/5">
+                                        <div><h4 className="text-foreground font-semibold">{plan?.name}</h4><p className="text-xs text-foreground/40 font-medium">{billingCycle === 'yearly' ? 'Yıllık Fatura' : 'Aylık Fatura'}</p></div>
+                                        <span className="text-foreground font-bold text-lg">₺{plan?.price}</span>
+                                    </div>
+
+                                    {/* Selected Addons */}
+                                    {selectedAddons.length > 0 && (
+                                        <div className="space-y-3 pb-4 border-b border-white/5">
+                                            {selectedAddons.map(id => {
+                                                const addon = addons.find(a => a.id === id);
+                                                return addon ? (
+                                                    <div key={id} className="flex justify-between items-center text-sm group">
+                                                        <span className="text-foreground/50 font-medium">+ {addon.name}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-accent-blue font-bold">₺{addon.price}</span>
+                                                            <button type="button" onClick={() => setSelectedAddons(selectedAddons.filter(aid => aid !== id))} className="p-1 hover:bg-red-500/10 rounded-2xl transition-colors opacity-0 group-hover:opacity-100">
+                                                                <X className="w-4 h-4 text-red-400" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : null;
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* Selected SMS Package */}
+                                    {selectedSmsPackageId && (
+                                        <div className="pb-4 border-b border-white/5">
+                                            {(() => {
+                                                const pkg = smsPackages.find(p => p.id === selectedSmsPackageId);
+                                                return pkg ? (
+                                                    <div className="flex justify-between items-center text-sm group">
+                                                        <span className="text-emerald-400 font-medium">+ {pkg.name} ({pkg.sms_count} SMS)</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-emerald-400 font-bold">₺{pkg.price}</span>
+                                                            <button type="button" onClick={() => setSelectedSmsPackageId(null)} className="p-1 hover:bg-red-500/10 rounded-2xl transition-colors opacity-0 group-hover:opacity-100">
+                                                                <X className="w-4 h-4 text-red-400" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : null;
+                                            })()}
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-between items-center pt-2">
+                                        <span className="text-lg text-foreground font-display font-medium">Toplam</span>
+                                        <span className="text-3xl text-accent-blue font-display font-bold decoration-accent-blue/30 underline-offset-8 underline">{fmt(totalPrice)}</span>
+                                    </div>
+
+                                    <button type="submit" disabled={loading || !isLoggedIn} className="w-full group relative flex items-center justify-center px-8 py-4 bg-foreground text-background rounded-2xl font-bold text-lg overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-accent-blue to-accent-purple opacity-0 group-hover:opacity-10 transition-opacity" />
+                                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <><CheckCircle2 className="w-5 h-5 mr-3 transition-transform group-hover:rotate-12" />{fmt(totalPrice)} Öde</>}
+                                    </button>
+
+                                    {/* SSL BADGES */}
+                                    <div className="grid grid-cols-1 gap-3 pt-6">
+                                        <div className="flex items-center text-xs text-foreground/40 font-medium">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-400/60 mr-2 flex-shrink-0" />
+                                            <span>7 gün ücretsiz deneme</span>
+                                        </div>
+                                        <div className="flex items-center text-xs text-foreground/40 font-medium">
+                                            <Lock className="w-4 h-4 text-emerald-400/60 mr-2 flex-shrink-0" />
+                                            <span>256-bit SSL güvenli ödeme</span>
+                                        </div>
+                                    </div>
+
+                                    {!isLoggedIn && (
+                                        <p className="p-3 text-center text-xs font-bold text-accent-purple bg-accent-purple/10 rounded-xl border border-accent-purple/20 animate-pulse">
+                                            Devam etmek için önce telefon numaranızı doğrulayın.
+                                        </p>
+                                    )}
+
+                                    {error && <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm flex items-start gap-3"><AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" /><p className="font-medium">{error}</p></div>}
+                                </div>
+                            </HyperGlassCard>
                         </div>
-
-                        {/* 2. Order Summary */}
-                        <div className="bg-[#151515] border border-gray-800 rounded-2xl p-6 shadow-xl">
-                            <h2 className="text-xl font-bold text-white mb-6">Sipariş Özeti</h2>
-
-                            <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-800">
-                                <div><h3 className="text-white font-medium">{plan?.name}</h3><p className="text-sm text-gray-400">{billingCycle === 'yearly' ? 'Yıllık Fatura' : 'Aylık Fatura'}</p></div>
-                                <span className="text-white font-bold">₺{plan?.price}</span>
-                            </div>
-
-                            {/* Selected Addons */}
-                            {selectedAddons.length > 0 && (
-                                <div className="mb-4 pb-4 border-b border-gray-800 space-y-2">
-                                    {selectedAddons.map(id => {
-                                        const addon = addons.find(a => a.id === id);
-                                        return addon ? (
-                                            <div key={id} className="flex justify-between items-center text-sm group">
-                                                <span className="text-gray-400 flex-1">+ {addon.name}</span>
-                                                <span className="text-gray-300 mx-3">₺{addon.price}</span>
-                                                <button type="button" onClick={() => setSelectedAddons(selectedAddons.filter(aid => aid !== id))} className="p-1 hover:bg-red-500/20 rounded transition opacity-0 group-hover:opacity-100">
-                                                    <X className="w-4 h-4 text-red-400" />
-                                                </button>
-                                            </div>
-                                        ) : null;
-                                    })}
-                                </div>
-                            )}
-
-                            {/* Selected SMS Package */}
-                            {selectedSmsPackageId && (
-                                <div className="mb-4 pb-4 border-b border-gray-800">
-                                    {(() => {
-                                        const pkg = smsPackages.find(p => p.id === selectedSmsPackageId);
-                                        return pkg ? (
-                                            <div className="flex justify-between items-center text-sm group">
-                                                <span className="text-emerald-400 flex-1">+ {pkg.name} ({pkg.sms_count} SMS)</span>
-                                                <span className="text-gray-300 mx-3">₺{pkg.price}</span>
-                                                <button type="button" onClick={() => setSelectedSmsPackageId(null)} className="p-1 hover:bg-red-500/20 rounded transition opacity-0 group-hover:opacity-100">
-                                                    <X className="w-4 h-4 text-red-400" />
-                                                </button>
-                                            </div>
-                                        ) : null;
-                                    })()}
-                                </div>
-                            )}
-
-                            <div className="flex justify-between items-center mb-6"><span className="text-lg text-white font-bold">Toplam</span><span className="text-2xl text-indigo-400 font-bold">{fmt(totalPrice)}</span></div>
-
-                            <button type="submit" disabled={loading || !isLoggedIn} className="w-full flex items-center justify-center px-8 py-5 md:py-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 rounded-xl text-white font-bold text-lg md:text-lg transition shadow-lg shadow-indigo-600/20 group min-h-[56px]">
-                                {loading ? <><Loader2 className="w-6 h-6 mr-3 animate-spin" />İşleniyor...</> : <><CheckCircle2 className="w-6 h-6 mr-3 group-hover:scale-110 transition" />{fmt(totalPrice)} Öde</>}
-                            </button>
-
-                            {/* SSL BADGES */}
-                            <div className="space-y-3 mt-6">
-                                <div className="flex items-center text-sm text-gray-400">
-                                    <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                                    <span>7 gün ücretsiz deneme</span>
-                                </div>
-                                <div className="flex items-center text-sm text-gray-400">
-                                    <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                                    <span>İstediğiniz zaman iptal edebilirsiniz</span>
-                                </div>
-                                <div className="flex items-center text-sm text-gray-400">
-                                    <Lock className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                                    <span>256-bit SSL güvenli ödeme</span>
-                                </div>
-                            </div>
-
-                            {!isLoggedIn && (
-                                <p className="mt-4 text-center text-sm text-yellow-500 bg-yellow-500/10 p-2 rounded border border-yellow-500/20">
-                                    Devam etmek için önce telefon numaranızı doğrulayın.
-                                </p>
-                            )}
-
-                            {error && <div className="mt-4 p-4 bg-red-900/20 border border-red-500/30 rounded-lg text-red-200 flex items-center gap-3"><AlertCircle className="w-5 h-5 flex-shrink-0" /><p>{error}</p></div>}
-                        </div>
-                    </div>
-                </form>
-            </div>
+                    </form>
+                </div>
+            </main>
+            <Footer />
         </div>
     );
 }

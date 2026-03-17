@@ -1,7 +1,7 @@
 import { BaseEntity } from './common';
 
 export interface Appointment extends BaseEntity {
-  patientId: string;
+  partyId: string;
   doctorId?: string;
   date: string;
   time: string;
@@ -29,7 +29,7 @@ export type AppointmentStatus =
   | 'no-show';
 
 export interface AppointmentCreateRequest {
-  patientId: string;
+  partyId: string;
   doctorId?: string;
   date: string;
   time: string;
@@ -45,7 +45,7 @@ export interface AppointmentUpdateRequest extends Partial<AppointmentCreateReque
 }
 
 export interface AppointmentSearchFilters {
-  patientId?: string;
+  partyId?: string;
   doctorId?: string;
   status?: AppointmentStatus;
   type?: AppointmentType;

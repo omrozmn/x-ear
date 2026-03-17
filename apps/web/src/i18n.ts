@@ -21,6 +21,56 @@ import settingsEn from './locales/en/settings.json';
 import settingsTr from './locales/tr/settings.json';
 import validationEn from './locales/en/validation.json';
 import validationTr from './locales/tr/validation.json';
+import personnelEn from './locales/en/personnel.json';
+import personnelTr from './locales/tr/personnel.json';
+import invoicesEn from './locales/en/invoices.json';
+import invoicesTr from './locales/tr/invoices.json';
+import inventoryEn from './locales/en/inventory.json';
+import inventoryTr from './locales/tr/inventory.json';
+import campaignsEn from './locales/en/campaigns.json';
+import campaignsTr from './locales/tr/campaigns.json';
+import cashflowEn from './locales/en/cashflow.json';
+import cashflowTr from './locales/tr/cashflow.json';
+import paymentsEn from './locales/en/payments.json';
+import paymentsTr from './locales/tr/payments.json';
+import salesEn from './locales/en/sales.json';
+import salesTr from './locales/tr/sales.json';
+import suppliersEn from './locales/en/suppliers.json';
+import suppliersTr from './locales/tr/suppliers.json';
+import purchasesEn from './locales/en/purchases.json';
+import purchasesTr from './locales/tr/purchases.json';
+import dashboardEn from './locales/en/dashboard.json';
+import dashboardTr from './locales/tr/dashboard.json';
+import sgkEn from './locales/en/sgk.json';
+import sgkTr from './locales/tr/sgk.json';
+import reportsEn from './locales/en/reports.json';
+import reportsTr from './locales/tr/reports.json';
+import settingsExtraEn from './locales/en/settings_extra.json';
+import settingsExtraTr from './locales/tr/settings_extra.json';
+import appointmentsExtraEn from './locales/en/appointments_extra.json';
+import appointmentsExtraTr from './locales/tr/appointments_extra.json';
+import websiteEn from './locales/en/website.json';
+import websiteTr from './locales/tr/website.json';
+import partiesExtraEn from './locales/en/parties_extra.json';
+import partiesExtraTr from './locales/tr/parties_extra.json';
+
+// Sector terminology overlays
+import sectorHearingTr from './locales/tr/sectors/hearing.json';
+import sectorPharmacyTr from './locales/tr/sectors/pharmacy.json';
+import sectorHospitalTr from './locales/tr/sectors/hospital.json';
+import sectorHotelTr from './locales/tr/sectors/hotel.json';
+import sectorBeautyTr from './locales/tr/sectors/beauty.json';
+import sectorGeneralTr from './locales/tr/sectors/general.json';
+import sectorMedicalTr from './locales/tr/sectors/medical.json';
+import sectorOpticTr from './locales/tr/sectors/optic.json';
+import sectorHearingEn from './locales/en/sectors/hearing.json';
+import sectorPharmacyEn from './locales/en/sectors/pharmacy.json';
+import sectorHospitalEn from './locales/en/sectors/hospital.json';
+import sectorHotelEn from './locales/en/sectors/hotel.json';
+import sectorBeautyEn from './locales/en/sectors/beauty.json';
+import sectorGeneralEn from './locales/en/sectors/general.json';
+import sectorMedicalEn from './locales/en/sectors/medical.json';
+import sectorOpticEn from './locales/en/sectors/optic.json';
 
 // Define resources
 const resources = {
@@ -34,6 +84,31 @@ const resources = {
         finance: financeEn,
         settings: settingsEn,
         validation: validationEn,
+        personnel: personnelEn,
+        invoices: invoicesEn,
+        inventory: inventoryEn,
+        campaigns: campaignsEn,
+        cashflow: cashflowEn,
+        payments: paymentsEn,
+        sales: salesEn,
+        suppliers: suppliersEn,
+        purchases: purchasesEn,
+        dashboard: dashboardEn,
+        sgk: sgkEn,
+        reports: reportsEn,
+        settings_extra: settingsExtraEn,
+        appointments_extra: appointmentsExtraEn,
+        website: websiteEn,
+        parties_extra: partiesExtraEn,
+        // Sector namespaces
+        sector_hearing: sectorHearingEn,
+        sector_pharmacy: sectorPharmacyEn,
+        sector_hospital: sectorHospitalEn,
+        sector_hotel: sectorHotelEn,
+        sector_beauty: sectorBeautyEn,
+        sector_general: sectorGeneralEn,
+        sector_medical: sectorMedicalEn,
+        sector_optic: sectorOpticEn,
     },
     tr: {
         common: commonTr,
@@ -45,6 +120,31 @@ const resources = {
         finance: financeTr,
         settings: settingsTr,
         validation: validationTr,
+        personnel: personnelTr,
+        invoices: invoicesTr,
+        inventory: inventoryTr,
+        campaigns: campaignsTr,
+        cashflow: cashflowTr,
+        payments: paymentsTr,
+        sales: salesTr,
+        suppliers: suppliersTr,
+        purchases: purchasesTr,
+        dashboard: dashboardTr,
+        sgk: sgkTr,
+        reports: reportsTr,
+        settings_extra: settingsExtraTr,
+        appointments_extra: appointmentsExtraTr,
+        website: websiteTr,
+        parties_extra: partiesExtraTr,
+        // Sector namespaces
+        sector_hearing: sectorHearingTr,
+        sector_pharmacy: sectorPharmacyTr,
+        sector_hospital: sectorHospitalTr,
+        sector_hotel: sectorHotelTr,
+        sector_beauty: sectorBeautyTr,
+        sector_general: sectorGeneralTr,
+        sector_medical: sectorMedicalTr,
+        sector_optic: sectorOpticTr,
     },
 };
 
@@ -73,5 +173,27 @@ i18n
             caches: ['localStorage'],
         }
     });
+
+/**
+ * Apply sector terminology overlay on the 'sector' namespace.
+ * Call this when the tenant sector is known (e.g., after auth + features load).
+ *
+ * Usage:
+ *   applySectorOverlay('pharmacy');
+ *   t('sector:party') // → "Müşteri"
+ */
+export function applySectorOverlay(sector: string): void {
+    const ns = `sector_${sector}`;
+    // Add 'sector' as an alias namespace pointing to the sector-specific bundle
+    const trBundle = i18n.getResourceBundle('tr', ns);
+    const enBundle = i18n.getResourceBundle('en', ns);
+
+    if (trBundle) {
+        i18n.addResourceBundle('tr', 'sector', trBundle, true, true);
+    }
+    if (enBundle) {
+        i18n.addResourceBundle('en', 'sector', enBundle, true, true);
+    }
+}
 
 export default i18n;

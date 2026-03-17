@@ -15,7 +15,8 @@
  * Requirements: 2 (AI Chat Widget), 8 (Graceful Degradation), 17 (Phase A Banner)
  */
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAIChat } from '../../hooks/useAIChat';
 import { useComposerStore } from '../../../stores/composerStore';
 import { useAIStatus } from '../../hooks/useAIStatus';
@@ -23,10 +24,19 @@ import { AIStatusIndicator } from '../AIStatusIndicator';
 import { PhaseABanner } from '../PhaseABanner';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { ChatInput } from './ChatInput';
+import { Search, Zap, User, Box, Calendar, Edit3, Hash, Loader2, Clock, Trash2 } from 'lucide-react';
+import { useAutocompleteApiAiComposerAutocompleteGet } from '../../../api/generated';
+import { EntityItem, Capability } from '../../../api/generated/schemas';
+import type { ActionPlan, MatchedCapability } from '../../types/ai.types';
 import { useChatStore } from '../../stores/chatStore';
 import { useMobile } from '../../../hooks/useMobile';
+import { useAIRuntimeStore } from '../../stores/aiRuntimeStore';
 import { QuickActions } from './QuickActions';
 import { ActionProgress } from './ActionProgress';
+import { ActionResultCard } from './ActionResultCard';
+import { useAIActions } from '../../hooks/useAIActions';
+import { customInstance } from '../../../api/orval-mutator';
+import { Button, Input } from '@x-ear/ui-web';
 
 // =============================================================================
 // Types
@@ -136,15 +146,20 @@ const RobotIcon = () => (
 /**
  * Typing indicator component
  */
-function TypingIndicator(): React.ReactElement {
+function TypingIndicator({ message }: { message?: string }): React.ReactElement {
+  const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-2 px-4 py-2 text-gray-500 text-sm">
-      <div className="flex gap-1">
-        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+    <div className="flex flex-col gap-1 px-4 py-3 animate-in fade-in transition-all">
+      <div className="flex items-center gap-3 text-muted-foreground text-xs font-medium italic">
+        <div className="flex gap-1 items-center">
+          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0ms]" />
+          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:150ms]" />
+          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:300ms]" />
+        </div>
+        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          {message || t('ai.preparingAction', 'İşleminiz hazırlanıyor...')}
+        </span>
       </div>
-      <span>AI yazıyor...</span>
     </div>
   );
 }
@@ -152,17 +167,15 @@ function TypingIndicator(): React.ReactElement {
 /**
  * Empty state when no messages
  */
-/**
- * Empty state when no messages
- */
 function EmptyState({ onAction }: { onAction: (msg: string) => void }): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center min-h-full py-6 px-4">
       <div className="mb-4 text-center">
         <RobotIcon />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">AI Asistan</h3>
-        <p className="mt-1 text-sm text-gray-500 max-w-[200px] mx-auto">
-          Merhaba. Hasta, satış, cihaz, randevu ve fatura işlemlerini buradan yapabilirsin.
+        <h3 className="mt-2 text-sm font-medium text-foreground">{t('ai.assistant', 'AI Asistan')}</h3>
+        <p className="mt-1 text-sm text-muted-foreground max-w-[200px] mx-auto">
+          {t('ai.welcomeMessage', 'Merhaba. Hasta, satış, cihaz, randevu ve fatura işlemlerini buradan yapabilirsin.')}
         </p>
       </div>
 
@@ -175,11 +188,12 @@ function EmptyState({ onAction }: { onAction: (msg: string) => void }): React.Re
  * Unavailable state when AI is not available
  */
 function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4">
-      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
         <svg
-          className="w-6 h-6 text-gray-400"
+          className="w-6 h-6 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -192,17 +206,13 @@ function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
           />
         </svg>
       </div>
-      <h3 className="text-sm font-medium text-gray-900">AI Kullanılamıyor</h3>
-      <p className="mt-1 text-sm text-gray-500">
-        {reason || 'AI şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.'}
+      <h3 className="text-sm font-medium text-foreground">{t('ai.unavailable', 'AI Kullanılamıyor')}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {reason || t('ai.unavailableGeneric', 'AI şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.')}
       </p>
     </div>
   );
 }
-
-// =============================================================================
-// Main Component
-// =============================================================================
 
 /**
  * AIChatWidget Component
@@ -220,8 +230,8 @@ function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
  * 
  * // With callbacks
  * <AIChatWidget 
- *   onOpen={() => console.log('Chat opened')}
- *   onClose={() => console.log('Chat closed')}
+ * onOpen={() => console.log('Chat opened')}
+ * onClose={() => console.log('Chat closed')}
  * />
  * ```
  */
@@ -232,41 +242,94 @@ export function AIChatWidget({
   onOpen,
   onClose,
 }: AIChatWidgetProps): React.ReactElement | null {
+  const { t, i18n } = useTranslation();
   // State
-  const { isVisible: isOpen, setVisible: setIsOpen } = useChatStore();
+  const {
+    isVisible: isOpen,
+    setVisible: setIsOpen,
+    pendingPrompt,
+    pendingContext,
+    setPendingPrompt
+  } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Hooks
   const { data: status, isLoading: isStatusLoading } = useAIStatus();
+  const { executeAction, isExecuting: isExecutingRealAction, createAction } = useAIActions();
+
+  const {
+    mode, selectedAction: currentAction, currentSlot, slots,
+    updateSlot, nextSlot, reset, executionResult, executionStatus,
+    setContext, context, setPlan, selectAction
+  } = useComposerStore();
+  const isExecuting = useAIRuntimeStore((state) => state.isExecuting);
+  const executionProgress = useAIRuntimeStore((state) => state.executionProgress);
+
+
   const {
     messages,
     sendMessage,
     isTyping,
     isLoading: isSending,
-  } = useAIChat();
+    clearHistory,
+  } = useAIChat({
+    onSuccess: (response) => {
+      // If there's an action plan, set it in the composer
+      if (response.actionPlan) {
+        setPlan(response.actionPlan as ActionPlan);
+        useAIRuntimeStore.getState().setCurrentPlan(response.actionPlan as ActionPlan);
 
-  const {
-    mode, selectedAction: currentAction, currentSlot, slots,
-    updateSlot, nextSlot, reset, executionResult, executionStatus
-  } = useComposerStore();
+        if (!response.actionPlan.requiresApproval) {
+          executeAction({
+            actionId: response.actionPlan.planId,
+            mode: 'execute'
+          }).catch(console.error);
+        }
+      }
+      // If matchedCapability is returned, auto-trigger slot-filling/execution UI
+      if (response.matchedCapability) {
+        const cap = response.matchedCapability as MatchedCapability;
+        selectAction({
+          name: cap.name,
+          displayNameTr: cap.displayName || cap.name,
+          displayNameEn: cap.displayName || cap.name,
+          description: cap.description,
+          category: cap.category || 'AI Operation',
+          examplePhrases: [],
+          requiredPermissions: [],
+          toolOperations: [],
+          limitations: [],
+          slots: (cap.slots || []).map(s => ({
+            name: s.name,
+            prompt: s.prompt,
+            uiType: s.uiType,
+            sourceEndpoint: s.sourceEndpoint || null,
+            enumOptions: s.enumOptions || null,
+            validationRules: s.validationRules || null,
+          })),
+        } as Capability);
+      }
+    }
+  });
 
   // Derived state
   const isAvailable = status?.available ?? false;
-  const isEnabled = status?.enabled ?? false;
   const isPhaseA = status?.phase?.currentPhase === 'A';
   const positionClasses = POSITION_CLASSES[position];
 
   // Get unavailable reason
   const getUnavailableReason = useCallback((): string | undefined => {
     if (!status) return undefined;
-    if (!status.enabled) return 'AI devre dışı bırakılmış.';
-    if (status.killSwitch.globalActive) return 'AI geçici olarak durduruldu.';
-    if (status.killSwitch.tenantActive) return 'AI bu hesap için durduruldu.';
-    if (status.usage.anyQuotaExceeded) return 'Günlük AI limitinize ulaştınız.';
-    if (!status.model.available) return 'AI modeli şu anda kullanılamıyor.';
+    if (!status.enabled) return t('ai.errors.disabled', 'AI devre dışı bırakılmış.');
+    if (status.killSwitch?.globalActive) return t('ai.errors.globalKillSwitch', 'AI geçici olarak durduruldu.');
+    if (status.killSwitch?.tenantActive) return t('ai.errors.tenantKillSwitch', 'AI bu hesap için durduruldu.');
+    if (status.usage?.anyQuotaExceeded) return t('ai.errors.quotaExceeded', 'Günlük AI limitinize ulaştınız.');
+    if (status.model && !status.model.available) return t('ai.errors.modelUnavailable', 'AI modeli şu anda kullanılamıyor.');
     return undefined;
-  }, [status]);
+  }, [status, t]);
 
   // Mobile Detection
   const isMobile = useMobile();
@@ -293,6 +356,7 @@ export function AIChatWidget({
     }
   }, [messages, isTyping, isOpen]);
 
+
   // ==========================================================================
   // Event Handlers
   // ==========================================================================
@@ -309,6 +373,14 @@ export function AIChatWidget({
       onClose?.();
     }
   }, [isOpen, onOpen, onClose, setIsOpen]);
+
+
+
+  const confirmReset = useCallback(() => {
+    clearHistory();
+    reset(); // Also reset composer store
+    setShowResetConfirm(false);
+  }, [clearHistory, reset]);
 
   /**
    * Close chat window
@@ -332,6 +404,68 @@ export function AIChatWidget({
   }, [sendMessage]);
 
   /**
+   * Handle File Upload for AI OCR processing
+   */
+  const handleFileUpload = useCallback(async (files: FileList) => {
+    if (!files || files.length === 0) return;
+
+    // We process the first file for now
+    const file = files[0];
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await customInstance<{ data: { result: { text?: string; ocr_text?: string; patient_info?: unknown } } }>({
+        url: '/ocr/upload',
+        method: 'POST',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const extractedText = response?.data?.result?.text || response?.data?.result?.ocr_text;
+
+      if (extractedText) {
+        // Feed the extracted text to the AI as a system instruction
+        const prompt = `[SİSTEM: Kullanıcı sisteme "${file.name}" adlı bir belge yükledi.]\n\nOkunan Belge İçeriği:\n${extractedText}\n\nLütfen bu belge içeriğine göre yapılabilecek uygun bir işlem (Örn: Hasta Kaydı Oluştur, Bilgi Güncelle, Fatura Kes vb.) varsa doğrudan işlemi başlatıp onayımı isteyin.`;
+
+        await handleSend(prompt);
+      } else {
+        console.error("No text extracted from document");
+        // Optionally show toast error here
+      }
+    } catch (error) {
+      console.error("File upload failed", error);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [handleSend]);
+
+  // Handle Handoff from Spotlight (startWithCommand)
+  useEffect(() => {
+    if (isOpen && pendingPrompt && pendingPrompt.trim().length > 0) {
+      // Capture local copies and CLEAR IMMEDIATELY to prevent re-entry/infinite loop
+      const promptToHandle = pendingPrompt;
+      const contextToHandle = pendingContext;
+      setPendingPrompt(null, null);
+
+      // Set context first if provided
+      if (contextToHandle && contextToHandle.length > 0) {
+        setContext(contextToHandle);
+      }
+
+      // Small timeout to ensure chat is fully ready
+      const timer = setTimeout(() => {
+        handleSend(promptToHandle);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, pendingPrompt, pendingContext, handleSend, setContext, setPendingPrompt]);
+
+  /**
    * Handle keyboard events for accessibility
    */
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -340,25 +474,103 @@ export function AIChatWidget({
     }
   }, [isOpen, handleClose]);
 
-  // ==========================================================================
-  // Don't render if AI is disabled entirely
-  // ==========================================================================
-  if (!isStatusLoading && !isEnabled) {
-    return null;
-  }
+  // Entity search state for slots
+  const [slotSearchQuery, setSlotSearchQuery] = useState('');
+  const slotEntityType = currentSlot?.sourceEndpoint?.includes('inventory') ? 'device' : 'patient';
+  const { data: slotEntityData, isLoading: isSlotSearchLoading } = useAutocompleteApiAiComposerAutocompleteGet(
+    { q: slotSearchQuery, context_entity_type: slotEntityType },
+    { query: { enabled: slotSearchQuery.length > 1 && mode === 'slot_filling' && currentSlot?.uiType === 'entity_search' && isOpen } }
+  );
+
+  const handleSlotEntitySelect = (entity: EntityItem) => {
+    updateSlot(currentSlot!.name, entity.id);
+    updateSlot(`_${currentSlot!.name}_label`, entity.label);
+    setSlotSearchQuery('');
+    nextSlot();
+  };
+
+  // No longer returning null here to ensure the widget can respond to visibility changes
+  // Internal sub-components handle the disabled state UI
 
   // Mobile-specific classes override default positioning
   const containerClasses = isMobile
-    ? 'fixed inset-0 z-[2000] flex flex-col bg-white'
-    : `fixed ${positionClasses.window} w-96 h-[500px] max-h-[80vh] bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200`;
+    ? 'fixed inset-0 z-[2000] flex flex-col bg-card'
+    : `fixed ${positionClasses.window} w-96 h-[500px] max-h-[80vh] bg-card rounded-3xl shadow-2xl flex flex-col border border-border`;
+
+  const getDynamicTypingMessage = () => {
+    const lang = i18n.language || 'tr';
+
+    // Priority 1: Real-time execution progress if available
+    if (isExecuting && executionProgress) {
+      if (executionProgress.overallStatus === 'running' && executionProgress.currentStep > 0) {
+        // If we have step statuses, find the current running one
+        const currentStepStatus = executionProgress.stepStatuses.find(
+          s => s.stepNumber === executionProgress.currentStep
+        );
+        if (currentStepStatus?.message) return currentStepStatus.message;
+        return lang === 'en'
+          ? `Executing action (Step ${executionProgress.currentStep}/${executionProgress.totalSteps})...`
+          : `İşlem yürütülüyor (Adım ${executionProgress.currentStep}/${executionProgress.totalSteps})...`;
+      }
+      if (executionProgress.overallStatus === 'initializing') return lang === 'en' ? 'Preparing operation...' : 'İşlem hazırlanıyor...';
+    }
+
+    // Priority 2: State-aware messages (most accurate when already in a workflow)
+    if (mode === 'slot_filling' && currentAction) {
+      const actionName = (currentAction.displayName as string) || (currentAction.name as string);
+      return lang === 'en' ? `Processing info for ${actionName}...` : `${actionName} için bilgiler işleniyor...`;
+    }
+    if (mode === 'confirmation' && currentAction) {
+      const actionName = (currentAction.displayName as string) || (currentAction.name as string);
+      return lang === 'en' ? `Confirming ${actionName}...` : `${actionName} onaylanıyor...`;
+    }
+
+    if (messages.length === 0) return lang === 'en' ? 'Connecting to system...' : 'Sistemle bağlantı kuruluyor...';
+
+    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() || '';
+
+    // Priority 3: Keyword based for initial request or context-less turns
+    if (lang === 'en') {
+      if (lastUserMessage.includes('patient') || lastUserMessage.includes('record')) return 'Preparing patient record...';
+      if (lastUserMessage.includes('device') || lastUserMessage.includes('assign') || lastUserMessage.includes('deliver')) return 'Planning device operation...';
+      if (lastUserMessage.includes('invoice') || lastUserMessage.includes('e-prescription') || lastUserMessage.includes('sgk')) return 'Checking financial info and SGK status...';
+      if (lastUserMessage.includes('appointment')) return 'Checking appointment calendar...';
+      if (lastUserMessage.includes('sale')) return 'Preparing sales operation...';
+      if (lastUserMessage.includes('collection') || lastUserMessage.includes('payment') || lastUserMessage.includes('cash')) return 'Checking cash and payment info...';
+      if (lastUserMessage.includes('stock') || lastUserMessage.includes('inventory')) return 'Checking stock information...';
+      if (lastUserMessage.includes('report') || lastUserMessage.includes('stat')) return 'Preparing report data...';
+      if (lastUserMessage.includes('file') || lastUserMessage.includes('upload') || lastUserMessage.includes('document')) return 'Preparing document operation...';
+      if (lastUserMessage.includes('bulk') || lastUserMessage.includes('excel') || lastUserMessage.includes('template')) return 'Preparing bulk operation wizard...';
+      if (lastUserMessage.includes('setting') || lastUserMessage.includes('package') || lastUserMessage.includes('subscription') || lastUserMessage.includes('notification')) return 'Checking system settings...';
+    } else {
+      if (lastUserMessage.includes('hasta') || lastUserMessage.includes('kayıt')) return 'Hasta kaydı hazırlanıyor...';
+      if (lastUserMessage.includes('cihaz') || lastUserMessage.includes('ata') || lastUserMessage.includes('teslim')) return 'Cihaz işlemi planlanıyor...';
+      if (lastUserMessage.includes('fatura') || lastUserMessage.includes('e-reçete') || lastUserMessage.includes('sgk')) return 'Finansal bilgiler ve SGK sorgusu yapılıyor...';
+      if (lastUserMessage.includes('randevu')) return 'Randevu takvimi kontrol ediliyor...';
+      if (lastUserMessage.includes('satış')) return 'Satış işlemi hazırlanıyor...';
+      if (lastUserMessage.includes('tahsilat') || lastUserMessage.includes('ödeme') || lastUserMessage.includes('kasa')) return 'Kasa ve ödeme bilgileri kontrol ediliyor...';
+      if (lastUserMessage.includes('stok') || lastUserMessage.includes('envanter')) return 'Stok bilgisi kontrol ediliyor...';
+      if (lastUserMessage.includes('rapor') || lastUserMessage.includes('istatistik')) return 'Rapor verileri hazırlanıyor...';
+      if (lastUserMessage.includes('dosya') || lastUserMessage.includes('yükle') || lastUserMessage.includes('belge')) return 'Belge işlemi hazırlanıyor...';
+      if (lastUserMessage.includes('toplu') || lastUserMessage.includes('excel') || lastUserMessage.includes('şablon')) return 'Toplu işlem sihirbazı hazırlanıyor...';
+      if (lastUserMessage.includes('ayar') || lastUserMessage.includes('paket') || lastUserMessage.includes('abonelik') || lastUserMessage.includes('bildirim')) return 'Sistem ayarları kontrol ediliyor...';
+    }
+
+    // Priority 4: Fallback for short follow-ups (ee, et, devam)
+    if (['ee', 'et', 'devam', 'yap', 'onay', 'onayla', 'continue', 'yes', 'do it'].includes(lastUserMessage.trim())) {
+      return lang === 'en' ? 'Continuing operation...' : 'İşleme devam ediliyor...';
+    }
+
+    return lang === 'en' ? 'Analyzing your message...' : 'Mesajınız inceleniyor...';
+  };
 
   return (
     <div
-      className={`fixed z-50 ${className}`}
+      className={`fixed z-[3000] ${className}`}
       onKeyDown={handleKeyDown}
     >
       {/* Floating Button (Hidden on Mobile when open) */}
-      <button data-allow-raw="true"
+      <Button
         onClick={handleToggle}
         className={`
           fixed ${positionClasses.button}
@@ -366,7 +578,7 @@ export function AIChatWidget({
           bg-blue-600 text-white
           shadow-lg hover:bg-blue-700 hover:shadow-xl
           transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+          focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
           flex items-center justify-center
           ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}
           ${isMobile && isOpen ? 'hidden' : ''}
@@ -383,7 +595,7 @@ export function AIChatWidget({
             {messages.length > 9 ? '9+' : messages.length}
           </span>
         )}
-      </button>
+      </Button>
 
       {/* Chat Window */}
       {isOpen && (
@@ -398,19 +610,47 @@ export function AIChatWidget({
           aria-modal="true"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+          <div className="flex items-center justify-between p-4 border-b border-border bg-muted rounded-t-3xl">
             <div className="flex items-center gap-2">
               <RobotIcon />
-              <span className="font-semibold text-gray-900">AI Asistan</span>
-              <AIStatusIndicator status={status} size="sm" />
+              <div className="flex flex-col">
+                <span className="font-semibold text-foreground leading-none">AI Asistan</span>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <AIStatusIndicator status={status} size="sm" />
+                  <span className="text-[10px] text-muted-foreground">Beta</span>
+                </div>
+              </div>
             </div>
-            <button data-allow-raw="true"
-              onClick={handleClose}
-              className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Chat'i kapat"
-            >
-              <CloseIcon />
-            </button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                showResetConfirm ? (
+                  <Button
+                    onClick={() => { confirmReset(); setShowResetConfirm(false); }}
+                    onBlur={() => setShowResetConfirm(false)}
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-2xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title="Silmeyi Onayla"
+                    autoFocus
+                  >
+                    Emin misiniz?
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => setShowResetConfirm(true)}
+                    className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-2xl transition-all focus:outline-none focus:ring-1 focus:ring-red-200"
+                    title="Sohbeti Temizle"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                )
+              )}
+              <Button
+                onClick={handleClose}
+                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-2xl transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+                aria-label="Chat'i kapat"
+              >
+                <CloseIcon />
+              </Button>
+            </div>
           </div>
 
           {/* Phase A Banner (12.8) */}
@@ -449,86 +689,278 @@ export function AIChatWidget({
               />
             ))}
 
+            {/* Thinking Indicator */}
+            {isTyping && (
+              <TypingIndicator message={getDynamicTypingMessage()} />
+            )}
+
             {/* Conversational Slot Filling */}
             {isOpen && mode === 'slot_filling' && currentAction && currentSlot && (
-              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 animate-in fade-in slide-in-from-left-2">
-                <p className="text-sm font-medium text-blue-900 mb-2">{currentSlot.prompt}</p>
+              <div className="bg-card border-2 border-blue-100 rounded-xl p-4 shadow-sm animate-in fade-in slide-in-from-left-2 mx-2 my-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1 px-2 bg-primary/10 text-primary text-[10px] font-bold rounded border border-blue-100 uppercase tracking-wider">
+                    DEĞER GEREKLİ
+                  </div>
+                </div>
+                <p className="text-sm font-semibold text-foreground mb-3">{currentSlot.prompt}</p>
 
-                {/* Simplified Slot UI for Chat - reusing logic from Overlay */}
-                {currentSlot.uiType === 'enum' && (
-                  <div className="flex gap-2 flex-wrap">
-                    {currentSlot.enumOptions?.map((opt: string) => (
-                      <button data-allow-raw="true"
-                        key={opt}
-                        onClick={() => {
-                          updateSlot(currentSlot.name, opt);
+                {/* PREMIUM SLOT UI */}
+                <div className="space-y-3">
+                  {currentSlot.uiType === 'entity_search' && (
+                    <div className="space-y-2">
+                      <div className="relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <Input
+                          className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all"
+                          placeholder="Aramak için yazın..."
+                          value={slotSearchQuery}
+                          onChange={(e) => setSlotSearchQuery(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+
+                      {isSlotSearchLoading && (
+                        <div className="flex items-center gap-2 px-2 py-1 text-[10px] text-muted-foreground italic">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Arıyor...
+                        </div>
+                      )}
+
+                      {slotEntityData?.entities && slotEntityData.entities.length > 0 && (
+                        <div className="bg-card border rounded-2xl shadow-sm max-h-40 overflow-y-auto divide-y divide-gray-50 border-blue-50">
+                          {slotEntityData.entities.map((e: EntityItem) => (
+                            <Button
+                              key={e.id}
+                              onClick={() => handleSlotEntitySelect(e)}
+                              className="w-full flex items-center gap-2 p-2 hover:bg-primary/10 transition-colors text-left"
+                            >
+                              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                                {e.type === 'patient' ? <User size={14} /> : <Box size={14} />}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-foreground truncate">{e.label}</div>
+                                <div className="text-[10px] text-muted-foreground truncate">{e.subLabel}</div>
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {currentSlot.uiType === 'enum' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {currentSlot.enumOptions?.map((opt: string) => (
+                        <Button
+                          key={opt}
+                          onClick={() => {
+                            updateSlot(currentSlot.name, opt);
+                            nextSlot();
+                          }}
+                          className="flex items-center justify-center px-3 py-2 bg-card border border-border rounded-2xl text-xs font-semibold text-foreground hover:border-blue-400 hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
+                        >
+                          {opt}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+
+                  {currentSlot.uiType === 'date' && (
+                    <div className="relative group">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <Input
+                        type="date"
+                        className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all"
+                        onChange={(e) => {
+                          updateSlot(currentSlot.name, e.target.value);
                           nextSlot();
                         }}
-                        className="px-3 py-1.5 bg-white border border-blue-200 rounded text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                      />
+                    </div>
+                  )}
+
+                  {currentSlot.uiType === 'text' && (
+                    <div className="relative group">
+                      <Edit3 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <Input
+                        className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all"
+                        placeholder="Yazmaya başlayın..."
+                        autoFocus
+                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                          if (e.key === 'Enter') {
+                            updateSlot(currentSlot.name, e.currentTarget.value);
+                            nextSlot();
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {currentSlot.uiType === 'number' && (
+                    <div className="relative group">
+                      <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <input data-allow-raw="true"
+                        type="number"
+                        className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all"
+                        placeholder="Sayı girin..."
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            updateSlot(currentSlot.name, Number(e.currentTarget.value));
+                            nextSlot();
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {(currentSlot.uiType as string) === 'boolean' && (
+                    <div className="flex gap-2">
+                      <button
+                        data-allow-raw="true"
+                        onClick={() => {
+                          updateSlot(currentSlot.name, true);
+                          nextSlot();
+                        }}
+                        className="flex-1 px-3 py-2 bg-card border border-green-200 text-success text-xs font-bold rounded-2xl hover:bg-success/10 transition-all shadow-sm"
                       >
-                        {opt}
+                        {t('common.yes', 'Evet')}
                       </button>
-                    ))}
-                  </div>
-                )}
+                      <button
+                        data-allow-raw="true"
+                        onClick={() => {
+                          updateSlot(currentSlot.name, false);
+                          nextSlot();
+                        }}
+                        className="flex-1 px-3 py-2 bg-card border border-red-200 text-destructive text-xs font-bold rounded-2xl hover:bg-destructive/10 transition-all shadow-sm"
+                      >
+                        {t('common.no', 'Hayır')}
+                      </button>
+                    </div>
+                  )}
 
-                {currentSlot.uiType === 'date' && (
-                  <input data-allow-raw="true"
-                    type="date"
-                    className="w-full border rounded p-1.5 text-sm"
-                    onChange={(e) => {
-                      updateSlot(currentSlot.name, e.target.value);
-                      nextSlot();
-                    }}
-                  />
-                )}
+                  {(currentSlot.uiType as string) === 'time' && (
+                    <div className="relative group">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <input data-allow-raw="true"
+                        type="time"
+                        className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all shadow-sm"
+                        onChange={(e) => {
+                          updateSlot(currentSlot.name, e.target.value);
+                          nextSlot();
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
 
-                {/* Generic input for others for now */}
-                {(['text', 'number'].includes(currentSlot.uiType)) && (
-                  <input data-allow-raw="true"
-                    className="w-full border rounded p-1.5 text-sm"
-                    placeholder="Değer yazın..."
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const val = currentSlot.uiType === 'number' ? Number(e.currentTarget.value) : e.currentTarget.value;
-                        updateSlot(currentSlot.name, val);
-                        nextSlot();
-                      }
-                    }}
-                  />
-                )}
+                <p className="mt-3 text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Zap size={10} /> {t('ai.inputValueHint', "Değeri girip Enter'layın veya seçim yapın")}
+                </p>
               </div>
             )}
 
             {/* Confirmation in Chat */}
             {isOpen && mode === 'confirmation' && currentAction && (
-              <div className="bg-purple-50 border border-purple-100 rounded-lg p-3 animate-in fade-in slide-in-from-left-2">
-                <p className="text-sm font-bold text-purple-900 mb-1">İşlemi Onaylıyor musunuz?</p>
-                <p className="text-xs text-purple-700 mb-2">{currentAction.name} - {Object.keys(slots).length} parametre hazır.</p>
+              <div className="bg-card border-2 border-purple-100 rounded-xl p-4 shadow-md animate-in fade-in slide-in-from-bottom-2 mx-2 my-2 overflow-hidden">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-purple-100 text-purple-600 rounded-2xl">
+                      <Zap size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-tight">Onay Bekliyor</h4>
+                      <p className="text-[10px] text-muted-foreground">Lütfen ayrıntıları gözden geçirin</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 mb-4">
+                  <div className="p-3 bg-muted rounded-2xl border border-border">
+                    <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">İşlem Modeli</div>
+                    <div className="text-sm font-semibold text-foreground">{currentAction.displayName || currentAction.name}</div>
+                  </div>
+
+                  <div className="p-3 bg-muted rounded-2xl border border-border">
+                    <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Hedef Kayıtlar</div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {context?.map(c => (
+                        <span key={c.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded border border-blue-100">
+                          {c.type === 'patient' ? <User size={8} /> : <Box size={8} />}
+                          {c.label}
+                        </span>
+                      ))}
+                      {(!context || context?.length === 0) && (
+                        <span className="text-xs text-muted-foreground italic">Genel İşlem</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {Object.entries(slots).filter(([k]) => !k.startsWith('_')).length > 0 && (
+                    <div className="p-3 bg-muted rounded-2xl border border-border">
+                      <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Parametreler</div>
+                      <div className="space-y-1.5 mt-1">
+                        {Object.entries(slots)
+                          .filter(([k]) => !k.startsWith('_'))
+                          .map(([k, v]) => {
+                            const label = slots[`_${k}_label`];
+                            const displayValue = typeof label === 'string'
+                              ? label
+                              : (v !== null && v !== undefined ? String(v) : '-');
+                            return (
+                              <div key={k} className="flex justify-between items-center text-[10px]">
+                                <span className="text-muted-foreground capitalize">{k.replace(/_/g, ' ')}</span>
+                                <span className="font-bold text-foreground">{displayValue}</span>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      // Temporary: Start Mock Execution
-                      // In real app, this would call executeAction
-                      // We will trigger this via a helper or direct store manipulation for now
-                      // But strictly we need to import mockExecutor. 
-                      // For now, I'll just set the status to trigger the UI, then we'll wire the logic.
-                      // Actually, I should probably wait for the mock executor to be available to wire it correctly.
-                      // I will put a placeholder comment here or use a window dispatch if needed, but best is to keep current behavior 
-                      // until I modify the confirmation handler.
-                      // The user can't click 'Confirm' yet to trigger the NEW flow, but I need to render the NEW component.
-                      useComposerStore.getState().setExecutionStatus('init');
-                      import('../../utils/mockExecutor').then(({ simulateActionExecution }) => {
-                        simulateActionExecution(currentAction, slots, useComposerStore.getState());
-                      });
+                    data-allow-raw="true"
+                    onClick={async () => {
+                      let planId = useAIRuntimeStore.getState().currentPlan?.planId;
+
+                      // If no real plan exists yet (UX-driven slot filling), create it now
+                      if (!planId && currentAction) {
+                        try {
+                          const plan = await createAction({
+                            intent: {
+                              intentType: 'ACTION',
+                              confidence: 1.0,
+                              entities: slots,
+                              clarificationNeeded: false,
+                            },
+                            additionalContext: {
+                              capability_name: currentAction.name,
+                            },
+                          });
+                          planId = plan.planId;
+                        } catch (err) {
+                          console.error('[AIChatWidget] Action plan creation failed:', err);
+                          return;
+                        }
+                      }
+
+                      if (planId) {
+                        executeAction({
+                          actionId: planId,
+                          mode: 'execute',
+                        }).catch(console.error);
+                      }
                     }}
-                    className="bg-purple-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-purple-700"
+                    className="flex-1 bg-purple-600 text-white px-4 py-2.5 rounded-2xl text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
+                    disabled={isExecutingRealAction}
                   >
-                    Onayla
+                    {isExecutingRealAction ? 'Uygulanıyor...' : 'Şimdi Uygula'}
                   </button>
                   <button
+                    data-allow-raw="true"
                     onClick={reset}
-                    className="bg-white border border-purple-200 text-purple-700 px-3 py-1.5 rounded text-xs font-bold"
+                    className="px-4 py-2.5 bg-muted text-muted-foreground rounded-2xl text-xs font-bold hover:bg-accent transition-colors"
                   >
                     İptal
                   </button>
@@ -543,49 +975,36 @@ export function AIChatWidget({
               </div>
             )}
 
-            {/* Legacy Execution/Dry-run Result - Only show if NO active execution flow (backward compat) */}
+            {/* Action Result Card or Legacy Event Card */}
             {isOpen && executionResult && executionStatus === 'idle' && (
-              <div className={`mt-2 p-3 rounded-lg border animate-in slide-in-from-bottom-2 ${executionResult.status === 'success' ? 'bg-green-50 border-green-100 text-green-900' :
-                executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
-                  'bg-red-50 border-red-100 text-red-900'
-                }`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-bold capitalize">
-                    {executionResult.status === 'success' ? '✅ Başarılı!' :
-                      executionResult.status === 'dry_run' ? '🔍 Simülasyon Özeti' :
-                        '❌ Hata'}
-                  </span>
-                </div>
-                <p className="text-xs mb-3">
-                  {executionResult.status === 'success' ? 'İşlem başarıyla tamamlandı.' :
-                    executionResult.status === 'dry_run' ? 'Bu işlem yapıldığında yukarıdaki parametreler sisteme işlenecektir.' :
-                      executionResult.error}
-                </p>
-                {executionResult.status === 'dry_run' && (
-                  <button data-allow-raw="true"
-                    onClick={() => {
-                      // Direct confirmation from simulation
-                      // Note: In a real app we'd call the handleConfirm analog
-                      reset();
-                    }}
-                    className="w-full bg-blue-600 text-white py-2 rounded text-xs font-bold hover:bg-blue-700 transition-colors"
-                  >
-                    Şimdi Onayla ve Tamamla
-                  </button>
+              <>
+                {executionResult.status === 'success' ? (
+                  <ActionResultCard onClose={reset} />
+                ) : (
+                  <div className={`mt-2 p-3 rounded-2xl border animate-in slide-in-from-bottom-2 ${executionResult.status === 'dry_run' ? 'bg-primary/10 border-blue-100 text-blue-900' :
+                    'bg-destructive/10 border-red-100 text-red-900'
+                    }`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm font-bold capitalize">
+                        {executionResult.status === 'dry_run' ? '🔍 Simülasyon Özeti' : '❌ Hata'}
+                      </span>
+                    </div>
+                    <p className="text-xs mb-3">
+                      {executionResult.status === 'dry_run' ? 'Bu işlem yapıldığında yukarıdaki parametreler sisteme işlenecektir.' : executionResult.error}
+                    </p>
+                    {executionResult.status === 'dry_run' && (
+                      <button data-allow-raw="true"
+                        onClick={() => { reset(); }}
+                        className="w-full bg-blue-600 text-white py-2 rounded text-xs font-bold hover:bg-blue-700 transition-colors"
+                      >
+                        Şimdi Onayla ve Tamamla
+                      </button>
+                    )}
+                  </div>
                 )}
-                {executionResult.status === 'success' && (
-                  <button data-allow-raw="true"
-                    onClick={reset}
-                    className="w-full bg-gray-900 text-white py-2 rounded text-xs font-bold hover:bg-black transition-colors"
-                  >
-                    Kapat
-                  </button>
-                )}
-              </div>
+              </>
             )}
 
-            {/* Typing Indicator */}
-            {isTyping && <TypingIndicator />}
 
             {/* Auto-scroll anchor (12.5) */}
             <div ref={messagesEndRef} />
@@ -596,11 +1015,15 @@ export function AIChatWidget({
             onSend={handleSend}
             disabled={!isAvailable}
             isLoading={isSending}
+            isUploading={isUploading}
+            onFileUpload={handleFileUpload}
             placeholder={isAvailable ? 'Mesajınızı yazın...' : 'AI kullanılamıyor'}
             autoFocus={isOpen}
           />
         </div>
       )}
+
+
     </div>
   );
 }

@@ -1,4 +1,5 @@
 // Party API Service - Simplified Version
+import { customInstance } from '../../api/orval-mutator';
 import {
   ResponseMeta,
   PartyRead,
@@ -21,12 +22,12 @@ import {
 } from '@/api/client/parties.client';
 import { listAdminPartySales } from '@/api/client/parties.client';
 import { createSales, updateSale } from '@/api/client/sales.client';
-import { listPartyTimeline } from '@/api/client/parties.client';
+import { listPartyTimeline } from '@/api/client/timeline.client';
 import { listSgkDocuments as listPartySgkDocuments } from '@/api/client/sgk.client';
-import { listPatientDocuments as listPartyDocuments } from '@/api/client/parties.client';
-import {
-  listHearingTests as listPartyHearingTests
-} from '@/api/client/parties.client';
+import { listPatientDocuments as listPartyDocuments } from '@/api/client/documents.client';
+// import {
+//   listHearingTests as listPartyHearingTests
+// } from '@/api/client/parties.client'; // Endpoint removed/renamed in backend
 import {
   listPartyAppointments
 } from '@/api/client/parties.client';
@@ -361,8 +362,11 @@ export class PartyApiService {
     try {
       const response = await listPartyTimeline(partyId);
       const payload = unwrapObject<Record<string, unknown>>(response);
+      // Backend returns {data: {events: [...]}} via TimelineListResponse
+      const events = (payload as Record<string, unknown>)?.events;
+      const data = Array.isArray(events) ? events : unwrapArray<unknown>(response);
       return {
-        data: unwrapArray<unknown>(response),
+        data,
         success: true,
         meta: payload?.meta as ResponseMeta
       };
@@ -420,18 +424,17 @@ export class PartyApiService {
 
   async getHearingTests(partyId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await listPartyHearingTests(partyId);
+      const response = await customInstance<{ success: boolean; data: unknown[] }>({
+        url: `/api/parties/${partyId}/hearing-tests`,
+        method: 'GET',
+      });
       return {
-        data: unwrapArray<unknown>(response),
-        success: true
+        data: (response as unknown as { data: unknown[] })?.data ?? response as unknown as unknown[],
+        success: true,
       };
-    } catch (error) {
-      console.error('Failed to fetch party hearing tests:', error);
-      return {
-        data: [],
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch hearing tests'
-      };
+    } catch (err) {
+      console.error(`getHearingTests failed for party ${partyId}:`, err);
+      return { data: [], success: false, message: String(err) };
     }
   }
 

@@ -4,7 +4,6 @@ COMPREHENSIVE API ENDPOINT TEST - Testing 100+ critical endpoints
 Covers ALL major modules across the entire backend
 """
 import requests
-import json
 
 BASE_URL = 'http://localhost:5003'
 
@@ -68,7 +67,7 @@ def main():
         print("❌ Failed to login. Cannot proceed with tests.")
         return
     
-    print(f"\n✅ Login successful. Testing all critical endpoints...\n")
+    print("\n✅ Login successful. Testing all critical endpoints...\n")
     
     results = {'passed': 0, 'failed': 0, 'total': 0}
     

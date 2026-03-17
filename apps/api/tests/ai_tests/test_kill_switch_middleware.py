@@ -8,20 +8,15 @@ Requirements tested:
 """
 
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
 
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from starlette.responses import Response
 
 from ai.middleware.kill_switch_middleware import (
     KillSwitchMiddleware,
-    create_kill_switch_dependency,
     require_chat_enabled,
     require_actions_enabled,
-    require_ocr_enabled,
-    require_ai_enabled,
     _extract_tenant_id,
     _extract_capability,
 )

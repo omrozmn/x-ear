@@ -25,65 +25,65 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
       label: 'Aktif Hastalar',
       value: stats.activeParties,
       icon: Users,
-      color: 'blue',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-      textColor: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-sky-50',
+      textColor: 'text-sky-600',
     },
     {
-      label: 'Günlük Ciro',
+      label: 'Gunluk Ciro',
       value: formatCurrency(stats.dailyRevenue),
       icon: DollarSign,
-      color: 'emerald',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
-      textColor: 'text-emerald-600 dark:text-emerald-400',
+      bgColor: 'bg-emerald-50',
+      textColor: 'text-emerald-600',
     },
     {
       label: 'Bekleyen Randevular',
       value: stats.pendingAppointments,
       icon: Calendar,
-      color: 'violet',
-      bgColor: 'bg-violet-50 dark:bg-violet-900/20',
-      textColor: 'text-violet-600 dark:text-violet-400',
+      bgColor: 'bg-muted',
+      textColor: 'text-foreground',
     },
     {
       label: 'Biten Denemeler',
       value: stats.endingTrials,
       icon: Clock,
-      color: 'amber',
-      bgColor: 'bg-amber-50 dark:bg-amber-900/20',
-      textColor: 'text-amber-600 dark:text-amber-400',
-    }
+      bgColor: 'bg-amber-50',
+      textColor: 'text-amber-600',
+    },
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 h-full flex flex-col justify-center">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Hızlı İstatistikler</h3>
-        <span className="text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-full border border-gray-100 dark:border-gray-600">Bugün</span>
+    <div className="relative h-full overflow-hidden rounded-[28px] border border-border/80 bg-white/88 p-6 shadow-[0_18px_52px_-36px_rgba(15,23,42,0.22)] backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-gray-900/46 dark:shadow-[0_24px_80px_-44px_rgba(2,6,23,0.9)]">
+      <div className="absolute inset-x-8 top-0 h-20 rounded-full bg-gradient-to-r from-sky-200/40 via-white/30 to-emerald-200/30 blur-3xl dark:from-sky-500/20 dark:via-gray-900/10 dark:to-emerald-500/20" />
+      <div className="relative mb-6 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">Hizli Istatistikler</h3>
+          <p className="text-sm text-muted-foreground">Gun icindeki operasyon ozetleri</p>
+        </div>
+        <span className="rounded-full border border-white/55 bg-white/55 px-3 py-1 text-xs font-semibold text-sky-700 backdrop-blur-md dark:border-white/10 dark:bg-white/10 dark:text-sky-300">
+          Canli
+        </span>
       </div>
 
-      <div className="space-y-3">
-        {quickStats.map((stat, index) => {
+      <div className="relative space-y-3">
+        {quickStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
-              key={index}
-              className="group flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 border border-transparent hover:border-gray-100 dark:hover:border-gray-600 cursor-default"
+              key={stat.label}
+              className="group flex items-center justify-between rounded-2xl border border-border/70 bg-white/84 p-3.5 backdrop-blur-md transition-all duration-200 hover:bg-white dark:border-white/10 dark:bg-gray-950/32 dark:hover:bg-gray-900/48"
             >
               <div className="flex items-center space-x-4">
-                <div className={`p-2.5 rounded-xl ${stat.bgColor} ${stat.textColor} group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-5 h-5" />
+                <div className={`rounded-xl p-2.5 ${stat.bgColor} ${stat.textColor} transition-transform group-hover:scale-110`}>
+                  <Icon className="h-5 w-5" />
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                <span className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-gray-900 dark:group-hover:text-white">
                   {stat.label}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className={`text-lg font-bold ${stat.textColor}`}>
-                  {stat.value}
-                </span>
-              </div>
+              <span className={`text-lg font-bold ${stat.textColor}`}>
+                {stat.value}
+              </span>
             </div>
           );
         })}

@@ -100,10 +100,10 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'partial': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'paid': return 'bg-success/10 text-success';
+      case 'partial': return 'bg-warning/10 text-yellow-800';
+      case 'overdue': return 'bg-destructive/10 text-red-800';
+      default: return 'bg-primary/10 text-blue-800';
     }
   };
 
@@ -173,41 +173,41 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
     >
       <div className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-destructive/10 border border-red-200 rounded-2xl p-4">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-blue-50 p-3 rounded-lg">
+          <div className="bg-primary/10 p-3 rounded-2xl">
             <div className="flex items-center">
-              <RefreshCw className="w-4 h-4 text-blue-500 mr-2" />
+              <RefreshCw className="w-4 h-4 text-primary mr-2" />
               <div>
-                <p className="text-xs text-blue-600">Toplam Taksit</p>
+                <p className="text-xs text-primary">Toplam Taksit</p>
                 <p className="text-lg font-semibold text-blue-900">{totalInstallments}</p>
               </div>
             </div>
           </div>
-          <div className="bg-green-50 p-3 rounded-lg">
+          <div className="bg-success/10 p-3 rounded-2xl">
             <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+              <CheckCircle className="w-4 h-4 text-success mr-2" />
               <div>
-                <p className="text-xs text-green-600">Ödenen</p>
+                <p className="text-xs text-success">Ödenen</p>
                 <p className="text-lg font-semibold text-green-900">{paidInstallments}</p>
               </div>
             </div>
           </div>
-          <div className="bg-red-50 p-3 rounded-lg">
+          <div className="bg-destructive/10 p-3 rounded-2xl">
             <div className="flex items-center">
-              <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
+              <AlertCircle className="w-4 h-4 text-destructive mr-2" />
               <div>
-                <p className="text-xs text-red-600">Gecikmiş</p>
+                <p className="text-xs text-destructive">Gecikmiş</p>
                 <p className="text-lg font-semibold text-red-900">{overdueInstallments}</p>
               </div>
             </div>
           </div>
-          <div className="bg-purple-50 p-3 rounded-lg">
+          <div className="bg-purple-50 p-3 rounded-2xl">
             <div className="flex items-center">
               <DollarSign className="w-4 h-4 text-purple-500 mr-2" />
               <div>
@@ -220,24 +220,24 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
 
         {/* Installments List */}
         <div className="space-y-4">
-          <h3 className="font-medium text-gray-900">Taksit Detayları</h3>
+          <h3 className="font-medium text-foreground">Taksit Detayları</h3>
 
           {isLoading ? (
             <LoadingSkeleton lines={4} />
           ) : installments.length === 0 ? (
             <div className="text-center py-8">
-              <RefreshCw className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Taksit planı bulunamadı</p>
+              <RefreshCw className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Taksit planı bulunamadı</p>
             </div>
           ) : (
             <div className="space-y-3">
               {installments.map((installment) => (
                 <div 
                   key={installment.id} 
-                  className={`border rounded-lg p-4 ${
+                  className={`border rounded-2xl p-4 ${
                     isOverdue(installment.dueDate, installment.status) 
-                      ? 'border-red-200 bg-red-50' 
-                      : 'border-gray-200'
+                      ? 'border-red-200 bg-destructive/10' 
+                      : 'border-border'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-3">
@@ -247,7 +247,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
                         {installment.installmentNumber}. Taksit
                       </span>
                       {isOverdue(installment.dueDate, installment.status) && (
-                        <span className="ml-2 text-xs text-red-600 font-medium">
+                        <span className="ml-2 text-xs text-destructive font-medium">
                           (Gecikmiş)
                         </span>
                       )}
@@ -259,25 +259,25 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
 
                   <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                     <div>
-                      <span className="text-gray-600">Tutar:</span>
+                      <span className="text-muted-foreground">Tutar:</span>
                       <span className="ml-2 font-medium">{formatCurrency(installment.amount)}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Vade:</span>
+                      <span className="text-muted-foreground">Vade:</span>
                       <span className="ml-2">{formatDate(installment.dueDate)}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Ödenen:</span>
-                      <span className="ml-2 text-green-600">{formatCurrency(installment.paidAmount)}</span>
+                      <span className="text-muted-foreground">Ödenen:</span>
+                      <span className="ml-2 text-success">{formatCurrency(installment.paidAmount)}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Kalan:</span>
-                      <span className="ml-2 text-red-600">{formatCurrency(installment.amount - installment.paidAmount)}</span>
+                      <span className="text-muted-foreground">Kalan:</span>
+                      <span className="ml-2 text-destructive">{formatCurrency(installment.amount - installment.paidAmount)}</span>
                     </div>
                   </div>
 
                   {installment.paymentDate && (
-                    <div className="text-sm text-gray-600 mb-3">
+                    <div className="text-sm text-muted-foreground mb-3">
                       <span>Ödeme Tarihi: {formatDate(installment.paymentDate)}</span>
                       {installment.paymentMethod && (
                         <span className="ml-4">Yöntem: {installment.paymentMethod}</span>
@@ -291,7 +291,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
                         <div className="space-y-3">
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                              <label className="block text-xs font-medium text-foreground mb-1">
                                 Ödeme Tutarı
                               </label>
                               <input
@@ -302,18 +302,18 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
                                 max={installment.amount - installment.paidAmount}
                                 value={paymentData.amount}
                                 onChange={(e) => setPaymentData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-ring"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                              <label className="block text-xs font-medium text-foreground mb-1">
                                 Ödeme Yöntemi
                               </label>
                               <select
                                 data-allow-raw="true"
                                 value={paymentData.paymentMethod}
                                 onChange={(e) => setPaymentData(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-ring"
                               >
                                 <option value="cash">Nakit</option>
                                 <option value="card">Kart</option>

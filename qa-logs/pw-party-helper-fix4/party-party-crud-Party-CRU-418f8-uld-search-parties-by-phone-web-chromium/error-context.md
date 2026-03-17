@@ -1,0 +1,726 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - button [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - generic [ref=e8]:
+          - img "X-Ear Logo" [ref=e9]
+          - heading "X-EAR CRM" [level=2] [ref=e10]
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - generic [ref=e13] [cursor=pointer]:
+            - img [ref=e15]
+            - generic [ref=e17]: Dashboard
+        - listitem [ref=e18]:
+          - generic [ref=e19] [cursor=pointer]:
+            - img [ref=e21]
+            - generic [ref=e26]: Patients
+        - listitem [ref=e27]:
+          - generic [ref=e28] [cursor=pointer]:
+            - img [ref=e30]
+            - generic [ref=e32]: Appointments
+        - listitem [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e39]: Invoices
+            - img [ref=e41]
+        - listitem [ref=e43]:
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e46]
+            - generic [ref=e50]: Inventory
+        - listitem [ref=e51]:
+          - generic [ref=e52] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e58]: Suppliers
+        - listitem [ref=e59]:
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e64]: POS
+        - listitem [ref=e65]:
+          - generic [ref=e66] [cursor=pointer]:
+            - img [ref=e68]
+            - generic [ref=e72]: Cashflow
+        - listitem [ref=e73]:
+          - generic [ref=e74] [cursor=pointer]:
+            - img [ref=e76]
+            - generic [ref=e78]: SMS Campaign
+        - listitem [ref=e79]:
+          - generic [ref=e80] [cursor=pointer]:
+            - img [ref=e82]
+            - generic [ref=e85]: Reports
+        - listitem [ref=e86]:
+          - generic [ref=e87] [cursor=pointer]:
+            - img [ref=e89]
+            - generic [ref=e92]: Automation
+        - listitem [ref=e93]:
+          - generic [ref=e94] [cursor=pointer]:
+            - img [ref=e96]
+            - generic [ref=e99]: Settings
+            - img [ref=e101]
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - generic [ref=e105]:
+          - heading "Dashboard" [level=1] [ref=e106]
+          - generic [ref=e108] [cursor=pointer]:
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - img [ref=e113]
+              - generic [ref=e116]: Search or start action with AI...
+            - generic [ref=e118]:
+              - generic [ref=e119]: ⌘
+              - text: K
+          - generic [ref=e120]:
+            - button "Koyu Tema" [ref=e121] [cursor=pointer]:
+              - img [ref=e122]
+            - button "TR" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e129]: TR
+            - button "Notifications" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+            - 'button "Tenant: tenant_0..." [ref=e136] [cursor=pointer]':
+              - img [ref=e137]
+              - generic [ref=e141]: "Tenant: tenant_0..."
+              - img [ref=e142]
+            - 'button "Debug: super_admin" [ref=e145] [cursor=pointer]':
+              - img [ref=e146]
+              - generic [ref=e155]: "Debug: super_admin"
+              - img [ref=e156]
+            - button "e2etest super_admin" [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e164]:
+                - generic [ref=e165]: e2etest
+                - generic [ref=e166]: super_admin
+              - img [ref=e167]
+      - main [ref=e169]:
+        - generic [ref=e170]:
+          - generic [ref=e171]:
+            - generic [ref=e172]:
+              - generic [ref=e173]:
+                - heading "Hastalar" [level=1] [ref=e174]
+                - paragraph [ref=e175]: Hasta kayıtlarını yönetin
+              - generic [ref=e176]:
+                - button "Yenile" [ref=e177] [cursor=pointer]:
+                  - img [ref=e178]
+                  - text: Yenile
+                - button "Hasta Ayarları" [ref=e183] [cursor=pointer]:
+                  - img [ref=e184]
+                  - text: Hasta Ayarları
+                - button "Toplu Yükle" [ref=e187] [cursor=pointer]:
+                  - img [ref=e188]
+                  - text: Toplu Yükle
+                - button "Yeni Hasta" [ref=e191] [cursor=pointer]:
+                  - img [ref=e192]
+                  - text: Yeni Hasta
+            - generic [ref=e193]:
+              - generic [ref=e195]:
+                - generic [ref=e196]:
+                  - paragraph [ref=e197]: Toplam
+                  - paragraph [ref=e198]: "637"
+                - img [ref=e199]
+              - generic [ref=e205]:
+                - generic [ref=e206]:
+                  - paragraph [ref=e207]: Aktif
+                  - paragraph [ref=e208]: "0"
+                - img [ref=e209]
+              - generic [ref=e213]:
+                - generic [ref=e214]:
+                  - paragraph [ref=e215]: Pasif
+                  - paragraph [ref=e216]: "0"
+                - img [ref=e217]
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - paragraph [ref=e222]: Cihazlı
+                  - paragraph [ref=e223]: "0"
+                - img [ref=e224]
+          - generic [ref=e227]:
+            - generic [ref=e229]:
+              - img [ref=e230]
+              - textbox "Ad, soyad, telefon veya TC ile ara..." [ref=e235]
+            - button "Filtreler" [ref=e236] [cursor=pointer]:
+              - img [ref=e237]
+              - text: Filtreler
+          - generic [ref=e239]:
+            - table [ref=e242]:
+              - rowgroup [ref=e243]:
+                - row "Name ID Number Phone Segment Acquisition Branch Status Created At ↓ Actions" [ref=e244]:
+                  - columnheader "Name" [ref=e245]:
+                    - button "Name" [ref=e246] [cursor=pointer]:
+                      - generic [ref=e247]: Name
+                  - columnheader "ID Number" [ref=e248]
+                  - columnheader "Phone" [ref=e249]
+                  - columnheader "Segment" [ref=e250]
+                  - columnheader "Acquisition" [ref=e251]
+                  - columnheader "Branch" [ref=e252]
+                  - columnheader "Status" [ref=e253]
+                  - columnheader "Created At ↓" [ref=e254]:
+                    - button "Created At ↓" [ref=e255] [cursor=pointer]:
+                      - generic [ref=e256]: Created At
+                      - generic [ref=e257]: ↓
+                  - columnheader "Actions" [ref=e258]
+              - rowgroup [ref=e259]:
+                - row "Test8346 User1770931101136 test1770931101136_8346@example.com - +905011368346 lead walk-in - Active 12.02.2026" [ref=e260] [cursor=pointer]:
+                  - cell "Test8346 User1770931101136 test1770931101136_8346@example.com" [ref=e261]:
+                    - generic [ref=e262]:
+                      - img [ref=e265]
+                      - generic [ref=e268]:
+                        - generic [ref=e269]: Test8346 User1770931101136
+                        - generic [ref=e270]: test1770931101136_8346@example.com
+                  - cell "-" [ref=e271]
+                  - cell "+905011368346" [ref=e272]
+                  - cell "lead" [ref=e273]:
+                    - generic [ref=e274]: lead
+                  - cell "walk-in" [ref=e275]:
+                    - generic [ref=e276]: walk-in
+                  - cell "-" [ref=e277]:
+                    - generic [ref=e278]: "-"
+                  - cell "Active" [ref=e279]:
+                    - generic [ref=e280]: Active
+                  - cell "12.02.2026" [ref=e281]
+                  - cell [ref=e282]:
+                    - generic [ref=e283]:
+                      - button "Edit" [ref=e284]:
+                        - img [ref=e285]
+                      - button "Communication" [ref=e288]:
+                        - img [ref=e289]
+                      - button "Delete" [ref=e291]:
+                        - img [ref=e292]
+                - row "Test4463 User1770931099056 test1770931099056_4463@example.com - +905990564463 lead walk-in - Active 12.02.2026" [ref=e295] [cursor=pointer]:
+                  - cell "Test4463 User1770931099056 test1770931099056_4463@example.com" [ref=e296]:
+                    - generic [ref=e297]:
+                      - img [ref=e300]
+                      - generic [ref=e303]:
+                        - generic [ref=e304]: Test4463 User1770931099056
+                        - generic [ref=e305]: test1770931099056_4463@example.com
+                  - cell "-" [ref=e306]
+                  - cell "+905990564463" [ref=e307]
+                  - cell "lead" [ref=e308]:
+                    - generic [ref=e309]: lead
+                  - cell "walk-in" [ref=e310]:
+                    - generic [ref=e311]: walk-in
+                  - cell "-" [ref=e312]:
+                    - generic [ref=e313]: "-"
+                  - cell "Active" [ref=e314]:
+                    - generic [ref=e315]: Active
+                  - cell "12.02.2026" [ref=e316]
+                  - cell [ref=e317]:
+                    - generic [ref=e318]:
+                      - button "Edit" [ref=e319]:
+                        - img [ref=e320]
+                      - button "Communication" [ref=e323]:
+                        - img [ref=e324]
+                      - button "Delete" [ref=e326]:
+                        - img [ref=e327]
+                - row "Test3720 User1770931098739 test1770931098739_3720@example.com - +905987393720 lead walk-in - Active 12.02.2026" [ref=e330] [cursor=pointer]:
+                  - cell "Test3720 User1770931098739 test1770931098739_3720@example.com" [ref=e331]:
+                    - generic [ref=e332]:
+                      - img [ref=e335]
+                      - generic [ref=e338]:
+                        - generic [ref=e339]: Test3720 User1770931098739
+                        - generic [ref=e340]: test1770931098739_3720@example.com
+                  - cell "-" [ref=e341]
+                  - cell "+905987393720" [ref=e342]
+                  - cell "lead" [ref=e343]:
+                    - generic [ref=e344]: lead
+                  - cell "walk-in" [ref=e345]:
+                    - generic [ref=e346]: walk-in
+                  - cell "-" [ref=e347]:
+                    - generic [ref=e348]: "-"
+                  - cell "Active" [ref=e349]:
+                    - generic [ref=e350]: Active
+                  - cell "12.02.2026" [ref=e351]
+                  - cell [ref=e352]:
+                    - generic [ref=e353]:
+                      - button "Edit" [ref=e354]:
+                        - img [ref=e355]
+                      - button "Communication" [ref=e358]:
+                        - img [ref=e359]
+                      - button "Delete" [ref=e361]:
+                        - img [ref=e362]
+                - row "Test9593 User1770931098764 test1770931098764_9593@example.com - +905987649593 lead walk-in - Active 12.02.2026" [ref=e365] [cursor=pointer]:
+                  - cell "Test9593 User1770931098764 test1770931098764_9593@example.com" [ref=e366]:
+                    - generic [ref=e367]:
+                      - img [ref=e370]
+                      - generic [ref=e373]:
+                        - generic [ref=e374]: Test9593 User1770931098764
+                        - generic [ref=e375]: test1770931098764_9593@example.com
+                  - cell "-" [ref=e376]
+                  - cell "+905987649593" [ref=e377]
+                  - cell "lead" [ref=e378]:
+                    - generic [ref=e379]: lead
+                  - cell "walk-in" [ref=e380]:
+                    - generic [ref=e381]: walk-in
+                  - cell "-" [ref=e382]:
+                    - generic [ref=e383]: "-"
+                  - cell "Active" [ref=e384]:
+                    - generic [ref=e385]: Active
+                  - cell "12.02.2026" [ref=e386]
+                  - cell [ref=e387]:
+                    - generic [ref=e388]:
+                      - button "Edit" [ref=e389]:
+                        - img [ref=e390]
+                      - button "Communication" [ref=e393]:
+                        - img [ref=e394]
+                      - button "Delete" [ref=e396]:
+                        - img [ref=e397]
+                - row "Test1583 User1770931096261 test1770931096261_1583@example.com - +905962611583 lead walk-in - Active 12.02.2026" [ref=e400] [cursor=pointer]:
+                  - cell "Test1583 User1770931096261 test1770931096261_1583@example.com" [ref=e401]:
+                    - generic [ref=e402]:
+                      - img [ref=e405]
+                      - generic [ref=e408]:
+                        - generic [ref=e409]: Test1583 User1770931096261
+                        - generic [ref=e410]: test1770931096261_1583@example.com
+                  - cell "-" [ref=e411]
+                  - cell "+905962611583" [ref=e412]
+                  - cell "lead" [ref=e413]:
+                    - generic [ref=e414]: lead
+                  - cell "walk-in" [ref=e415]:
+                    - generic [ref=e416]: walk-in
+                  - cell "-" [ref=e417]:
+                    - generic [ref=e418]: "-"
+                  - cell "Active" [ref=e419]:
+                    - generic [ref=e420]: Active
+                  - cell "12.02.2026" [ref=e421]
+                  - cell [ref=e422]:
+                    - generic [ref=e423]:
+                      - button "Edit" [ref=e424]:
+                        - img [ref=e425]
+                      - button "Communication" [ref=e428]:
+                        - img [ref=e429]
+                      - button "Delete" [ref=e431]:
+                        - img [ref=e432]
+                - row "Test2573 User1770931084047 test1770931084047_2573@example.com - +905840472573 lead walk-in - Active 12.02.2026" [ref=e435] [cursor=pointer]:
+                  - cell "Test2573 User1770931084047 test1770931084047_2573@example.com" [ref=e436]:
+                    - generic [ref=e437]:
+                      - img [ref=e440]
+                      - generic [ref=e443]:
+                        - generic [ref=e444]: Test2573 User1770931084047
+                        - generic [ref=e445]: test1770931084047_2573@example.com
+                  - cell "-" [ref=e446]
+                  - cell "+905840472573" [ref=e447]
+                  - cell "lead" [ref=e448]:
+                    - generic [ref=e449]: lead
+                  - cell "walk-in" [ref=e450]:
+                    - generic [ref=e451]: walk-in
+                  - cell "-" [ref=e452]:
+                    - generic [ref=e453]: "-"
+                  - cell "Active" [ref=e454]:
+                    - generic [ref=e455]: Active
+                  - cell "12.02.2026" [ref=e456]
+                  - cell [ref=e457]:
+                    - generic [ref=e458]:
+                      - button "Edit" [ref=e459]:
+                        - img [ref=e460]
+                      - button "Communication" [ref=e463]:
+                        - img [ref=e464]
+                      - button "Delete" [ref=e466]:
+                        - img [ref=e467]
+                - row "Test2965 User1770931083969 test1770931083969_2965@example.com - +905839692965 lead walk-in - Active 12.02.2026" [ref=e470] [cursor=pointer]:
+                  - cell "Test2965 User1770931083969 test1770931083969_2965@example.com" [ref=e471]:
+                    - generic [ref=e472]:
+                      - img [ref=e475]
+                      - generic [ref=e478]:
+                        - generic [ref=e479]: Test2965 User1770931083969
+                        - generic [ref=e480]: test1770931083969_2965@example.com
+                  - cell "-" [ref=e481]
+                  - cell "+905839692965" [ref=e482]
+                  - cell "lead" [ref=e483]:
+                    - generic [ref=e484]: lead
+                  - cell "walk-in" [ref=e485]:
+                    - generic [ref=e486]: walk-in
+                  - cell "-" [ref=e487]:
+                    - generic [ref=e488]: "-"
+                  - cell "Active" [ref=e489]:
+                    - generic [ref=e490]: Active
+                  - cell "12.02.2026" [ref=e491]
+                  - cell [ref=e492]:
+                    - generic [ref=e493]:
+                      - button "Edit" [ref=e494]:
+                        - img [ref=e495]
+                      - button "Communication" [ref=e498]:
+                        - img [ref=e499]
+                      - button "Delete" [ref=e501]:
+                        - img [ref=e502]
+                - row "Test8718 User1770931083583 test1770931083583_8718@example.com - +905835838718 lead walk-in - Active 12.02.2026" [ref=e505] [cursor=pointer]:
+                  - cell "Test8718 User1770931083583 test1770931083583_8718@example.com" [ref=e506]:
+                    - generic [ref=e507]:
+                      - img [ref=e510]
+                      - generic [ref=e513]:
+                        - generic [ref=e514]: Test8718 User1770931083583
+                        - generic [ref=e515]: test1770931083583_8718@example.com
+                  - cell "-" [ref=e516]
+                  - cell "+905835838718" [ref=e517]
+                  - cell "lead" [ref=e518]:
+                    - generic [ref=e519]: lead
+                  - cell "walk-in" [ref=e520]:
+                    - generic [ref=e521]: walk-in
+                  - cell "-" [ref=e522]:
+                    - generic [ref=e523]: "-"
+                  - cell "Active" [ref=e524]:
+                    - generic [ref=e525]: Active
+                  - cell "12.02.2026" [ref=e526]
+                  - cell [ref=e527]:
+                    - generic [ref=e528]:
+                      - button "Edit" [ref=e529]:
+                        - img [ref=e530]
+                      - button "Communication" [ref=e533]:
+                        - img [ref=e534]
+                      - button "Delete" [ref=e536]:
+                        - img [ref=e537]
+                - row "Test9769 User1770931080334 test1770931080334_9769@example.com - +905803349769 lead walk-in - Active 12.02.2026" [ref=e540] [cursor=pointer]:
+                  - cell "Test9769 User1770931080334 test1770931080334_9769@example.com" [ref=e541]:
+                    - generic [ref=e542]:
+                      - img [ref=e545]
+                      - generic [ref=e548]:
+                        - generic [ref=e549]: Test9769 User1770931080334
+                        - generic [ref=e550]: test1770931080334_9769@example.com
+                  - cell "-" [ref=e551]
+                  - cell "+905803349769" [ref=e552]
+                  - cell "lead" [ref=e553]:
+                    - generic [ref=e554]: lead
+                  - cell "walk-in" [ref=e555]:
+                    - generic [ref=e556]: walk-in
+                  - cell "-" [ref=e557]:
+                    - generic [ref=e558]: "-"
+                  - cell "Active" [ref=e559]:
+                    - generic [ref=e560]: Active
+                  - cell "12.02.2026" [ref=e561]
+                  - cell [ref=e562]:
+                    - generic [ref=e563]:
+                      - button "Edit" [ref=e564]:
+                        - img [ref=e565]
+                      - button "Communication" [ref=e568]:
+                        - img [ref=e569]
+                      - button "Delete" [ref=e571]:
+                        - img [ref=e572]
+                - row "Test7435 User1770931073545 test1770931073545_7435@example.com - +905735457435 lead walk-in - Active 12.02.2026" [ref=e575] [cursor=pointer]:
+                  - cell "Test7435 User1770931073545 test1770931073545_7435@example.com" [ref=e576]:
+                    - generic [ref=e577]:
+                      - img [ref=e580]
+                      - generic [ref=e583]:
+                        - generic [ref=e584]: Test7435 User1770931073545
+                        - generic [ref=e585]: test1770931073545_7435@example.com
+                  - cell "-" [ref=e586]
+                  - cell "+905735457435" [ref=e587]
+                  - cell "lead" [ref=e588]:
+                    - generic [ref=e589]: lead
+                  - cell "walk-in" [ref=e590]:
+                    - generic [ref=e591]: walk-in
+                  - cell "-" [ref=e592]:
+                    - generic [ref=e593]: "-"
+                  - cell "Active" [ref=e594]:
+                    - generic [ref=e595]: Active
+                  - cell "12.02.2026" [ref=e596]
+                  - cell [ref=e597]:
+                    - generic [ref=e598]:
+                      - button "Edit" [ref=e599]:
+                        - img [ref=e600]
+                      - button "Communication" [ref=e603]:
+                        - img [ref=e604]
+                      - button "Delete" [ref=e606]:
+                        - img [ref=e607]
+                - row "Test1379 User1770931059348 test1770931059348_1379@example.com - +905593481379 New tabela - Active 12.02.2026" [ref=e610] [cursor=pointer]:
+                  - cell "Test1379 User1770931059348 test1770931059348_1379@example.com" [ref=e611]:
+                    - generic [ref=e612]:
+                      - img [ref=e615]
+                      - generic [ref=e618]:
+                        - generic [ref=e619]: Test1379 User1770931059348
+                        - generic [ref=e620]: test1770931059348_1379@example.com
+                  - cell "-" [ref=e621]
+                  - cell "+905593481379" [ref=e622]
+                  - cell "New" [ref=e623]:
+                    - generic [ref=e624]: New
+                  - cell "tabela" [ref=e625]:
+                    - generic [ref=e626]: tabela
+                  - cell "-" [ref=e627]:
+                    - generic [ref=e628]: "-"
+                  - cell "Active" [ref=e629]:
+                    - generic [ref=e630]: Active
+                  - cell "12.02.2026" [ref=e631]
+                  - cell [ref=e632]:
+                    - generic [ref=e633]:
+                      - button "Edit" [ref=e634]:
+                        - img [ref=e635]
+                      - button "Communication" [ref=e638]:
+                        - img [ref=e639]
+                      - button "Delete" [ref=e641]:
+                        - img [ref=e642]
+                - row "Test9965 User1770931014654 test1770931014654_9965@example.com - +905146549965 New tabela - Active 12.02.2026" [ref=e645] [cursor=pointer]:
+                  - cell "Test9965 User1770931014654 test1770931014654_9965@example.com" [ref=e646]:
+                    - generic [ref=e647]:
+                      - img [ref=e650]
+                      - generic [ref=e653]:
+                        - generic [ref=e654]: Test9965 User1770931014654
+                        - generic [ref=e655]: test1770931014654_9965@example.com
+                  - cell "-" [ref=e656]
+                  - cell "+905146549965" [ref=e657]
+                  - cell "New" [ref=e658]:
+                    - generic [ref=e659]: New
+                  - cell "tabela" [ref=e660]:
+                    - generic [ref=e661]: tabela
+                  - cell "-" [ref=e662]:
+                    - generic [ref=e663]: "-"
+                  - cell "Active" [ref=e664]:
+                    - generic [ref=e665]: Active
+                  - cell "12.02.2026" [ref=e666]
+                  - cell [ref=e667]:
+                    - generic [ref=e668]:
+                      - button "Edit" [ref=e669]:
+                        - img [ref=e670]
+                      - button "Communication" [ref=e673]:
+                        - img [ref=e674]
+                      - button "Delete" [ref=e676]:
+                        - img [ref=e677]
+                - row "Test7297 User1770931014514 test1770931014514_7297@example.com - +905145147297 New tabela - Active 12.02.2026" [ref=e680] [cursor=pointer]:
+                  - cell "Test7297 User1770931014514 test1770931014514_7297@example.com" [ref=e681]:
+                    - generic [ref=e682]:
+                      - img [ref=e685]
+                      - generic [ref=e688]:
+                        - generic [ref=e689]: Test7297 User1770931014514
+                        - generic [ref=e690]: test1770931014514_7297@example.com
+                  - cell "-" [ref=e691]
+                  - cell "+905145147297" [ref=e692]
+                  - cell "New" [ref=e693]:
+                    - generic [ref=e694]: New
+                  - cell "tabela" [ref=e695]:
+                    - generic [ref=e696]: tabela
+                  - cell "-" [ref=e697]:
+                    - generic [ref=e698]: "-"
+                  - cell "Active" [ref=e699]:
+                    - generic [ref=e700]: Active
+                  - cell "12.02.2026" [ref=e701]
+                  - cell [ref=e702]:
+                    - generic [ref=e703]:
+                      - button "Edit" [ref=e704]:
+                        - img [ref=e705]
+                      - button "Communication" [ref=e708]:
+                        - img [ref=e709]
+                      - button "Delete" [ref=e711]:
+                        - img [ref=e712]
+                - row "Test6611 User1770931014561 test1770931014561_6611@example.com - +905145616611 New tabela - Active 12.02.2026" [ref=e715] [cursor=pointer]:
+                  - cell "Test6611 User1770931014561 test1770931014561_6611@example.com" [ref=e716]:
+                    - generic [ref=e717]:
+                      - img [ref=e720]
+                      - generic [ref=e723]:
+                        - generic [ref=e724]: Test6611 User1770931014561
+                        - generic [ref=e725]: test1770931014561_6611@example.com
+                  - cell "-" [ref=e726]
+                  - cell "+905145616611" [ref=e727]
+                  - cell "New" [ref=e728]:
+                    - generic [ref=e729]: New
+                  - cell "tabela" [ref=e730]:
+                    - generic [ref=e731]: tabela
+                  - cell "-" [ref=e732]:
+                    - generic [ref=e733]: "-"
+                  - cell "Active" [ref=e734]:
+                    - generic [ref=e735]: Active
+                  - cell "12.02.2026" [ref=e736]
+                  - cell [ref=e737]:
+                    - generic [ref=e738]:
+                      - button "Edit" [ref=e739]:
+                        - img [ref=e740]
+                      - button "Communication" [ref=e743]:
+                        - img [ref=e744]
+                      - button "Delete" [ref=e746]:
+                        - img [ref=e747]
+                - row "Test3602 User1770931004063 test1770931004063_3602@example.com - +905040633602 New tabela - Active 12.02.2026" [ref=e750] [cursor=pointer]:
+                  - cell "Test3602 User1770931004063 test1770931004063_3602@example.com" [ref=e751]:
+                    - generic [ref=e752]:
+                      - img [ref=e755]
+                      - generic [ref=e758]:
+                        - generic [ref=e759]: Test3602 User1770931004063
+                        - generic [ref=e760]: test1770931004063_3602@example.com
+                  - cell "-" [ref=e761]
+                  - cell "+905040633602" [ref=e762]
+                  - cell "New" [ref=e763]:
+                    - generic [ref=e764]: New
+                  - cell "tabela" [ref=e765]:
+                    - generic [ref=e766]: tabela
+                  - cell "-" [ref=e767]:
+                    - generic [ref=e768]: "-"
+                  - cell "Active" [ref=e769]:
+                    - generic [ref=e770]: Active
+                  - cell "12.02.2026" [ref=e771]
+                  - cell [ref=e772]:
+                    - generic [ref=e773]:
+                      - button "Edit" [ref=e774]:
+                        - img [ref=e775]
+                      - button "Communication" [ref=e778]:
+                        - img [ref=e779]
+                      - button "Delete" [ref=e781]:
+                        - img [ref=e782]
+                - row "Test9187 User1770930919047 test1770930919047_9187@example.com - +905190479187 New tabela - Active 12.02.2026" [ref=e785] [cursor=pointer]:
+                  - cell "Test9187 User1770930919047 test1770930919047_9187@example.com" [ref=e786]:
+                    - generic [ref=e787]:
+                      - img [ref=e790]
+                      - generic [ref=e793]:
+                        - generic [ref=e794]: Test9187 User1770930919047
+                        - generic [ref=e795]: test1770930919047_9187@example.com
+                  - cell "-" [ref=e796]
+                  - cell "+905190479187" [ref=e797]
+                  - cell "New" [ref=e798]:
+                    - generic [ref=e799]: New
+                  - cell "tabela" [ref=e800]:
+                    - generic [ref=e801]: tabela
+                  - cell "-" [ref=e802]:
+                    - generic [ref=e803]: "-"
+                  - cell "Active" [ref=e804]:
+                    - generic [ref=e805]: Active
+                  - cell "12.02.2026" [ref=e806]
+                  - cell [ref=e807]:
+                    - generic [ref=e808]:
+                      - button "Edit" [ref=e809]:
+                        - img [ref=e810]
+                      - button "Communication" [ref=e813]:
+                        - img [ref=e814]
+                      - button "Delete" [ref=e816]:
+                        - img [ref=e817]
+                - row "Test615 User1770930917139 test1770930917139_615@example.com - +905171390615 New tabela - Active 12.02.2026" [ref=e820] [cursor=pointer]:
+                  - cell "Test615 User1770930917139 test1770930917139_615@example.com" [ref=e821]:
+                    - generic [ref=e822]:
+                      - img [ref=e825]
+                      - generic [ref=e828]:
+                        - generic [ref=e829]: Test615 User1770930917139
+                        - generic [ref=e830]: test1770930917139_615@example.com
+                  - cell "-" [ref=e831]
+                  - cell "+905171390615" [ref=e832]
+                  - cell "New" [ref=e833]:
+                    - generic [ref=e834]: New
+                  - cell "tabela" [ref=e835]:
+                    - generic [ref=e836]: tabela
+                  - cell "-" [ref=e837]:
+                    - generic [ref=e838]: "-"
+                  - cell "Active" [ref=e839]:
+                    - generic [ref=e840]: Active
+                  - cell "12.02.2026" [ref=e841]
+                  - cell [ref=e842]:
+                    - generic [ref=e843]:
+                      - button "Edit" [ref=e844]:
+                        - img [ref=e845]
+                      - button "Communication" [ref=e848]:
+                        - img [ref=e849]
+                      - button "Delete" [ref=e851]:
+                        - img [ref=e852]
+                - row "Test2903 User1770930911485 test1770930911485_2903@example.com - +905114852903 New tabela - Active 12.02.2026" [ref=e855] [cursor=pointer]:
+                  - cell "Test2903 User1770930911485 test1770930911485_2903@example.com" [ref=e856]:
+                    - generic [ref=e857]:
+                      - img [ref=e860]
+                      - generic [ref=e863]:
+                        - generic [ref=e864]: Test2903 User1770930911485
+                        - generic [ref=e865]: test1770930911485_2903@example.com
+                  - cell "-" [ref=e866]
+                  - cell "+905114852903" [ref=e867]
+                  - cell "New" [ref=e868]:
+                    - generic [ref=e869]: New
+                  - cell "tabela" [ref=e870]:
+                    - generic [ref=e871]: tabela
+                  - cell "-" [ref=e872]:
+                    - generic [ref=e873]: "-"
+                  - cell "Active" [ref=e874]:
+                    - generic [ref=e875]: Active
+                  - cell "12.02.2026" [ref=e876]
+                  - cell [ref=e877]:
+                    - generic [ref=e878]:
+                      - button "Edit" [ref=e879]:
+                        - img [ref=e880]
+                      - button "Communication" [ref=e883]:
+                        - img [ref=e884]
+                      - button "Delete" [ref=e886]:
+                        - img [ref=e887]
+                - row "Test1903 User1770930905419 test1770930905419_1903@example.com - +905054191903 New tabela - Active 12.02.2026" [ref=e890] [cursor=pointer]:
+                  - cell "Test1903 User1770930905419 test1770930905419_1903@example.com" [ref=e891]:
+                    - generic [ref=e892]:
+                      - img [ref=e895]
+                      - generic [ref=e898]:
+                        - generic [ref=e899]: Test1903 User1770930905419
+                        - generic [ref=e900]: test1770930905419_1903@example.com
+                  - cell "-" [ref=e901]
+                  - cell "+905054191903" [ref=e902]
+                  - cell "New" [ref=e903]:
+                    - generic [ref=e904]: New
+                  - cell "tabela" [ref=e905]:
+                    - generic [ref=e906]: tabela
+                  - cell "-" [ref=e907]:
+                    - generic [ref=e908]: "-"
+                  - cell "Active" [ref=e909]:
+                    - generic [ref=e910]: Active
+                  - cell "12.02.2026" [ref=e911]
+                  - cell [ref=e912]:
+                    - generic [ref=e913]:
+                      - button "Edit" [ref=e914]:
+                        - img [ref=e915]
+                      - button "Communication" [ref=e918]:
+                        - img [ref=e919]
+                      - button "Delete" [ref=e921]:
+                        - img [ref=e922]
+                - row "Test1493 User1770930896493 test1770930896493_1493@example.com - +905964931493 New tabela - Active 12.02.2026" [ref=e925] [cursor=pointer]:
+                  - cell "Test1493 User1770930896493 test1770930896493_1493@example.com" [ref=e926]:
+                    - generic [ref=e927]:
+                      - img [ref=e930]
+                      - generic [ref=e933]:
+                        - generic [ref=e934]: Test1493 User1770930896493
+                        - generic [ref=e935]: test1770930896493_1493@example.com
+                  - cell "-" [ref=e936]
+                  - cell "+905964931493" [ref=e937]
+                  - cell "New" [ref=e938]:
+                    - generic [ref=e939]: New
+                  - cell "tabela" [ref=e940]:
+                    - generic [ref=e941]: tabela
+                  - cell "-" [ref=e942]:
+                    - generic [ref=e943]: "-"
+                  - cell "Active" [ref=e944]:
+                    - generic [ref=e945]: Active
+                  - cell "12.02.2026" [ref=e946]
+                  - cell [ref=e947]:
+                    - generic [ref=e948]:
+                      - button "Edit" [ref=e949]:
+                        - img [ref=e950]
+                      - button "Communication" [ref=e953]:
+                        - img [ref=e954]
+                      - button "Delete" [ref=e956]:
+                        - img [ref=e957]
+            - generic [ref=e961]:
+              - generic [ref=e962]:
+                - generic [ref=e963]: "Sayfa başına:"
+                - combobox [ref=e964]:
+                  - option "10" [selected]
+                  - option "25"
+                  - option "50"
+                  - option "100"
+              - generic [ref=e965]:
+                - button "İlk" [disabled] [ref=e966]
+                - button "Önceki" [disabled] [ref=e967]:
+                  - img [ref=e968]
+                  - text: Önceki
+                - button "1" [ref=e970] [cursor=pointer]
+                - button "2" [ref=e971] [cursor=pointer]
+                - button "3" [ref=e972] [cursor=pointer]
+                - button "4" [ref=e973] [cursor=pointer]
+                - button "5" [ref=e974] [cursor=pointer]
+                - button "6" [ref=e975] [cursor=pointer]
+                - button "7" [ref=e976] [cursor=pointer]
+                - generic [ref=e977]: ...
+                - button "32" [ref=e978] [cursor=pointer]
+                - button "Sonraki" [ref=e979] [cursor=pointer]:
+                  - text: Sonraki
+                  - img [ref=e980]
+                - button "Son" [ref=e982] [cursor=pointer]
+              - generic [ref=e983]: 1-20 / 637 toplam
+        - button "Sayfa İzinlerini Görüntüle" [ref=e984] [cursor=pointer]:
+          - img [ref=e985]
+  - generic:
+    - contentinfo:
+      - button "Open TanStack Router Devtools" [ref=e988] [cursor=pointer]:
+        - generic [ref=e989]:
+          - img [ref=e991]
+          - img [ref=e1026]
+        - generic [ref=e1060]: "-"
+        - generic [ref=e1061]: TanStack Router
+  - generic [ref=e1062]:
+    - img [ref=e1064]
+    - button "Open Tanstack query devtools" [ref=e1112] [cursor=pointer]:
+      - img [ref=e1113]
+```

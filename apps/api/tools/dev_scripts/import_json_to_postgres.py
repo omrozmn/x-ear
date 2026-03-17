@@ -3,7 +3,6 @@ import sys
 import os
 import json
 import logging
-from datetime import datetime
 
 # Path setup for backend imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
@@ -11,9 +10,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 # Note: This script assumes a target PostgreSQL database is configured via DATABASE_URL
 # For now, it will use the current database config but is designed for Postgres structure.
 
-from database import engine, SessionLocal, Base
+from database import engine
 from sqlalchemy import text
-import pprint
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -5,7 +5,6 @@ This ensures Orval generates consistent hook names.
 """
 import json
 import re
-import os
 from pathlib import Path
 
 # Load operation IDs from openapi.json

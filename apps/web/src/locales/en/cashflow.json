@@ -1,0 +1,133 @@
+{
+  "page": {
+    "title": "Cash Flow",
+    "description": "Management of income and expense records",
+    "eyebrow": "Finance",
+    "loading": "Loading cash flow records...",
+    "not_found": "No cash flow records found"
+  },
+  "form": {
+    "title_income": "Add Income Record",
+    "title_expense": "Add Expense Record",
+    "title_edit": "Edit Record",
+    "amount": "Amount",
+    "description": "Description",
+    "date": "Date",
+    "category": "Category",
+    "payment_method": "Payment Method",
+    "reference": "Reference No",
+    "notes": "Notes",
+    "party": "Related Party",
+    "select_party": "Select Party",
+    "receipt": "Receipt",
+    "upload_receipt": "Upload Receipt",
+    "recurring": "Recurring",
+    "recurring_period": "Recurring Period",
+    "save": "Save",
+    "cancel": "Cancel",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly"
+  },
+  "table": {
+    "date": "Date",
+    "description": "Description",
+    "category": "Category",
+    "amount": "Amount",
+    "type": "Type",
+    "payment_method": "Payment Method",
+    "party": "Related Party",
+    "reference": "Reference",
+    "actions": "Actions",
+    "no_records": "No records found",
+    "income": "Income",
+    "expense": "Expense"
+  },
+  "filters": {
+    "search_placeholder": "Search by description or reference...",
+    "all_types": "All Types",
+    "income": "Income",
+    "expense": "Expense",
+    "all_categories": "All Categories",
+    "all_payment_methods": "All Payment Methods",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "today": "Today",
+    "this_week": "This Week",
+    "this_month": "This Month",
+    "this_year": "This Year",
+    "custom_range": "Custom Range"
+  },
+  "actions": {
+    "add_income": "Add Income",
+    "add_expense": "Add Expense",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "export": "Export",
+    "print": "Print",
+    "duplicate": "Duplicate"
+  },
+  "messages": {
+    "record_created": "Record created",
+    "record_updated": "Record updated",
+    "record_deleted": "Record deleted",
+    "save_failed": "Save failed",
+    "delete_failed": "Delete failed",
+    "delete_confirm": "Are you sure you want to delete this record?",
+    "export_success": "Export completed",
+    "export_failed": "Export failed"
+  },
+  "record_types": {
+    "sale": "Sale",
+    "purchase": "Purchase",
+    "refund": "Refund",
+    "salary": "Salary",
+    "rent": "Rent",
+    "utility": "Utility Bill",
+    "tax": "Tax",
+    "insurance": "Insurance",
+    "maintenance": "Maintenance",
+    "other_income": "Other Income",
+    "other_expense": "Other Expense"
+  },
+  "detail": {
+    "title": "Record Detail",
+    "created_by": "Created By",
+    "created_at": "Created At",
+    "updated_at": "Updated At",
+    "attachments": "Attachments",
+    "history": "Change History"
+  },
+  "mobile": {
+    "swipe_to_delete": "Swipe to delete",
+    "pull_to_refresh": "Pull to refresh",
+    "quick_add": "Quick Add"
+  },
+  "export": {
+    "title": "Cash Flow Export",
+    "format": "Format",
+    "date_range": "Date Range",
+    "include_receipts": "Include Receipts",
+    "csv": "CSV",
+    "excel": "Excel",
+    "pdf": "PDF",
+    "export_button": "Export"
+  },
+  "product_search": {
+    "placeholder": "Search product or service...",
+    "no_results": "No results found",
+    "add_custom": "Add custom item"
+  },
+  "stats": {
+    "total_income": "Total Income",
+    "total_expense": "Total Expense",
+    "net_cashflow": "Net Cash Flow",
+    "daily_average": "Daily Average",
+    "monthly_trend": "Monthly Trend",
+    "income_vs_expense": "Income vs Expense",
+    "top_categories": "Top Spending Categories",
+    "cash_balance": "Cash Balance"
+  }
+}

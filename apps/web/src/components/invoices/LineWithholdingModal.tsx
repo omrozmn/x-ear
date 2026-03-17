@@ -14,16 +14,58 @@ interface LineWithholdingModalProps {
 }
 
 const withholdingCodes = [
-  { code: 'TEV001', description: 'Serbest Meslek Makbuzu (%20)', rate: 20 },
-  { code: 'TEV002', description: 'Kira Geliri (%20)', rate: 20 },
-  { code: 'TEV003', description: 'Menkul Sermaye İradı (%15)', rate: 15 },
-  { code: 'TEV004', description: 'Ticari Kazanç (%20)', rate: 20 },
-  { code: 'TEV005', description: 'Yapım İşleri (%3)', rate: 3 },
-  { code: 'TEV006', description: 'Etüd, Proje, Plan (%5)', rate: 5 },
-  { code: 'TEV007', description: 'Makine, Teçhizat Kiralama (%5)', rate: 5 },
-  { code: 'TEV008', description: 'Yemek Servisi (%5)', rate: 5 },
-  { code: 'TEV009', description: 'Temizlik Hizmeti (%5)', rate: 5 },
-  { code: 'TEV010', description: 'Özel Güvenlik Hizmeti (%5)', rate: 5 }
+  { code: '601', description: 'Yapım İşleri', rate: 40 },
+  { code: '602', description: 'Etüt, Plan, Proje, Danışmanlık', rate: 90 },
+  { code: '603', description: 'Makine, Teçhizat, Demirbaş Tadil/Bakım', rate: 70 },
+  { code: '604', description: 'Yemek Servisi', rate: 50 },
+  { code: '605', description: 'Organizasyon Hizmeti', rate: 50 },
+  { code: '606', description: 'İş Gücü Temin Hizmeti', rate: 90 },
+  { code: '607', description: 'Özel Güvenlik Hizmeti', rate: 90 },
+  { code: '608', description: 'Yapı Denetim Hizmeti', rate: 90 },
+  { code: '609', description: 'Fason Tekstil ve Konfeksiyon', rate: 70 },
+  { code: '610', description: 'Turistik Mağazalara Verilen Müşteri Bulma', rate: 90 },
+  { code: '611', description: 'Spor Kulübü Yayın/Reklam/İsim Hakkı', rate: 90 },
+  { code: '612', description: 'Temizlik Hizmeti', rate: 90 },
+  { code: '613', description: 'Çevre ve Bahçe Bakım Hizmeti', rate: 90 },
+  { code: '614', description: 'Servis Taşımacılığı', rate: 50 },
+  { code: '615', description: 'Baskı ve Basım Hizmeti', rate: 70 },
+  { code: '616', description: '5018 Kapsamı Diğer Hizmetler', rate: 50 },
+  { code: '617', description: 'Hurda Metalden Elde Edilen Külçe', rate: 70 },
+  { code: '618', description: 'Bakır/Çinko/Alüminyum Külçe', rate: 70 },
+  { code: '619', description: 'Bakır/Çinko/Alüminyum Ürünleri', rate: 70 },
+  { code: '620', description: 'İstisnadan Vazgeçenlerin Hurda/Atık Teslimi', rate: 70 },
+  { code: '621', description: 'Hurda ve Atıklardan Elde Edilen Hammadde', rate: 90 },
+  { code: '622', description: 'Pamuk/Tiftik/Yün/Yapağı/Ham Post-Deri', rate: 90 },
+  { code: '623', description: 'Ağaç ve Orman Ürünleri', rate: 50 },
+  { code: '624', description: 'Yük Taşımacılığı', rate: 20 },
+  { code: '625', description: 'Ticari Reklam Hizmetleri', rate: 30 },
+  { code: '626', description: 'Diğer Teslimler', rate: 20 },
+  { code: '627', description: 'Demir-Çelik Ürünleri', rate: 50 },
+  { code: '801', description: 'Yapım İşleri (Tam Tevkifat)', rate: 100 },
+  { code: '802', description: 'Danışmanlık ve Benzeri (Tam Tevkifat)', rate: 100 },
+  { code: '803', description: 'Makine/Teçhizat Tadil-Bakım (Tam)', rate: 100 },
+  { code: '804', description: 'Yemek Servisi (Tam)', rate: 100 },
+  { code: '805', description: 'Organizasyon Hizmeti (Tam)', rate: 100 },
+  { code: '806', description: 'İş Gücü Temin Hizmeti (Tam)', rate: 100 },
+  { code: '807', description: 'Özel Güvenlik Hizmeti (Tam)', rate: 100 },
+  { code: '808', description: 'Yapı Denetim Hizmeti (Tam)', rate: 100 },
+  { code: '809', description: 'Fason Tekstil ve Konfeksiyon (Tam)', rate: 100 },
+  { code: '810', description: 'Müşteri Bulma / Götürme Hizmeti (Tam)', rate: 100 },
+  { code: '811', description: 'Spor Kulübü Gelirleri (Tam)', rate: 100 },
+  { code: '812', description: 'Temizlik Hizmeti (Tam)', rate: 100 },
+  { code: '813', description: 'Çevre ve Bahçe Bakım Hizmeti (Tam)', rate: 100 },
+  { code: '814', description: 'Servis Taşımacılığı (Tam)', rate: 100 },
+  { code: '815', description: 'Baskı ve Basım Hizmeti (Tam)', rate: 100 },
+  { code: '816', description: 'Hurda Metal Külçe Teslimi (Tam)', rate: 100 },
+  { code: '817', description: 'Bakır/Çinko/Demir-Çelik Külçe (Tam)', rate: 100 },
+  { code: '818', description: 'Bakır/Çinko/Alüminyum/Kurşun Ürünleri (Tam)', rate: 100 },
+  { code: '819', description: 'Hurda ve Atık Teslimi (Tam)', rate: 100 },
+  { code: '820', description: 'Hurda ve Atıktan Hammadde (Tam)', rate: 100 },
+  { code: '821', description: 'Pamuk/Tiftik/Yün/Yapağı/Ham Post-Deri (Tam)', rate: 100 },
+  { code: '822', description: 'Ağaç ve Orman Ürünleri (Tam)', rate: 100 },
+  { code: '823', description: 'Yük Taşımacılığı (Tam)', rate: 100 },
+  { code: '824', description: 'Ticari Reklam Hizmetleri (Tam)', rate: 100 },
+  { code: '825', description: 'Demir-Çelik Ürünleri (Tam)', rate: 100 }
 ];
 
 export function LineWithholdingModal({
@@ -83,27 +125,27 @@ export function LineWithholdingModal({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose}></div>
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="inline-block align-bottom bg-card rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <form onSubmit={handleSubmit}>
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
+                  <h3 className="text-lg leading-6 font-medium text-foreground mb-2">
                     Satır Bazında Tevkifat
                   </h3>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-4">
                     <p className="text-sm text-blue-900">
                       <span className="font-medium">Satır {itemIndex + 1}:</span> {itemName}
                     </p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Tutar: {itemAmount.toFixed(2)} TL
+                    <p className="text-sm text-primary mt-1">
+                      Referans satır tutarı: {itemAmount.toFixed(2)} TL
                     </p>
                   </div>
 
                   <div className="space-y-4">
                     {/* Tevkifat Kodu */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Tevkifat Kodu
                       </label>
                       <Select
@@ -123,7 +165,7 @@ export function LineWithholdingModal({
 
                     {/* Tevkifat Oranı */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Tevkifat Oranı (%)
                       </label>
                       <Input
@@ -142,7 +184,7 @@ export function LineWithholdingModal({
 
                     {/* Hesaplanan Tevkifat Tutarı */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Tevkifat Tutarı (TL)
                       </label>
                       <Input
@@ -150,19 +192,19 @@ export function LineWithholdingModal({
                         step="0.01"
                         value={formData.amount}
                         readOnly
-                        className="w-full bg-gray-50"
+                        className="w-full bg-muted"
                       />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Otomatik hesaplanır: ({formData.rate}% × {itemAmount.toFixed(2)} TL)
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Önizleme hesaplamasıdır. XML üretiminde provider kuralına göre tevkifat tutarı KDV/vergisel matrah üzerinden yeniden hesaplanır.
                       </p>
                     </div>
 
                     {/* Hesaplama Özeti */}
                     {Number(formData.rate) > 0 && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="bg-success/10 border border-green-200 rounded-2xl p-4">
                         <div className="flex items-start">
                           <CheckCircle className="text-green-400 mr-2 flex-shrink-0" size={18} />
-                          <div className="text-sm text-green-700">
+                          <div className="text-sm text-success">
                             <p className="font-medium mb-1">Tevkifat Hesaplaması:</p>
                             <p>Brüt Tutar: {itemAmount.toFixed(2)} TL</p>
                             <p>Tevkifat ({formData.rate}%): -{formData.amount.toFixed(2)} TL</p>
@@ -178,17 +220,17 @@ export function LineWithholdingModal({
               </div>
             </div>
 
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <div className="bg-muted px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <Button
                 type="submit"
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:ml-3 sm:w-auto sm:text-sm"
                 variant="default">
                 Kaydet
               </Button>
               <Button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="mt-3 w-full inline-flex justify-center rounded-xl border border-border shadow-sm px-4 py-2 bg-card text-base font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 variant="default">
                 İptal
               </Button>

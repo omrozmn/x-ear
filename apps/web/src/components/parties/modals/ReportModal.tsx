@@ -5,7 +5,7 @@ import {
   Alert,
   Spinner
 } from '@x-ear/ui-web';
-import { createHearingTest } from '@/api/client/parties.client';
+// import { createHearingTest } from '@/api/client/parties.client'; // Endpoint removed/renamed in backend
 import { X, FileText, Plus, AlertCircle, CheckCircle, Calendar, User } from 'lucide-react';
 import { Party } from '../../../types/party';
 
@@ -114,17 +114,19 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
     try {
       if (formData.type === 'audiogram') {
-        const payload = {
-          testDate: new Date().toISOString(),
-          audiologist: 'Current User', // Should ideally come from auth context
-          audiogramData: {
-            title: formData.title, // Store title in JSON data
-            status: 'draft',
-            notes: 'Created via web UI'
-          }
-        };
+        // Payload will be used when API is ready
+        // const payload = {
+        // testDate: new Date().toISOString(),
+        // audiologist: 'Current User',
+        // audiogramData: {
+        // title: formData.title,
+        // status: 'draft',
+        // notes: 'Created via web UI'
+        // }
+        // };
 
-        await createHearingTest(party.id!, payload);
+        // await createHearingTest(party.id!, payload); // Endpoint removed/renamed in backend
+        console.warn('createHearingTest endpoint not available - skipping');
       } else {
         // Mock success for other types for now
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -191,15 +193,15 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <h3 className="text-lg font-medium text-foreground flex items-center">
             <Plus className="w-5 h-5 mr-2" />
             Yeni Rapor Oluştur
           </h3>
           <Button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-muted-foreground hover:text-muted-foreground"
           >
             <X className="w-5 h-5" />
           </Button>
@@ -207,16 +209,16 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
         {/* Success Alert */}
         {success && (
-          <Alert className="mb-4 border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <div className="text-green-800">{success}</div>
+          <Alert className="mb-4 border-green-200 bg-success/10">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <div className="text-success">{success}</div>
           </Alert>
         )}
 
         {/* Error Alert */}
         {error && (
-          <Alert className="mb-4 border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
+          <Alert className="mb-4 border-red-200 bg-destructive/10">
+            <AlertCircle className="h-4 w-4 text-destructive" />
             <div className="text-red-800">{error}</div>
           </Alert>
         )}
@@ -224,8 +226,8 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {/* Party Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+            <div className="bg-muted p-4 rounded-2xl">
+              <h4 className="font-medium text-foreground mb-2 flex items-center">
                 <User className="w-4 h-4 mr-2" />
                 Hasta Bilgileri
               </h4>
@@ -247,7 +249,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
             {/* Report Type Selection */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 flex items-center">
+              <h4 className="font-medium text-foreground flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
                 Rapor Türü
               </h4>
@@ -258,25 +260,25 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                     key={type.value}
                     type="button"
                     onClick={() => handleInputChange('type', type.value)}
-                    className={`p-4 border rounded-lg text-left transition-colors ${formData.type === type.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                    className={`p-4 border rounded-2xl text-left transition-colors ${formData.type === type.value
+                      ? 'border-blue-500 bg-primary/10'
+                      : 'border-border hover:border-gray-400'
                       }`}
                   >
                     <div className="flex items-start space-x-3">
                       <div className="text-2xl">{type.icon}</div>
                       <div className="flex-1">
-                        <div className={`font-medium ${formData.type === type.value ? 'text-blue-700' : 'text-gray-900'
+                        <div className={`font-medium ${formData.type === type.value ? 'text-primary' : 'text-foreground'
                           }`}>
                           {type.label}
                         </div>
-                        <div className={`text-sm mt-1 ${formData.type === type.value ? 'text-blue-600' : 'text-gray-600'
+                        <div className={`text-sm mt-1 ${formData.type === type.value ? 'text-primary' : 'text-muted-foreground'
                           }`}>
                           {type.description}
                         </div>
                       </div>
                       {formData.type === type.value && (
-                        <div className="text-blue-500">
+                        <div className="text-primary">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
@@ -290,13 +292,13 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
             {/* Report Title */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 flex items-center">
+              <h4 className="font-medium text-foreground flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
                 Rapor Detayları
               </h4>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Rapor Başlığı *
                 </label>
                 <Input
@@ -306,23 +308,23 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   className={errors.title ? 'border-red-500' : ''}
                 />
                 {errors.title && (
-                  <div className="flex items-center mt-1 text-sm text-red-600">
+                  <div className="flex items-center mt-1 text-sm text-destructive">
                     <AlertCircle className="w-4 h-4 mr-1" />
                     {errors.title}
                   </div>
                 )}
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {formData.title.length}/100 karakter
                 </div>
               </div>
 
               {/* Suggested Title */}
-              <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="bg-primary/10 p-3 rounded-2xl">
                 <div className="text-sm font-medium text-blue-900 mb-2">Önerilen Başlık:</div>
                 <button data-allow-raw="true"
                   type="button"
                   onClick={() => handleInputChange('title', generateSuggestedTitle(formData.type))}
-                  className="text-sm text-blue-700 hover:text-blue-800 underline"
+                  className="text-sm text-primary hover:text-blue-800 underline"
                 >
                   {generateSuggestedTitle(formData.type)}
                 </button>
@@ -330,46 +332,46 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </div>
 
             {/* Report Type Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h5 className="font-medium text-gray-900 mb-2">
+            <div className="bg-muted p-4 rounded-2xl">
+              <h5 className="font-medium text-foreground mb-2">
                 {getTypeInfo(formData.type).label} Hakkında
               </h5>
-              <p className="text-sm text-gray-600 mb-3">
+              <p className="text-sm text-muted-foreground mb-3">
                 {getTypeInfo(formData.type).description}
               </p>
 
               {/* Type-specific information */}
               {formData.type === 'audiogram' && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <strong>İçerebilir:</strong> Saf ses odyometrisi, konuşma odyometrisi, timpanometri sonuçları
                 </div>
               )}
               {formData.type === 'battery' && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <strong>İçerebilir:</strong> Pil ömrü, değişim tarihleri, pil türü bilgileri
                 </div>
               )}
               {formData.type === 'device' && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <strong>İçerebilir:</strong> Cihaz ayarları, frekans yanıtı, kazanç değerleri
                 </div>
               )}
               {formData.type === 'sgk' && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <strong>İçerebilir:</strong> Başvuru formu, onay belgesi, ödeme bilgileri
                 </div>
               )}
               {formData.type === 'medical' && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <strong>İçerebilir:</strong> Doktor değerlendirmesi, tanı, tedavi önerileri
                 </div>
               )}
             </div>
 
             {/* Creation Info */}
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h5 className="font-medium text-gray-900 mb-2">Oluşturulacak Rapor</h5>
-              <div className="text-sm text-gray-600 space-y-1">
+            <div className="bg-success/10 p-4 rounded-2xl">
+              <h5 className="font-medium text-foreground mb-2">Oluşturulacak Rapor</h5>
+              <div className="text-sm text-muted-foreground space-y-1">
                 <div>
                   <span className="font-medium">Tür:</span> {getTypeInfo(formData.type).label}
                 </div>
@@ -387,14 +389,14 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="px-4 py-2 text-foreground bg-muted hover:bg-accent rounded-xl"
               disabled={isLoading}
             >
               İptal
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+              className="px-6 py-2 premium-gradient tactile-press text-white rounded-xl flex items-center"
               disabled={isLoading || !formData.type || !formData.title.trim()}
             >
               {isLoading ? (

@@ -4,6 +4,7 @@ import {
     Building2,
     Users,
     CreditCard,
+    Briefcase,
     LifeBuoy,
     Settings,
     PlusCircle,
@@ -25,13 +26,20 @@ import {
     Megaphone,
     Wallet,
     Bot,
+    Globe2,
+    ToggleRight,
+    Flag,
+    ScanLine,
+    Tag,
 } from 'lucide-react'
+import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Raporlar', href: '/analytics', icon: BarChart3 },
     { name: 'Aboneler', href: '/tenants', icon: Building2 },
     { name: 'Kullanıcılar', href: '/users', icon: Users },
+    { name: 'Blog Yönetimi', href: '/blog', icon: FileText },
     { name: 'Hastalar', href: '/patients', icon: User },
     { name: 'Randevular', href: '/appointments', icon: Calendar },
     { name: 'Cihaz & Stok', href: '/inventory', icon: Box },
@@ -48,18 +56,30 @@ const navigation = [
     { name: 'SMS Başlıkları', href: '/sms/headers', icon: MessageSquare },
     { name: 'SMS Paketleri', href: '/sms/packages', icon: Package },
     { name: 'AI Yönetimi', href: '/ai', icon: Bot },
+    { name: 'Web Yonetim', href: '/web-management', icon: Globe2 },
     { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
     { name: 'Dosyalar', href: '/files', icon: Folder },
     { name: 'OCR Kuyruğu', href: '/ocr-queue', icon: FileText },
     { name: 'Faturalar', href: '/billing', icon: CreditCard },
     { name: 'Ödemeler', href: '/payments', icon: Wallet },
+    { name: 'Personel', href: '/personnel', icon: Briefcase },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
+    { name: 'Feature Flags', href: '/features', icon: ToggleRight },
+    { name: 'Countries', href: '/countries', icon: Flag },
+    { name: 'Barkod Servisi', href: '/barcodes', icon: ScanLine },
+    { name: 'Etiket Sablonlari', href: '/label-templates', icon: Tag },
     { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },
     { name: 'Ayarlar', href: '/settings', icon: Settings },
 ]
 
 export function AdminSidebar() {
     const location = useLocation()
+    const { isDesktop } = useAdminResponsive()
+
+    // Only render on desktop
+    if (!isDesktop) {
+        return null
+    }
 
     return (
         <div className="flex flex-col w-64 bg-gray-900 border-r border-gray-800 h-screen">
@@ -67,7 +87,7 @@ export function AdminSidebar() {
                 <img src="/logo/x.svg" alt="X-Ear Logo" className="w-8 h-8" />
                 <span className="text-xl font-bold text-white">X-Ear Admin</span>
             </div>
-            <div className="flex-1 flex flex-col overflow-y-auto">
+            <div className="flex-1 flex flex-col overflow-y-auto hide-scrollbar">
                 <nav className="flex-1 px-2 py-4 space-y-1">
                     {navigation.map((item) => {
                         const isActive = location.pathname === item.href
@@ -76,7 +96,7 @@ export function AdminSidebar() {
                                 key={item.name}
                                 to={item.href}
                                 className={`
-                  group flex items-center px-2 py-2 text-sm font-medium rounded-md
+                  group flex items-center px-2 py-2 text-sm font-medium rounded-xl transition-colors
                   ${isActive
                                         ? 'bg-gray-800 text-white'
                                         : 'text-gray-300 hover:bg-gray-800 hover:text-white'}

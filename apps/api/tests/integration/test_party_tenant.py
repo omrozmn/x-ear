@@ -28,7 +28,10 @@ def create_tenant_token(user_id: str, tenant_id: str, role: str = 'admin') -> st
 def create_tenant_headers(tenant_id: str, user_id: str = 'test-user') -> dict:
     """Create auth headers for a specific tenant"""
     token = create_tenant_token(user_id, tenant_id)
-    return {'Authorization': f'Bearer {token}'}
+    return {
+        'Authorization': f'Bearer {token}',
+        'Idempotency-Key': f'{datetime.utcnow().timestamp()}-{user_id}-{tenant_id}'
+    }
 
 
 @pytest.fixture
@@ -130,18 +133,16 @@ class TestPartyTenantIsolation:
             headers=tenant_b_headers
         )
         
-        # Skip if creation failed (tenant setup issue)
-        if response_b.status_code != 201:
-            pytest.skip("Could not create party in tenant B")
+        assert response_b.status_code == 201, f"Failed to create party in tenant B: {response_b.text}"
         
         party_b_id = response_b.json()["data"]["id"]
         
         # List parties as tenant A - should not see tenant B's party
         response_a = client.get("/api/parties", headers=tenant_a_headers)
         
-        if response_a.status_code == 200:
-            party_ids = [p["id"] for p in response_a.json()["data"]]
-            assert party_b_id not in party_ids
+        assert response_a.status_code == 200
+        party_ids = [p["id"] for p in response_a.json()["data"]]
+        assert party_b_id not in party_ids
     
     def test_tenant_a_cannot_get_tenant_b_party(
         self, 
@@ -163,8 +164,7 @@ class TestPartyTenantIsolation:
             headers=tenant_b_headers
         )
         
-        if response_b.status_code != 201:
-            pytest.skip("Could not create party in tenant B")
+        assert response_b.status_code == 201, f"Failed to create party in tenant B: {response_b.text}"
         
         party_b_id = response_b.json()["data"]["id"]
         
@@ -194,8 +194,7 @@ class TestPartyTenantIsolation:
             headers=tenant_b_headers
         )
         
-        if response_b.status_code != 201:
-            pytest.skip("Could not create party in tenant B")
+        assert response_b.status_code == 201, f"Failed to create party in tenant B: {response_b.text}"
         
         party_b_id = response_b.json()["data"]["id"]
         
@@ -229,8 +228,7 @@ class TestPartyTenantIsolation:
             headers=tenant_b_headers
         )
         
-        if response_b.status_code != 201:
-            pytest.skip("Could not create party in tenant B")
+        assert response_b.status_code == 201, f"Failed to create party in tenant B: {response_b.text}"
         
         party_b_id = response_b.json()["data"]["id"]
         

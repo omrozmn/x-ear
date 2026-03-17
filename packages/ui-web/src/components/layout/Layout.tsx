@@ -81,8 +81,14 @@ const Layout: React.FC<LayoutProps> = ({
       <div id="sidebar">
         <Sidebar
           isOpen={sidebarOpen}
+          isCollapsed={false}
+          onToggle={() => {}}
           onClose={handleSidebarClose}
           currentPath={currentPath}
+          isMobile={false}
+          isTablet={false}
+          isDesktop={true}
+          onNavigate={(href) => console.log('Navigate to:', href)}
         />
       </div>
 

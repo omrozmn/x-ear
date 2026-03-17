@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/invoice_normalizer.py
+# hypothesis_version: 6.151.9
+
+[30.0, 200, 201, '/health', '/invoice-normalizer', '/normalize', '/templates', ';', 'Content-Disposition', 'Invoice Normalizer', 'content-disposition', 'description', 'error', 'file', 'getNormalizerHistory', 'name', 'normalizeLegacy', 'status', 'text/csv', 'unavailable']

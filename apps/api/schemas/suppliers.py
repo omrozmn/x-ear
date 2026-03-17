@@ -3,7 +3,7 @@ Supplier Schemas - Pydantic models for Supplier domain
 """
 from typing import Optional, List, Union, Any, Dict
 from pydantic import Field, field_validator, model_validator
-from .base import AppBaseModel, IDMixin, TimestampMixin
+from .base import AppBaseModel, TimestampMixin
 
 
 class SupplierBase(AppBaseModel):
@@ -23,6 +23,7 @@ class SupplierBase(AppBaseModel):
     postal_code: Optional[str] = Field(None, alias="postalCode", description="Postal code")
     tax_number: Optional[str] = Field(None, alias="taxNumber", description="Tax number")
     tax_office: Optional[str] = Field(None, alias="taxOffice", description="Tax office")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber", description="UTS institution number")
     payment_terms: Optional[str] = Field(None, alias="paymentTerms", description="Payment terms")
     currency: Optional[str] = Field("TRY", description="Currency")
     rating: Optional[int] = Field(None, description="Rating 1-5")
@@ -40,6 +41,7 @@ class SupplierBase(AppBaseModel):
 
 class SupplierCreate(AppBaseModel):
     """Schema for creating a supplier"""
+    tenant_id: Optional[str] = Field(None, alias="tenantId", description="Owner tenant ID")
     name: Optional[str] = Field(None, description="Frontend alias for companyName")
     code: Optional[str] = Field(None, description="Frontend alias for companyCode")
     contact_name: Optional[str] = Field(None, alias="contactName", description="Frontend alias for contactPerson")
@@ -52,6 +54,7 @@ class SupplierCreate(AppBaseModel):
     city: Optional[str] = None
     tax_number: Optional[str] = Field(None, alias="taxNumber")
     tax_office: Optional[str] = Field(None, alias="taxOffice")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber")
     is_active: bool = Field(True, alias="isActive")
     notes: Optional[str] = None
     
@@ -77,6 +80,7 @@ class SupplierCreate(AppBaseModel):
 
 class SupplierUpdate(AppBaseModel):
     """Schema for updating a supplier"""
+    tenant_id: Optional[str] = Field(None, alias="tenantId", description="Owner tenant ID")
     name: Optional[str] = Field(None, description="Frontend alias for companyName")
     code: Optional[str] = Field(None, description="Frontend alias for companyCode")
     contact_name: Optional[str] = Field(None, alias="contactName", description="Frontend alias for contactPerson")
@@ -95,6 +99,7 @@ class SupplierUpdate(AppBaseModel):
     postal_code: Optional[str] = Field(None, alias="postalCode")
     tax_number: Optional[str] = Field(None, alias="taxNumber")
     tax_office: Optional[str] = Field(None, alias="taxOffice")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber")
     payment_terms: Optional[str] = Field(None, alias="paymentTerms")
     currency: Optional[str] = None
     rating: Optional[int] = None

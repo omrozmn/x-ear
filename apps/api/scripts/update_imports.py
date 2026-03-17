@@ -138,7 +138,7 @@ def main():
                 error_count += 1
             print(f"⚠️  {os.path.relpath(file_path)}: {message}")
     
-    print(f"\n📊 Summary:")
+    print("\n📊 Summary:")
     print(f"   Updated: {updated_count} files")
     print(f"   Errors: {error_count} files")
     print(f"   Total processed: {len(files_to_process)} files")

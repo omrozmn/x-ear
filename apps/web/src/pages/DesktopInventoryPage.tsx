@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToastHelpers, Card } from '@x-ear/ui-web';
 import { Plus, Upload, Download, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button, Modal } from '@x-ear/ui-web';
@@ -12,11 +13,14 @@ import { InventoryItem } from '../types/inventory';
 
 import { listInventory, deleteInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../utils/response-unwrap';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { PermissionGate } from '@/components/PermissionGate';
+import toast from 'react-hot-toast';
 
 
 
 export const DesktopInventoryPage: React.FC = () => {
-
+  const { t } = useTranslation('inventory');
 
   // State management
   const [filters, setFilters] = useState<InventoryFilters>({});
@@ -110,7 +114,7 @@ export const DesktopInventoryPage: React.FC = () => {
     setSelectedItem(null);
     // Ensure lists reload from API
     triggerInventoryRefresh();
-    showSuccess && showSuccess('Ürün kaydedildi');
+    showSuccess && showSuccess(t('messages.product_updated'));
   };
 
   const handleItemEdit = (item: InventoryItem) => {
@@ -133,7 +137,7 @@ export const DesktopInventoryPage: React.FC = () => {
       // Reload will happen via subscription
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Silme işlemi başarısız oldu');
+      toast.error(t('delete.failed'));
     }
   };
 
@@ -146,8 +150,8 @@ export const DesktopInventoryPage: React.FC = () => {
       const items = unwrapArray<InventoryItem>(response);
 
       const headers = [
-        'ID', 'Ürün Adı', 'Marka', 'Model', 'Kategori', 'Stok',
-        'Fiyat', 'Barkod', 'Tedarikçi'
+        'ID', t('columns.product_name'), t('columns.brand'), 'Model', t('columns.category'), t('columns.stock'),
+        t('columns.sale_price'), t('columns.barcode'), t('form.description')
       ];
 
       const csvContent = [
@@ -177,7 +181,7 @@ export const DesktopInventoryPage: React.FC = () => {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Dışa aktarma başarısız oldu');
+      toast.error(t('messages.load_failed'));
     }
   };
 
@@ -207,35 +211,41 @@ export const DesktopInventoryPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Envanter Yönetimi</h1>
-          <p className="text-gray-600 dark:text-gray-400">İşitme cihazları ve aksesuarlarını yönetin</p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            variant="outline"
-            onClick={exportInventory}
-            icon={<Download className="w-4 h-4" />}
-          >
-            Dışa Aktar
-          </Button>
-          <Button
-            variant="outline"
-            onClick={importInventory}
-            icon={<Upload className="w-4 h-4" />}
-          >
-            İçe Aktar
-          </Button>
-          {/* Inventory import button removed per request; importer is available from page header elsewhere if needed */}
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            icon={<Plus className="w-4 h-4" />}
-          >
-            Yeni Ürün
-          </Button>
-        </div>
-      </div>
+      <DesktopPageHeader
+        title={t('stock.title')}
+        description={t('products.description')}
+        eyebrow={{ tr: 'Envanter', en: 'Inventory' }}
+        actions={(
+          <>
+            <PermissionGate permission="inventory.view">
+              <Button
+                variant="outline"
+                onClick={exportInventory}
+                icon={<Download className="w-4 h-4" />}
+              >
+                {t('actions.export')}
+              </Button>
+            </PermissionGate>
+            <PermissionGate permission="inventory.manage">
+              <Button
+                variant="outline"
+                onClick={importInventory}
+                icon={<Upload className="w-4 h-4" />}
+              >
+                {t('actions.import')}
+              </Button>
+            </PermissionGate>
+            <PermissionGate permission="inventory.manage">
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                icon={<Plus className="w-4 h-4" />}
+              >
+                {t('form.add_product')}
+              </Button>
+            </PermissionGate>
+          </>
+        )}
+      />
 
       {/* Stats */}
       <InventoryStats />
@@ -264,19 +274,29 @@ export const DesktopInventoryPage: React.FC = () => {
         isOpen={isImporterOpen}
         onClose={() => setIsImporterOpen(false)}
         entityFields={[
-          { key: 'id', label: 'ID' },
-          { key: 'name', label: 'Ürün Adı' },
-          { key: 'brand', label: 'Marka' },
+          { key: 'name', label: t('form.product_name') },
+          { key: 'brand', label: t('form.brand') },
           { key: 'model', label: 'Model' },
-          { key: 'category', label: 'Kategori' },
-          { key: 'availableInventory', label: 'Stok' },
-          { key: 'price', label: 'Fiyat' },
-          { key: 'barcode', label: 'Barkod' },
-          { key: 'supplier', label: 'Tedarikçi' }
+          { key: 'category', label: t('form.category') },
+          { key: 'barcode', label: t('form.barcode') },
+          { key: 'stockCode', label: t('form.product_code') },
+          { key: 'supplier', label: t('form.description') },
+          { key: 'availableInventory', label: t('stock.current_stock') },
+          { key: 'price', label: t('pricing.sale_price') },
+          { key: 'cost', label: t('pricing.purchase_price') },
+          { key: 'kdvRate', label: t('form.vat_rate') },
+          { key: 'unit', label: t('form.unit') },
+          { key: 'reorderLevel', label: t('stock.min_stock') },
+          { key: 'warranty', label: t('form.description') },
+          { key: 'description', label: t('form.description') },
+          { key: 'direction', label: t('form.description') },
+          { key: 'maxGain', label: 'Max Gain (dB)' },
+          { key: 'fittingRangeMin', label: 'Fitting Min (dB)' },
+          { key: 'fittingRangeMax', label: 'Fitting Max (dB)' },
         ] as FieldDef[]}
         zodSchema={inventorySchema}
-        uploadEndpoint={'/api/inventory/bulk_upload'}
-        modalTitle={'Toplu Envanter Yükleme'}
+        uploadEndpoint={'/api/inventory/bulk-upload'}
+        modalTitle={t('import_export.import_title')}
         sampleDownloadUrl={'/import_samples/inventory_sample.csv'}
         onComplete={(res) => {
           if (res.errors && res.errors.length > 0) {
@@ -295,12 +315,12 @@ export const DesktopInventoryPage: React.FC = () => {
           <Card>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm">Oluşturulan: <strong>{importResult.created}</strong></div>
-                <div className="text-sm">Güncellenen: <strong>{importResult.updated}</strong></div>
-                <div className="text-sm">Hatalı satır: <strong>{importResult.errors?.length || 0}</strong></div>
+                <div className="text-sm">{t('import_export.import_completed')}: <strong>{importResult.created}</strong></div>
+                <div className="text-sm">{t('messages.product_updated')}: <strong>{importResult.updated}</strong></div>
+                <div className="text-sm">{t('import_export.import_failed')}: <strong>{importResult.errors?.length || 0}</strong></div>
               </div>
               <div>
-                <Button variant="outline" onClick={() => setImportResult(null)}>Kapat</Button>
+                <Button variant="outline" onClick={() => setImportResult(null)}>{t('form.cancel')}</Button>
               </div>
             </div>
           </Card>
@@ -311,7 +331,7 @@ export const DesktopInventoryPage: React.FC = () => {
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Yeni Ürün Ekle"
+        title={t('form.add_product')}
         size="lg"
       >
         <div className="flex flex-col h-full">
@@ -331,7 +351,7 @@ export const DesktopInventoryPage: React.FC = () => {
           setIsEditModalOpen(false);
           setSelectedItem(null);
         }}
-        title="Ürün Düzenle"
+        title={t('form.edit_product')}
         size="lg"
       >
         <InventoryForm
@@ -348,7 +368,7 @@ export const DesktopInventoryPage: React.FC = () => {
       <Modal
         isOpen={isBulkUploadModalOpen}
         onClose={() => setIsBulkUploadModalOpen(false)}
-        title="Envanter Yönetimi"
+        title={t('stock.title')}
         size="lg"
       >
         <div className="space-y-4">
@@ -356,19 +376,19 @@ export const DesktopInventoryPage: React.FC = () => {
             <div className="flex-1 pr-4">
               <input data-allow-raw="true"
                 type="text"
-                placeholder="🔍 Barkod, seri no, marka, model veya isim ile ara..."
+                placeholder={t('products.search_placeholder')}
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-ring"
               />
             </div>
             <div className="w-56">
               <select data-allow-raw="true"
                 value={modalCategoryFilter}
                 onChange={(e) => setModalCategoryFilter(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-border rounded-xl px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
-                <option value="">Tüm Kategoriler</option>
+                <option value="">{t('filters.all_categories')}</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>{
                     // show human-friendly label if possible
@@ -389,10 +409,10 @@ export const DesktopInventoryPage: React.FC = () => {
             </div>
             <div className="ml-3">
               <button data-allow-raw="true"
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700"
                 onClick={() => setIsAddModalOpen(true)}
               >
-                Yeni Envanter Ekle
+                {t('form.add_product')}
               </button>
             </div>
           </div>
@@ -412,28 +432,28 @@ export const DesktopInventoryPage: React.FC = () => {
                 const serials = item.availableSerials || [];
                 const isSelected = modalSelectedItemId === item.id;
                 return (
-                  <div key={item.id} className={`border rounded-lg p-4 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
+                  <div key={item.id} className={`border rounded-2xl p-4 ${isSelected ? 'border-blue-500 bg-primary/10 shadow' : 'bg-white dark:bg-gray-800 border-border'}`}>
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-gray-100">{item.brand} {item.model}</h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{item.name || ''}</p>
+                        <p className="text-xs text-muted-foreground">{item.name || ''}</p>
                       </div>
                       <div className="text-right text-sm">
                         <div className="font-medium text-gray-900 dark:text-gray-100">₺{Number(price).toLocaleString()}</div>
-                        <div className="text-gray-500 dark:text-gray-400">Stok: {available}</div>
+                        <div className="text-muted-foreground">{t('columns.stock')}: {available}</div>
                       </div>
                     </div>
 
                     {serials && serials.length > 0 ? (
                       <div className="mb-2">
-                        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Seri No</label>
+                        <label className="block text-xs text-muted-foreground mb-1">{t('form.barcode')}</label>
                         <select data-allow-raw="true"
                           value={modalSelectedItemId === item.id ? (modalSelectedSerial || '') : ''}
                           onChange={(e) => {
                             setModalSelectedItemId(item.id);
                             setModalSelectedSerial(e.target.value || null);
                           }}
-                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          className="w-full border border-border rounded-xl px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         >
                           <option value="">Seri seçin (opsiyonel)</option>
                           {serials.map((s: string) => (
@@ -442,7 +462,7 @@ export const DesktopInventoryPage: React.FC = () => {
                         </select>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500 mb-2">Seri: <span className="text-red-500">Yok</span></p>
+                      <p className="text-xs text-muted-foreground mb-2">Seri: <span className="text-destructive">Yok</span></p>
                     )}
 
                     <div className="flex justify-between items-center mt-3">
@@ -463,9 +483,9 @@ export const DesktopInventoryPage: React.FC = () => {
                             setSelectedItem(mapped as InventoryItem);
                             setIsEditModalOpen(true);
                           }}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
+                          className="text-primary hover:text-blue-800 text-sm"
                         >
-                          Düzenle
+                          {t('actions.edit')}
                         </button>
                         <button data-allow-raw="true"
                           onClick={async () => {
@@ -477,12 +497,12 @@ export const DesktopInventoryPage: React.FC = () => {
                               triggerInventoryRefresh();
                             } catch (e) {
                               console.error('Delete failed', e);
-                              alert('Silme işlemi başarısız oldu');
+                              toast.error(t('delete.failed'));
                             }
                           }}
-                          className="text-red-600 hover:text-red-800 text-sm"
+                          className="text-destructive hover:text-red-800 text-sm"
                         >
-                          Sil
+                          {t('actions.delete')}
                         </button>
                       </div>
                       <div>
@@ -491,9 +511,9 @@ export const DesktopInventoryPage: React.FC = () => {
                             // toggle selection highlight
                             setModalSelectedItemId(prev => prev === item.id ? null : item.id);
                           }}
-                          className="text-sm px-3 py-1 border rounded-md"
+                          className="text-sm px-3 py-1 border rounded-xl"
                         >
-                          {isSelected ? 'Seçili' : 'Seç'}
+                          {isSelected ? t('bulk_operations.deselect_all') : t('bulk_operations.select_all')}
                         </button>
                       </div>
                     </div>
@@ -502,12 +522,12 @@ export const DesktopInventoryPage: React.FC = () => {
               })}
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4 border-t border-border">
             <button data-allow-raw="true"
               className="btn btn-secondary mr-3"
               onClick={() => setIsBulkUploadModalOpen(false)}
             >
-              Kapat
+              {t('form.cancel')}
             </button>
             <button data-allow-raw="true"
               className="btn btn-primary"
@@ -526,11 +546,11 @@ export const DesktopInventoryPage: React.FC = () => {
                     link.remove();
                   }
                 } else {
-                  alert('Lütfen bir öğe seçin');
+                  toast(t('bulk_operations.select_all'));
                 }
               }}
             >
-              Seçili Öğeyi Dışa Aktar
+              {t('actions.export')}
             </button>
           </div>
         </div>
@@ -543,24 +563,24 @@ export const DesktopInventoryPage: React.FC = () => {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
         }}
-        title="Ürünü Sil"
+        title={t('delete.title')}
       >
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Ürünü silmek istediğinizden emin misiniz?
+                {t('delete.confirm')}
               </h3>
               {itemToDelete && (
                 <>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    <span className="font-semibold">{itemToDelete.name}</span> ürününü silmek üzeresiniz.
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <span className="font-semibold">{itemToDelete.name}</span>
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Bu işlem geri alınamaz. Ürünle ilgili tüm veriler kalıcı olarak silinecektir.
+                  <p className="text-sm text-muted-foreground">
+                    {t('delete.warning')}
                   </p>
                 </>
               )}
@@ -573,7 +593,7 @@ export const DesktopInventoryPage: React.FC = () => {
               onClick={confirmDelete}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Ürünü Sil
+              {t('delete.title')}
             </Button>
           </div>
         </div>

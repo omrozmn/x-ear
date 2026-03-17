@@ -1,5 +1,4 @@
 import yaml
-import os
 
 openapi_path = '/Users/omerozmen/Desktop/x-ear web app/x-ear/openapi.yaml'
 

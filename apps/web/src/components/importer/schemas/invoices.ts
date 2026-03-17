@@ -1,17 +1,23 @@
 import { z } from 'zod';
 
+const optionalNumber = z.preprocess(
+  (v) => {
+    if (v === '' || v === null || v === undefined) return undefined;
+    const n = Number(v);
+    return isNaN(n) ? undefined : n;
+  },
+  z.number().optional()
+);
+
 const invoicesSchema = z.object({
-  // legacy/local names
   invoiceNumber: z.string().optional(),
-  partyName: z.string().min(1, 'Hasta adı gerekli').optional(),
+  partyName: z.string().optional(),
   partyPhone: z.string().optional(),
   partyTcNumber: z.string().optional(),
   issueDate: z.string().optional(),
   dueDate: z.string().optional(),
   currency: z.string().optional(),
-  grandTotal: z.preprocess((v) => Number(v), z.number().optional()),
-
-  // integrator / BirFatura expected fields
+  grandTotal: optionalNumber,
   eInvoiceId: z.string().optional(),
   invoiceDate: z.string().optional(),
   billingName: z.string().optional(),
@@ -19,8 +25,11 @@ const invoicesSchema = z.object({
   billingPhone: z.string().optional(),
   taxNo: z.string().optional(),
   taxOffice: z.string().optional(),
-  totalPaidTaxIncluding: z.preprocess((v) => Number(v), z.number().optional()),
-  productsTotalTaxIncluding: z.preprocess((v) => Number(v), z.number().optional())
-});
+  totalPaidTaxIncluding: optionalNumber,
+  productsTotalTaxIncluding: optionalNumber,
+}).refine(
+  (data) => data.invoiceNumber || data.partyName || data.partyTcNumber || data.partyPhone,
+  { message: 'En az bir tanımlayıcı gerekli (fatura no, hasta adı, TC veya telefon)' }
+);
 
 export default invoicesSchema;

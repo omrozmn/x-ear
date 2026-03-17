@@ -59,16 +59,16 @@ export function getStatusColors(isError: boolean, isWarning: boolean): {
 } {
   if (isError) {
     return {
-      bgColor: 'bg-red-50',
+      bgColor: 'bg-destructive/10',
       borderColor: 'border-red-200',
-      textColor: 'text-red-700',
-      iconColor: 'text-red-500',
+      textColor: 'text-destructive',
+      iconColor: 'text-destructive',
     };
   }
 
   if (isWarning) {
     return {
-      bgColor: 'bg-yellow-50',
+      bgColor: 'bg-warning/10',
       borderColor: 'border-yellow-200',
       textColor: 'text-yellow-700',
       iconColor: 'text-yellow-500',
@@ -76,9 +76,9 @@ export function getStatusColors(isError: boolean, isWarning: boolean): {
   }
 
   return {
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-primary/10',
     borderColor: 'border-blue-200',
-    textColor: 'text-blue-700',
-    iconColor: 'text-blue-500',
+    textColor: 'text-primary',
+    iconColor: 'text-primary',
   };
 }

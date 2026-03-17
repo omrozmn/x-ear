@@ -19,20 +19,20 @@ export const MobileUnsupportedPage: React.FC<MobileUnsupportedPageProps> = ({
         <MobileLayout>
             <MobileHeader title={title} />
 
-            <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center bg-gray-50 m-4 rounded-3xl border border-gray-100">
-                <div className="h-20 w-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
-                    <Monitor className="h-10 w-10 text-blue-600" />
+            <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center bg-muted m-4 rounded-3xl border border-border">
+                <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                    <Monitor className="h-10 w-10 text-primary" />
                 </div>
 
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Masaüstü Görünümü Gerekli</h2>
-                <p className="text-gray-500 mb-8 leading-relaxed">
+                <h2 className="text-xl font-bold text-foreground mb-2">Masaüstü Görünümü Gerekli</h2>
+                <p className="text-muted-foreground mb-8 leading-relaxed">
                     {message}
                 </p>
 
                 <button
                     data-allow-raw="true"
                     onClick={() => navigate({ to: '/' })}
-                    className="px-6 py-3 bg-white text-gray-700 font-medium rounded-xl border border-gray-200 shadow-sm w-full active:bg-gray-50 flex items-center justify-center gap-2"
+                    className="px-6 py-3 bg-card text-foreground font-medium rounded-xl border border-border shadow-sm w-full active:bg-muted flex items-center justify-center gap-2"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Ana Sayfaya Dön

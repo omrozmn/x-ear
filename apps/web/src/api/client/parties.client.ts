@@ -8,6 +8,7 @@
  *   import { listParties, createParty } from '@/api/client/parties.client';
  */
 
+// Import from parties module
 export {
   listParties,
   getParty,
@@ -20,57 +21,35 @@ export {
   useCreateParties as useCreateParty,
   useUpdateParty,
   useDeleteParty,
+} from '../generated/parties/parties';
+
+// Import from admin-parties module
+export {
   listAdminPartySales,
   getListAdminPartySalesQueryKey,
   useListAdminPartySales,
-  listPartyTimeline,
-  createPartyTimeline,
-  createPartyActivities,
-  deletePartyTimeline,
-  getListPartyTimelineQueryKey,
-  useListPartyTimeline,
-  useCreatePartyTimeline,
-  useCreatePartyActivities,
-  useDeletePartyTimeline,
-  listSgkDocuments,
-  createSgkDocuments,
-  deleteSgkDocument,
-  getListSgkDocumentsQueryKey,
-  useListSgkDocuments,
-  useCreateSgkDocuments,
-  useDeleteSgkDocument,
-  listPatientDocuments,
-  getListPatientDocumentsQueryKey,
-  useListPatientDocuments,
-  listHearingTests,
-  createHearingTest,
-  getListHearingTestsQueryKey,
-  useListHearingTests,
-  useCreateHearingTest,
-  listHearingEReceipts,
-  createHearingEReceipt,
-  updateHearingEReceipt,
-  deleteHearingEReceipt,
-  getListHearingEReceiptsQueryKey,
-  useListHearingEReceipts,
-  useCreateHearingEReceipt,
-  useUpdateHearingEReceipt,
-  useDeleteHearingEReceipt,
+} from '../generated/admin-parties/admin-parties';
+
+// Import from party-subresources module (only what exists)
+export {
+  listPartySales,
+  getListPartySalesQueryKey,
+  useListPartySales,
   listPartyAppointments,
+  getListPartyAppointmentsQueryKey,
+  useListPartyAppointments,
   listPartyNotes,
   createPartyNotes,
   updatePartyNote,
   deletePartyNote,
-  listPartyDevices,
-  getListPartyAppointmentsQueryKey,
   getListPartyNotesQueryKey,
-  getListPartyDevicesQueryKey,
-  useListPartyAppointments,
   useListPartyNotes,
   useCreatePartyNotes,
   useUpdatePartyNote,
   useDeletePartyNote,
+  listPartyDevices,
+  getListPartyDevicesQueryKey,
   useListPartyDevices,
-} from '@/api/generated/index';
+} from '../generated/party-subresources/party-subresources';
 
-export type { PartyCreate, PartyRead, PartyReadGender, PartyReadStatus } from '@/api/generated/schemas';
+export type { PartyCreate, PartyRead, PartyReadGender, PartyReadStatus } from '../generated/schemas';

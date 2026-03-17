@@ -19,8 +19,6 @@ from threading import Lock
 from typing import Any, Callable, Dict, List, Optional
 
 from ai.services.metrics import (
-    MetricsCollector,
-    MetricType,
     SLAMetrics,
     get_metrics_collector,
 )

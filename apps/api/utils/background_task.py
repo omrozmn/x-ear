@@ -30,7 +30,6 @@ from typing import Callable, TypeVar, ParamSpec, Any
 from core.database import (
     set_tenant_context,
     reset_tenant_context,
-    get_current_tenant_id,
     TenantContextToken
 )
 from utils.exceptions import TenantContextError

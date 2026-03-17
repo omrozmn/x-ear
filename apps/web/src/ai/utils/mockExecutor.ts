@@ -1,4 +1,4 @@
-import { EntityItem, Capability, SlotConfig } from '../../api/generated/schemas';
+import { Capability, SlotConfig } from '../../api/generated/schemas';
 import { useComposerStore } from '../../stores/composerStore';
 
 /**
@@ -10,7 +10,7 @@ export async function simulateActionExecution(
     slots: Record<string, unknown>,
     store: ReturnType<typeof useComposerStore.getState>
 ) {
-    const { addExecutionStep, updateExecutionStep, setExecutionStatus, setExecutionResult, setExecutionError, updateSlot, nextSlot } = store;
+    const { addExecutionStep, updateExecutionStep, setExecutionStatus, setExecutionResult, setExecutionError } = store;
 
     // 1. INIT
     setExecutionStatus('init');
@@ -109,10 +109,36 @@ export async function simulateActionExecution(
         setExecutionStatus('error');
         setExecutionError('Cihaz stokta bulunamadı veya bağlantı hatası.');
     } else {
+        // Build summary from slots for the result card
+        const currentSlots = useComposerStore.getState().slots;
+        const summaryItems: Array<{ label: string; value: string }> = [];
+        const allSlots = action.slots || [];
+
+        for (const slotDef of allSlots) {
+            const rawValue = currentSlots[slotDef.name];
+            // Try to use the display label (_label suffix) if available
+            const labelKey = `_${slotDef.name}_label`;
+            const displayValue = (currentSlots[labelKey] as string) || String(rawValue || '—');
+            summaryItems.push({
+                label: slotDef.prompt || slotDef.name,
+                value: displayValue,
+            });
+        }
+
+        // Also add side if it was collected at runtime
+        if (currentSlots['side']) {
+            summaryItems.push({ label: 'Kulak Tarafı', value: String(currentSlots['side']) });
+        }
+
         setExecutionStatus('success');
         setExecutionResult({
             status: 'success',
-            result: {}
+            result: {
+                actionName: action.name,
+                summary: summaryItems,
+                entityId: (currentSlots['party_id'] || currentSlots['device_id'] || currentSlots['invoice_id'] || null) as string | null,
+                actionType: action.name, // used for route mapping
+            }
         });
     }
 }
@@ -122,15 +148,21 @@ export async function simulateActionExecution(
  */
 async function waitForSlot(
     store: ReturnType<typeof useComposerStore.getState>,
-    slotName: string
+    slotName: string,
+    timeoutMs: number = 120_000,
 ): Promise<unknown> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const check = setInterval(() => {
             const currentSlots = useComposerStore.getState().slots;
             if (currentSlots[slotName]) {
                 clearInterval(check);
+                clearTimeout(timeout);
                 resolve(currentSlots[slotName]);
             }
         }, 200);
+        const timeout = setTimeout(() => {
+            clearInterval(check);
+            reject(new Error(`Slot "${slotName}" was not filled within ${timeoutMs / 1000}s`));
+        }, timeoutMs);
     });
 }

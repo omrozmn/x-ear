@@ -65,13 +65,13 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
     <Card className="mb-4">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-medium text-gray-900">Ürün {index + 1}</h4>
+          <h4 className="font-medium text-foreground">Ürün {index + 1}</h4>
           {canRemove && (
             <Button
               type="button"
               onClick={onRemove}
               size="sm"
-              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+              className="text-destructive hover:text-red-800 hover:bg-destructive/10"
             >
               <Trash2 size={16} />
             </Button>
@@ -81,7 +81,7 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
         {/* Ürün Seçimi */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Ürün Ara
             </label>
             <div className="relative">
@@ -94,23 +94,23 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
                 onFocus={() => setShowProductSearch(true)}
                 className="pr-10"
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
             </div>
 
             {/* Ürün Arama Sonuçları */}
             {showProductSearch && filteredProducts.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto">
                 {filteredProducts.map((product) => (
                   <div
                     key={product.id}
                     onClick={() => selectProduct(product)}
-                    className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    className="p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                   >
-                    <div className="font-medium text-gray-900">{product.name}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-medium text-foreground">{product.name}</div>
+                    <div className="text-sm text-muted-foreground">
                       {product.brand} - {product.model} | Stok: {product.availableInventory}
                     </div>
-                    <div className="text-sm font-medium text-blue-600">
+                    <div className="text-sm font-medium text-primary">
                       {product.price?.toLocaleString('tr-TR')} TL
                     </div>
                   </div>
@@ -121,12 +121,12 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
 
           {/* Seçili Ürün Bilgisi */}
           {item.product && (
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="bg-primary/10 p-3 rounded-2xl">
               <div className="font-medium text-blue-900">{item.product.name}</div>
-              <div className="text-sm text-blue-700">
+              <div className="text-sm text-primary">
                 {item.product.brand} - {item.product.model}
               </div>
-              <div className="text-sm text-blue-600">
+              <div className="text-sm text-primary">
                 Stok: {item.product.availableInventory} | KDV: %{item.product.vatRate}
               </div>
             </div>
@@ -136,7 +136,7 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
         {/* Miktar, Fiyat, İndirim */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Miktar
             </label>
             <Input
@@ -148,7 +148,7 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Birim Fiyat (TL)
             </label>
             <Input
@@ -160,7 +160,7 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               İndirim (%)
             </label>
             <Input
@@ -174,7 +174,7 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               KDV (%)
             </label>
             <Input
@@ -191,8 +191,8 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
         {/* Toplam */}
         <div className="flex justify-end">
           <div className="text-right">
-            <div className="text-sm text-gray-600">Toplam</div>
-            <div className="text-lg font-bold text-gray-900">
+            <div className="text-sm text-muted-foreground">Toplam</div>
+            <div className="text-lg font-bold text-foreground">
               {calculateItemTotal().toLocaleString('tr-TR')} TL
             </div>
           </div>
@@ -200,13 +200,13 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
 
         {/* Ürün Detayları */}
         {item.product && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-border">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-              <div><span className="text-gray-600">Marka:</span> <span className="font-medium ml-1">{item.product.brand}</span></div>
-              <div><span className="text-gray-600">Model:</span> <span className="font-medium ml-1">{item.product.model}</span></div>
-              <div><span className="text-gray-600">Kategori:</span> <span className="font-medium ml-1">{item.product.category}</span></div>
-              <div><span className="text-gray-600">Stok:</span> <span className="font-medium ml-1">{item.product.availableInventory}</span></div>
-              <div><span className="text-gray-600">Barkod:</span> <span className="font-medium ml-1 font-mono text-xs">{item.product.barcode}</span></div>
+              <div><span className="text-muted-foreground">Marka:</span> <span className="font-medium ml-1">{item.product.brand}</span></div>
+              <div><span className="text-muted-foreground">Model:</span> <span className="font-medium ml-1">{item.product.model}</span></div>
+              <div><span className="text-muted-foreground">Kategori:</span> <span className="font-medium ml-1">{item.product.category}</span></div>
+              <div><span className="text-muted-foreground">Stok:</span> <span className="font-medium ml-1">{item.product.availableInventory}</span></div>
+              <div><span className="text-muted-foreground">Barkod:</span> <span className="font-medium ml-1 font-mono text-xs">{item.product.barcode}</span></div>
             </div>
           </div>
         )}

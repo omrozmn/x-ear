@@ -1,7 +1,7 @@
 """
 User Schemas
 """
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 from typing import Optional
 from datetime import datetime
 
@@ -55,10 +55,13 @@ class UserCreate(AppBaseModel):
     """Schema for creating User"""
     email: str
     password: str
+    username: Optional[str] = None  # Optional, defaults to email prefix if not provided
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     phone: Optional[str] = None
     role: Optional[str] = None
+    tenant_id: str = Field(..., alias="tenantId")  # Required for admin user creation
+    is_active: Optional[bool] = Field(True, alias="isActive")
 
 
 class UserUpdate(AppBaseModel):

@@ -29,11 +29,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from ai.agents.intent_refiner import (
     IntentRefiner,
-    IntentRefinerResult,
     RefinerStatus,
     get_intent_refiner,
 )
-from ai.schemas.llm_outputs import IntentOutput, IntentType
+from ai.schemas.llm_outputs import IntentType
 from ai.runtime.model_client import ModelResponse
 from ai.runtime.circuit_breaker import CircuitBreakerOpenError
 from datetime import datetime, timezone
@@ -102,10 +101,10 @@ class TestBasicClassification:
     
     def test_classify_action_intent(self, refiner, mock_model_client):
         """
-        Action intent without required entities falls back to QUERY.
+        Action intent is correctly classified from LLM response.
         
-        When LLM returns ACTION but missing required entities (first_name, phone),
-        the fallback logic classifies it as QUERY instead.
+        When LLM returns ACTION, the refiner accepts it directly.
+        Entity validation is delegated to the Action Planner.
         """
         import asyncio
         
@@ -127,8 +126,8 @@ class TestBasicClassification:
             ))
         
         assert result.is_success
-        # Fallback logic converts ACTION without entities to QUERY
-        assert result.intent.intent_type == IntentType.QUERY
+        # LLM returned ACTION and the refiner accepts it as-is
+        assert result.intent.intent_type == IntentType.ACTION
     
     def test_needs_clarification(self, refiner, mock_model_client):
         """
@@ -341,10 +340,17 @@ class TestFallbackClassification:
         assert result.intent_type == IntentType.CANCELLATION
     
     def test_fallback_confirmation(self, refiner):
-        """Confirmation intent detected by fallback."""
+        """Confirmation keywords without active context fall back to QUERY.
+        
+        When the user says a confirmation word but there's no pending plan
+        or last action in context, the fallback returns QUERY (low confidence).
+        """
         result = refiner.classify_without_llm("Yes, please confirm")
         
-        assert result.intent_type == IntentType.CONFIRMATION
+        # Without context (pending_plan_id / last_action), confirmation
+        # keywords are not matched; the input falls through to the generic
+        # QUERY fallback with low confidence.
+        assert result.intent_type == IntentType.QUERY
     
     def test_fallback_query(self, refiner):
         """Query intent detected by fallback."""
@@ -365,11 +371,12 @@ class TestFallbackClassification:
         assert result.intent_type == IntentType.QUERY
     
     def test_fallback_unknown(self, refiner):
-        """Unknown intent triggers clarification."""
+        """Unrecognised input returns QUERY with very low confidence."""
         result = refiner.classify_without_llm("xyz abc 123")
         
-        assert result.intent_type == IntentType.UNKNOWN
-        assert result.clarification_needed
+        # The fallback always returns QUERY (not UNKNOWN) with low confidence
+        assert result.intent_type == IntentType.QUERY
+        assert result.confidence <= 0.2
 
 
 # =============================================================================
@@ -483,14 +490,14 @@ class TestCapabilityInquiryDetection:
         Ensures that action requests that don't contain capability inquiry
         keywords are not incorrectly classified as capability inquiries.
         
-        Note: The fallback logic detects patient/party creation keywords
-        ("patient", "create", "new") and returns ACTION intent, even when
-        required entities are missing (it sets clarification_needed=True).
+        Note: The rule-based classifier uses Turkish stems for domain matching.
+        English-only phrases without matching Turkish stems fall through to
+        the generic QUERY fallback with low confidence.
         """
         test_cases = [
-            ("create a new patient", IntentType.ACTION, "Action with patient keyword -> ACTION"),
-            ("schedule an appointment", IntentType.UNKNOWN, "Action without patient keyword -> UNKNOWN"),
-            ("update patient information", IntentType.ACTION, "Action with patient keyword -> ACTION"),
+            ("create a new patient", IntentType.QUERY, "English 'patient' not in Turkish stems → QUERY fallback"),
+            ("schedule an appointment", IntentType.QUERY, "English 'schedule' not in Turkish stems → QUERY fallback"),
+            ("update patient information", IntentType.QUERY, "English 'update patient' not in Turkish stems → QUERY fallback"),
         ]
         
         for phrase, expected_intent, reason in test_cases:

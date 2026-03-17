@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WebManagementPreviewRouteImport } from './routes/web-management-preview'
+import { Route as WebManagementRouteImport } from './routes/web-management'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as TenantsRouteImport } from './routes/tenants'
@@ -18,6 +20,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as ProductionRouteImport } from './routes/production'
 import { Route as PlansRouteImport } from './routes/plans'
+import { Route as PersonnelRouteImport } from './routes/personnel'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as OcrQueueRouteImport } from './routes/ocr-queue'
@@ -28,7 +31,9 @@ import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as FilesRouteImport } from './routes/files'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as ApiKeysRouteImport } from './routes/api-keys'
@@ -36,6 +41,8 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AddonsRouteImport } from './routes/addons'
+import { Route as BarcodesRouteImport } from './routes/barcodes'
+import { Route as LabelTemplatesRouteImport } from './routes/label-templates'
 import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations/index'
@@ -47,6 +54,16 @@ import { Route as IntegrationsEmailLogsRouteImport } from './routes/integrations
 import { Route as IntegrationsEmailConfigRouteImport } from './routes/integrations/email/config'
 import { Route as AuthenticatedAdminIntegrationsVatanSmsRouteImport } from './routes/_authenticated/admin/integrations/vatan-sms'
 
+const WebManagementPreviewRoute = WebManagementPreviewRouteImport.update({
+  id: '/web-management-preview',
+  path: '/web-management-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebManagementRoute = WebManagementRouteImport.update({
+  id: '/web-management',
+  path: '/web-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsersRoute = UsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -90,6 +107,11 @@ const ProductionRoute = ProductionRouteImport.update({
 const PlansRoute = PlansRouteImport.update({
   id: '/plans',
   path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonnelRoute = PersonnelRouteImport.update({
+  id: '/personnel',
+  path: '/personnel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentsRoute = PaymentsRouteImport.update({
@@ -142,9 +164,19 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CountriesRoute = CountriesRouteImport.update({
+  id: '/countries',
+  path: '/countries',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsRoute = CampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BillingRoute = BillingRouteImport.update({
@@ -180,6 +212,16 @@ const AffiliatesRoute = AffiliatesRouteImport.update({
 const AddonsRoute = AddonsRouteImport.update({
   id: '/addons',
   path: '/addons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BarcodesRoute = BarcodesRouteImport.update({
+  id: '/barcodes',
+  path: '/barcodes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LabelTemplatesRoute = LabelTemplatesRouteImport.update({
+  id: '/label-templates',
+  path: '/label-templates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActivityLogsRoute = ActivityLogsRouteImport.update({
@@ -243,18 +285,23 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
+  '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
+  '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
+  '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
   '/notifications': typeof NotificationsRoute
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
   '/payments': typeof PaymentsRoute
+  '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
@@ -264,6 +311,8 @@ export interface FileRoutesByFullPath {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
@@ -282,18 +331,23 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
+  '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
+  '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
+  '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
   '/notifications': typeof NotificationsRoute
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
   '/payments': typeof PaymentsRoute
+  '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
@@ -303,6 +357,8 @@ export interface FileRoutesByTo {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
@@ -322,18 +378,23 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
+  '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
+  '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
+  '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
   '/notifications': typeof NotificationsRoute
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
   '/payments': typeof PaymentsRoute
+  '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
@@ -343,6 +404,8 @@ export interface FileRoutesById {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
@@ -363,18 +426,23 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/api-keys'
     | '/appointments'
+    | '/barcodes'
     | '/billing'
+    | '/blog'
     | '/campaigns'
+    | '/countries'
     | '/dashboard'
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-templates'
     | '/login'
     | '/marketplaces'
     | '/notifications'
     | '/ocr-queue'
     | '/patients'
     | '/payments'
+    | '/personnel'
     | '/plans'
     | '/production'
     | '/roles'
@@ -384,6 +452,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/web-management'
+    | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
     | '/sms/headers'
@@ -402,18 +472,23 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/api-keys'
     | '/appointments'
+    | '/barcodes'
     | '/billing'
+    | '/blog'
     | '/campaigns'
+    | '/countries'
     | '/dashboard'
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-templates'
     | '/login'
     | '/marketplaces'
     | '/notifications'
     | '/ocr-queue'
     | '/patients'
     | '/payments'
+    | '/personnel'
     | '/plans'
     | '/production'
     | '/roles'
@@ -423,6 +498,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/web-management'
+    | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
     | '/sms/headers'
@@ -441,18 +518,23 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/api-keys'
     | '/appointments'
+    | '/barcodes'
     | '/billing'
+    | '/blog'
     | '/campaigns'
+    | '/countries'
     | '/dashboard'
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-templates'
     | '/login'
     | '/marketplaces'
     | '/notifications'
     | '/ocr-queue'
     | '/patients'
     | '/payments'
+    | '/personnel'
     | '/plans'
     | '/production'
     | '/roles'
@@ -462,6 +544,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/web-management'
+    | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
     | '/sms/headers'
@@ -481,18 +565,23 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   ApiKeysRoute: typeof ApiKeysRoute
   AppointmentsRoute: typeof AppointmentsRoute
+  BarcodesRoute: typeof BarcodesRoute
   BillingRoute: typeof BillingRoute
+  BlogRoute: typeof BlogRoute
   CampaignsRoute: typeof CampaignsRoute
+  CountriesRoute: typeof CountriesRoute
   DashboardRoute: typeof DashboardRoute
   FeaturesRoute: typeof FeaturesRoute
   FilesRoute: typeof FilesRoute
   InventoryRoute: typeof InventoryRoute
+  LabelTemplatesRoute: typeof LabelTemplatesRoute
   LoginRoute: typeof LoginRoute
   MarketplacesRoute: typeof MarketplacesRoute
   NotificationsRoute: typeof NotificationsRoute
   OcrQueueRoute: typeof OcrQueueRoute
   PatientsRoute: typeof PatientsRoute
   PaymentsRoute: typeof PaymentsRoute
+  PersonnelRoute: typeof PersonnelRoute
   PlansRoute: typeof PlansRoute
   ProductionRoute: typeof ProductionRoute
   RolesRoute: typeof RolesRoute
@@ -502,6 +591,8 @@ export interface RootRouteChildren {
   TenantsRoute: typeof TenantsRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
   UsersRoute: typeof UsersRoute
+  WebManagementRoute: typeof WebManagementRoute
+  WebManagementPreviewRoute: typeof WebManagementPreviewRoute
   IntegrationsVatanSmsRoute: typeof IntegrationsVatanSmsRoute
   SmsHeadersRoute: typeof SmsHeadersRoute
   SmsPackagesRoute: typeof SmsPackagesRoute
@@ -513,6 +604,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/web-management-preview': {
+      id: '/web-management-preview'
+      path: '/web-management-preview'
+      fullPath: '/web-management-preview'
+      preLoaderRoute: typeof WebManagementPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/web-management': {
+      id: '/web-management'
+      path: '/web-management'
+      fullPath: '/web-management'
+      preLoaderRoute: typeof WebManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users': {
       id: '/users'
       path: '/users'
@@ -576,6 +681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/personnel': {
+      id: '/personnel'
+      path: '/personnel'
+      fullPath: '/personnel'
+      preLoaderRoute: typeof PersonnelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/payments': {
       id: '/payments'
       path: '/payments'
@@ -618,6 +730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/label-templates': {
+      id: '/label-templates'
+      path: '/label-templates'
+      fullPath: '/label-templates'
+      preLoaderRoute: typeof LabelTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inventory': {
       id: '/inventory'
       path: '/inventory'
@@ -646,11 +765,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/countries': {
+      id: '/countries'
+      path: '/countries'
+      fullPath: '/countries'
+      preLoaderRoute: typeof CountriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns': {
       id: '/campaigns'
       path: '/campaigns'
       fullPath: '/campaigns'
       preLoaderRoute: typeof CampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/barcodes': {
+      id: '/barcodes'
+      path: '/barcodes'
+      fullPath: '/barcodes'
+      preLoaderRoute: typeof BarcodesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/billing': {
@@ -796,18 +936,23 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   ApiKeysRoute: ApiKeysRoute,
   AppointmentsRoute: AppointmentsRoute,
+  BarcodesRoute: BarcodesRoute,
   BillingRoute: BillingRoute,
+  BlogRoute: BlogRoute,
   CampaignsRoute: CampaignsRoute,
+  CountriesRoute: CountriesRoute,
   DashboardRoute: DashboardRoute,
   FeaturesRoute: FeaturesRoute,
   FilesRoute: FilesRoute,
   InventoryRoute: InventoryRoute,
+  LabelTemplatesRoute: LabelTemplatesRoute,
   LoginRoute: LoginRoute,
   MarketplacesRoute: MarketplacesRoute,
   NotificationsRoute: NotificationsRoute,
   OcrQueueRoute: OcrQueueRoute,
   PatientsRoute: PatientsRoute,
   PaymentsRoute: PaymentsRoute,
+  PersonnelRoute: PersonnelRoute,
   PlansRoute: PlansRoute,
   ProductionRoute: ProductionRoute,
   RolesRoute: RolesRoute,
@@ -817,6 +962,8 @@ const rootRouteChildren: RootRouteChildren = {
   TenantsRoute: TenantsRoute,
   UnauthorizedRoute: UnauthorizedRoute,
   UsersRoute: UsersRoute,
+  WebManagementRoute: WebManagementRoute,
+  WebManagementPreviewRoute: WebManagementPreviewRoute,
   IntegrationsVatanSmsRoute: IntegrationsVatanSmsRoute,
   SmsHeadersRoute: SmsHeadersRoute,
   SmsPackagesRoute: SmsPackagesRoute,

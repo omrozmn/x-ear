@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/blog.py
+# hypothesis_version: 6.151.9
+
+[404, '/', '/blog', '/{slug}', 'Blog', 'Post not found']

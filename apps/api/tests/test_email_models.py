@@ -4,7 +4,6 @@ Tests for email system database models.
 This test file verifies that the email system models (TenantSMTPConfig, SMTPEmailLog, EmailTemplate)
 are correctly defined and can interact with the database.
 """
-import pytest
 from datetime import datetime, timezone
 from uuid import uuid4
 from sqlalchemy.orm import Session

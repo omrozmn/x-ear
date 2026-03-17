@@ -17,7 +17,7 @@ Requirements:
 
 import logging
 from typing import List, Dict
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field, ConfigDict
 
 from schemas.base import ResponseEnvelope, to_camel
@@ -25,7 +25,6 @@ from ai.config import get_ai_config
 from ai.capability_registry import (
     Capability,
     get_all_capabilities,
-    get_capabilities_by_category,
     filter_capabilities_by_permissions,
     filter_capabilities_by_phase,
 )
@@ -225,7 +224,7 @@ async def get_capabilities(request: Request):
     )
     
     logger.info(
-        f"Capabilities endpoint called",
+        "Capabilities endpoint called",
         extra={
             "tenant_id": getattr(request.state, "tenant_id", None),
             "user_id": getattr(request.state, "user_id", None),

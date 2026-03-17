@@ -305,29 +305,34 @@ class TokenManager {
         }
       }
 
-      // Also check Zustand persist storage
+      // Also check Zustand persist storage (CRITICAL: Use actual AUTH_STORAGE_PERSIST key)
       if (!accessToken || !createAuthRefresh) {
-        const zustandKeys = ['auth-storage', 'persist:auth-storage'];
-        for (const key of zustandKeys) {
-          try {
-            const raw = localStorage.getItem(key);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              const zustandToken = parsed?.state?.token || parsed?.token;
-              const zustandRefresh = parsed?.state?.createAuthRefresh || parsed?.createAuthRefresh;
+        // Import the actual Zustand persist key
+        const ZUSTAND_PERSIST_KEY = 'x-ear.auth.auth-storage-persist@v1'; // AUTH_STORAGE_PERSIST from storage-keys.ts
+        
+        try {
+          const raw = localStorage.getItem(ZUSTAND_PERSIST_KEY);
+          if (raw) {
+            console.log('[TokenManager] Found Zustand persist storage, parsing...');
+            const parsed = JSON.parse(raw);
+            
+            // Zustand persist structure: { state: { token, refreshToken, user, ... }, version: 0 }
+            const zustandToken = parsed?.state?.token || parsed?.token;
+            const zustandRefresh = parsed?.state?.refreshToken || parsed?.createAuthRefresh || parsed?.refreshToken;
 
-              if (!accessToken && zustandToken) {
-                accessToken = zustandToken;
-                console.log(`[TokenManager] Found access token in Zustand storage: ${key}`);
-              }
-              if (!createAuthRefresh && zustandRefresh) {
-                createAuthRefresh = zustandRefresh;
-                console.log(`[TokenManager] Found refresh token in Zustand storage: ${key}`);
-              }
-
-              if (accessToken && createAuthRefresh) break;
+            if (!accessToken && zustandToken) {
+              accessToken = zustandToken;
+              console.log(`[TokenManager] Found access token in Zustand persist storage`);
             }
-          } catch (e) { /* ignore parse errors */ }
+            if (!createAuthRefresh && zustandRefresh) {
+              createAuthRefresh = zustandRefresh;
+              console.log(`[TokenManager] Found refresh token in Zustand persist storage`);
+            }
+          } else {
+            console.log('[TokenManager] No Zustand persist storage found at key:', ZUSTAND_PERSIST_KEY);
+          }
+        } catch (e) {
+          console.error('[TokenManager] Failed to parse Zustand persist storage:', e);
         }
       }
 

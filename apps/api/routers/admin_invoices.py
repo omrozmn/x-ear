@@ -6,12 +6,12 @@ from datetime import datetime
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.invoice import Invoice
 from models.tenant import Tenant
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_admin
 from schemas.invoices import InvoiceCreate, InvoiceRead
 from schemas.base import ResponseEnvelope
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/invoices", tags=["Admin Invoices"])
@@ -25,7 +25,7 @@ class InvoiceDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminInvoices", response_model=InvoiceListResponse)
 async def get_admin_invoices(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     tenant_id: Optional[str] = None,
     status: Optional[str] = None,
@@ -35,17 +35,18 @@ async def get_admin_invoices(
 ):
     """Get paginated list of admin invoices"""
     try:
-        query = db.query(Invoice)
-        
-        if access.tenant_id:
-            query = query.filter(Invoice.tenant_id == access.tenant_id)
-        if status:
-            query = query.filter(Invoice.status == status)
-        if search:
-            query = query.filter(Invoice.invoice_number.ilike(f"%{search}%"))
-        
-        total = query.count()
-        invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Invoice)
+            
+            if access.tenant_id:
+                query = query.filter(Invoice.tenant_id == access.tenant_id)
+            if status:
+                query = query.filter(Invoice.status == status)
+            if search:
+                query = query.filter(Invoice.invoice_number.ilike(f"%{search}%"))
+            
+            total = query.count()
+            invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         invoice_list = []
         for inv in invoices:
@@ -73,14 +74,24 @@ async def create_admin_invoice(
 ):
     """Create a new invoice"""
     try:
-        if not data.tenant_id or not data.amount:
-            raise HTTPException(status_code=400, detail="Tenant ID and amount are required")
+        # Calculate total if not provided
+        total = data.total_amount or (data.subtotal + data.vat_amount - data.discount_amount)
         
         new_invoice = Invoice(
             tenant_id=data.tenant_id,
-            invoice_number=f"INV-{int(datetime.utcnow().timestamp())}",
-            device_price=data.amount,
-            status="active",
+            invoice_number=data.invoice_number or f"INV-{int(datetime.utcnow().timestamp())}",
+            invoice_type=data.invoice_type,
+            invoice_date=data.invoice_date,
+            due_date=data.due_date,
+            customer_name=data.customer_name,
+            customer_tax_number=data.customer_tax_number,
+            customer_address=data.customer_address,
+            subtotal=data.subtotal,
+            vat_amount=data.vat_amount,
+            discount_amount=data.discount_amount,
+            total_amount=total,
+            status=data.status,
+            notes=data.notes,
             created_at=datetime.utcnow()
         )
         db.add(new_invoice)
@@ -102,7 +113,8 @@ async def get_admin_invoice(
 ):
     """Get single invoice"""
     try:
-        invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
@@ -124,7 +136,8 @@ async def record_payment(
 ):
     """Record payment for invoice"""
     try:
-        invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
@@ -145,7 +158,8 @@ async def get_invoice_pdf(
 ):
     """Get invoice PDF link"""
     try:
-        invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         

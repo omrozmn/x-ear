@@ -6,6 +6,7 @@ import {
     useListPaymentPoPaytrConfig
 } from '@/api/client/payment-integrations.client';
 import { CreditCard, Check, AlertCircle } from 'lucide-react';
+import { extractErrorMessage } from '@/utils/error-utils';
 
 type PosProvider = 'xear' | 'paytr' | 'iyzico' | 'none';
 
@@ -94,8 +95,8 @@ export const PosSettings = () => {
                     success(t('pos.messages.success'));
                 },
                 onError: (err: unknown) => {
-                    const axiosError = err as { response?: { data?: { error?: string } } };
-                    error(axiosError.response?.data?.error || t('pos.messages.error'));
+                    const errorMessage = extractErrorMessage(err, t('pos.messages.error'));
+                    error(errorMessage);
                 }
             });
         } else {
@@ -119,8 +120,8 @@ export const PosSettings = () => {
                     success(t('pos.messages.success'));
                 },
                 onError: (err: unknown) => {
-                    const axiosError = err as { response?: { data?: { error?: string } } };
-                    error(axiosError.response?.data?.error || t('pos.messages.error'));
+                    const errorMessage = extractErrorMessage(err, t('pos.messages.error'));
+                    error(errorMessage);
                 }
             });
         }
@@ -128,10 +129,10 @@ export const PosSettings = () => {
 
     if (isLoading) {
         return (
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-border">
                 <div className="animate-pulse space-y-4">
-                    <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    <div className="h-4 w-96 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-6 w-48 bg-accent rounded"></div>
+                    <div className="h-4 w-96 bg-accent rounded"></div>
                 </div>
             </div>
         );
@@ -140,22 +141,22 @@ export const PosSettings = () => {
     const showThirdPartyConfig = selectedProvider !== 'none' && selectedProvider !== 'xear';
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-border">
             <div className="flex items-center gap-2 mb-4">
-                <CreditCard className="w-6 h-6 text-blue-600" />
+                <CreditCard className="w-6 h-6 text-primary" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {t('pos.title')}
                 </h3>
             </div>
 
-            <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+            <p className="text-muted-foreground mb-6 text-sm">
                 {t('pos.description')}
             </p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
                 {/* Provider Selection */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                         {t('pos.provider_label')}
                     </label>
 
@@ -166,16 +167,16 @@ export const PosSettings = () => {
                         className="h-11"
                     />
 
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                         {t('pos.provider_help')}
                     </p>
                 </div>
 
                 {/* X-Ear POS Info Banner */}
                 {selectedProvider === 'xear' && (
-                    <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                        <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                        <div className="text-sm text-green-800 dark:text-green-200">
+                    <div className="flex items-start gap-3 p-4 bg-success/10 rounded-2xl border border-green-200 dark:border-green-800">
+                        <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                        <div className="text-sm text-success">
                             <p className="font-medium mb-1">{t('pos.xear_active.title')}</p>
                             <p>{t('pos.xear_active.description')}</p>
                         </div>
@@ -184,19 +185,19 @@ export const PosSettings = () => {
 
                 {/* Third-Party Provider Configuration */}
                 {selectedProvider !== 'none' && selectedProvider !== 'xear' && (
-                    <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-border">
                         <div className="flex items-start gap-2 mb-2">
-                            <AlertCircle className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                            <AlertCircle className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-muted-foreground">
                                 {selectedProvider === 'paytr' && t('pos.config.paytr_desc')}
                                 {selectedProvider === 'iyzico' && t('pos.config.iyzico_desc')}
                             </p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-foreground mb-1">
                                 {t('pos.config.merchant_id')}
-                                <span className="text-red-500 ml-1">*</span>
+                                <span className="text-destructive ml-1">*</span>
                             </label>
                             <Input
                                 {...register('merchant_id', { required: showThirdPartyConfig })}
@@ -206,9 +207,9 @@ export const PosSettings = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-foreground mb-1">
                                     {t('pos.config.merchant_key')}
-                                    <span className="text-red-500 ml-1">*</span>
+                                    <span className="text-destructive ml-1">*</span>
                                 </label>
                                 <Input
                                     {...register('merchant_key', { required: showThirdPartyConfig })}
@@ -218,9 +219,9 @@ export const PosSettings = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-foreground mb-1">
                                     {t('pos.config.merchant_salt')}
-                                    <span className="text-red-500 ml-1">*</span>
+                                    <span className="text-destructive ml-1">*</span>
                                 </label>
                                 <Input
                                     {...register('merchant_salt', { required: showThirdPartyConfig })}
@@ -236,16 +237,16 @@ export const PosSettings = () => {
                                 type="checkbox"
                                 {...register('test_mode')}
                                 id="test_mode"
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                className="h-4 w-4 text-primary focus:ring-ring border-border rounded"
                             />
-                            <label htmlFor="test_mode" className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                            <label htmlFor="test_mode" className="text-sm text-foreground select-none">
                                 {t('pos.config.test_mode')}
                             </label>
                         </div>
                     </div>
                 )}
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t border-border">
                     <Button type="submit" disabled={updateConfigMutation.isPending || selectedProvider === 'none'}>
                         {updateConfigMutation.isPending ? t('pos.config.saving') : t('pos.config.save_btn')}
                     </Button>

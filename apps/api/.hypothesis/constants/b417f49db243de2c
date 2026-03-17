@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/bulk_import.py
+# hypothesis_version: 6.151.9
+
+[100, 255, 'BulkImportBatch', 'BulkImportRecord', 'CASCADE', 'all, delete-orphan', 'batch', 'bib', 'bir', 'bulk_import_batches', 'bulk_import_records', 'completed', 'records']

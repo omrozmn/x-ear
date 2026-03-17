@@ -89,7 +89,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter options based on search query and exclude selected options
   useEffect(() => {

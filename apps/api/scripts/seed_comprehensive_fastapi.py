@@ -33,9 +33,7 @@ from core.models.party import Party as Patient
 from core.models.enums import PatientStatus
 from models.appointment import Appointment
 from models.inventory import InventoryItem
-from models.device import Device
-from models.sales import Sale, DeviceAssignment
-from models.invoice import Invoice
+from models.sales import Sale
 from models.notification import Notification
 from models.campaign import Campaign
 from models.plan import Plan
@@ -297,7 +295,7 @@ class ComprehensiveSeeder:
             self.db.add(sub)
             self.db.commit()
         
-        print(f"   ✓ Subscription active")
+        print("   ✓ Subscription active")
 
     def _seed_suppliers(self):
         print("🏭 Seeding Suppliers...")
@@ -323,7 +321,7 @@ class ComprehensiveSeeder:
                 self.db.add(sup)
         
         self.db.commit()
-        print(f"   ✓ 5 suppliers ready")
+        print("   ✓ 5 suppliers ready")
 
     def _seed_inventory(self):
         print("📦 Seeding Inventory...")
@@ -357,7 +355,7 @@ class ComprehensiveSeeder:
             self.inventory.append(inv)
         
         self.db.commit()
-        print(f"   ✓ 30 inventory items ready")
+        print("   ✓ 30 inventory items ready")
 
     def _seed_patients(self):
         print("🏥 Seeding Patients...")
@@ -427,7 +425,7 @@ class ComprehensiveSeeder:
             self.appointments.append(apt)
         
         self.db.commit()
-        print(f"   ✓ 20 appointments ready")
+        print("   ✓ 20 appointments ready")
 
     def _seed_sales(self):
         print("💰 Seeding Sales...")
@@ -470,7 +468,7 @@ class ComprehensiveSeeder:
             self.sales.append(sale)
         
         self.db.commit()
-        print(f"   ✓ 20 sales ready")
+        print("   ✓ 20 sales ready")
 
     def _seed_notifications(self):
         print("🔔 Seeding Notifications...")
@@ -488,7 +486,7 @@ class ComprehensiveSeeder:
             self.db.add(notif)
         
         self.db.commit()
-        print(f"   ✓ 5 notifications ready")
+        print("   ✓ 5 notifications ready")
 
     def _seed_campaigns(self):
         print("📢 Seeding Campaigns...")
@@ -507,7 +505,7 @@ class ComprehensiveSeeder:
             self.db.add(campaign)
         
         self.db.commit()
-        print(f"   ✓ 3 campaigns ready")
+        print("   ✓ 3 campaigns ready")
 
     def _print_credentials(self):
         print("\n" + "="*60)

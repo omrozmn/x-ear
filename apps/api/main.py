@@ -1,9 +1,10 @@
 import os
 import logging
 import json
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import ORJSONResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse as DefaultJSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -69,6 +70,20 @@ file_handler.setFormatter(json_formatter)
 logging.basicConfig(level=logging.INFO, handlers=[console_handler, file_handler])
 logger = logging.getLogger("x-ear")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan: start/stop background schedulers."""
+    from services.birfatura.auto_sync_scheduler import start_scheduler, stop_scheduler
+    start_scheduler(interval_minutes=15)
+    # Start AI Layer scheduler (data retention cleanup + proactive insights)
+    from ai.tasks.scheduled import start_scheduler as start_ai_scheduler, stop_scheduler as stop_ai_scheduler
+    start_ai_scheduler()
+    yield
+    stop_scheduler()
+    stop_ai_scheduler()
+
+
 # Create FastAPI app - operation_ids are now explicit in each endpoint
 # separate_input_output_schemas=False: Fixes Orval generating 'unknown' types
 # by avoiding OpenAPI 3.1 anyOf syntax for nullable fields
@@ -78,7 +93,8 @@ app = FastAPI(
     version="1.0.0",
     openapi_url="/openapi.json",
     separate_input_output_schemas=False,  # Critical: Orval compatibility
-    default_response_class=ORJSONResponse
+    default_response_class=DefaultJSONResponse,  # Fixed: orjson can't handle large integers
+    lifespan=lifespan,
 )
 
 import schemas.parties
@@ -134,7 +150,7 @@ app.add_middleware(IdempotencyMiddleware)
 # Requirements: 2.1, 2.7 (AI Security Fixes)
 from ai.middleware.auth import AIAuthMiddleware
 
-app.add_middleware(AIAuthMiddleware)
+app.add_middleware(AIAuthMiddleware, ai_path_prefix="/api/ai")
 
 # Permission middleware should run early (after request-id) to ensure consistent errors/logs.
 app.add_middleware(FastAPIPermissionMiddleware)
@@ -245,12 +261,12 @@ register_tenant_context_middleware(app)
 from routers import parties, auth, users
 from routers import sms, campaigns, inventory, sales
 from routers import appointments, dashboard, devices
-from routers import notifications, branches, reports, roles
+from routers import notifications, branches, reports, roles, purchases, personnel
 from routers import payments, tenant_users, suppliers, settings
 # Admin routers
-from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics
+from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics, admin_example_documents, admin_countries
 # Additional routers
-from routers import invoices, sgk
+from routers import invoices, sgk, sgk_credentials
 # Newly migrated routers
 from routers import activity_logs, permissions, ocr
 from routers import upload, documents
@@ -280,6 +296,10 @@ app.include_router(parties.router, prefix="/api")
 app.include_router(inventory.router, prefix="/api")
 app.include_router(sales.router, prefix="/api")
 
+# Hearing profiles (Party-related)
+from routers import hearing_profiles
+app.include_router(hearing_profiles.router, prefix="/api")
+
 # New migrated routers
 app.include_router(auth.router, prefix="/api")
 app.include_router(appointments.router, prefix="/api")
@@ -290,8 +310,10 @@ app.include_router(devices.router, prefix="/api")
 app.include_router(notifications.router, prefix="/api")
 app.include_router(branches.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
+app.include_router(purchases.router, prefix="/api")
 app.include_router(roles.router, prefix="/api")
 app.include_router(payments.router, prefix="/api")
+app.include_router(personnel.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(tenant_users.router, prefix="/api")
 app.include_router(suppliers.router, prefix="/api")
@@ -304,10 +326,18 @@ app.include_router(admin_dashboard.router, prefix="/api")
 app.include_router(admin_plans.router, prefix="/api")
 app.include_router(admin_addons.router, prefix="/api")
 app.include_router(admin_analytics.router, prefix="/api")
+app.include_router(admin_example_documents.router, prefix="/api")
+app.include_router(admin_countries.router, prefix="/api")
 
 # Additional routers
+# New invoices router MUST be before legacy invoices router
+# to avoid /invoices/{invoice_id} catching /invoices/incoming
+from routers import invoices_new, invoice_draft_issue
+app.include_router(invoices_new.router, prefix="/api")
+app.include_router(invoice_draft_issue.router, prefix="/api")
 app.include_router(invoices.router, prefix="/api")
 app.include_router(sgk.router, prefix="/api")
+app.include_router(sgk_credentials.router, prefix="/api")
 
 # Public routers (no auth required)
 app.include_router(unsubscribe.router, prefix="/api")
@@ -340,9 +370,9 @@ app.include_router(ocr.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 # Party subresources router (devices, notes, hearing tests, ereceipts, appointments)
-from routers import party_subresources, hearing_profiles
+from routers import party_subresources
 app.include_router(party_subresources.router, prefix="/api")
-app.include_router(hearing_profiles.router, prefix="/api")
+# hearing_profiles already included above (line 297)
 app.include_router(cash_records.router, prefix="/api")
 app.include_router(unified_cash.router, prefix="/api")
 app.include_router(payment_integrations.router, prefix="/api")
@@ -361,9 +391,9 @@ app.include_router(admin_roles.router, prefix="/api")  # Has /admin prefix built
 app.include_router(config.router, prefix="/api")
 
 # Phase 5 migrated routers
-from routers import registration
-# sms_packages removed - endpoints already in sms.py
+from routers import registration, sms_packages
 app.include_router(registration.router, prefix="/api")
+app.include_router(sms_packages.router, prefix="/api")  # Has /sms-packages and /admin/sms/packages
 
 # Phase 6 migrated routers - Admin modules
 from routers import (
@@ -372,8 +402,8 @@ from routers import (
     admin_marketplaces, admin_notifications, admin_parties, admin_payments, admin_production,
     admin_scan_queue, admin_suppliers
 )
-# Pending Future Implementation:
-# from routers import admin_campaigns, admin_tickets, orders
+from routers import admin_campaigns
+from routers import admin_tickets
 
 app.include_router(admin_api_keys.router)
 app.include_router(admin_appointments.router)
@@ -388,8 +418,8 @@ app.include_router(admin_payments.router)
 app.include_router(admin_production.router)
 app.include_router(admin_scan_queue.router)
 app.include_router(admin_suppliers.router)
-# app.include_router(admin_campaigns.router) # Pending - Redundant with campaigns.py?
-# app.include_router(admin_tickets.router) # Pending
+app.include_router(admin_tickets.router)  # ✅ NOW ACTIVE
+app.include_router(admin_campaigns.router)
 
 # Phase 6 migrated routers - Other modules
 from routers import audit, automation, affiliates, checkout, replacements, birfatura
@@ -398,32 +428,41 @@ app.include_router(audit.router)
 app.include_router(automation.router)
 app.include_router(affiliates.router)
 app.include_router(checkout.router)
-app.include_router(replacements.router)
-app.include_router(birfatura.router)
+app.include_router(replacements.router, prefix="/api")
+app.include_router(birfatura.router, prefix="/api")
 app.include_router(apps.router)
 app.include_router(pos_commission.router)
 app.include_router(uts.router)
-app.include_router(sms_packages.router, prefix="/api") # Active: SMS Package Management
+from routers import invoice_normalizer
+app.include_router(invoice_normalizer.router, prefix="/api")
+# sms_packages already included above (line 388)
 # app.include_router(orders.router, prefix="/api") # Pending: Marketplace Orders
 
 # Phase 7 migrated routers - Final modules
-from routers import invoice_management, invoices_actions, communications, sms_integration, smtp_config, email_logs
+from routers import invoice_management, invoices_actions, communications, sms_integration, smtp_config, email_logs, whatsapp
 app.include_router(sms_integration.router)
 app.include_router(invoice_management.router)
 app.include_router(invoices_actions.router)
 app.include_router(communications.router)
 app.include_router(smtp_config.router)
 app.include_router(email_logs.router)
+app.include_router(whatsapp.router, prefix="/api")
 
 # Tool API routers (AI Layer integration)
 from routers.tool_api import email_notifications as tool_api_email
 app.include_router(tool_api_email.router)  # No /api prefix - router already has /tool-api prefix
 
-from routers import commissions
-app.include_router(commissions.router)
+from routers import commissions, blog, admin_blog
+app.include_router(blog.router, prefix="/api")
+app.include_router(admin_blog.router, prefix="/api")
+app.include_router(commissions.router, prefix="/api")
 
 from routers import schema_registry
 app.include_router(schema_registry.router, prefix="/api") # Active: Developer Schema Registry
+
+# Noah Import / Agent routers
+from routers import noah_imports
+app.include_router(noah_imports.router, prefix="/api")
 
 # AI Layer routers
 from ai.api import (
@@ -432,14 +471,14 @@ from ai.api import (
     audit_router as ai_audit_router,
     status_router as ai_status_router,
     admin_router as ai_admin_router,
+    opportunities_router as ai_opportunities_router,
 )
 app.include_router(ai_chat_router, prefix="/api")
 app.include_router(ai_actions_router, prefix="/api")
 app.include_router(ai_audit_router, prefix="/api")
 app.include_router(ai_status_router, prefix="/api")
-app.include_router(ai_audit_router, prefix="/api")
-app.include_router(ai_status_router, prefix="/api")
 app.include_router(ai_admin_router, prefix="/api")
+app.include_router(ai_opportunities_router, prefix="/api")
 
 # AI Composer Router (Unified Intent/Entity/Action)
 from routers import composer

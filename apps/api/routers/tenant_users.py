@@ -2,28 +2,26 @@
 FastAPI Tenant Users Router - Migrated from Flask routes/tenant_users.py
 Tenant user management and company settings
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse
 from typing import Optional, List
 from pydantic import BaseModel, Field
+from pathlib import Path
 import logging
 import os
-import uuid as uuid_lib
-import base64
-from io import BytesIO
 
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope, ApiError
 from schemas.users import UserRead
 from schemas.tenants import (
-    TenantCompanyResponse, TenantAssetResponse, TenantAssetUrlResponse
+    TenantCompanyResponse
 )
 
 from models.user import User
 from models.tenant import Tenant
 from models.branch import Branch
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)
@@ -75,6 +73,10 @@ class CompanyInfoUpdate(BaseModel):
     bank_name: Optional[str] = Field(None, alias="bankName")
     iban: Optional[str] = None
     account_holder: Optional[str] = Field(None, alias="accountHolder")
+    sgk_mukellef_kodu: Optional[str] = Field(None, alias="sgkMukellefKodu")
+    sgk_mukellef_adi: Optional[str] = Field(None, alias="sgkMukellefAdi")
+    company_type: Optional[str] = Field(None, alias="companyType")
+    default_exemption_code: Optional[str] = Field(None, alias="defaultExemptionCode")
 
 class AssetUpload(BaseModel):
     data: str  # Base64 encoded
@@ -334,6 +336,58 @@ def update_tenant_user(
 
 
 
+@router.get("/tenants/current", operation_id="getCurrentTenant", response_model=ResponseEnvelope[TenantCompanyResponse])
+def get_current_tenant(
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Get current tenant information including settings and company info"""
+    try:
+        from sqlalchemy.orm.attributes import flag_modified
+        
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Auto-generate default invoice prefix if not set
+        settings = tenant.settings or {}
+        invoice_settings = settings.get("invoice_integration") or {}
+        
+        if not invoice_settings.get("invoice_prefix"):
+            # Generate from company name: first 3 letters, uppercase, A-Z only
+            company_name = tenant.name or "XER"
+            prefix = ''.join(c for c in company_name.upper() if c.isalpha())[:3].ljust(3, 'X')
+            
+            # Initialize invoice settings
+            if "invoice_integration" not in settings:
+                settings["invoice_integration"] = {}
+            
+            settings["invoice_integration"]["invoice_prefix"] = prefix
+            settings["invoice_integration"]["invoice_prefixes"] = [prefix]
+            settings["invoice_integration"]["use_manual_numbering"] = True
+            
+            tenant.settings = settings
+            flag_modified(tenant, "settings")
+            db_session.commit()
+            db_session.refresh(tenant)
+        
+        return ResponseEnvelope(data=TenantCompanyResponse.model_validate(tenant))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get current tenant error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/tenant/company", operation_id="getTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
 def get_tenant_company(
     access: UnifiedAccess = Depends(require_access()),
@@ -361,6 +415,64 @@ def get_tenant_company(
         logger.error(f"Get tenant company error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.patch("/tenants/current", operation_id="updateTenantSettings", response_model=ResponseEnvelope[TenantCompanyResponse])
+def update_tenant_settings(
+    settings_update: dict,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Update tenant settings and company info"""
+    try:
+        from sqlalchemy.orm.attributes import flag_modified
+        
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Update settings if provided
+        if "settings" in settings_update:
+            current_settings = tenant.settings or {}
+            new_settings = settings_update["settings"]
+            
+            # Deep merge settings
+            for key, value in new_settings.items():
+                if isinstance(value, dict) and key in current_settings and isinstance(current_settings[key], dict):
+                    current_settings[key].update(value)
+                else:
+                    current_settings[key] = value
+            
+            tenant.settings = current_settings
+            flag_modified(tenant, "settings")  # Mark JSON field as modified
+        
+        # Update company_info if provided
+        if "companyInfo" in settings_update or "company_info" in settings_update:
+            company_info = tenant.company_info or {}
+            new_company_info = settings_update.get("companyInfo") or settings_update.get("company_info") or {}
+            company_info.update(new_company_info)
+            tenant.company_info = company_info
+            flag_modified(tenant, "company_info")  # Mark JSON field as modified
+        
+        db_session.commit()
+        db_session.refresh(tenant)
+        
+        return ResponseEnvelope(data=TenantCompanyResponse.model_validate(tenant))
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update tenant settings error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.put("/tenant/company", operation_id="updateTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
 def update_tenant_company(
     company_in: CompanyInfoUpdate,
@@ -382,10 +494,17 @@ def update_tenant_company(
                 detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
             )
         
+        # Get current company_info or initialize empty dict
+        from sqlalchemy.orm.attributes import flag_modified
+        company_info = dict(tenant.company_info or {})
+        
+        # Update company_info with new data (using snake_case keys)
         data = company_in.model_dump(exclude_unset=True, by_alias=False)
-        for key, value in data.items():
-            if hasattr(tenant, key):
-                setattr(tenant, key, value)
+        company_info.update(data)
+        
+        # Save back to tenant
+        tenant.company_info = company_info
+        flag_modified(tenant, 'company_info')
         
         db_session.commit()
         db_session.refresh(tenant)
@@ -396,4 +515,150 @@ def update_tenant_company(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update tenant company error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/tenant/company/upload/{asset_type}", operation_id="uploadCompanyAsset")
+async def upload_company_asset(
+    asset_type: str,
+    file: UploadFile = File(...),
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Upload company asset (logo, stamp, or signature)"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        if asset_type not in ['logo', 'stamp', 'signature']:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="Invalid asset type", code="INVALID_ASSET_TYPE").model_dump(mode="json")
+            )
+        
+        # Create upload directory
+        upload_dir = Path(f"./storage/company_assets/{access.tenant_id}")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename
+        file_ext = Path(file.filename or '').suffix or '.png'
+        filename = f"{asset_type}{file_ext}"
+        file_path = upload_dir / filename
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Update tenant record
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Store relative path
+        url = f"/api/tenant/company/assets/{asset_type}{file_ext}"
+        
+        # Update tenant company_info
+        from sqlalchemy.orm.attributes import flag_modified
+        company_info = dict(tenant.company_info or {})
+        company_info[f"{asset_type}Url"] = url
+        tenant.company_info = company_info
+        flag_modified(tenant, 'company_info')
+        
+        db_session.commit()
+        
+        return ResponseEnvelope(data={"url": url, "type": asset_type})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Upload company asset error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/tenant/company/upload/{asset_type}", operation_id="deleteCompanyAsset")
+def delete_company_asset(
+    asset_type: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Delete company asset"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        if asset_type not in ['logo', 'stamp', 'signature']:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="Invalid asset type", code="INVALID_ASSET_TYPE").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Remove from company_info
+        from sqlalchemy.orm.attributes import flag_modified
+        company_info = dict(tenant.company_info or {})
+        if f"{asset_type}Url" in company_info:
+            del company_info[f"{asset_type}Url"]
+            tenant.company_info = company_info
+            flag_modified(tenant, 'company_info')
+            db_session.commit()
+        
+        # Delete file if exists
+        upload_dir = Path(f"./storage/company_assets/{access.tenant_id}")
+        for ext in ['.png', '.jpg', '.jpeg', '.gif']:
+            file_path = upload_dir / f"{asset_type}{ext}"
+            if file_path.exists():
+                file_path.unlink()
+        
+        return ResponseEnvelope(data={"success": True})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Delete company asset error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tenant/company/assets/{filename}", operation_id="getCompanyAsset")
+def get_company_asset(
+    filename: str,
+    access: UnifiedAccess = Depends(require_access()),
+):
+    """Serve company asset file"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(status_code=400, detail="No tenant context")
+        
+        file_path = Path(f"./storage/company_assets/{access.tenant_id}/{filename}")
+        
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        return FileResponse(
+            path=str(file_path),
+            media_type="image/png",
+            filename=filename
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get company asset error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,37 +1,39 @@
+from sqlalchemy import Column, Table, Boolean, DateTime, ForeignKey, String
+from sqlalchemy.orm import relationship, backref
 """
 Admin Panel Permission System Models
 
 Bu modeller CRM tarafındaki tenant permission sisteminden tamamen bağımsızdır.
 Admin panel kullanıcılarının (AdminUser) platform seviyesindeki izinlerini yönetir.
 """
+from core.models.base import Base
 from datetime import datetime
 import uuid
-from models.base import db
 
 
 # Junction table for AdminRole <-> AdminPermission many-to-many relationship
-admin_role_permissions = db.Table(
+admin_role_permissions = Table(
     'admin_role_permissions',
-    db.Column('id', db.String(36), primary_key=True, default=lambda: str(uuid.uuid4())),
-    db.Column('role_id', db.String(36), db.ForeignKey('admin_roles.id', ondelete='CASCADE'), nullable=False),
-    db.Column('permission_id', db.String(36), db.ForeignKey('admin_permissions.id', ondelete='CASCADE'), nullable=False),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow),
-    db.UniqueConstraint('role_id', 'permission_id', name='uq_admin_role_permission')
+    Base.metadata,
+    Column('id', String(36), primary_key=True, default=lambda: str(uuid.uuid4())),
+    Column('role_id', String(36), ForeignKey('admin_roles.id', ondelete='CASCADE'), nullable=False),
+    Column('permission_id', String(36), ForeignKey('admin_permissions.id', ondelete='CASCADE'), nullable=False),
+    Column('created_at', DateTime, default=datetime.utcnow),
 )
 
 
 # Junction table for AdminUser <-> AdminRole many-to-many relationship
-admin_user_roles = db.Table(
+admin_user_roles = Table(
     'admin_user_roles',
-    db.Column('id', db.String(36), primary_key=True, default=lambda: str(uuid.uuid4())),
-    db.Column('admin_user_id', db.String(36), db.ForeignKey('admin_users.id', ondelete='CASCADE'), nullable=False),
-    db.Column('role_id', db.String(36), db.ForeignKey('admin_roles.id', ondelete='CASCADE'), nullable=False),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow),
-    db.UniqueConstraint('admin_user_id', 'role_id', name='uq_admin_user_role')
+    Base.metadata,
+    Column('id', String(36), primary_key=True, default=lambda: str(uuid.uuid4())),
+    Column('admin_user_id', String(36), ForeignKey('admin_users.id', ondelete='CASCADE'), nullable=False),
+    Column('role_id', String(36), ForeignKey('admin_roles.id', ondelete='CASCADE'), nullable=False),
+    Column('created_at', DateTime, default=datetime.utcnow),
 )
 
 
-class AdminRoleModel(db.Model):
+class AdminRoleModel(Base):
     """
     Admin Panel Rolleri
     
@@ -47,26 +49,26 @@ class AdminRoleModel(db.Model):
     """
     __tablename__ = 'admin_roles'
     
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    description = db.Column(db.String(500))
-    is_system_role = db.Column(db.Boolean, default=False, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String(100), unique=True, nullable=False, index=True)
+    description = Column(String(500))
+    is_system_role = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    permissions = db.relationship(
+    permissions = relationship(
         'AdminPermissionModel',
         secondary=admin_role_permissions,
         lazy='dynamic',
-        backref=db.backref('roles', lazy='dynamic')
+        backref=backref('roles', lazy='dynamic')
     )
     
-    users = db.relationship(
+    users = relationship(
         'AdminUser',
         secondary=admin_user_roles,
         lazy='dynamic',
-        backref=db.backref('admin_roles', lazy='dynamic')
+        backref=backref('admin_roles', lazy='dynamic')
     )
     
     def __repr__(self):
@@ -98,7 +100,7 @@ class AdminRoleModel(db.Model):
         return [p.code for p in self.permissions.all()]
 
 
-class AdminPermissionModel(db.Model):
+class AdminPermissionModel(Base):
     """
     Admin Panel İzinleri
     
@@ -114,12 +116,12 @@ class AdminPermissionModel(db.Model):
     """
     __tablename__ = 'admin_permissions'
     
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    code = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    label = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.String(500))
-    category = db.Column(db.String(50))  # Grouping: tenants, billing, users, etc.
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    code = Column(String(100), unique=True, nullable=False, index=True)
+    label = Column(String(200), nullable=False)
+    description = Column(String(500))
+    category = Column(String(50))  # Grouping: tenants, billing, users, etc.
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     def __repr__(self):
         return f'<AdminPermission {self.code}>'

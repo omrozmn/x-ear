@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Menu } from "lucide-react";
-import AppHeader from "../AppHeader";
+import { CheckCircle2, Menu, Star, Zap, Crown, MessageSquare, Plus, ChevronRight } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Scene } from "@/components/canvas/Scene";
+import { TextReveal } from "@/components/ui/TextReveal";
+import { HyperGlassCard } from "@/components/ui/HyperGlassCard";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Pricing() {
     const [plans, setPlans] = useState<any[]>([]);
@@ -21,7 +26,6 @@ export default function Pricing() {
                 }
             } catch (error: any) {
                 console.error('Failed to fetch plans:', error);
-                // Silently fail - just show loading as failed
             } finally {
                 setLoading(false);
             }
@@ -30,101 +34,123 @@ export default function Pricing() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-gray-300 font-sans selection:bg-indigo-500 selection:text-white">
-            {/* Background Gradients */}
+        <div className="min-h-screen bg-background text-foreground selection:bg-accent-blue/30 relative flex flex-col">
+            <Header />
             <div className="fixed inset-0 z-0">
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(at_27%_37%,hsla(215,98%,61%,0.1)_0px,transparent_50%),radial-gradient(at_97%_21%,hsla(125,98%,72%,0.1)_0px,transparent_50%),radial-gradient(at_52%_99%,hsla(355,98%,61%,0.1)_0px,transparent_50%),radial-gradient(at_10%_29%,hsla(256,96%,61%,0.1)_0px,transparent_50%),radial-gradient(at_97%_96%,hsla(38,60%,74%,0.1)_0px,transparent_50%),radial-gradient(at_33%_50%,hsla(222,67%,73%,0.1)_0px,transparent_50%),radial-gradient(at_79%_53%,hsla(343,68%,79%,0.1)_0px,transparent_50%)]"></div>
+                <Scene />
             </div>
 
-            <AppHeader />
-
-            <main className="min-h-screen flex items-center justify-center pt-20 sm:pt-24 relative z-10 scroll-mt-24">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-                    <div className="text-center mb-16 pt-20">
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 text-white">
-                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-                                Geleceğin Kliniği
-                            </span>{" "}
-                            İçin Tasarlandı
-                        </h1>
-                        <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto">
-                            X-Ear CRM ile kliniğinizin potansiyelini ortaya çıkarın. Verimliliği artırın, hasta memnuniyetini en üst
-                            düzeye taşıyın.
-                        </p>
+            <main className="flex-grow pt-32 pb-24 relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                        >
+                            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-glow mb-6">
+                                <TextReveal>Geleceğin Kliniği</TextReveal>
+                                <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue via-accent-purple to-accent-blue">
+                                    <TextReveal delay={0.4}>İçin Tasarlandı</TextReveal>
+                                </span>
+                            </h1>
+                            <p className="text-lg md:text-xl text-foreground/60 max-w-3xl mx-auto">
+                                X-Ear CRM ile kliniğinizin potansiyelini ortaya çıkarın. Verimliliği artırın, hasta memnuniyetini en üst düzeye taşıyın.
+                            </p>
+                        </motion.div>
                     </div>
 
-                    <div className="flex justify-center items-center space-x-4 mb-12">
-                        <span className="text-slate-300 font-medium bg-white/10 px-4 py-2 rounded-full">Yıllık Faturalandırma</span>
+                    <div className="flex justify-center items-center space-x-4 mb-16">
+                        <div className="px-6 py-2 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/70 font-display font-semibold flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-accent-blue" />
+                            Yıllık Faturalandırma
+                        </div>
                     </div>
 
                     {loading ? (
-                        <div className="text-center text-white">Yükleniyor...</div>
+                        <div className="flex justify-center items-center py-20">
+                            <div className="w-12 h-12 border-4 border-foreground/10 border-t-foreground rounded-full animate-spin" />
+                        </div>
                     ) : (
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-                            {plans.map((plan) => {
-                                // Calculate monthly price for display
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                            {plans.map((plan, idx) => {
                                 const monthlyPrice = plan.price / 12;
-
-                                // Handle features whether it's an array or object
                                 let featuresList: string[] = [];
                                 if (Array.isArray(plan.features)) {
                                     featuresList = plan.features
                                         .filter((f: any) => typeof f === 'string' || f.is_visible)
                                         .map((f: any) => typeof f === 'string' ? f : f.name);
                                 } else if (plan.features && typeof plan.features === 'object') {
-                                    // If it's an object (dictionary), convert to array
                                     featuresList = Object.entries(plan.features)
                                         .map(([key, value]: [string, any]) => {
                                             if (typeof value === 'object' && value.name) return value.name;
-                                            return key; // Fallback to key if no name property
+                                            return key;
                                         });
                                 }
 
                                 return (
-                                    <PricingCard
+                                    <motion.div
                                         key={plan.id}
-                                        planId={plan.id}
-                                        billingCycle="yearly"
-                                        title={plan.name}
-                                        description={plan.description || ''}
-                                        price={`₺${Math.floor(monthlyPrice)}`}
-                                        yearlyPrice={`₺${plan.price}`}
-                                        features={featuresList}
-                                        buttonText="Hemen Başla"
-                                        isPopular={plan.name.toLowerCase().includes('pro') || plan.name.toLowerCase().includes('business')}
-                                    />
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, delay: idx * 0.1 }}
+                                    >
+                                        <PricingCard
+                                            planId={plan.id}
+                                            billingCycle="yearly"
+                                            title={plan.name}
+                                            description={plan.description || ''}
+                                            price={`₺${Math.floor(monthlyPrice)}`}
+                                            yearlyPrice={`₺${plan.price}`}
+                                            features={featuresList}
+                                            buttonText="Hemen Başla"
+                                            isPopular={plan.name.toLowerCase().includes('pro') || plan.name.toLowerCase().includes('business')}
+                                        />
+                                    </motion.div>
                                 );
                             })}
                         </div>
                     )}
 
                     {/* Add-ons Section */}
-                    <div className="mt-24">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                                Ek Özellikler (Add-ons)
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        className="mt-32"
+                    >
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-5xl font-display font-bold text-glow mb-4">
+                                Ek Özellikler
                             </h2>
-                            <p className="text-gray-400 max-w-2xl mx-auto">
-                                İhtiyacınıza göre paketinizi özelleştirin.
+                            <p className="text-foreground/60 max-w-2xl mx-auto text-lg leading-relaxed">
+                                İhtiyacınıza göre paketinizi özelleştirin ve kliniğinizi güçlendirin.
                             </p>
                         </div>
                         <AddOnsList />
-                    </div>
+                    </motion.div>
 
                     {/* SMS Packages Section */}
-                    <div className="mt-24">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        className="mt-32"
+                    >
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-5xl font-display font-bold text-glow mb-4">
                                 SMS Paketleri
                             </h2>
-                            <p className="text-gray-400 max-w-2xl mx-auto">
-                                İhtiyacınıza uygun SMS paketini seçin.
+                            <p className="text-foreground/60 max-w-2xl mx-auto text-lg leading-relaxed">
+                                Güçlü iletişim için ihtiyacınıza uygun SMS paketini seçin.
                             </p>
                         </div>
                         <SmsPackagesList />
-                    </div>
+                    </motion.div>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 }
@@ -151,51 +177,61 @@ function PricingCard({
     isPopular: boolean;
 }) {
     return (
-        <div
-            className={`bg-white/5 backdrop-blur-xl rounded-2xl p-6 sm:p-8 flex flex-col relative ${
-                isPopular ? "border-2 border-blue-400" : "border border-white/10"
-            }`}
+        <HyperGlassCard
+            className={`h-full flex flex-col relative group transition-all duration-300 ${isPopular ? "border-accent-blue/50 ring-1 ring-accent-blue/20" : ""
+                }`}
         >
             {isPopular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
-                    En Popüler
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-accent-blue to-accent-purple text-white shadow-lg shadow-accent-blue/20 z-10 whitespace-nowrap">
+                    En Çok Tercih Edilen
                 </div>
             )}
-            <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-            <p className="text-slate-400 text-sm mb-6 min-h-[40px]">{description}</p>
-            <div className="mb-6">
-                <div className="flex items-baseline">
-                    <span className="text-5xl font-black text-white">{price}</span>
-                    <span className="text-slate-400 ml-1">/ay</span>
+
+            <div className="p-8 pb-4">
+                <div className="flex items-center gap-2 mb-4">
+                    <h3 className="text-2xl font-display font-bold text-foreground">{title}</h3>
+                    {isPopular && <Crown className="w-5 h-5 text-accent-blue" />}
                 </div>
-                {yearlyPrice && <div className="text-sm text-slate-500 mt-1">Yıllık {yearlyPrice} olarak faturalanır</div>}
+                <p className="text-foreground/50 text-sm mb-8 leading-relaxed line-clamp-2 h-10">{description}</p>
+                <div className="mb-0">
+                    <div className="flex items-baseline">
+                        <span className="text-5xl font-display font-bold text-foreground text-glow">{price}</span>
+                        <span className="text-foreground/40 ml-1.5 font-medium text-lg">/ay</span>
+                    </div>
+                    {yearlyPrice && <div className="text-[11px] font-bold text-accent-blue uppercase tracking-widest mt-2">Yıllık {yearlyPrice} • %20 TASARRUF</div>}
+                </div>
             </div>
-            <ul className="space-y-4 text-slate-300 mb-8 flex-grow">
-                {features.map((feature, index) => (
-                    <FeatureItem key={index} text={feature} />
-                ))}
-            </ul>
-            <Link
-                href={`/checkout?plan=${planId}&billing=${billingCycle}`}
-                className={`w-full block text-center font-semibold py-4 px-4 rounded-xl text-base transition-all duration-300 min-h-[56px] flex items-center justify-center active:scale-95 ${
-                    isPopular
-                        ? "bg-gradient-to-r from-[#38BDF8] to-[#818CF8] text-white shadow-[0_4px_15px_-5px_rgba(56,189,248,0.4)] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-8px_rgba(56,189,248,0.6)] active:shadow-[0_4px_12px_-4px_rgba(56,189,248,0.5)]"
-                        : "bg-transparent border-2 border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 active:bg-[#38BDF8]/20"
-                }`}
-            >
-                {buttonText}
-            </Link>
-        </div>
+
+            <div className="px-8 flex-grow">
+                <div className="h-px bg-foreground/5 mb-8" />
+                <ul className="space-y-4 text-foreground/70 mb-10">
+                    {features.map((feature, index) => (
+                        <FeatureItem key={index} text={feature} />
+                    ))}
+                </ul>
+            </div>
+
+            <div className="p-8 pt-0">
+                <Link
+                    href={`/checkout?plan=${planId}&billing=${billingCycle}`}
+                    className={`w-full group flex items-center justify-center gap-2 font-display font-bold py-4 px-6 rounded-2xl text-base transition-all active:scale-[0.98] ${isPopular
+                        ? "bg-foreground text-background shadow-xl shadow-foreground/10 hover:opacity-90"
+                        : "bg-foreground/5 border border-foreground/10 text-foreground hover:bg-foreground hover:text-background"
+                        }`}
+                >
+                    {buttonText}
+                    <ChevronRight className={`w-5 h-5 transition-transform group-hover:translate-x-0.5 ${isPopular ? "text-accent-blue" : ""}`} />
+                </Link>
+            </div>
+        </HyperGlassCard>
     );
 }
 
 function FeatureItem({ text }: { text: string }) {
     return (
-        <li className="flex items-start">
-            <div className="bg-[#38BDF8]/10 text-[#38BDF8] rounded-full p-0.5 mr-3 mt-0.5 flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <span dangerouslySetInnerHTML={{ __html: text.replace(/(\d+)/g, "<strong>$1</strong>") }}></span>
+        <li className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-accent-blue shrink-0 mt-0.5" />
+            <span className="text-sm leading-tight" dangerouslySetInnerHTML={{ __html: text.replace(/(\d+)/g, "<span class='font-bold text-foreground'>$1</span>") }}></span>
         </li>
     );
 }
@@ -221,30 +257,37 @@ function AddOnsList() {
         fetchAddons();
     }, []);
 
-    if (loading) return <div className="text-center text-gray-500">Eklentiler yükleniyor...</div>;
+    if (loading) return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => <div key={i} className="h-48 bg-foreground/5 rounded-3xl animate-pulse" />)}
+        </div>
+    );
     if (addons.length === 0) return null;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {addons.map((addon) => (
-                <div key={addon.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold text-white">{addon.name}</h3>
-                        <div className="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2 py-1 rounded uppercase">
-                            {addon.addon_type === 'FLAT_FEE' ? 'Tek Seferlik' :
-                                addon.addon_type === 'PER_USER' ? 'Kullanıcı Başına' : 'Kullanım Bazlı'}
+                <HyperGlassCard key={addon.id} className="p-8 flex flex-col group overflow-hidden">
+                    <div className="flex justify-between items-start mb-6">
+                        <div className="p-3 rounded-2xl bg-accent-purple/10 text-accent-purple group-hover:bg-accent-purple group-hover:text-white transition-colors">
+                            <Plus className="w-6 h-6" />
+                        </div>
+                        <div className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-[10px] font-bold uppercase tracking-wider text-foreground/50">
+                            {addon.addon_type === 'FLAT_FEE' ? 'Aylık' :
+                                addon.addon_type === 'PER_USER' ? 'Kullanıcı Başı' : 'Kullanım'}
                         </div>
                     </div>
-                    <div className="text-2xl font-bold text-white mb-4">
-                        ₺{addon.price} <span className="text-sm text-gray-400 font-normal">
+                    <h3 className="text-xl font-display font-bold text-foreground mb-2">{addon.name}</h3>
+                    <div className="text-3xl font-display font-bold text-glow mb-6">
+                        ₺{addon.price} <span className="text-sm text-foreground/40 font-medium">
                             {addon.addon_type === 'FLAT_FEE' ? '/ay' :
-                                addon.addon_type === 'PER_USER' ? '/kullanıcı/ay' : ''}
+                                addon.addon_type === 'PER_USER' ? '/kullanıcı' : ''}
                         </span>
                     </div>
-                    <div className="mt-auto pt-4 border-t border-white/10 text-sm text-gray-400">
-                        Paketinize ek olarak satın alabilirsiniz.
-                    </div>
-                </div>
+                    <p className="mt-auto text-sm text-foreground/40">
+                        Paketinize ek olarak dilediğiniz zaman aktive edebilirsiniz.
+                    </p>
+                </HyperGlassCard>
             ))}
         </div>
     );
@@ -257,7 +300,7 @@ function SmsPackagesList() {
     useEffect(() => {
         const fetchPackages = async () => {
             try {
-                const res = await apiClient.get('/api/sms/packages');
+                const res = await apiClient.get('/api/sms-packages');
                 const data = res.data;
                 if (data.success) {
                     setPackages(data.data);
@@ -271,30 +314,35 @@ function SmsPackagesList() {
         fetchPackages();
     }, []);
 
-    if (loading) return <div className="text-center text-gray-500">SMS Paketleri yükleniyor...</div>;
+    if (loading) return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-56 bg-foreground/5 rounded-3xl animate-pulse" />)}
+        </div>
+    );
     if (packages.length === 0) return null;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {packages.map((pkg) => (
-                <div key={pkg.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 flex flex-col relative overflow-hidden group hover:border-indigo-500/50 transition-colors">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <HyperGlassCard key={pkg.id} className="p-8 flex flex-col relative overflow-hidden group hover:border-accent-blue/50 transition-all">
+                    <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <MessageSquare className="w-24 h-24 text-accent-blue" />
                     </div>
-                    <div className="mb-4">
-                        <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
-                        <div className="text-indigo-400 font-medium text-sm mt-1">{(pkg.sms_count || pkg.smsCount || 0).toLocaleString()} SMS</div>
+                    <div className="mb-6 relative z-10">
+                        <h3 className="text-2xl font-display font-bold text-foreground">{pkg.name}</h3>
+                        <div className="text-accent-blue font-bold text-xs uppercase tracking-widest mt-2">{(pkg.sms_count || pkg.smsCount || 0).toLocaleString()} ADET</div>
                     </div>
-                    <div className="text-3xl font-bold text-white mb-6">
+                    <div className="text-3xl font-display font-bold text-glow mb-8 relative z-10">
                         {(pkg.price || 0).toLocaleString('tr-TR', { style: 'currency', currency: pkg.currency || 'TRY' })}
                     </div>
                     <Link
                         href={`/register?package=${pkg.id}`}
-                        className="mt-auto w-full block text-center bg-white/10 hover:bg-white/20 active:bg-white/25 text-white font-semibold py-3 px-4 rounded-lg transition-colors min-h-[56px] flex items-center justify-center active:scale-95"
+                        className="mt-auto w-full group flex items-center justify-center gap-2 bg-foreground/5 border border-foreground/10 text-foreground font-bold py-4 rounded-2xl hover:bg-foreground hover:text-background transition-all active:scale-[0.98]"
                     >
-                        Satın Al
+                        Hemen Al
+                        <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
                     </Link>
-                </div>
+                </HyperGlassCard>
             ))}
         </div>
     );

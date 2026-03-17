@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Party/Patient status in CRM - lowercase for API consistency
+ */
 export type PartyStatus = typeof PartyStatus[keyof typeof PartyStatus];
 
 

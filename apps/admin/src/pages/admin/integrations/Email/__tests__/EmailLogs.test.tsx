@@ -4,6 +4,22 @@ import EmailLogs from '../EmailLogs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as EmailLogsHooks from '@/api/generated/email-logs/email-logs';
 
+type GetEmailLogsResult = ReturnType<typeof EmailLogsHooks.useGetEmailLogs>;
+
+function createGetEmailLogsResult(overrides: Partial<GetEmailLogsResult>): GetEmailLogsResult {
+  return {
+    data: undefined,
+    error: null,
+    isLoading: false,
+    ...overrides,
+  } as unknown as GetEmailLogsResult;
+}
+
+// Mock EmailIntegrationNav to avoid TanStack Router dependency
+vi.mock('@/components/integrations/EmailIntegrationNav', () => ({
+  EmailIntegrationNav: () => <div data-testid="email-nav" />,
+}));
+
 // Mock heroicons
 vi.mock('@heroicons/react/24/outline', () => ({
   EnvelopeIcon: () => <div data-testid="envelope-icon" />,
@@ -89,20 +105,14 @@ describe('EmailLogs Component', () => {
   };
 
   it('renders loading state initially', () => {
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue({
-      data: undefined,
-      isLoading: true,
-    } as any);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue(createGetEmailLogsResult({ isLoading: true }));
 
     renderComponent();
     expect(screen.getByTestId('spinner')).toBeInTheDocument();
   });
 
   it('renders table with email logs correctly', async () => {
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue({
-      data: mockEmailLogs,
-      isLoading: false,
-    } as any);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue(createGetEmailLogsResult({ data: mockEmailLogs }));
 
     renderComponent();
 
@@ -130,7 +140,7 @@ describe('EmailLogs Component', () => {
   });
 
   it('displays empty state when no logs', async () => {
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue({
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue(createGetEmailLogsResult({
       data: {
         data: {
           items: [],
@@ -140,8 +150,7 @@ describe('EmailLogs Component', () => {
           totalPages: 1,
         },
       },
-      isLoading: false,
-    } as any);
+    }));
 
     renderComponent();
 
@@ -152,10 +161,7 @@ describe('EmailLogs Component', () => {
   });
 
   it('expands and collapses row to show error message', async () => {
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue({
-      data: mockEmailLogs,
-      isLoading: false,
-    } as any);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue(createGetEmailLogsResult({ data: mockEmailLogs }));
 
     renderComponent();
 
@@ -192,7 +198,7 @@ describe('EmailLogs Component', () => {
       isLoading: false,
     });
 
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs as typeof EmailLogsHooks.useGetEmailLogs);
 
     renderComponent();
 
@@ -221,7 +227,7 @@ describe('EmailLogs Component', () => {
       isLoading: false,
     });
 
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs as typeof EmailLogsHooks.useGetEmailLogs);
 
     renderComponent();
 
@@ -250,7 +256,7 @@ describe('EmailLogs Component', () => {
       isLoading: false,
     });
 
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs as typeof EmailLogsHooks.useGetEmailLogs);
 
     renderComponent();
 
@@ -284,7 +290,7 @@ describe('EmailLogs Component', () => {
       isLoading: false,
     });
 
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs as typeof EmailLogsHooks.useGetEmailLogs);
 
     renderComponent();
 
@@ -334,22 +340,20 @@ describe('EmailLogs Component', () => {
       isLoading: false,
     });
 
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs as typeof EmailLogsHooks.useGetEmailLogs);
 
     renderComponent();
 
     await waitFor(() => {
-      // Check if total count is displayed
-      expect(screen.getByText(/100/)).toBeInTheDocument();
+      // Check if total count is displayed (use getAllByText since "100" appears in pagination select too)
+      const totalElements = screen.getAllByText(/100/);
+      expect(totalElements.length).toBeGreaterThan(0);
       expect(screen.getByText(/kayıt bulundu/)).toBeInTheDocument();
     });
   });
 
   it('displays retry count correctly', async () => {
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue({
-      data: mockEmailLogs,
-      isLoading: false,
-    } as any);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue(createGetEmailLogsResult({ data: mockEmailLogs }));
 
     renderComponent();
 
@@ -361,10 +365,7 @@ describe('EmailLogs Component', () => {
   });
 
   it('formats dates correctly', async () => {
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue({
-      data: mockEmailLogs,
-      isLoading: false,
-    } as any);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue(createGetEmailLogsResult({ data: mockEmailLogs }));
 
     renderComponent();
 
@@ -378,10 +379,7 @@ describe('EmailLogs Component', () => {
   });
 
   it('shows body preview in expanded row', async () => {
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue({
-      data: mockEmailLogs,
-      isLoading: false,
-    } as any);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockReturnValue(createGetEmailLogsResult({ data: mockEmailLogs }));
 
     renderComponent();
 
@@ -414,7 +412,7 @@ describe('EmailLogs Component', () => {
       isLoading: false,
     });
 
-    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs);
+    vi.spyOn(EmailLogsHooks, 'useGetEmailLogs').mockImplementation(mockUseGetEmailLogs as typeof EmailLogsHooks.useGetEmailLogs);
 
     renderComponent();
 

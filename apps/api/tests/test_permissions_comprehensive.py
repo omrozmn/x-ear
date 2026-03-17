@@ -1,13 +1,7 @@
 import pytest
-import json
-import os
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 
-from main import app
-from core.models.role import Role
-from core.models.permission import Permission
-from config.permissions_map import ENDPOINT_PERMISSIONS
 
 # =============================================================================
 # TEST CONFIGURATION

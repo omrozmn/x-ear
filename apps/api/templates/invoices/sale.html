@@ -21,13 +21,13 @@
       <tr>
         <td class="center">{{ loop.index }}</td>
         <td>{{ line.item_code or line.seller_item_id or '' }}</td>
-        <td>{{ line.description or line.name }}</td>
-        <td class="center">{{ line.quantity }}</td>
-        <td class="center">{{ line.unit_code or 'Adet' }}</td>
-        <td class="right">{{ "%.2f"|format(line.unit_price|float) }} {{ invoice.currency or 'TL' }}</td>
-        <td class="center">%{{ line.tax_percent or line.tax_rate or 18 }}</td>
-        <td class="right">{{ "%.2f"|format((line.tax_amount or 0)|float) }} {{ invoice.currency or 'TL' }}</td>
-        <td class="right">{{ "%.2f"|format((line.line_extension_amount or (line.quantity|float * line.unit_price|float))|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td>{{ line.description or line.name or '' }}</td>
+        <td class="center">{{ line.quantity|default(0) }}</td>
+        <td class="center">{{ line.unit_code or line.unit or 'Adet' }}</td>
+        <td class="right">{{ "%.2f"|format((line.unit_price|default(0)|float) or (line.unitPrice|default(0)|float) or (line.price|default(0)|float)) }} {{ invoice.currency or 'TL' }}</td>
+        <td class="center">%{{ line.tax_percent|default(line.tax_rate|default(18)) }}</td>
+        <td class="right">{{ "%.2f"|format(line.tax_amount|default(0)|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td class="right">{{ "%.2f"|format(line.line_extension_amount|default(line.line_total|default(line.total|default(0)))|float) }} {{ invoice.currency or 'TL' }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -38,29 +38,32 @@
     <table class="totals-table">
       <tr>
         <td>Mal Hizmet Toplam Tutarı</td>
-        <td>{{ "%.2f"|format((invoice.line_extension_amount or invoice.subtotal or 0)|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td>{{ "%.2f"|format(invoice.line_extension_amount|default(invoice.subtotal|default(0))|float) }} {{ invoice.currency or 'TL' }}</td>
       </tr>
       <tr>
         <td>Toplam İskonto</td>
-        <td>{{ "%.2f"|format((invoice.allowance_total or 0)|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td>{{ "%.2f"|format(invoice.allowance_total|default(0)|float) }} {{ invoice.currency or 'TL' }}</td>
       </tr>
       <tr>
-        <td>Hesaplanan KDV (%{{ invoice.tax_percent or 18 }})</td>
-        <td>{{ "%.2f"|format((invoice.tax_total or 0)|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td>Hesaplanan KDV (%{{ invoice.tax_percent|default(18) }})</td>
+        <td>{{ "%.2f"|format(invoice.tax_total|default(invoice.taxAmount|default(0))|float) }} {{ invoice.currency or 'TL' }}</td>
       </tr>
       {% if invoice.withholding_total %}
       <tr>
         <td>Tevkifat Tutarı</td>
-        <td>-{{ "%.2f"|format((invoice.withholding_total or 0)|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td>-{{ "%.2f"|format(invoice.withholding_total|default(0)|float) }} {{ invoice.currency or 'TL' }}</td>
       </tr>
       {% endif %}
       <tr>
         <td>Vergiler Dahil Toplam Tutar</td>
-        <td>{{ "%.2f"|format((invoice.tax_inclusive_amount or ((invoice.line_extension_amount or invoice.subtotal or 0)|float + (invoice.tax_total or 0)|float))|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td>{{ "%.2f"|format(invoice.tax_inclusive_amount|default(
+             (invoice.line_extension_amount|default(invoice.subtotal|default(0))|float) +
+             (invoice.tax_total|default(invoice.taxAmount|default(0))|float)
+           )|float) }} {{ invoice.currency or 'TL' }}</td>
       </tr>
       <tr class="grand-total">
         <td>ÖDENECEK TUTAR</td>
-        <td>{{ "%.2f"|format((invoice.payable_amount or 0)|float) }} {{ invoice.currency or 'TL' }}</td>
+        <td>{{ "%.2f"|format(invoice.payable_amount|default(invoice.totalAmount|default(0))|float) }} {{ invoice.currency or 'TL' }}</td>
       </tr>
     </table>
   </div>

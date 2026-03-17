@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-03-08T18:05:54.711367",
+  "results": [
+    {
+      "test": "SATIS (Temel)",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "SATIS (Ticari)",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "IADE",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "TEVKIFAT",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "ISTISNA",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "IHRACAT",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "OZELMATRAH",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "SGK",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "TEVKIFAT (18)",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "IHRACKAYITLI (27)",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "EARSIV",
+      "status": "SUCCESS",
+      "invoiceNo": "BEF2026000000386",
+      "message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi.",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SATIS_1772982350.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      },
+      "provider_result": {
+        "invoiceNo": "BEF2026000000386",
+        "zipped": null,
+        "htmlString": null,
+        "pdfLink": "http://uygulama.edonustur.com/dosyagetir?tur=1&tarih=03-08-2026&guid=4fe44580-c173-4821-a258-324aa33ab11f.pdf"
+      },
+      "provider_response_excerpt": {
+        "Success": true,
+        "Message": "Doküman alındı ve Kaydedildi GIB'e göndermek için imza kuyruğuna gönderildi."
+      }
+    },
+    {
+      "test": "HKS",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "SARJ",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "YOLCU BERABERI",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "SEVK",
+      "status": "ERROR",
+      "error": "500 Server Error: Internal Server Error for url: https://uygulama.edonustur.com/api/outEBelgeV2/SendDocument",
+      "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/TEST_SEVK_1772982354.xml",
+      "xml_valid": true,
+      "xml_missing": [],
+      "xml_markers": {
+        "invoice_type_ok": true,
+        "has_payment_terms": false,
+        "has_buyer_customer_party": false,
+        "has_delivery": false,
+        "has_medical_refs": false
+      }
+    },
+    {
+      "test": "SARJANLIK",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "OTV",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "HASTANE",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    },
+    {
+      "test": "TIBBI CIHAZ",
+      "status": "ERROR",
+      "error": "name 'invoice' is not defined"
+    }
+  ]
+}

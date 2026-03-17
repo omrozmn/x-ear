@@ -8,6 +8,7 @@ import { SpecialTaxBaseData, ReturnInvoiceDetailsData } from '../../types/invoic
 interface InvoiceTypeSectionProps {
   invoiceType: string;
   scenario?: string;
+  documentKind?: 'invoice' | 'despatch';
   currency?: string;
   specialTaxBase?: SpecialTaxBaseData;
   returnInvoiceDetails?: ReturnInvoiceDetailsData;
@@ -18,6 +19,7 @@ interface InvoiceTypeSectionProps {
 export function InvoiceTypeSection({
   invoiceType,
   scenario,
+  documentKind = 'invoice',
   currency,
   // specialTaxBase, // Not used in current implementation
   // returnInvoiceDetails, // Not used in current implementation
@@ -36,6 +38,14 @@ export function InvoiceTypeSection({
     { value: '14', label: 'SGK' },
     { value: '15', label: 'Tevkifat İade' },
     { value: '35', label: 'Teknoloji Destek' },
+    { value: 'earsiv', label: 'E-Arşiv Fatura' },
+    { value: 'hks', label: 'Konaklama Vergisi (HKS)' },
+    { value: 'sarj', label: 'Enerji Şarj' },
+    { value: 'sarjanlik', label: 'Şarj Anlık' },
+    { value: 'yolcu', label: 'Yolcu Beraberi' },
+    { value: 'otv', label: 'ÖTV' },
+    { value: 'hastane', label: 'Hastane Faturası' },
+    { value: 'sevk', label: 'E-İrsaliye / Sevk' },
     // custom option
     { value: 'other', label: 'Diğer (Custom)' }
   ];
@@ -75,26 +85,29 @@ export function InvoiceTypeSection({
 
   // Filter available invoice types based on selected scenario
   const allowedTypesForScenario = () => {
+    if (documentKind === 'despatch') {
+      return ['sevk'];
+    }
     // Accept both string keys and numeric codes for scenarios
     // scenario may be: 'other' | 'export' | 'government' | 'medical' OR '36' | '5' | '7' | '45'
     const s = String(scenario);
     // İhracat
     if (s === 'export' || s === '5') {
-      return ['13'];
+      return ['13', '27'];
     }
 
     // Kamu
     if (s === 'government' || s === '7') {
-      return ['', '0', '13', '11', '12', '27'];
+      return ['', '0', '13', '11', '12', '27', 'hks', 'otv', 'earsiv'];
     }
 
     // İlaç / Tıbbi Cihaz
     if (s === 'medical' || s === '45') {
-      return ['', '0', '13', '11', '15', '50', '27'];
+      return ['', '0', '13', '11', '15', '50', '27', 'hastane'];
     }
 
     // Diğer (varsayılan) - includes scenario 'other' or code '36'
-    return ['', '0', '50', '13', '11', '12', '27', '14', '15', '35'];
+    return ['', '0', '50', '13', '11', '12', '27', '14', '15', '35', 'earsiv', 'hks', 'sarj', 'sarjanlik', 'yolcu', 'otv', 'sevk'];
   };
   const allowedTypes = allowedTypesForScenario();
 
@@ -102,10 +115,11 @@ export function InvoiceTypeSection({
     <div className="space-y-4">
       {/* Fatura Tipi */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Fatura Tipi <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {documentKind === 'despatch' ? 'Belge Tipi' : 'Fatura Tipi'} <span className="text-destructive">*</span>
         </label>
         <Select
+          data-testid="invoice-type-select"
           value={invoiceType}
           onChange={(e) => onChange('invoiceType', e.target.value)}
           options={invoiceTypes
@@ -121,14 +135,14 @@ export function InvoiceTypeSection({
 
       {/* SGK Bilgilendirme */}
       {showSGKInfo && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
           <div className="flex items-start">
             <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
             <div>
               <h4 className="text-sm font-medium text-blue-800 mb-1">
                 SGK Faturası
               </h4>
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-primary">
                 SGK faturası için müşteri bilgileri otomatik olarak ayarlanacaktır. Para birimi TRY olmalıdır.
               </p>
             </div>

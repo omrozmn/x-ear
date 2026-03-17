@@ -7,5 +7,5 @@
  */
 
 export type ListCommissionAuditParams = {
-commission_id: number;
+commission_id?: number | null;
 };

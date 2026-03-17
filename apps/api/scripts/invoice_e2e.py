@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import requests
-import time
 import os
 import sys
 import json
@@ -48,7 +47,7 @@ else:
         else:
             patient_id = None
             save_step('get_patient', {'ok': True, 'found': False, 'body': d})
-    except Exception as e:
+    except Exception:
         save_step('get_patient', {'ok': False, 'error': 'invalid json', 'raw': str(r)})
         patient_id = None
 
@@ -67,7 +66,7 @@ if not patient_id:
         else:
             save_step('create_patient', {'ok': False, 'body': d})
             print('Create patient response not success:', d); sys.exit(1)
-    except Exception as e:
+    except Exception:
         save_step('create_patient', {'ok': False, 'error': 'invalid json', 'raw': str(r)})
         print('Create patient invalid json', r.text); sys.exit(1)
 
@@ -88,7 +87,7 @@ try:
     else:
         print('Invoice create returned non-success:', d)
         sys.exit(1)
-except Exception as e:
+except Exception:
     save_step('create_invoice', {'ok': False, 'error': 'invalid json', 'raw': r.text})
     print('Invalid json on create invoice', r.text); sys.exit(1)
 

@@ -8,11 +8,10 @@ import json
 from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc
+from sqlalchemy import desc
 
+from core.dependencies import get_current_admin_user
 from core.database import get_db
-from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas import ResponseEnvelope
 from core.models.email_deliverability import EmailApproval
 from services.email_approval_service import get_email_approval_service
@@ -80,7 +79,7 @@ async def list_email_approvals(
     status: Optional[str] = Query(None, description="Filter by status (pending/approved/rejected)"),
     risk_level: Optional[str] = Query(None, description="Filter by risk level"),
     search: Optional[str] = Query(None, description="Search by recipient or subject"),
-    access: UnifiedAccess = Depends(require_access("admin.emails.approve")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[ApprovalListResponse]:
     """
@@ -91,11 +90,9 @@ async def list_email_approvals(
     - risk_level: LOW, MEDIUM, HIGH, CRITICAL
     - search: partial match on recipient or subject
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     # Build query
-    query = db.query(EmailApproval).filter(EmailApproval.tenant_id == tenant_id)
+    query = db.query(EmailApproval)
     
     # Apply filters
     if status:
@@ -165,7 +162,7 @@ async def list_email_approvals(
     description="Get overall email approval statistics for tenant"
 )
 async def get_email_approval_stats(
-    access: UnifiedAccess = Depends(require_access("admin.emails.approve")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[ApprovalStatsResponse]:
     """
@@ -175,11 +172,9 @@ async def get_email_approval_stats(
     - Pending/approved/rejected counts
     - Counts by risk level
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_email_approval_service(db)
-    stats = service.get_approval_stats(tenant_id)
+    stats = service.get_approval_stats()
     
     return ResponseEnvelope(
         success=True,
@@ -202,7 +197,7 @@ async def get_email_approval_stats(
 async def approve_email(
     approval_id: str,
     request: ApprovalActionRequest = Body(...),
-    access: UnifiedAccess = Depends(require_access("admin.emails.approve")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[dict]:
     """
@@ -211,14 +206,11 @@ async def approve_email(
     This allows the email to be sent despite HIGH/CRITICAL risk classification.
     Use with caution - ensure email content is appropriate.
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_email_approval_service(db)
     success = service.approve_email(
         approval_id=approval_id,
-        tenant_id=tenant_id,
-        reviewed_by=user.id,
+        reviewed_by=admin_user.id if admin_user else "admin",
         review_notes=request.review_notes
     )
     
@@ -250,7 +242,7 @@ async def approve_email(
 async def reject_email(
     approval_id: str,
     request: ApprovalActionRequest = Body(...),
-    access: UnifiedAccess = Depends(require_access("admin.emails.approve")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[dict]:
     """
@@ -258,14 +250,11 @@ async def reject_email(
     
     This prevents the email from being sent.
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_email_approval_service(db)
     success = service.reject_email(
         approval_id=approval_id,
-        tenant_id=tenant_id,
-        reviewed_by=user.id,
+        reviewed_by=admin_user.id if admin_user else "admin",
         review_notes=request.review_notes
     )
     

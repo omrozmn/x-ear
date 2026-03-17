@@ -1,16 +1,16 @@
 """Admin Production Router - FastAPI"""
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.production_order import ProductionOrder
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.production import ProductionOrderRead
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/production", tags=["Admin Production"])
@@ -40,10 +40,11 @@ async def get_orders(
 ):
     """Get production orders"""
     try:
-        query = db.query(ProductionOrder)
-        if status:
-            query = query.filter(ProductionOrder.status == status)
-        orders = query.order_by(ProductionOrder.created_at.desc()).all()
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(ProductionOrder)
+            if status:
+                query = query.filter(ProductionOrder.status == status)
+            orders = query.order_by(ProductionOrder.created_at.desc()).all()
 
         return ResponseEnvelope(data=[ProductionOrderRead.model_validate(o).model_dump(by_alias=True) for o in orders])
     except Exception as e:
@@ -58,7 +59,8 @@ async def update_order_status(
 ):
     """Update order status"""
     try:
-        order = db.query(ProductionOrder).filter(ProductionOrder.id == order_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            order = db.query(ProductionOrder).filter(ProductionOrder.id == order_id).first()
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
         

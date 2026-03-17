@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:udt="urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns:ubltr="urn:oasis:names:specification:ubl:schema:xsd:TurkishCustomizationExtensionComponents" xmlns:qdt="urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+<ext:UBLExtensions>
+<ext:UBLExtension>
+<ext:ExtensionContent>
+
+</ext:ExtensionContent>
+</ext:UBLExtension>
+</ext:UBLExtensions>
+<cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+<cbc:CustomizationID>TR1.2</cbc:CustomizationID>
+<cbc:ProfileID>TEMELFATURA</cbc:ProfileID>
+<cbc:ID>TST2026137515843</cbc:ID>
+<cbc:CopyIndicator>false</cbc:CopyIndicator>
+<cbc:UUID>1686c428-aecd-4c1e-8a9a-834ebf93c2fc</cbc:UUID>
+<cbc:IssueDate>2026-03-08</cbc:IssueDate>
+<cbc:IssueTime>07:39:23</cbc:IssueTime>
+<cbc:InvoiceTypeCode>SGK</cbc:InvoiceTypeCode>
+<cbc:Note>Yalnız ÜçBinDörtYüzYirmiİkiTürkLirasıKırkBeşKuruş</cbc:Note>
+<cbc:Note>E-Fatura izni kapsamında elektronik ortamda iletilmiştir.</cbc:Note>
+<cbc:Note>% 10 KATILIM PAYLI VERİLEN TUTAR : 1.516,90-TL (%10 KDV DAHİLDİR)</cbc:Note>
+<cbc:Note>% 20 KATILIM PAYLI VERİLEN TUTAR : 2.497,55-TL (%10 KDV DAHİLDİR)</cbc:Note>
+<cbc:Note>TAHSİL EDİLEN KATILIM PAYI TOPLAM : 651,20-TL (%10 KDV DAHİLDİR)</cbc:Note>
+<cbc:DocumentCurrencyCode>TRY</cbc:DocumentCurrencyCode>
+<cbc:AccountingCost>SAGLIK_OPT</cbc:AccountingCost>
+<cbc:LineCountNumeric>3</cbc:LineCountNumeric>
+<cac:InvoicePeriod>
+<cbc:StartDate>2026-03-08</cbc:StartDate>
+<cbc:EndDate>2026-03-08</cbc:EndDate>
+</cac:InvoicePeriod>
+<cac:AdditionalDocumentReference>
+<cbc:ID>1686c428-aecd-4c1e-8a9a-834ebf93c2fc</cbc:ID>
+<cbc:IssueDate>2026-03-08</cbc:IssueDate>
+<cbc:DocumentTypeCode>CUST_INV_ID</cbc:DocumentTypeCode>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>1</cbc:ID>
+<cbc:IssueDate>2026-03-08</cbc:IssueDate>
+<cbc:DocumentTypeCode>DOSYA_NO</cbc:DocumentTypeCode>
+<cbc:DocumentType>1225324</cbc:DocumentType>
+<cbc:DocumentDescription>Evrak No</cbc:DocumentDescription>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>1</cbc:ID>
+<cbc:IssueDate>2026-03-08</cbc:IssueDate>
+<cbc:DocumentTypeCode>MUKELLEF_KODU</cbc:DocumentTypeCode>
+<cbc:DocumentType>11111111</cbc:DocumentType>
+<cbc:DocumentDescription>Optisyenlik Müessesesi Tesis Kodu</cbc:DocumentDescription>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>1</cbc:ID>
+<cbc:IssueDate>2026-03-08</cbc:IssueDate>
+<cbc:DocumentTypeCode>MUKELLEF_ADI</cbc:DocumentTypeCode>
+<cbc:DocumentType>TEST OPTIK</cbc:DocumentType>
+<cbc:DocumentDescription>Optisyenlik Müessesesi Adı</cbc:DocumentDescription>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>TST2026137515843</cbc:ID>
+<cbc:IssueDate>2026-03-08</cbc:IssueDate>
+<cbc:DocumentType>XSLT</cbc:DocumentType>
+</cac:AdditionalDocumentReference>
+<cac:AccountingSupplierParty>
+<cac:Party>
+<cbc:WebsiteURI/>
+<cac:PartyIdentification>
+<cbc:ID schemeID="VKN"></cbc:ID>
+</cac:PartyIdentification>
+<cac:PartyIdentification>
+<cbc:ID schemeID="TICARETSICILNO"/>
+</cac:PartyIdentification>
+<cac:PartyIdentification>
+<cbc:ID schemeID="MERSISNO"/>
+</cac:PartyIdentification>
+<cac:PartyName>
+<cbc:Name>X-EAR TEST SENDER</cbc:Name>
+</cac:PartyName>
+<cac:PostalAddress>
+<cbc:StreetName></cbc:StreetName>
+<cbc:CitySubdivisionName></cbc:CitySubdivisionName>
+<cbc:CityName></cbc:CityName>
+<cac:Country>
+<cbc:Name>Türkiye</cbc:Name>
+</cac:Country>
+</cac:PostalAddress>
+<cac:PartyTaxScheme>
+<cac:TaxScheme>
+<cbc:Name>ANKARA</cbc:Name>
+</cac:TaxScheme>
+</cac:PartyTaxScheme>
+<cac:Contact>
+<cbc:Telephone></cbc:Telephone>
+<cbc:ElectronicMail></cbc:ElectronicMail>
+</cac:Contact>
+</cac:Party>
+</cac:AccountingSupplierParty>
+<cac:AccountingCustomerParty>
+<cac:Party>
+<cbc:WebsiteURI/>
+<cac:PartyIdentification>
+<cbc:ID schemeID="VKN">7750409379</cbc:ID>
+</cac:PartyIdentification>
+<cac:PartyName>
+<cbc:Name>Sosyal Güvenlik Kurumu</cbc:Name>
+</cac:PartyName>
+<cac:PostalAddress>
+<cbc:Room/>
+<cbc:StreetName/>
+<cbc:BuildingName/>
+<cbc:BuildingNumber/>
+<cbc:CitySubdivisionName>Çankaya</cbc:CitySubdivisionName>
+<cbc:CityName>ANKARA</cbc:CityName>
+<cbc:PostalZone/>
+<cbc:Region/>
+<cbc:District/>
+<cac:Country>
+<cbc:Name>TÜRKİYE</cbc:Name>
+</cac:Country>
+</cac:PostalAddress>
+<cac:PartyTaxScheme>
+<cac:TaxScheme>
+<cbc:Name>ÇANKAYA VERGİ DAİRESİ (6257)</cbc:Name>
+<cbc:TaxTypeCode/>
+</cac:TaxScheme>
+</cac:PartyTaxScheme>
+<cac:Contact>
+<cbc:Telephone/>
+<cbc:Telefax/>
+<cbc:ElectronicMail/>
+</cac:Contact>
+</cac:Party>
+</cac:AccountingCustomerParty>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">364.95</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">3057.50</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">364.95</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:LegalMonetaryTotal>
+<cbc:LineExtensionAmount currencyID="TRY">3649.50</cbc:LineExtensionAmount>
+<cbc:TaxExclusiveAmount currencyID="TRY">3057.50</cbc:TaxExclusiveAmount>
+<cbc:TaxInclusiveAmount currencyID="TRY">3422.45</cbc:TaxInclusiveAmount>
+<cbc:AllowanceTotalAmount currencyID="TRY">592.00</cbc:AllowanceTotalAmount>
+<cbc:PayableAmount currencyID="TRY">3422.45</cbc:PayableAmount>
+</cac:LegalMonetaryTotal>
+<cac:InvoiceLine>
+<cbc:ID>1</cbc:ID>
+<cbc:InvoicedQuantity unitCode="NIU">1.0000</cbc:InvoicedQuantity>
+<cbc:LineExtensionAmount currencyID="TRY">1379.00</cbc:LineExtensionAmount>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">137.90</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">1379.00</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">137.90</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:Item>
+<cbc:Description/>
+<cbc:Name>% 10 KATILIM PAYLI VERİLEN</cbc:Name>
+<cac:BuyersItemIdentification>
+<cbc:ID/>
+</cac:BuyersItemIdentification>
+<cac:SellersItemIdentification>
+<cbc:ID>KPV10</cbc:ID>
+</cac:SellersItemIdentification>
+<cac:AdditionalItemIdentification>
+<cbc:ID/>
+</cac:AdditionalItemIdentification>
+</cac:Item>
+<cac:Price>
+<cbc:PriceAmount currencyID="TRY">1379.000000</cbc:PriceAmount>
+</cac:Price>
+</cac:InvoiceLine>
+<cac:InvoiceLine>
+<cbc:ID>2</cbc:ID>
+<cbc:InvoicedQuantity unitCode="NIU">1.0000</cbc:InvoicedQuantity>
+<cbc:LineExtensionAmount currencyID="TRY">2270.50</cbc:LineExtensionAmount>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">227.05</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">2270.50</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">227.05</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:Item>
+<cbc:Description/>
+<cbc:Name>% 20 KATILIM PAYLI VERİLEN</cbc:Name>
+<cac:BuyersItemIdentification>
+<cbc:ID/>
+</cac:BuyersItemIdentification>
+<cac:SellersItemIdentification>
+<cbc:ID>KPV20</cbc:ID>
+</cac:SellersItemIdentification>
+<cac:AdditionalItemIdentification>
+<cbc:ID/>
+</cac:AdditionalItemIdentification>
+</cac:Item>
+<cac:Price>
+<cbc:PriceAmount currencyID="TRY">2270.500000</cbc:PriceAmount>
+</cac:Price>
+</cac:InvoiceLine>
+<cac:InvoiceLine>
+<cbc:ID>3</cbc:ID>
+<cbc:InvoicedQuantity unitCode="NIU">1.0000</cbc:InvoicedQuantity>
+<cbc:LineExtensionAmount currencyID="TRY">0.00</cbc:LineExtensionAmount>
+<cac:AllowanceCharge>
+<cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+<cbc:AllowanceChargeReason/>
+<cbc:Amount currencyID="TRY">592.0000000000</cbc:Amount>
+</cac:AllowanceCharge>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">0.00</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:Item>
+<cbc:Description/>
+<cbc:Name>TAHSİL EDİLEN KATILIM PAYI</cbc:Name>
+<cac:BuyersItemIdentification>
+<cbc:ID/>
+</cac:BuyersItemIdentification>
+<cac:SellersItemIdentification>
+<cbc:ID>TAHSİLEKP</cbc:ID>
+</cac:SellersItemIdentification>
+<cac:AdditionalItemIdentification>
+<cbc:ID/>
+</cac:AdditionalItemIdentification>
+</cac:Item>
+<cac:Price>
+<cbc:PriceAmount currencyID="TRY">592.000000</cbc:PriceAmount>
+</cac:Price>
+</cac:InvoiceLine>
+</Invoice>

@@ -1,5 +1,5 @@
 import { test as base, Page, APIRequestContext } from '@playwright/test';
-import { login, setupAuthenticatedPage, AuthTokens } from '../web/helpers/test-utils';
+import { loginApi, AuthTokens } from '../../helpers/auth.helper';
 
 /**
  * Extended test fixtures
@@ -19,12 +19,26 @@ export type TestFixtures = {
 
 export const test = base.extend<TestFixtures & TestOptions>({
     // Fixture for a standard tenant user
-    tenantPage: async ({ page, request }, use) => {
+    tenantPage: async ({ browser, request }, use) => {
+        // Create new context with baseURL
+        const webUrl = process.env.WEB_BASE_URL || process.env.BASE_URL || 'http://127.0.0.1:8080';
+        const context = await browser.newContext({
+            baseURL: webUrl
+        });
+        const page = await context.newPage();
+        
         // 0. Enable Console Logging for Debugging
         page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
 
-        // 1. Login via API
-        const tokens = await login(request, process.env.TEST_USER_PHONE || '+905551234567', process.env.TEST_USER_OTP || 'password123');
+        // 1. Login via API - Use the dedicated tenant test user
+        console.log('[Fixture] Logging in as tenant test user (e2etest)...');
+        const tokens = await loginApi(request, 'e2etest', 'Test123!');
+        
+        console.log('[Fixture] Login successful:', {
+            userId: tokens.userId,
+            tenantId: tokens.tenantId,
+            role: tokens.role
+        });
 
         // 2. Real Backend Mode - No Mocks
         console.log('[Fixture] Running against REAL BACKEND (No Mocks)');
@@ -36,6 +50,10 @@ export const test = base.extend<TestFixtures & TestOptions>({
             localStorage.setItem('x-ear.auth.token@v1', data.accessToken);
             localStorage.setItem('auth_token', data.accessToken);
             if (data.refreshToken) localStorage.setItem('x-ear.auth.refresh@v1', data.refreshToken);
+            
+            // CRITICAL: Set current tenant ID (required for all operations)
+            localStorage.setItem('x-ear.auth.currentTenantId@v1', data.tenantId);
+            console.log('[Init] Set current tenant to:', data.tenantId);
 
             const authState = {
                 state: {
@@ -43,12 +61,15 @@ export const test = base.extend<TestFixtures & TestOptions>({
                         id: data.userId,
                         tenantId: data.tenantId,
                         role: data.role || 'TENANT_ADMIN',
-                        firstName: 'Test',
+                        firstName: 'Admin',
+                        lastName: 'User',
+                        email: 'admin@xear.com',
                         is_active: true,
                         isPhoneVerified: true,
                         is_phone_verified: true
                     },
                     token: data.accessToken,
+                    refreshToken: data.refreshToken,
                     isAuthenticated: true,
                     isInitialized: true,
                     isLoading: false,
@@ -66,26 +87,67 @@ export const test = base.extend<TestFixtures & TestOptions>({
         // 5. Wait for stable state
         try {
             await page.waitForURL((url) => !url.pathname.includes('login'), { timeout: 15000 });
+            console.log('[Fixture] Successfully navigated to:', page.url());
         } catch (e) {
             console.log('[Fixture] Error: Timed out waiting for dashboard. Current URL:', page.url());
         }
 
         await use(page);
+        await context.close();
     },
 
     // Fixture for an admin user
     adminPage: async ({ browser, request }, use) => {
-        const context = await browser.newContext();
+        const adminUrl = process.env.ADMIN_BASE_URL || 'http://127.0.0.1:8082';
+        const context = await browser.newContext({
+            baseURL: adminUrl
+        });
         const page = await context.newPage();
 
-        // Login as admin
-        const tokens = await login(request, process.env.ADMIN_USER_EMAIL || 'admin@example.com', process.env.ADMIN_USER_PASSWORD || 'Password123!');
-        // NOTE: Admin uses email/password. Login helper handles "identifier" which accepts email.
+        // Check if admin panel is running - if not, create a blank page
+        let isAdminRunning = false;
+        try {
+            await page.goto('/', { timeout: 3000 });
+            isAdminRunning = true;
+        } catch (error) {
+            console.log('[FIXTURE] Admin panel not running at', adminUrl, '- creating blank page');
+            // Don't throw error, just use blank page
+            await use(page);
+            await context.close();
+            return;
+        }
+
+        if (!isAdminRunning) {
+            await use(page);
+            await context.close();
+            return;
+        }
+
+        // Login as admin using the admin auth endpoint
+        const loginResponse = await request.post(`${process.env.API_BASE_URL || 'http://127.0.0.1:5003'}/api/admin/auth/login`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Idempotency-Key': `admin-fixture-${Date.now()}`
+            },
+            data: {
+                email: process.env.ADMIN_USER_EMAIL || 'admin@x-ear.com',
+                password: process.env.ADMIN_USER_PASSWORD || 'admin123'
+            }
+        });
+        if (!loginResponse.ok()) {
+            throw new Error(`Admin fixture login failed with ${loginResponse.status()}`);
+        }
+        const loginJson = await loginResponse.json();
+        const loginData = loginJson?.data || {};
+        const tokens = {
+            user: loginData.user || { email: 'admin@x-ear.com', role: 'super_admin' },
+            accessToken: loginData.accessToken || loginData.token,
+            refreshToken: loginData.refreshToken || loginData.refresh_token || ''
+        };
 
         // If admin is on a different port (8082), we should probably respect that in setupAuthenticatedPage or manually do it.
         // For now, let's assume we can set localStorage on the admin origin.
-        const adminUrl = process.env.ADMIN_BASE_URL || 'http://localhost:8082';
-        await page.goto(adminUrl);
+        await page.goto('/');
 
         await page.evaluate((data) => {
             // Set Zustand persistent storage for AuthStore
@@ -117,7 +179,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
     },
 
     // Fixture for affiliate
-    affiliatePage: async ({ browser, request }, use) => {
+    affiliatePage: async ({ browser, request: _request }, use) => {
         // TODO: Implement affiliate login flow
         const context = await browser.newContext();
         const page = await context.newPage();
@@ -127,8 +189,34 @@ export const test = base.extend<TestFixtures & TestOptions>({
 
     // Shared auth tokens if needed directly
     authTokens: async ({ request }, use) => {
-        const tokens = await login(request);
+        const tokens = await loginApi(request, 'e2etest', 'Test123!');
         await use(tokens);
+    },
+
+    // API Context with authentication
+    apiContext: async ({ playwright }, use) => {
+        // First create a temporary context for login
+        const tempContext = await playwright.request.newContext({
+            baseURL: process.env.API_BASE_URL || 'http://127.0.0.1:5003',
+        });
+        
+        // Login as tenant admin
+        console.log('[API Context] Logging in as tenant admin...');
+        const tokens = await loginApi(tempContext, 'e2etest', 'Test123!');
+        await tempContext.dispose();
+        
+        console.log('[API Context] Creating authenticated context with tenant:', tokens.tenantId);
+        
+        // Now create the authenticated context
+        const context = await playwright.request.newContext({
+            baseURL: process.env.API_BASE_URL || 'http://127.0.0.1:5003',
+            extraHTTPHeaders: {
+                'Authorization': `Bearer ${tokens.accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        await use(context);
+        await context.dispose();
     },
 });
 

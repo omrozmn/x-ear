@@ -4,12 +4,49 @@ import SMTPConfig from '../SMTPConfig';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SmtpHooks from '@/api/generated/smtp-configuration/smtp-configuration';
 
+type GetSMTPConfigResult = ReturnType<typeof SmtpHooks.useGetSMTPConfig>;
+type CreateOrUpdateSMTPConfigResult = ReturnType<typeof SmtpHooks.useCreateOrUpdateSMTPConfig>;
+type SendTestEmailResult = ReturnType<typeof SmtpHooks.useSendTestEmail>;
+
+function createGetSMTPConfigResult(overrides: Partial<GetSMTPConfigResult>): GetSMTPConfigResult {
+  return {
+    data: undefined,
+    error: null,
+    isLoading: false,
+    refetch: vi.fn(),
+    ...overrides,
+  } as unknown as GetSMTPConfigResult;
+}
+
+function createCreateOrUpdateSMTPConfigResult(
+  overrides: Partial<CreateOrUpdateSMTPConfigResult>
+): CreateOrUpdateSMTPConfigResult {
+  return {
+    mutateAsync: vi.fn(),
+    isPending: false,
+    ...overrides,
+  } as unknown as CreateOrUpdateSMTPConfigResult;
+}
+
+function createSendTestEmailResult(overrides: Partial<SendTestEmailResult>): SendTestEmailResult {
+  return {
+    mutateAsync: vi.fn(),
+    isPending: false,
+    ...overrides,
+  } as unknown as SendTestEmailResult;
+}
+
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
   default: {
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+// Mock EmailIntegrationNav to avoid TanStack Router dependency
+vi.mock('@/components/integrations/EmailIntegrationNav', () => ({
+  EmailIntegrationNav: () => <div data-testid="email-nav" />,
 }));
 
 // Mock heroicons
@@ -59,21 +96,9 @@ describe('SMTPConfig Component', () => {
   };
 
   it('renders loading state initially', () => {
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({ isLoading: true }));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
     // Check for spinner SVG element instead of role
@@ -81,21 +106,9 @@ describe('SMTPConfig Component', () => {
   });
 
   it('renders form with existing config data', async () => {
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: mockConfig,
-      isLoading: false,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({ data: mockConfig }));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
 
@@ -109,21 +122,9 @@ describe('SMTPConfig Component', () => {
   });
 
   it('validates form and shows errors for invalid input', async () => {
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
 
@@ -142,21 +143,9 @@ describe('SMTPConfig Component', () => {
     const mutateAsync = vi.fn().mockResolvedValue({ data: mockConfig });
     const refetch = vi.fn();
 
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      refetch,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync,
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({ refetch }));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({ mutateAsync }));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
 
@@ -206,21 +195,9 @@ describe('SMTPConfig Component', () => {
       },
     });
 
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync,
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({ mutateAsync }));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
 
@@ -244,21 +221,9 @@ describe('SMTPConfig Component', () => {
     const sendTestMutateAsync = vi.fn().mockResolvedValue({ data: { success: true } });
     const toast = await import('react-hot-toast');
 
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: mockConfig,
-      isLoading: false,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: sendTestMutateAsync,
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({ data: mockConfig }));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({ mutateAsync: sendTestMutateAsync }));
 
     renderComponent();
 
@@ -289,21 +254,9 @@ describe('SMTPConfig Component', () => {
   it('validates test email address', async () => {
     const toast = await import('react-hot-toast');
 
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: mockConfig,
-      isLoading: false,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({ data: mockConfig }));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
 
@@ -327,21 +280,9 @@ describe('SMTPConfig Component', () => {
   });
 
   it('shows port warning for mismatched SSL/TLS settings', async () => {
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
 
@@ -354,21 +295,9 @@ describe('SMTPConfig Component', () => {
   });
 
   it('resets form to original values', async () => {
-    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue({
-      data: mockConfig,
-      isLoading: false,
-      refetch: vi.fn(),
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
-
-    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-    } as any);
+    vi.spyOn(SmtpHooks, 'useGetSMTPConfig').mockReturnValue(createGetSMTPConfigResult({ data: mockConfig }));
+    vi.spyOn(SmtpHooks, 'useCreateOrUpdateSMTPConfig').mockReturnValue(createCreateOrUpdateSMTPConfigResult({}));
+    vi.spyOn(SmtpHooks, 'useSendTestEmail').mockReturnValue(createSendTestEmailResult({}));
 
     renderComponent();
 

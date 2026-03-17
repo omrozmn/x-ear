@@ -3,7 +3,7 @@ FastAPI Addons Router - Migrated from Flask routes/addons.py
 Handles subscription addons
 """
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional, List
+from typing import List
 import logging
 
 from sqlalchemy.orm import Session
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.base import ResponseEnvelope
 from schemas.addons import AddonRead, AddonCreate, AddonUpdate
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 
@@ -70,12 +70,18 @@ def create_addon(
         if not access.is_super_admin:
             raise HTTPException(status_code=403, detail="Super admin access required")
         
+        # Generate slug from name if not provided
+        import re
+        slug = request_data.slug if hasattr(request_data, 'slug') and request_data.slug else request_data.name.lower()
+        slug = re.sub(r'[^a-z0-9]+', '-', slug)
+        slug = re.sub(r'[-\s]+', '-', slug).strip('-')
+        
         addon = AddOn(
             name=request_data.name,
+            slug=slug,
             description=request_data.description,
             price=request_data.price,
             addon_type=request_data.addon_type,
-            features=request_data.features or [],
             is_active=request_data.is_active
         )
         
@@ -117,8 +123,7 @@ def update_addon(
             addon.description = request_data.description
         if request_data.price is not None:
             addon.price = request_data.price
-        if request_data.features is not None:
-            addon.features = request_data.features
+        # features field doesn't exist in AddonUpdate schema - skip it
         if request_data.is_active is not None:
             addon.is_active = request_data.is_active
         

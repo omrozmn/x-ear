@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/ocr.py
+# hypothesis_version: 6.151.6
+
+[0.0, 125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000, 'autoCrop', 'bluePointsFound', 'completed', 'databaseConnected', 'detectionDetails', 'documentType', 'errorMessage', 'failed', 'filePath', 'hfNerAvailable', 'imagePath', 'imagePath1', 'imagePath2', 'leftEar', 'medical', 'ocrAvailable', 'ocrText', 'patientInfo', 'patientName', 'pending', 'processing', 'redPointsFound', 'rightEar', 'spacyAvailable', 'tenantId']

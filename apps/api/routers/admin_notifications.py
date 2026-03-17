@@ -6,15 +6,16 @@ from typing import Optional, List
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.notification import Notification
 from models.notification_template import NotificationTemplate
 from models.tenant import Tenant
 from models.user import User
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
+from core.dependencies import get_current_admin_user
 from schemas.base import ResponseEnvelope
-from schemas.notifications import NotificationRead, NotificationTemplateCreate
+from schemas.notifications import NotificationRead
 from schemas.notification_templates import EmailTemplateRead
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/notifications", tags=["Admin Notifications"])
@@ -30,7 +31,8 @@ class NotificationSend(BaseModel):
     channel: Optional[str] = "push"
 
 class TemplateCreate(BaseModel):
-    name: Optional[str] = None
+    tenant_id: str  # Required for admin
+    name: str  # Required field
     description: Optional[str] = None
     titleTemplate: Optional[str] = None
     bodyTemplate: Optional[str] = None
@@ -65,7 +67,7 @@ async def init_db(
 
 @router.get("", operation_id="listAdminNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 async def get_notifications(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     user_id: Optional[str] = None,
     type_filter: Optional[str] = Query(None, alias="type"),
@@ -74,14 +76,15 @@ async def get_notifications(
 ):
     """Get list of notifications"""
     try:
-        query = db.query(Notification)
-        if user_id:
-            query = query.filter(Notification.user_id == user_id)
-        if type_filter:
-            query = query.filter(Notification.notification_type == type_filter)
-        
-        total = query.count()
-        notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Notification)
+            if user_id:
+                query = query.filter(Notification.user_id == user_id)
+            if type_filter:
+                query = query.filter(Notification.notification_type == type_filter)
+            
+            total = query.count()
+            notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(
             data=[NotificationRead.model_validate(n) for n in notifications],
@@ -99,16 +102,17 @@ async def send_notification(
 ):
     """Send a notification to tenants - supports push, email, or both channels"""
     try:
-        if not data.title or not data.message:
-            raise HTTPException(status_code=400, detail="Title and message are required")
+        with unbound_session(reason="admin-cross-tenant"):
+            if not data.title or not data.message:
+                raise HTTPException(status_code=400, detail="Title and message are required")
         
-        # For email channel, send via EmailService (Flask parity)
-        if data.channel in ['email', 'both']:
-            from services.email_service import email_service
+            # For email channel, send via EmailService (Flask parity)
+            if data.channel in ['email', 'both']:
+                from services.email_service import email_service
             
-            # Determine recipients
-            if data.targetType == 'tenant' and data.targetId:
-                tenant = db.get(Tenant, data.targetId)
+                # Determine recipients
+                if data.targetType == 'tenant' and data.targetId:
+                    tenant = db.get(Tenant, data.targetId)
                 if not tenant:
                     raise HTTPException(status_code=404, detail="Tenant not found")
                 # Get tenant admins/owners
@@ -176,7 +180,7 @@ async def send_notification(
 
 @router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=ResponseEnvelope[List[EmailTemplateRead]])
 async def get_templates(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(20, ge=1, le=100),
     category: Optional[str] = Query(None, description="Filter by template category"),
     channel: Optional[str] = Query(None, description="Filter by channel (push, email)"),
@@ -185,16 +189,17 @@ async def get_templates(
 ):
     """Get notification templates - Flask parity with category/channel filters"""
     try:
-        query = db.query(NotificationTemplate)
-        
-        # Apply filters (Flask parity)
-        if category:
-            query = query.filter(NotificationTemplate.template_category == category)
-        if channel:
-            query = query.filter(NotificationTemplate.channel == channel)
-        
-        total = query.count()
-        templates = query.order_by(NotificationTemplate.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(NotificationTemplate)
+            
+            # Apply filters (Flask parity)
+            if category:
+                query = query.filter(NotificationTemplate.template_category == category)
+            if channel:
+                query = query.filter(NotificationTemplate.channel == channel)
+            
+            total = query.count()
+            templates = query.order_by(NotificationTemplate.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(
             data=[EmailTemplateRead.model_validate(t) for t in templates],
@@ -208,17 +213,21 @@ async def get_templates(
 async def create_template(
     data: TemplateCreate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
+    admin_user=Depends(get_current_admin_user)
 ):
     """Create a notification template"""
     try:
+        # Convert variables list to comma-separated string
+        variables_str = ','.join(data.variables) if data.variables else ''
+        
         template = NotificationTemplate(
+            tenant_id=data.tenant_id,  # Get from request data
             name=data.name,
             description=data.description,
             title_template=data.titleTemplate,
             body_template=data.bodyTemplate,
             channel=data.channel,
-            variables=data.variables,
+            variables=variables_str,
             trigger_event=data.triggerEvent,
             template_category=data.templateCategory,
             is_active=data.isActive
@@ -256,7 +265,8 @@ async def update_template(
 ):
     """Update a notification template"""
     try:
-        template = db.get(NotificationTemplate, template_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            template = db.get(NotificationTemplate, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -310,7 +320,8 @@ async def delete_template(
 ):
     """Delete a notification template"""
     try:
-        template = db.get(NotificationTemplate, template_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            template = db.get(NotificationTemplate, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         

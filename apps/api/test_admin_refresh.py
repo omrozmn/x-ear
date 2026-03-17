@@ -20,7 +20,7 @@ with app.app_context():
             token = login_data['data']['token']
             refresh_token = login_data['data'].get('refreshToken')
             
-            print(f'✅ Login successful!')
+            print('✅ Login successful!')
             print(f'Access Token: {token[:50]}...')
             print(f'Refresh Token: {refresh_token[:50] if refresh_token else "NOT PROVIDED"}...')
             
@@ -29,7 +29,7 @@ with app.app_context():
                 sys.exit(1)
             
             # 2. Test refresh endpoint
-            print(f'\n2. Testing refresh endpoint...')
+            print('\n2. Testing refresh endpoint...')
             refresh_response = client.post('/api/auth/refresh',
                 headers={'Authorization': f'Bearer {refresh_token}'}
             )
@@ -40,11 +40,11 @@ with app.app_context():
             
             if refresh_response.status_code == 200 and refresh_data.get('success'):
                 new_token = refresh_data.get('access_token')
-                print(f'✅ Token refresh successful!')
+                print('✅ Token refresh successful!')
                 print(f'New Access Token: {new_token[:50]}...')
                 
                 # 3. Test /api/users/me with new token
-                print(f'\n3. Testing /api/users/me with new token...')
+                print('\n3. Testing /api/users/me with new token...')
                 me_response = client.get('/api/users/me',
                     headers={'Authorization': f'Bearer {new_token}'}
                 )
@@ -52,11 +52,11 @@ with app.app_context():
                 me_data = me_response.get_json()
                 
                 if me_response.status_code == 200:
-                    print(f'✅ /api/users/me works with refreshed token!')
+                    print('✅ /api/users/me works with refreshed token!')
                     print(f'User data: {json.dumps(me_data, indent=2)}')
                 else:
-                    print(f'❌ /api/users/me failed with refreshed token!')
+                    print('❌ /api/users/me failed with refreshed token!')
             else:
-                print(f'❌ Token refresh failed!')
+                print('❌ Token refresh failed!')
         else:
-            print(f'❌ Login failed!')
+            print('❌ Login failed!')

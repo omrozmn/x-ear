@@ -1,16 +1,16 @@
 
 import { test, expect } from '../fixtures/fixtures';
 import {
+    AuthTokens,
     createTestParty,
     deleteTestParty,
     login,
-    setupAuthenticatedPage,
-    waitForApiCall
-} from './helpers/test-utils';
+    setupAuthenticatedPage
+} from '../../helpers/auth.helper';
 
 test.describe('Party Notes Module', () => {
     let partyId: string;
-    let authTokens: any;
+    let authTokens: AuthTokens;
 
     test.beforeAll(async ({ request }) => {
         // Authenticate
@@ -73,6 +73,6 @@ test.describe('Party Notes Module', () => {
 
         // 6. Verify deletion
         await expect(page.getByText('Not başarıyla silindi')).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText(noteContent)).not.toBeVisible();
+        await expect(page.getByText(noteContent)).toBeHidden();
     });
 });

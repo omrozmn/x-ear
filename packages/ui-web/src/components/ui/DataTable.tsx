@@ -1,10 +1,12 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { DataCard } from './DataCard';
 
 export interface Column<T = any> {
   key: string;
   title: string | React.ReactNode;
   sortable?: boolean;
+  sortAccessor?: (record: T) => unknown;
   filterable?: boolean;
   render?: (value: any, record: T, index: number) => React.ReactNode;
   width?: string | number;
@@ -60,9 +62,10 @@ export interface DataTableProps<T = any> {
   hoverable?: boolean;
   className?: string;
   onRowClick?: (record: T) => void;
+  responsive?: boolean;
 }
 
-export const DataTable = <T extends Record<string, any>>({
+export const DataTable = <T extends object>({
   data,
   columns,
   loading = false,
@@ -82,17 +85,44 @@ export const DataTable = <T extends Record<string, any>>({
   hoverable = true,
   className = '',
   onRowClick,
+  responsive = true,
 }: DataTableProps<T>) => {
   const [searchValue, setSearchValue] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [isMobileInternal, setIsMobileInternal] = useState(false);
+  const getRecordValue = useCallback((record: T, key: string): unknown => {
+    return (record as Record<string, unknown>)[key];
+  }, []);
+
+  const isActionColumn = useCallback((column: Column<T>) => /^_actions?$/i.test(column.key), []);
+
+  const isColumnSortable = useCallback((column: Column<T>) => {
+    if (column.sortable !== undefined) return column.sortable;
+    return !isActionColumn(column);
+  }, [isActionColumn]);
+
+  const sortingEnabled = sortable || columns.some((column) => isColumnSortable(column));
+
+  useEffect(() => {
+    if (!responsive) return;
+
+    const checkMobile = () => {
+      setIsMobileInternal(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [responsive]);
 
   const getRowKey = useCallback((record: T, index: number): string | number => {
     if (typeof rowKey === 'function') {
       return rowKey(record);
     }
-    return record[rowKey] || index;
-  }, [rowKey]);
+    const keyValue = getRecordValue(record, rowKey);
+    return typeof keyValue === 'string' || typeof keyValue === 'number' ? keyValue : index;
+  }, [getRecordValue, rowKey]);
 
   const selectedRecords = useMemo(() => {
     if (!rowSelection) return [];
@@ -101,8 +131,80 @@ export const DataTable = <T extends Record<string, any>>({
     );
   }, [data, rowSelection, getRowKey]);
 
+  const extractSortableText = useCallback((node: React.ReactNode): string => {
+    if (node == null || typeof node === 'boolean') return '';
+    if (typeof node === 'string' || typeof node === 'number') return String(node);
+    if (Array.isArray(node)) return node.map(extractSortableText).join(' ');
+    if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
+      return extractSortableText(node.props.children);
+    }
+    return '';
+  }, []);
+
+  const getColumnByKey = useCallback((key: string) => columns.find((column) => column.key === key), [columns]);
+
+  const getSortValue = useCallback((record: T, column: Column<T>, index: number) => {
+    if (column.sortAccessor) {
+      return column.sortAccessor(record);
+    }
+
+    const rawValue = getRecordValue(record, column.key);
+    if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
+      return rawValue;
+    }
+
+    if (column.render) {
+      return extractSortableText(column.render(rawValue, record, index));
+    }
+
+    return rawValue;
+  }, [extractSortableText, getRecordValue]);
+
+  const normalizeSortValue = useCallback((value: unknown) => {
+    if (value == null) return '';
+    if (value instanceof Date) return value.getTime();
+    if (typeof value === 'number' || typeof value === 'boolean') return value;
+
+    const stringValue = String(value).trim();
+    if (!stringValue) return '';
+
+    const numericValue = Number(stringValue.replace(/\s/g, '').replace(',', '.'));
+    if (!Number.isNaN(numericValue) && /^-?\d+[.,]?\d*$/.test(stringValue.replace(/\s/g, ''))) {
+      return numericValue;
+    }
+
+    const timestamp = Date.parse(stringValue);
+    if (!Number.isNaN(timestamp) && /\d{2,4}/.test(stringValue)) {
+      return timestamp;
+    }
+
+    return stringValue.toLocaleLowerCase('tr-TR');
+  }, []);
+
+  const sortedData = useMemo(() => {
+    if (!sortingEnabled || !sortConfig) return data;
+
+    const column = getColumnByKey(sortConfig.key);
+    if (!column || !isColumnSortable(column)) return data;
+
+    return [...data].sort((leftRecord, rightRecord) => {
+      const leftValue = normalizeSortValue(getSortValue(leftRecord, column, data.indexOf(leftRecord)));
+      const rightValue = normalizeSortValue(getSortValue(rightRecord, column, data.indexOf(rightRecord)));
+
+      if (leftValue === rightValue) return 0;
+      if (leftValue === '') return 1;
+      if (rightValue === '') return -1;
+
+      const comparison = leftValue < rightValue ? -1 : 1;
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+  }, [data, getColumnByKey, getSortValue, isColumnSortable, normalizeSortValue, sortConfig, sortingEnabled]);
+
   const handleSort = (key: string) => {
-    if (!sortable) return;
+    if (!sortingEnabled) return;
+
+    const column = getColumnByKey(key);
+    if (!column || !isColumnSortable(column)) return;
 
     let direction: 'asc' | 'desc' | null = 'asc';
 
@@ -166,14 +268,14 @@ export const DataTable = <T extends Record<string, any>>({
 
   const isIndeterminate = rowSelection && rowSelection.selectedRowKeys.length > 0 && !isAllSelected;
 
-  const renderCell = (column: Column<T>, record: T, index: number) => {
-    const value = record[column.key];
+  const renderCell = (column: Column<T>, record: T, index: number): React.ReactNode => {
+    const value = getRecordValue(record, column.key);
 
     if (column.render) {
       return column.render(value, record, index);
     }
 
-    return value;
+    return value as React.ReactNode;
   };
 
   const renderActions = (record: T) => {
@@ -187,7 +289,7 @@ export const DataTable = <T extends Record<string, any>>({
             onClick={(e) => { e.stopPropagation(); action.onClick(record) }}
             disabled={action.disabled?.(record)}
             className={`
-              inline-flex items-center px-2 py-1 text-sm font-medium rounded-md
+              inline-flex items-center px-2 py-1 text-sm font-medium rounded-xl
               ${action.variant === 'danger'
                 ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30'
                 : action.variant === 'primary'
@@ -256,7 +358,7 @@ export const DataTable = <T extends Record<string, any>>({
             <select
               value={pageSize}
               onChange={(e) => pagination.onChange(1, Number(e.target.value))}
-              className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {pageSizeOptions.map(size => (
                 <option key={size} value={size}>{size} / sayfa</option>
@@ -302,7 +404,7 @@ export const DataTable = <T extends Record<string, any>>({
                   key={page}
                   onClick={() => pagination.onChange(page, pageSize)}
                   className={`
-                    px-3 py-1 text-sm rounded-md transition-colors
+                    px-3 py-1 text-sm rounded-xl transition-colors
                     ${page === current
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -340,7 +442,7 @@ export const DataTable = <T extends Record<string, any>>({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 shadow-sm rounded-lg ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 shadow-sm rounded-2xl ${className}`}>
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
@@ -353,7 +455,7 @@ export const DataTable = <T extends Record<string, any>>({
                   placeholder="Ara..."
                   value={searchValue}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             )}
@@ -369,7 +471,7 @@ export const DataTable = <T extends Record<string, any>>({
                       key={action.key}
                       onClick={() => action.onClick(selectedRecords)}
                       className={`
-                        inline-flex items-center px-3 py-1 text-sm font-medium rounded-md
+                        inline-flex items-center px-3 py-1 text-sm font-medium rounded-xl
                         ${action.variant === 'danger'
                           ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30'
                           : action.variant === 'primary'
@@ -389,137 +491,158 @@ export const DataTable = <T extends Record<string, any>>({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className={`min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses[size]}`}>
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              {rowSelection && (
-                <th className={`${cellPadding[size]} text-left`}>
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    ref={(input) => {
-                      if (input) input.indeterminate = !!isIndeterminate;
-                    }}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </th>
-              )}
-
-              {columns.map(column => (
-                <th
-                  key={column.key}
-                  className={`
-                    ${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider
-                    ${column.sortable && sortable ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600' : ''}
-                    ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
-                  `}
-                  style={{ width: column.width }}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>{column.title}</span>
-                    {column.sortable && sortable && (
-                      <div className="flex flex-col">
-                        <ChevronUp
-                          className={`w-3 h-3 ${sortConfig?.key === column.key && sortConfig.direction === 'asc'
-                              ? 'text-blue-600'
-                              : 'text-gray-400'
-                            }`}
-                        />
-                        <ChevronDown
-                          className={`w-3 h-3 -mt-1 ${sortConfig?.key === column.key && sortConfig.direction === 'desc'
-                              ? 'text-blue-600'
-                              : 'text-gray-400'
-                            }`}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </th>
-              ))}
-
-              {actions && actions.length > 0 && (
-                <th className={`${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider`}>
-                  İşlemler
-                </th>
-              )}
-            </tr>
-          </thead>
-
-          <tbody className={`bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 ${striped ? 'divide-y-0' : ''}`}>
-            {loading ? (
+      {/* Table / Card List */}
+      {isMobileInternal ? (
+        <div className="p-4">
+          {sortedData.length === 0 ? (
+            <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+              {emptyText}
+            </div>
+          ) : (
+            sortedData.map((record, index) => (
+              <DataCard
+                key={getRowKey(record, index)}
+                record={record}
+                columns={columns}
+                onRowClick={onRowClick}
+                renderActions={actions && actions.length > 0 ? renderActions : undefined}
+                rowKey={getRowKey(record, index)}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className={`min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses[size]}`}>
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center">
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="ml-2 text-gray-600 dark:text-gray-400">Yükleniyor...</span>
-                  </div>
-                </td>
-              </tr>
-            ) : data.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  {emptyText}
-                </td>
-              </tr>
-            ) : (
-              data.map((record, index) => {
-                const key = getRowKey(record, index);
-                const isSelected = rowSelection?.selectedRowKeys.includes(key);
-                const checkboxProps = rowSelection?.getCheckboxProps?.(record) || {};
+                {rowSelection && (
+                  <th className={`${cellPadding[size]} text-left`}>
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(input) => {
+                        if (input) input.indeterminate = !!isIndeterminate;
+                      }}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </th>
+                )}
 
-                return (
-                  <tr
-                    key={key}
+                {columns.map(column => (
+                  <th
+                    key={column.key}
                     className={`
-                      ${striped && index % 2 === 1 ? 'bg-gray-50 dark:bg-gray-700/50' : ''}
-                      ${hoverable ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}
-                      ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
-                      ${onRowClick ? 'cursor-pointer' : ''}
+                      ${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider
+                      ${isColumnSortable(column) && sortingEnabled ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600' : ''}
+                      ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                     `}
-                    onClick={() => onRowClick?.(record)}
+                    style={{ width: column.width }}
+                    onClick={() => isColumnSortable(column) && handleSort(column.key)}
                   >
-                    {rowSelection && (
-                      <td className={cellPadding[size]}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          disabled={checkboxProps.disabled}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleSelectRow(record, e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-                        />
-                      </td>
-                    )}
+                    <div className="flex items-center space-x-1">
+                      <span>{column.title}</span>
+                      {isColumnSortable(column) && sortingEnabled && (
+                        <div className="flex flex-col">
+                          <ChevronUp
+                            className={`w-3 h-3 ${sortConfig?.key === column.key && sortConfig.direction === 'asc'
+                              ? 'text-blue-600'
+                              : 'text-gray-400'
+                              }`}
+                          />
+                          <ChevronDown
+                            className={`w-3 h-3 -mt-1 ${sortConfig?.key === column.key && sortConfig.direction === 'desc'
+                              ? 'text-blue-600'
+                              : 'text-gray-400'
+                              }`}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </th>
+                ))}
 
-                    {columns.map(column => (
-                      <td
-                        key={column.key}
-                        className={`
-                          ${cellPadding[size]} text-gray-900 dark:text-gray-100
-                          ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
-                          ${bordered ? 'border-r border-gray-200 dark:border-gray-700 last:border-r-0' : ''}
-                        `}
-                      >
-                        {renderCell(column, record, index)}
-                      </td>
-                    ))}
+                {actions && actions.length > 0 && (
+                  <th className={`${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider`}>
+                    İşlemler
+                  </th>
+                )}
+              </tr>
+            </thead>
 
-                    {actions && actions.length > 0 && (
-                      <td className={cellPadding[size]}>
-                        {renderActions(record)}
-                      </td>
-                    )}
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+            <tbody className={`bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 ${striped ? 'divide-y-0' : ''}`}>
+              {loading ? (
+                <tr>
+                  <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 text-gray-600 dark:text-gray-400">Yükleniyor...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : sortedData.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    {emptyText}
+                  </td>
+                </tr>
+              ) : (
+                sortedData.map((record, index) => {
+                  const key = getRowKey(record, index);
+                  const isSelected = rowSelection?.selectedRowKeys.includes(key);
+                  const checkboxProps = rowSelection?.getCheckboxProps?.(record) || {};
+
+                  return (
+                    <tr
+                      key={key}
+                      className={`
+                        ${striped && index % 2 === 1 ? 'bg-gray-50 dark:bg-gray-700/50' : ''}
+                        ${hoverable ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}
+                        ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                        ${onRowClick ? 'cursor-pointer' : ''}
+                      `}
+                      onClick={() => onRowClick?.(record)}
+                    >
+                      {rowSelection && (
+                        <td className={cellPadding[size]}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            disabled={checkboxProps.disabled}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => handleSelectRow(record, e.target.checked)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                          />
+                        </td>
+                      )}
+
+                      {columns.map(column => (
+                        <td
+                          key={column.key}
+                          className={`
+                            ${cellPadding[size]} text-gray-900 dark:text-gray-100
+                            ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
+                            ${bordered ? 'border-r border-gray-200 dark:border-gray-700 last:border-r-0' : ''}
+                          `}
+                        >
+                          {renderCell(column, record, index)}
+                        </td>
+                      ))}
+
+                      {actions && actions.length > 0 && (
+                        <td className={cellPadding[size]}>
+                          {renderActions(record)}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination */}
       {renderPagination()}

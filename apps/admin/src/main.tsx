@@ -5,14 +5,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
 import './index.css'
+import './styles/admin-mobile.css'
 
 // Create a new router instance
-const router = createRouter({ routeTree })
+const router = createRouter({
+    routeTree,
+    basepath: import.meta.env.BASE_URL.replace(/\/$/, '') || undefined,
+})
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -29,14 +34,16 @@ if (!rootElement.innerHTML) {
     const root = ReactDOM.createRoot(rootElement)
     root.render(
         <StrictMode>
-            <HelmetProvider>
-                <QueryClientProvider client={queryClient}>
-                    <AuthProvider>
-                        <RouterProvider router={router} />
-                        <Toaster position="top-right" />
-                    </AuthProvider>
-                </QueryClientProvider>
-            </HelmetProvider>
+            <ErrorBoundary>
+                <HelmetProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <AuthProvider>
+                            <RouterProvider router={router} />
+                            <Toaster position="top-right" />
+                        </AuthProvider>
+                    </QueryClientProvider>
+                </HelmetProvider>
+            </ErrorBoundary>
         </StrictMode>,
     )
 }

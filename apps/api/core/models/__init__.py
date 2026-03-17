@@ -3,6 +3,7 @@ from .base import db, Base, BaseModel, JSONMixin, gen_sale_id, gen_id, now_utc
 
 # Core models
 from .tenant import Tenant
+from .country import Country
 from .user import User, ActivityLog
 from .role import Role
 from .permission import Permission
@@ -27,6 +28,7 @@ from .stock_movement import StockMovement
 from .sales import Sale, DeviceAssignment, PaymentPlan, PaymentInstallment
 from .invoice import Invoice
 from .purchase_invoice import PurchaseInvoice
+from .purchase import Purchase
 from .promissory_note import PromissoryNote
 
 # Subscriptions & Plans
@@ -37,6 +39,7 @@ from .subscription import Subscription
 # Communication
 from .communication import Communication
 from .campaign import Campaign, SmsLog
+from .whatsapp import WhatsAppMessage
 from .notification import Notification
 from .notification_template import NotificationTemplate
 
@@ -80,3 +83,7 @@ from .enums import *
 # Email System
 from .email import TenantSMTPConfig, SMTPEmailLog, EmailTemplate
 from .email_deliverability import EmailBounce, EmailUnsubscribe, DMARCReport, EmailComplaint, DeliverabilityMetrics
+
+# Bulk Import
+from .bulk_import import BulkImportBatch, BulkImportRecord
+from .post import Post

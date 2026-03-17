@@ -38,7 +38,7 @@ export function ProductServiceCodeInput({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-foreground">
         Mal/Hizmet Kodu
       </label>
       
@@ -64,18 +64,18 @@ export function ProductServiceCodeInput({
 
       {/* Sık Kullanılan Kodlar */}
       {showCommonCodes && (
-        <div className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="bg-card border border-border rounded-2xl shadow-lg max-h-60 overflow-y-auto">
           {commonServiceCodes.map((item) => (
             <Button
               key={item.code}
               type="button"
               variant="ghost"
               onClick={() => handleCodeSelect(item.code)}
-              className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
-              <div className="font-mono text-sm text-blue-600 mb-1">
+              className="w-full px-4 py-3 text-left hover:bg-primary/10 border-b border-border last:border-b-0">
+              <div className="font-mono text-sm text-primary mb-1">
                 {item.code}
               </div>
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-foreground">
                 {item.description}
               </div>
             </Button>
@@ -83,7 +83,7 @@ export function ProductServiceCodeInput({
         </div>
       )}
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-muted-foreground">
         GİB tarafından belirlenen mal/hizmet kodu (opsiyonel)
       </p>
     </div>

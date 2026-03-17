@@ -1,14 +1,13 @@
 import sys
 import os
 import pytest
-import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 # Add apps/backend to sys.path
 sys.path.append(os.path.join(os.getcwd(), "apps/backend"))
 
-from ai.agents.intent_refiner import IntentRefiner, IntentRefinerResult, RefinerStatus
-from ai.schemas.llm_outputs import IntentType, ConfidenceLevel
+from ai.agents.intent_refiner import IntentRefiner, RefinerStatus
+from ai.schemas.llm_outputs import IntentType
 from ai.config import AIConfig, AIPhase
 from ai.capability_registry import get_allowed_tool_names
 

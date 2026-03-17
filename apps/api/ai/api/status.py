@@ -14,35 +14,33 @@ Requirements:
 """
 
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from pydantic import BaseModel, Field
+from jose import jwt, JWTError
 
 from schemas.ai import AiStatusResponse as AiStatusResponseSchema
-from ai.config import get_ai_config, AIPhase
+from ai.config import get_ai_config
 from ai.services.kill_switch import (
-    KillSwitch,
     get_kill_switch,
-    KillSwitchState,
     AICapability,
 )
-from ai.services.usage_tracker import get_usage_tracker, UsageSummary
+from ai.services.usage_tracker import get_usage_tracker
 from ai.services.metrics import (
     get_metrics_collector,
-    SLAMetrics,
-    MetricType,
 )
 from ai.services.alerting import (
     get_alerting_service,
     AlertSeverity,
-    AlertType,
     check_and_alert,
 )
-from ai.models.ai_usage import UsageType
 
 logger = logging.getLogger(__name__)
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "default-dev-secret-key-change-in-prod")
+ALGORITHM = "HS256"
 
 router = APIRouter(prefix="/ai", tags=["AI Status"])
 
@@ -82,12 +80,33 @@ async def get_current_user_context(request: Request) -> Dict[str, Any]:
     user_id = getattr(request.state, "user_id", None)
     
     if not tenant_id or not user_id:
-        # This should not happen if JWT middleware is working correctly
-        logger.error("Missing tenant_id or user_id in request.state")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required"
-        )
+        access_context = getattr(request.state, "access_context", None)
+        if access_context:
+            tenant_id = tenant_id or getattr(access_context, "tenant_id", None)
+            user_id = user_id or getattr(access_context, "user_id", None)
+
+        if not tenant_id or not user_id:
+            auth_header = request.headers.get("Authorization", "")
+            token = auth_header.split(" ", 1)[1] if auth_header.startswith("Bearer ") else None
+
+            if token:
+                try:
+                    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+                    tenant_id = tenant_id or payload.get("tenant_id")
+                    user_id = user_id or payload.get("sub")
+
+                    # Admin tokens use the synthetic system tenant when not impersonating.
+                    if not tenant_id and (payload.get("is_admin") is True or str(user_id).startswith(("admin_", "adm_"))):
+                        tenant_id = "system"
+                except JWTError:
+                    logger.warning("AI status fallback JWT decode failed")
+
+        if not tenant_id or not user_id:
+            logger.error("Missing tenant_id or user_id in request.state")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
+            )
     
     return {
         "user_id": user_id,
@@ -147,56 +166,18 @@ async def get_status(
         if state:
             kill_switch_reason = state.reason
     
-    kill_switch_status = KillSwitchStatusResponse(
-        global_active=global_active,
-        tenant_active=tenant_active,
-        capabilities_disabled=capabilities_disabled,
-        reason=kill_switch_reason,
-    )
+
     
     # Get usage status
     usage_summary = usage_tracker.get_usage_summary(tenant_id)
     
-    quotas = []
-    for usage_type in UsageType:
-        record = usage_summary.by_type.get(usage_type.value)
-        if record:
-            quotas.append(QuotaStatusResponse(
-                usage_type=usage_type.value,
-                current_usage=record.request_count,
-                quota_limit=record.quota_limit,
-                remaining=record.remaining_quota,
-                exceeded=record.quota_exceeded,
-            ))
-        else:
-            quotas.append(QuotaStatusResponse(
-                usage_type=usage_type.value,
-                current_usage=0,
-                quota_limit=None,
-                remaining=None,
-                exceeded=False,
-            ))
-    
-    usage_status = UsageStatusResponse(
-        total_requests_today=usage_summary.total_requests,
-        quotas=quotas,
-        any_quota_exceeded=usage_summary.any_quota_exceeded,
-    )
+
     
     # Phase status
-    phase_status = PhaseStatusResponse(
-        current_phase=config.phase.name,
-        phase_name=config.phase.value,
-        execution_allowed=config.is_execution_allowed(),
-        proposal_allowed=config.is_proposal_allowed(),
-    )
+
     
     # Model status (simplified - in production, check actual model availability)
-    model_status = ModelStatusResponse(
-        provider=config.model.provider,
-        model_id=config.model.model_id,
-        available=config.enabled,  # Simplified check
-    )
+
     
     # Determine overall availability
     available = (
@@ -206,17 +187,52 @@ async def get_status(
         not usage_summary.any_quota_exceeded
     )
     
+    # Build nested objects
+    phase_status = {
+        "current_phase": config.phase.value, # "read_only", "proposal", or "execution"
+        "phase_name": config.phase.name,  # "A", "B", or "C"
+        "execution_allowed": config.is_execution_allowed(),
+        "proposal_allowed": config.is_proposal_allowed(),
+    }
+    
+    kill_switch_status = {
+        "global_active": global_active,
+        "tenant_active": tenant_active,
+        "capabilities_disabled": capabilities_disabled,
+        "reason": kill_switch_reason
+    }
+    
+    # Map quotas
+    quotas = []
+    for usage_type_str, record in usage_summary.by_type.items():
+        quotas.append({
+            "usage_type": usage_type_str,
+            "current_usage": record.request_count,
+            "quota_limit": record.quota_limit,
+            "remaining": record.remaining_quota,
+            "exceeded": record.quota_exceeded
+        })
+        
+    usage_status = {
+        "total_requests_today": usage_summary.total_requests,
+        "quotas": quotas,
+        "any_quota_exceeded": usage_summary.any_quota_exceeded
+    }
+    
+    model_status = {
+        "provider": config.model.provider,
+        "model_id": config.model.ai_model_id,
+        "available": config.enabled # Simplified
+    }
+    
     return AiStatusResponseSchema(
         enabled=config.enabled,
         available=available,
-        # Field mapping (if internal names changed in schemas.ai)
-        phase=config.phase.value, 
-        ai_model_id=config.model.ai_model_id,
-        ai_model_version=os.getenv("AI_MODEL_VERSION", "1.0.0"), # Fallback
-        ai_model_available=config.enabled,
-        kill_switch_active=global_active or tenant_active,
-        quota_remaining=usage_summary.total_requests, # Simplified for example
-        quota_limit=config.quota_limit,
+        phase=phase_status,
+        kill_switch=kill_switch_status,
+        usage=usage_status,
+        model=model_status,
+        timestamp=datetime.now(timezone.utc)
     )
 
 

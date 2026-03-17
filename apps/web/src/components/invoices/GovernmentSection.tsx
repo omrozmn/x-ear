@@ -18,8 +18,8 @@ export function GovernmentSection({
   errors = {}
 }: GovernmentSectionProps) {
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Kamu Faturası Özel Bilgileri</h3>
+    <div className="bg-card rounded-2xl shadow p-6 mb-6">
+      <h3 className="text-lg font-semibold text-foreground mb-4">Kamu Faturası Özel Bilgileri</h3>
       
       <div className="space-y-4">
         {/* Kamu Ödeme Yapacak Alıcı */}
@@ -42,7 +42,7 @@ export function GovernmentSection({
             error={errors.governmentExemptionReason}
             fullWidth
           />
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Kamu faturası için istisna sebebini seçiniz
           </p>
         </div>
@@ -57,13 +57,13 @@ export function GovernmentSection({
             error={errors.governmentExportRegisteredReason}
             fullWidth
           />
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             İhraç kayıtlı satış için sebep seçiniz
           </p>
         </div>
 
         {/* Bilgilendirme */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
           <div className="flex items-start">
             <AlertTriangle className="text-amber-400 mr-2 flex-shrink-0" size={18} />
             <div>

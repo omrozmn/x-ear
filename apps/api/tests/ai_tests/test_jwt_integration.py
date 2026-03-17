@@ -14,17 +14,12 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 
-from fastapi.testclient import TestClient
-
 # Set test environment
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing")
 os.environ.setdefault("AI_ENABLED", "true")
 os.environ.setdefault("AI_PHASE", "A")
 
-# Import after setting environment
-from main import app
-
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "test-secret-key-for-testing")
+SECRET_KEY = "test-secret"
 ALGORITHM = "HS256"
 
 
@@ -36,12 +31,6 @@ def create_valid_token(user_id="test-user", tenant_id="test-tenant"):
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-
-@pytest.fixture
-def client():
-    """Create a test client."""
-    return TestClient(app)
 
 
 class TestJWTIntegrationWithChatEndpoint:

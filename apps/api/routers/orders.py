@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
-from typing import Optional
 import logging
 
 from database import get_db

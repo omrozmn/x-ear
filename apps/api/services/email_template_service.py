@@ -174,7 +174,7 @@ class EmailTemplateService:
             text_body = text_template.render(**context)
             
             logger.info(
-                f"Template rendered successfully",
+                "Template rendered successfully",
                 extra={
                     "scenario": scenario,
                     "language": lang,

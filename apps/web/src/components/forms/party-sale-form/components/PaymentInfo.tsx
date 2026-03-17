@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, Input, Label, Textarea, Button } from '@x-ear/ui-web';
-import { CreditCard, Calendar, DollarSign, FileText, Percent, Package } from 'lucide-react';
+import { Card, CardContent, Input, Label, Textarea, Button, DatePicker } from '@x-ear/ui-web';
+import { CreditCard, DollarSign, FileText, Percent, Package } from 'lucide-react';
 
 interface PaymentInfoProps {
   paymentMethod: string;
@@ -50,10 +50,10 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
 }) => {
   // Kullanılmayan import kaldırıldı
   // const formatCurrency = (amount: number) => {
-  //   return new Intl.NumberFormat('tr-TR', {
-  //     style: 'currency',
-  //     currency: 'TRY'
-  //   }).format(amount);
+  // return new Intl.NumberFormat('tr-TR', {
+  // style: 'currency',
+  // currency: 'TRY'
+  // }).format(amount);
   // };
 
   const paymentMethods = [
@@ -65,16 +65,16 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
   ];
 
   return (
-    <Card className="bg-white border-gray-200">
+    <Card className="bg-card border-border">
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center gap-2 mb-3">
-          <CreditCard className="w-4 h-4 text-green-600" />
-          <h3 className="text-sm font-semibold text-gray-800">Ödeme Bilgileri</h3>
+          <CreditCard className="w-4 h-4 text-success" />
+          <h3 className="text-sm font-semibold text-foreground">Ödeme Bilgileri</h3>
         </div>
 
         {/* Payment Method */}
         <div>
-          <Label className="text-xs font-medium text-gray-600 mb-2 block">
+          <Label className="text-xs font-medium text-muted-foreground mb-2 block">
             Ödeme Yöntemi
           </Label>
           <div className="grid grid-cols-2 gap-2">
@@ -99,30 +99,25 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
 
         {/* Sale Date */}
         <div>
-          <Label className="text-xs font-medium text-gray-600 mb-1 block">
+          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Satış Tarihi
           </Label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <Calendar className="w-3 h-3 text-gray-400" />
-            </div>
-            <Input
-              type="date"
-              value={saleDate}
-              onChange={(e) => onSaleDateChange(e.target.value)}
-              className="pl-6"
-            />
-          </div>
+          <DatePicker
+            value={saleDate ? new Date(saleDate) : null}
+            onChange={(date) => onSaleDateChange(date ? date.toISOString().split('T')[0] : '')}
+            fullWidth
+            placeholder="GG/AA/YYYY"
+          />
         </div>
 
         {/* Paid Amount */}
         <div>
-          <Label className="text-xs font-medium text-gray-600 mb-1 block">
+          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Ödenen Tutar
           </Label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <DollarSign className="w-3 h-3 text-gray-400" />
+              <DollarSign className="w-3 h-3 text-muted-foreground" />
             </div>
             <Input
               type="number"
@@ -138,12 +133,12 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
         {/* Discount Amount - Legacy Field */}
         {onDiscountAmountChange && (
           <div>
-            <Label className="text-xs font-medium text-gray-600 mb-1 block">
+            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
               İndirim Tutarı (TL)
             </Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                <Percent className="w-3 h-3 text-gray-400" />
+                <Percent className="w-3 h-3 text-muted-foreground" />
               </div>
               <Input
                 type="number"
@@ -161,12 +156,12 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
         {/* VAT Rate - Legacy Field */}
         {onVatRateChange && (
           <div>
-            <Label className="text-xs font-medium text-gray-600 mb-1 block">
+            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
               KDV Oranı (%)
             </Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                <Percent className="w-3 h-3 text-gray-400" />
+                <Percent className="w-3 h-3 text-muted-foreground" />
               </div>
               <Input
                 type="number"
@@ -184,15 +179,15 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
 
         {/* Product Details - Legacy Fields */}
         {(onProductBarcodeChange || onProductSerialNumberChange) && (
-          <div className="space-y-3 pt-2 border-t border-gray-200">
+          <div className="space-y-3 pt-2 border-t border-border">
             <div className="flex items-center gap-2">
-              <Package className="w-3 h-3 text-blue-600" />
-              <h4 className="text-xs font-semibold text-gray-700">Ürün Detayları</h4>
+              <Package className="w-3 h-3 text-primary" />
+              <h4 className="text-xs font-semibold text-foreground">Ürün Detayları</h4>
             </div>
-            
+
             {onProductBarcodeChange && (
               <div>
-                <Label className="text-xs font-medium text-gray-600 mb-1 block">
+                <Label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Barkod
                 </Label>
                 <Input
@@ -207,7 +202,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
 
             {onProductSerialNumberChange && (
               <div>
-                <Label className="text-xs font-medium text-gray-600 mb-1 block">
+                <Label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Seri Numarası
                 </Label>
                 <Input
@@ -223,11 +218,11 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
         )}
 
         {/* SGK Information */}
-        <div className="space-y-3 pt-2 border-t border-gray-200">
-          <h4 className="text-xs font-semibold text-gray-700">SGK Bilgileri</h4>
-          
+        <div className="space-y-3 pt-2 border-t border-border">
+          <h4 className="text-xs font-semibold text-foreground">SGK Bilgileri</h4>
+
           <div>
-            <Label className="text-xs font-medium text-gray-600 mb-1 block">
+            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
               SGK Onay Numarası
             </Label>
             <Input
@@ -239,31 +234,26 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-gray-600 mb-1 block">
+            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
               SGK Onay Tarihi
             </Label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                <Calendar className="w-3 h-3 text-gray-400" />
-              </div>
-              <Input
-                type="date"
-                value={sgkApprovalDate}
-                onChange={(e) => onSgkApprovalDateChange(e.target.value)}
-                className="pl-6"
-              />
-            </div>
+            <DatePicker
+              value={sgkApprovalDate ? new Date(sgkApprovalDate) : null}
+              onChange={(date) => onSgkApprovalDateChange(date ? date.toISOString().split('T')[0] : '')}
+              fullWidth
+              placeholder="GG/AA/YYYY"
+            />
           </div>
         </div>
 
         {/* Notes */}
         <div>
-          <Label className="text-xs font-medium text-gray-600 mb-1 block">
+          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Notlar
           </Label>
           <div className="relative">
             <div className="absolute top-2 left-2 pointer-events-none">
-              <FileText className="w-3 h-3 text-gray-400" />
+              <FileText className="w-3 h-3 text-muted-foreground" />
             </div>
             <Textarea
               value={notes}

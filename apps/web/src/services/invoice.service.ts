@@ -15,6 +15,7 @@ import type {
   InvoiceStatus,
   InvoiceTemplate,
   InvoiceType,
+  InvoiceTypeLegacy,
   InvoiceValidation,
   PaymentMethod,
   UpdateInvoiceData,
@@ -30,6 +31,7 @@ import {
   getInvoice,
   listAdminInvoices,
   listInvoicePdf,
+  listInvoiceTemplates,
   updateInvoice,
 } from '@/api/client/invoices.client';
 import type {
@@ -268,7 +270,7 @@ export class InvoiceService {
   private generateSampleInvoices(): Invoice[] {
     const sampleInvoices: Invoice[] = [];
     const statuses: InvoiceStatus[] = ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
-    const types: InvoiceType[] = ['standard' as InvoiceType, 'proforma' as InvoiceType, 'credit_note' as InvoiceType, 'debit_note' as InvoiceType];
+    const types: InvoiceTypeLegacy[] = ['standard', 'proforma', 'credit_note', 'debit_note'];
 
     for (let i = 1; i <= 20; i++) {
       const createdDate = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000);
@@ -527,7 +529,7 @@ export class InvoiceService {
     let totalAmount = existing.totalAmount;
 
     if (updates.items) {
-       
+
       const calc = this.calculateInvoice(updates.items as InvoiceItem[]);
       items = calc.items as InvoiceItem[];
       subtotal = calc.subtotal;
@@ -883,9 +885,14 @@ export class InvoiceService {
 
   // Template Operations
   async getTemplates(): Promise<InvoiceTemplate[]> {
-    // TODO: Implement listInvoiceTemplates when available in generated API
-    console.warn('listInvoiceTemplates API not available');
-    return [];
+    try {
+      const response = await listInvoiceTemplates();
+      // Unwrap ResponseEnvelope
+      return (response?.data || []) as unknown as InvoiceTemplate[];
+    } catch (error) {
+      console.error('Failed to fetch invoice templates:', error);
+      return [];
+    }
   }
 
   // New P1 Features

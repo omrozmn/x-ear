@@ -3,8 +3,8 @@ Sales Tools for AI Layer
 
 Contains tools for managing Sales and Invoices.
 """
-from typing import Any, Dict, List
-from ai.tools import (
+from typing import Any, Dict
+from ai.tools import (  # type: ignore
     register_tool,
     ToolParameter,
     ToolCategory,
@@ -12,8 +12,8 @@ from ai.tools import (
     ToolExecutionMode,
     ToolExecutionResult,
 )
-from core.database import SessionLocal
-from core.models.sales import Sale, PaymentRecord
+from core.database import SessionLocal  # type: ignore
+from core.models.sales import Sale, PaymentRecord  # type: ignore
 
 
 # =============================================================================
@@ -299,6 +299,20 @@ def createSale(
     total_amount = params["total_amount"]
     notes = params.get("notes", "")
     tenant_id = params.get("tenant_id", "default")
+
+    if mode == ToolExecutionMode.SIMULATE:
+        return ToolExecutionResult(
+            tool_id="createSale",
+            success=True,
+            mode=mode,
+            simulated_changes={
+                "action": "create_sale",
+                "party_id": party_id,
+                "total_amount": total_amount,
+                "notes": notes,
+                "status": "Sale Created (Simulated)",
+            },
+        )
 
     try:
         db = SessionLocal()

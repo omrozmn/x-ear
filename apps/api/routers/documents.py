@@ -4,9 +4,8 @@ Handles patient document storage and retrieval
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
-from typing import Optional, List
+from typing import List
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
 import logging
 import uuid
 import os
@@ -17,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.documents import DocumentRead, DocumentCreate
 
 logger = logging.getLogger(__name__)
@@ -45,10 +44,10 @@ def get_patient_documents(
         
         party = db.get(Party, party_id)
         if not party:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
-        if access.tenant_id and patient.tenant_id != access.tenant_id:
+        if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from patient's custom data field
@@ -84,7 +83,7 @@ def add_patient_document(
     """Add a new document to patient - stores file locally"""
     try:
         from core.models.party import Party
-        from models.user import ActivityLog
+        from core.models.user import ActivityLog
         
         party = db.get(Party, party_id)
         if not party:
@@ -184,10 +183,10 @@ def get_patient_document(
         
         party = db.get(Party, party_id)
         if not party:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
-        if access.tenant_id and patient.tenant_id != access.tenant_id:
+        if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from custom_data
@@ -231,10 +230,10 @@ def delete_patient_document(
         
         party = db.get(Party, party_id)
         if not party:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
-        if access.tenant_id and patient.tenant_id != access.tenant_id:
+        if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from custom_data

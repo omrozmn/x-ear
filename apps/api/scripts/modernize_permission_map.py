@@ -1,5 +1,4 @@
 import re
-import os
 
 MAP_FILE = '/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/config/permissions_map.py'
 

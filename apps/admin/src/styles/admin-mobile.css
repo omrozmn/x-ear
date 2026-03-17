@@ -1,0 +1,229 @@
+/* Safe Area Padding Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.p-safe {
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}
+
+/* Scrollbar Hiding */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-table {
+  min-width: max(100%, 720px);
+}
+
+/* Mobile-Specific Styles */
+@media (max-width: 768px) {
+  /* Ensure minimum hit area for interactive elements (Apple HIG) */
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+
+  button, a {
+    min-width: 44px;
+  }
+
+  /* Increase base font size for better readability on mobile */
+  html {
+    font-size: 16px;
+  }
+
+  /* Optimize modal for mobile - Full screen behavior */
+  .modal-mobile-fullscreen {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+
+  /* Glassmorphism utility for mobile overlays */
+  .mobile-glass {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
+  .mobile-glass-dark {
+    background: rgba(17, 24, 39, 0.8) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
+  /* Mobile card optimization */
+  .mobile-card {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* Mobile table - horizontal scroll */
+  .mobile-table-wrapper {
+    border-radius: 8px;
+  }
+
+  .mobile-table {
+    min-width: 600px;
+  }
+
+  /* Mobile form optimization */
+  .mobile-form-group {
+    margin-bottom: 20px;
+  }
+
+  .mobile-form-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .mobile-form-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+
+  /* Mobile bottom navigation safe area */
+  .mobile-bottom-nav {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  /* Mobile header safe area */
+  .mobile-header {
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+
+  /* Floating Action Button (FAB) */
+  .mobile-fab {
+    position: fixed;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 40;
+  }
+
+  /* Mobile drawer overlay */
+  .mobile-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Mobile drawer */
+  .mobile-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    background: white;
+    z-index: 51;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+  }
+
+  .mobile-drawer.open {
+    transform: translateX(0);
+  }
+
+  .mobile-drawer-dark {
+    background: #111827;
+  }
+
+  /* Smooth transitions */
+  .layout-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Prevent text selection on touch */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Active touch feedback */
+  .touch-feedback:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Tablet-specific adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tablet-sidebar {
+    width: 240px;
+  }
+}

@@ -1,19 +1,26 @@
-from typing import Optional, List, Any, Union, Dict
+from typing import Optional, List, Dict
 from pydantic import Field, field_validator, ValidationInfo, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
+from constants import normalize_category
+
+# Default KDV rates per category
+_CATEGORY_DEFAULT_KDV: dict[str, float] = {
+    "hearing_aid": 0.0,
+}
 
 # --- Inventory Schemas ---
 class InventoryItemBase(AppBaseModel):
     name: str
-    brand: str
+    brand: Optional[str] = None
     model: Optional[str] = None
     category: str = "hearing_aid"
     barcode: Optional[str] = None
     stock_code: Optional[str] = Field(None, alias="stockCode")
     supplier: Optional[str] = None
     unit: str = "adet"
+    package_quantity: Optional[int] = Field(None, alias="packageQuantity")  # Items per package
     description: Optional[str] = None
-    
+
     # Inventory Counts
     available_inventory: int = Field(0, alias="availableInventory")
     total_inventory: int = Field(0, alias="totalInventory")
@@ -31,6 +38,20 @@ class InventoryItemBase(AppBaseModel):
     direction: Optional[str] = None # left, right, both
     warranty: int = 0 # months
 
+    @field_validator("category", mode="before")
+    @classmethod
+    def _normalize_category(cls, v: str) -> str:
+        return normalize_category(v) if v else "hearing_aid"
+
+    @model_validator(mode="after")
+    def _apply_category_kdv_default(self):
+        """Set KDV to 0% for hearing_aid when kdv_rate was not explicitly provided."""
+        if self.category in _CATEGORY_DEFAULT_KDV:
+            # Only override if still at the schema default (20.0)
+            if self.kdv_rate == 20.0:
+                self.kdv_rate = _CATEGORY_DEFAULT_KDV[self.category]
+        return self
+
 class InventoryItemCreate(InventoryItemBase):
     tenant_id: Optional[str] = Field(None, alias="tenantId")
     branch_id: Optional[str] = Field(None, alias="branchId")
@@ -39,9 +60,39 @@ class InventoryItemCreate(InventoryItemBase):
 class InventoryItemUpdate(AppBaseModel):
     name: Optional[str] = None
     brand: Optional[str] = None
+    model: Optional[str] = None
+    category: Optional[str] = None
+    barcode: Optional[str] = None
+    stock_code: Optional[str] = Field(None, alias="stockCode")
+    supplier: Optional[str] = None
+    unit: Optional[str] = None
+    package_quantity: Optional[int] = Field(None, alias="packageQuantity")
+    description: Optional[str] = None
+
+    # Inventory Counts
     available_inventory: Optional[int] = Field(None, alias="availableInventory")
+    total_inventory: Optional[int] = Field(None, alias="totalInventory")
+    reorder_level: Optional[int] = Field(None, alias="reorderLevel")
+    used_inventory: Optional[int] = Field(None, alias="usedInventory")
+    on_trial: Optional[int] = Field(None, alias="onTrial")
+    
+    # Pricing
     price: Optional[float] = None
-    # ... allow other updates
+    cost: Optional[float] = None
+    kdv_rate: Optional[float] = Field(None, alias="vatRate")
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def _normalize_category(cls, v: Optional[str]) -> Optional[str]:
+        return normalize_category(v) if v else v
+    price_includes_kdv: Optional[bool] = Field(None, alias="priceIncludesKdv")
+    cost_includes_kdv: Optional[bool] = Field(None, alias="costIncludesKdv")
+    
+    # Attributes
+    features: Optional[List[str]] = None
+    direction: Optional[str] = None
+    ear: Optional[str] = None
+    warranty: Optional[int] = None
     
 class InventoryItemRead(InventoryItemBase, IDMixin, TimestampMixin):
     tenant_id: str = Field(..., alias="tenantId")
@@ -124,6 +175,7 @@ class StockMovementRead(IDMixin, TimestampMixin, AppBaseModel):
     # Enrichment fields (optional)
     party_id: Optional[str] = Field(None, alias="partyId")
     party_name: Optional[str] = Field(None, alias="partyName")
+    prescription_status: Optional[str] = Field(None, alias="prescriptionStatus")
 
 class InventoryFilterOptions(AppBaseModel):
     categories: List[str]

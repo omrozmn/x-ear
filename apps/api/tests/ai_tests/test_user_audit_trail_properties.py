@@ -13,16 +13,13 @@ Properties:
 
 import os
 import pytest
-from datetime import datetime, timedelta, timezone
-from unittest.mock import patch, MagicMock
 from hypothesis import given, strategies as st, settings, HealthCheck, assume
-from jose import jwt
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from ai.models.ai_request import AIRequest, RequestStatus
-from ai.services.request_logger import RequestLogger, EncryptionService
+from ai.services.request_logger import RequestLogger
 from database import Base
 
 # Set test environment

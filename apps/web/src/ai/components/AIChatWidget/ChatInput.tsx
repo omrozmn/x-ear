@@ -43,6 +43,17 @@ export interface ChatInputProps {
   isLoading?: boolean;
 
   /**
+   * Whether a file is currently uploading
+   * @default false
+   */
+  isUploading?: boolean;
+
+  /**
+   * Callback when user selects files to upload
+   */
+  onFileUpload?: (files: FileList) => void;
+
+  /**
    * Additional CSS classes
    */
   className?: string;
@@ -74,6 +85,52 @@ const SendIcon = () => (
       strokeLinejoin="round"
       strokeWidth={2}
       d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+    />
+  </svg>
+);
+
+/**
+ * Paperclip icon SVG for file upload
+ */
+const PaperclipIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+    />
+  </svg>
+);
+
+/**
+ * Camera icon SVG for photo capture
+ */
+const CameraIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
     />
   </svg>
 );
@@ -117,10 +174,10 @@ const LoadingSpinner = () => (
  * @example
  * ```tsx
  * <ChatInput 
- *   onSend={(message) => console.log('Sending:', message)}
- *   placeholder="Sorunuzu yazın..."
- *   disabled={!isAIAvailable}
- *   isLoading={isSending}
+ * onSend={(message) => console.log('Sending:', message)}
+ * placeholder="Sorunuzu yazın..."
+ * disabled={!isAIAvailable}
+ * isLoading={isSending}
  * />
  * ```
  */
@@ -129,11 +186,15 @@ export function ChatInput({
   disabled = false,
   placeholder = 'Mesajınızı yazın...',
   isLoading = false,
+  isUploading = false,
+  onFileUpload,
   className = '',
   autoFocus = true,
 }: ChatInputProps): React.ReactElement {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -141,6 +202,16 @@ export function ChatInput({
       inputRef.current.focus();
     }
   }, [autoFocus]);
+
+  // Restore focus after loading finishes
+  useEffect(() => {
+    if (!isLoading && !disabled && autoFocus && inputRef.current) {
+      // Small timeout to allow the browser to re-enable the input before focusing
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 10);
+    }
+  }, [isLoading, disabled, autoFocus]);
 
   /**
    * Handle form submission
@@ -177,14 +248,77 @@ export function ChatInput({
     setInputValue(e.target.value);
   }, []);
 
-  const isDisabled = disabled || isLoading;
+  const isDisabled = disabled || isLoading || isUploading;
   const canSend = inputValue.trim().length > 0 && !isDisabled;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0 && onFileUpload) {
+      onFileUpload(e.target.files);
+    }
+    // clear input so same file can be uploaded again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+  };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={`flex items-center gap-2 p-3 border-t border-gray-200 bg-white ${className}`}
+      className={`flex items-center gap-2 p-3 border-t border-border bg-card ${className}`}
     >
+      {/* File Upload Button */}
+      {onFileUpload && (
+        <>
+          <input data-allow-raw="true"
+            type="file"
+            multiple
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.doc,.docx"
+          />
+          <button data-allow-raw="true"
+            type="button"
+            disabled={isDisabled}
+            onClick={() => fileInputRef.current?.click()}
+            className={`
+              flex items-center justify-center p-2 rounded-full transition-colors
+              ${isUploading ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
+              disabled:opacity-50 disabled:cursor-not-allowed
+            `}
+            title="Dosya Yükle"
+          >
+            {isUploading ? <LoadingSpinner /> : <PaperclipIcon />}
+          </button>
+
+          {/* Camera Capture Button */}
+          <input data-allow-raw="true"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            ref={cameraInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <button data-allow-raw="true"
+            type="button"
+            disabled={isDisabled}
+            onClick={() => cameraInputRef.current?.click()}
+            className={`
+              flex items-center justify-center p-2 rounded-full transition-colors
+              bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground
+              disabled:opacity-50 disabled:cursor-not-allowed
+            `}
+            title="Kamera ile Çek"
+          >
+            <CameraIcon />
+          </button>
+        </>
+      )}
+
       {/* Text input */}
       <input data-allow-raw="true"
         ref={inputRef}
@@ -196,10 +330,10 @@ export function ChatInput({
         disabled={isDisabled}
         className={`
           flex-1 px-4 py-2 
-          border border-gray-300 rounded-full
-          text-sm text-gray-900 placeholder-gray-500
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-          disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed
+          border border-border rounded-full
+          text-sm text-foreground placeholder-muted-foreground
+          focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
+          disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed
           transition-colors
         `}
         aria-label="Mesaj giriş alanı"
@@ -215,8 +349,8 @@ export function ChatInput({
           w-10 h-10 rounded-full
           transition-colors
           ${canSend
-            ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            ? 'premium-gradient tactile-press text-white focus:ring-2 focus:ring-ring focus:ring-offset-2'
+            : 'bg-muted text-muted-foreground cursor-not-allowed'
           }
           focus:outline-none
         `}

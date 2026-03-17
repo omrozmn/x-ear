@@ -1,4 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useBulkUpdateParties, useBulkEmailParties } from '@/api/generated'
+import type { BulkUpdateRequest } from '@/api/generated/schemas'
 import { Party } from '@/types/party'
 import { PARTY_BULK_ACTIONS_STATE } from '@/constants/storage-keys'
 
@@ -8,7 +11,23 @@ export interface BulkActionState {
   lastAction?: string
 }
 
+export interface BulkUpdateData {
+  status?: string
+  segment?: string
+  tags?: string[]
+  addressCity?: string
+  addressDistrict?: string
+}
+
+export interface BulkEmailData {
+  subject: string
+  body: string
+  templateId?: string
+}
+
 export const usePartyBulkActions = () => {
+  const queryClient = useQueryClient()
+
   const [bulkState, setBulkState] = useState<BulkActionState>(() => {
     try {
       const saved = localStorage.getItem(PARTY_BULK_ACTIONS_STATE)
@@ -22,6 +41,25 @@ export const usePartyBulkActions = () => {
         isAllSelected: false
       }
     }
+  })
+
+  // Bulk update mutation
+  const bulkUpdateMutation = useBulkUpdateParties({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate party queries to refresh the list
+        queryClient.invalidateQueries({ queryKey: ['parties'] })
+      },
+    },
+  })
+
+  // Bulk email mutation
+  const bulkEmailMutation = useBulkEmailParties({
+    mutation: {
+      onSuccess: () => {
+        // No need to invalidate queries for email
+      },
+    },
   })
 
   // Save bulk state to localStorage whenever it changes
@@ -78,7 +116,7 @@ export const usePartyBulkActions = () => {
     if (bulkState.selectedParties.length === 0) return
 
     setBulkState(prev => ({ ...prev, lastAction: action }))
-    
+
     if (onAction) {
       await onAction(bulkState.selectedParties)
     }
@@ -99,6 +137,56 @@ export const usePartyBulkActions = () => {
     await executeAction('archive', onArchive)
   }, [executeAction])
 
+  const handleBulkEdit = useCallback(async (updates: BulkUpdateData) => {
+    if (bulkState.selectedParties.length === 0) {
+      console.warn('No parties selected for bulk edit')
+      return
+    }
+
+    try {
+      const result = await bulkUpdateMutation.mutateAsync({
+        data: {
+          partyIds: bulkState.selectedParties,
+          updates: updates as BulkUpdateRequest['updates'],
+        },
+      })
+
+      // Clear selection after successful update
+      clearSelection()
+
+      return result.data
+    } catch (error) {
+      console.error('Bulk edit failed:', error)
+      throw error
+    }
+  }, [bulkState.selectedParties, bulkUpdateMutation, clearSelection])
+
+  const handleBulkEmail = useCallback(async (emailData: BulkEmailData) => {
+    if (bulkState.selectedParties.length === 0) {
+      console.warn('No parties selected for bulk email')
+      return
+    }
+
+    try {
+      const result = await bulkEmailMutation.mutateAsync({
+        data: {
+          partyIds: bulkState.selectedParties,
+          subject: emailData.subject,
+          body: emailData.body,
+          templateId: emailData.templateId,
+        },
+      })
+
+      // Clear selection after successful email
+      clearSelection()
+
+      return result.data
+    } catch (error) {
+      console.error('Bulk email failed:', error)
+      throw error
+    }
+  }, [bulkState.selectedParties, bulkEmailMutation, clearSelection])
+
   const handleBulkAction = useCallback(async (action: string) => {
     if (bulkState.selectedParties.length === 0) {
       console.warn('No parties selected for bulk action:', action)
@@ -117,11 +205,11 @@ export const usePartyBulkActions = () => {
           await archiveSelected()
           break
         case 'edit':
-          // TODO: Implement bulk edit
+          // This will be handled by the modal
           console.log('Bulk edit for parties:', bulkState.selectedParties)
           break
         case 'email':
-          // TODO: Implement bulk email
+          // This will be handled by the dialog
           console.log('Bulk email for parties:', bulkState.selectedParties)
           break
         default:
@@ -145,6 +233,10 @@ export const usePartyBulkActions = () => {
     exportSelected,
     deleteSelected,
     archiveSelected,
-    handleBulkAction
+    handleBulkAction,
+    handleBulkEdit,
+    handleBulkEmail,
+    isUpdating: bulkUpdateMutation.isPending,
+    isEmailing: bulkEmailMutation.isPending,
   }
 }

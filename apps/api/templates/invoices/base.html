@@ -113,9 +113,9 @@
       
       /* GİB Logo ve Fatura Tipi */
       .gib-logo {
-        max-height: 50px;
-        max-width: 70px;
-        margin-bottom: 3px;
+        max-height: 45px;
+        max-width: 60px;
+        margin-bottom: 2px;
       }
       
       .invoice-type-text {
@@ -124,6 +124,63 @@
         text-transform: uppercase;
         text-align: center;
         margin-top: 2px;
+      }
+      
+      /* Company Logo */
+      .company-logo {
+        max-height: 55px;
+        max-width: 140px;
+        margin-bottom: 5px;
+        object-fit: contain;
+      }
+      
+      /* QR Code */
+      .qr-section {
+        text-align: right;
+        padding-top: 2px;
+      }
+      
+      .qr-code {
+        width: 100px;
+        height: 100px;
+      }
+      
+      /* Stamp and Signature area */
+      .stamp-signature-section {
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        gap: 30px;
+        margin-top: 15px;
+        padding: 10px 0;
+      }
+      
+      .stamp-box {
+        text-align: center;
+      }
+      
+      .signature-box {
+        text-align: center;
+      }
+      
+      .stamp-box img {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+      }
+      
+      .signature-box img {
+        width: 140px;
+        height: 60px;
+        object-fit: contain;
+      }
+      
+      .stamp-box .label, .signature-box .label {
+        font-size: 7px;
+        color: #666;
+        margin-top: 3px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
       }
       
       /* ====== Gönderici/Alıcı Kutuları ====== */
@@ -424,6 +481,9 @@
           <!-- Sol: Gönderici -->
           <div class="sender-section">
             <div class="party-box">
+              {% if invoice.supplier and invoice.supplier.logo %}
+              <img class="company-logo" src="file://{{ invoice.supplier.logo }}" alt="Logo" />
+              {% endif %}
               <div class="company-name">{{ invoice.supplier.name if invoice.supplier else '' }}</div>
               <div class="party-details">
                 {% if invoice.supplier %}
@@ -442,7 +502,9 @@
           
           <!-- Orta: GİB Logo + Fatura Tipi -->
           <div class="logo-section">
-            <img class="gib-logo" src="file:///Users/omerozmen/Desktop/x-ear web app/docs/examples/gib logo.png" alt="GİB" />
+            {% if invoice.gib_logo_path %}
+            <img class="gib-logo" src="file://{{ invoice.gib_logo_path }}" alt="GİB" />
+            {% endif %}
             <div class="invoice-type-text">
               {% if invoice.document_type == 'EIRSALIYE' or invoice.profile_id == 'TEMELIRSALIYE' %}
                 e-İrsaliye
@@ -460,8 +522,13 @@
             </div>
           </div>
           
-          <!-- Sağ: Ek bilgiler (kampanya vb.) -->
+          <!-- Sağ: QR Kod + Ek bilgiler -->
           <div class="extra-section">
+            {% if invoice.qr_code_data_uri %}
+            <div class="qr-section">
+              <img class="qr-code" src="{{ invoice.qr_code_data_uri }}" alt="QR" />
+            </div>
+            {% endif %}
             {% if invoice.sales_channel %}
               <div>{{ invoice.order_note or '' }}</div>
               {% if invoice.campaign_code %}<div>Kampanya Kodu: {{ invoice.campaign_code }}</div>{% endif %}
@@ -485,6 +552,28 @@
                   {% if invoice.customer.tax_office %}<div class="party-details-row">Vergi Dairesi: {{ invoice.customer.tax_office }}</div>{% endif %}
                   {% if invoice.customer.tax_id %}<div class="party-details-row">VKN: {{ invoice.customer.tax_id }}</div>{% endif %}
                   {% if invoice.customer.identity_number %}<div class="party-details-row">TCKN: {{ invoice.customer.identity_number }}</div>{% endif %}
+                {% endif %}
+                {% if invoice.buyer_customer %}
+                  {% if invoice.buyer_customer.name and invoice.buyer_customer.name != (invoice.customer.name if invoice.customer else '') %}
+                  <div class="party-details-row">Yolcu/Hasta: {{ invoice.buyer_customer.name }}</div>
+                  {% endif %}
+                  {% if invoice.buyer_customer.tax_id %}
+                  <div class="party-details-row">Ek Kimlik/VKN: {{ invoice.buyer_customer.tax_id }}</div>
+                  {% endif %}
+                  {% if invoice.buyer_customer.passport_no %}
+                  <div class="party-details-row">Pasaport No: {{ invoice.buyer_customer.passport_no }}</div>
+                  {% endif %}
+                  {% if invoice.buyer_customer.nationality %}
+                  <div class="party-details-row">Uyruk: {{ invoice.buyer_customer.nationality }}</div>
+                  {% endif %}
+                {% endif %}
+                {% if invoice.profile_details %}
+                  {% if invoice.profile_details.taxRepresentativeName %}
+                  <div class="party-details-row">Vergi Temsilcisi: {{ invoice.profile_details.taxRepresentativeName }}</div>
+                  {% endif %}
+                  {% if invoice.profile_details.taxRepresentativeTaxId %}
+                  <div class="party-details-row">Temsilci Vergi No: {{ invoice.profile_details.taxRepresentativeTaxId }}</div>
+                  {% endif %}
                 {% endif %}
               </div>
             </div>
@@ -618,6 +707,24 @@
         {% endif %}
 
       </div><!-- /main-content -->
+
+      <!-- ====== KAŞE / İMZA ====== -->
+      {% if (invoice.supplier and (invoice.supplier.stamp or invoice.supplier.signature)) %}
+      <div class="stamp-signature-section">
+        {% if invoice.supplier.stamp %}
+        <div class="stamp-box">
+          <img src="file://{{ invoice.supplier.stamp }}" alt="Kaşe" />
+          <div class="label">KAŞE</div>
+        </div>
+        {% endif %}
+        {% if invoice.supplier.signature %}
+        <div class="signature-box">
+          <img src="file://{{ invoice.supplier.signature }}" alt="İmza" />
+          <div class="label">İMZA</div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
 
       <!-- ====== FOOTER - Tek Çerçeve İçinde ====== -->
       <div class="footer-section">

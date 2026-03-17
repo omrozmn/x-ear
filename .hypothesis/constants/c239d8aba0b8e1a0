@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/ticket.py
+# hypothesis_version: 6.151.9
+
+[500, 'AdminUser', 'CASCADE', 'Ticket', 'TicketResponse', 'admin_users.id', 'all, delete-orphan', 'assigned_tickets', 'assigned_to', 'billing', 'closed', 'created_at', 'false', 'feature_request', 'general', 'high', 'in_progress', 'ix_tickets_priority', 'joined', 'low', 'medium', 'open', 'priority', 'resolved', 'responses', 'status', 'technical', 'tenant_id', 'ticket', 'ticket_id', 'ticket_resp', 'ticket_responses', 'tickets', 'tickets.id', 'urgent']

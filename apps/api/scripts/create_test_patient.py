@@ -5,7 +5,6 @@ import sqlite3
 import json
 from datetime import datetime, timedelta
 import os
-from urllib.parse import urlparse
 
 
 def resolve_sqlite_path():

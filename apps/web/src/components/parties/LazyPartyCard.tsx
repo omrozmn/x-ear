@@ -135,13 +135,13 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
     return (
       <div
         ref={cardRef}
-        className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 animate-pulse ${className}`}
+        className={`bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 animate-pulse ${className}`}
       >
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+          <div className="w-10 h-10 bg-accent rounded-full"></div>
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            <div className="h-4 bg-accent rounded w-3/4"></div>
+            <div className="h-3 bg-accent rounded w-1/2"></div>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
     <div
       ref={cardRef}
       className={`
-        bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-all duration-200
+        bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 transition-all duration-200
         hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer
         ${isSelected ? 'ring-2 ring-blue-500 border-blue-500' : ''}
         ${className}
@@ -163,8 +163,8 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-primary" />
             </div>
           </div>
 
@@ -177,7 +177,7 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
               {getStatusBadge(party.status || undefined)}
             </div>
 
-            <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-4 text-xs text-muted-foreground">
               {party.phone && (
                 <div className="flex items-center">
                   <Phone className="w-3 h-3 mr-1" />
@@ -200,13 +200,13 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
                   {party.tags.slice(0, 2).map((tag, index) => (
                     <span
                       key={index}
-                      className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded"
+                      className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded"
                     >
                       {tag}
                     </span>
                   ))}
                   {party.tags.length > 2 && (
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       +{party.tags.length - 2}
                     </span>
                   )}
@@ -244,7 +244,7 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
                 variant="ghost"
                 size="sm"
                 onClick={handleDelete}
-                className="p-1 h-8 w-8 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                className="p-1 h-8 w-8 text-destructive hover:text-destructive dark:hover:text-red-300"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -255,10 +255,10 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
 
       {/* Additional Info for Detailed Variant */}
       {variant === 'detailed' && (
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="mt-3 pt-3 border-t border-border">
           <div className="space-y-2">
             {(party.addressFull || party.address) && (
-              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center text-xs text-muted-foreground">
                 <MapPin className="w-3 h-3 mr-1" />
                 <span className="truncate">
                   <span className="truncate">
@@ -286,11 +286,11 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
 
             {party.devices && party.devices.length > 0 && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-green-600 font-medium">
+                <span className="text-xs text-success font-medium">
                   {party.devices.length} cihaz
                 </span>
                 {party.lastContactDate && (
-                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center text-xs text-muted-foreground">
                     <Clock className="w-3 h-3 mr-1" />
                     Son iletişim: {new Date(party.lastContactDate).toLocaleDateString('tr-TR')}
                   </div>
@@ -299,7 +299,7 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
             )}
 
             {party.notes && party.notes.length > 0 && (
-              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+              <p className="text-xs text-muted-foreground line-clamp-2">
                 {party.notes[0].text}
               </p>
             )}

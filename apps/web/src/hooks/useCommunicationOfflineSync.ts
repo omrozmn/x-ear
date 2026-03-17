@@ -13,7 +13,7 @@ import { IndexedDBManager } from '../utils/indexeddb';
 // Simplified types without idb dependency for now
 interface CommunicationMessage {
   id: string;
-  type: 'sms' | 'email';
+  type: 'sms' | 'email' | 'whatsapp';
   recipient: string;
   recipientName?: string;
   partyId?: string;
@@ -95,13 +95,17 @@ class CommunicationSyncManager {
     await indexedDBManager.put(this.STORES.MESSAGES, messageWithSync);
 
     // Add to general outbox
-    const endpoint = message.type === 'sms' 
-      ? '/communications/messages/send-sms' 
-      : '/communications/messages/send-email';
-    
+    const endpoint = message.type === 'sms'
+      ? '/communications/messages/send-sms'
+      : message.type === 'whatsapp'
+        ? '/whatsapp/messages/send'
+        : '/communications/messages/send-email';
+
     const payload = message.type === 'sms'
       ? { phoneNumber: message.recipient, message: message.content, partyId: message.partyId }
-      : { toEmail: message.recipient, subject: message.subject || 'No Subject', bodyText: message.content, partyId: message.partyId };
+      : message.type === 'whatsapp'
+        ? { phoneNumber: message.recipient, message: message.content, partyId: message.partyId }
+        : { toEmail: message.recipient, subject: message.subject || 'No Subject', bodyText: message.content, partyId: message.partyId };
 
     await outbox.addOperation({
       method: 'POST',
@@ -134,7 +138,7 @@ class CommunicationSyncManager {
   }
 
   async getMessages(filters?: {
-    type?: 'sms' | 'email';
+    type?: 'sms' | 'email' | 'whatsapp';
     status?: string;
     partyId?: string;
     limit?: number;
@@ -277,10 +281,32 @@ class CommunicationSyncManager {
 
       if (!(result as { success?: boolean }).success) return;
 
-      const serverMessages = ((result as { data?: unknown[] }).data || []).map((msg: unknown) => ({
-        ...(msg as Record<string, unknown>),
-        syncStatus: 'synced'
-      }));
+      const serverMessages = ((result as { data?: unknown[] }).data || []).map((msg: unknown) => {
+        const item = msg as Record<string, unknown>;
+        const rawType = String(item.type || item.messageType || '').toLowerCase();
+        const normalizedType = rawType === 'email' ? 'email' : rawType === 'whatsapp' ? 'whatsapp' : 'sms';
+        const createdAt = String(item.createdAt || new Date().toISOString());
+        return {
+          id: String(item.id || createdAt),
+          type: normalizedType,
+          recipient: String(item.recipient || item.phoneNumber || item.toEmail || item.chatTitle || item.chatId || ''),
+          recipientName: item.recipientName ? String(item.recipientName) : undefined,
+          partyId: item.partyId ? String(item.partyId) : undefined,
+          subject: item.subject ? String(item.subject) : undefined,
+          content: String(item.content || item.message || item.messageText || ''),
+          templateId: item.templateId ? String(item.templateId) : undefined,
+          scheduledAt: item.scheduledAt ? String(item.scheduledAt) : undefined,
+          sentAt: item.sentAt ? String(item.sentAt) : createdAt,
+          deliveredAt: item.deliveredAt ? String(item.deliveredAt) : undefined,
+          status: String(item.status || 'sent') as CommunicationMessage['status'],
+          errorMessage: item.errorMessage ? String(item.errorMessage) : undefined,
+          campaignId: item.campaignId ? String(item.campaignId) : undefined,
+          messageType: (item.direction === 'inbound' ? 'automated' : (item.messageType || 'manual')) as CommunicationMessage['messageType'],
+          createdAt,
+          updatedAt: item.updatedAt ? String(item.updatedAt) : undefined,
+          syncStatus: 'synced' as const,
+        };
+      });
 
       // In a real app, we'd do a more sophisticated merge
       // For now, we update local DB with server truth
@@ -395,7 +421,7 @@ export const useCommunicationOfflineSync = () => {
   }, [updateSyncStatus]);
 
   const getMessages = useCallback(async (filters?: {
-    type?: 'sms' | 'email';
+    type?: 'sms' | 'email' | 'whatsapp';
     status?: string;
     partyId?: string;
     limit?: number;

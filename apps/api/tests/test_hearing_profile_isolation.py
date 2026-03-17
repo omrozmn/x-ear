@@ -1,9 +1,6 @@
 
-import pytest
 from services.party_service import PartyService
 from services.hearing_profile_service import HearingProfileService
-from core.models.hearing_profile import HearingProfile
-from core.models.party import Party
 
 def test_sgk_write_isolation(db_session, test_tenant):
     """

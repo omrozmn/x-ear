@@ -43,11 +43,15 @@ class EmailApprovalService:
         Returns:
             Tuple of (requires_approval, risk_level, risk_reasons)
         """
-        # Check AI safety risk
-        risk_result = self.ai_safety.classify_risk_level(subject, body_text, body_html)
-        risk_level = risk_result["risk_level"]
-        risk_reasons = risk_result["reasons"]
-        
+        # Check AI safety risk — combine subject + body as content
+        combined_content = f"{subject}\n{body_text}"
+        if body_html:
+            combined_content += f"\n{body_html}"
+        risk_level = self.ai_safety.classify_risk_level(combined_content, scenario)
+        risk_reasons = []
+        blocked = self.ai_safety.check_blocked_patterns(combined_content)
+        if blocked:
+            risk_reasons = [f"Blocked pattern: {p}" for p in blocked]
         # HIGH and CRITICAL risk emails require approval
         requires_approval = risk_level in ["HIGH", "CRITICAL"]
         
@@ -110,7 +114,7 @@ class EmailApprovalService:
         self.db.commit()
         
         logger.info(
-            f"Email approval request created",
+            "Email approval request created",
             extra={
                 "tenant_id": tenant_id,
                 "approval_id": approval.id,
@@ -159,7 +163,7 @@ class EmailApprovalService:
         self.db.commit()
         
         logger.info(
-            f"Email approved",
+            "Email approved",
             extra={
                 "tenant_id": tenant_id,
                 "approval_id": approval_id,
@@ -207,7 +211,7 @@ class EmailApprovalService:
         self.db.commit()
         
         logger.info(
-            f"Email rejected",
+            "Email rejected",
             extra={
                 "tenant_id": tenant_id,
                 "approval_id": approval_id,
@@ -261,12 +265,12 @@ class EmailApprovalService:
         
         return approvals
     
-    def get_approval_stats(self, tenant_id: str) -> Dict[str, Any]:
+    def get_approval_stats(self, tenant_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Get approval statistics.
         
         Args:
-            tenant_id: Tenant ID
+            tenant_id: Tenant ID (None for cross-tenant admin stats)
         
         Returns:
             Dictionary with approval stats
@@ -274,12 +278,13 @@ class EmailApprovalService:
         from sqlalchemy import func
         
         # Count by status
-        status_counts = self.db.query(
+        query = self.db.query(
             EmailApproval.status,
             func.count(EmailApproval.id).label('count')
-        ).filter(
-            EmailApproval.tenant_id == tenant_id
-        ).group_by(EmailApproval.status).all()
+        )
+        if tenant_id:
+            query = query.filter(EmailApproval.tenant_id == tenant_id)
+        status_counts = query.group_by(EmailApproval.status).all()
         
         stats = {
             'pending': 0,
@@ -291,12 +296,13 @@ class EmailApprovalService:
             stats[status] = count
         
         # Count by risk level
-        risk_counts = self.db.query(
+        query = self.db.query(
             EmailApproval.risk_level,
             func.count(EmailApproval.id).label('count')
-        ).filter(
-            EmailApproval.tenant_id == tenant_id
-        ).group_by(EmailApproval.risk_level).all()
+        )
+        if tenant_id:
+            query = query.filter(EmailApproval.tenant_id == tenant_id)
+        risk_counts = query.group_by(EmailApproval.risk_level).all()
         
         stats['by_risk_level'] = {
             risk_level: count

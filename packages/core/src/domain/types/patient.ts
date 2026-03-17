@@ -16,7 +16,7 @@ export interface Patient extends BaseEntity {
 }
 
 export interface MedicalHistory extends BaseEntity {
-  patientId: string;
+  partyId: string;
   condition: string;
   diagnosis: string;
   treatment?: string;

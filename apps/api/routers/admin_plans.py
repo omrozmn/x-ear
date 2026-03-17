@@ -3,7 +3,7 @@ FastAPI Admin Plans Router - Migrated from Flask routes/admin_plans.py
 Handles subscription plan management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, Dict, Any
+from typing import Optional
 from datetime import datetime
 import logging
 import uuid
@@ -12,11 +12,9 @@ from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope
 from schemas.plans import PlanCreate, PlanUpdate, DetailedPlanRead
-from models.admin_user import AdminUser
 from models.plan import Plan, PlanType, BillingInterval
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/plans", tags=["Admin Plans"])
@@ -30,24 +28,30 @@ class PlanDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminPlans", response_model=PlanListResponse)
 def list_plans(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(20, ge=1, le=100),
     type: Optional[str] = Query(None),
     is_active: Optional[str] = Query(None),
     is_public: Optional[str] = Query(None),
+    sector: Optional[str] = Query(None, description="Filter by sector code"),
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
     """List all plans"""
     try:
         query = db_session.query(Plan)
-        
+
         if type:
             query = query.filter_by(plan_type=PlanType[type.upper()])
         if is_active:
             query = query.filter_by(is_active=is_active.lower() == 'true')
         if is_public:
             query = query.filter_by(is_public=is_public.lower() == 'true')
+        if sector:
+            query = query.filter_by(sector=sector.lower())
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
         
         query = query.order_by(Plan.created_at.desc())
         total = query.count()
@@ -70,10 +74,18 @@ def create_plan(
 ):
     """Create a new plan"""
     try:
+        # Generate unique slug
+        base_slug = request_data.slug or Plan.generate_slug(request_data.name)
+        slug = base_slug
+        counter = 1
+        while db_session.query(Plan).filter_by(slug=slug).first():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        
         plan = Plan(
             id=str(uuid.uuid4()),
             name=request_data.name,
-            slug=request_data.slug or Plan.generate_slug(request_data.name),
+            slug=slug,
             description=request_data.description,
             plan_type=PlanType[request_data.plan_type.upper()],
             price=request_data.price,
@@ -81,6 +93,8 @@ def create_plan(
             features=request_data.features,
             max_users=request_data.max_users,
             max_storage_gb=request_data.max_storage_gb,
+            sector=request_data.sector,
+            country_code=request_data.country_code,
             is_active=request_data.is_active,
             is_public=request_data.is_public
         )
@@ -104,7 +118,7 @@ def get_plan(
     if not plan:
         raise HTTPException(status_code=404, detail={"message": "Plan not found", "code": "NOT_FOUND"})
     # Use Pydantic schema for type-safe serialization (NO to_dict())
-    return ResponseEnvelope(data={"plan": DetailedPlanRead.model_validate(plan).model_dump(by_alias=True, include_relationships=True)})
+    return ResponseEnvelope(data={"plan": DetailedPlanRead.model_validate(plan).model_dump(by_alias=True)})
 
 @router.put("/{plan_id}", operation_id="updateAdminPlan", response_model=PlanDetailResponse)
 def update_plan(

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Button, Input, Select } from '@x-ear/ui-web';
 import { InventoryFilters as IInventoryFilters } from '../../../types/inventory';
@@ -9,17 +10,17 @@ interface InventoryFiltersProps {
 }
 
 const categoryOptions = [
-  { value: '', label: 'Tümü' },
-  { value: 'hearing_aid', label: 'İşitme Cihazı' },
-  { value: 'battery', label: 'Pil' },
-  { value: 'accessory', label: 'Aksesuar' },
-  { value: 'ear_mold', label: 'Kulak Kalıbı' },
-  { value: 'cleaning_supplies', label: 'Temizlik Malzemeleri' },
-  { value: 'amplifiers', label: 'Amplifikatör' }
+  { value: '', label: t('filters.all_categories') },
+  { value: 'hearing_aid', label: t('categories.title') },
+  { value: 'battery', label: t('form.description') },
+  { value: 'accessory', label: t('form.description') },
+  { value: 'ear_mold', label: t('form.description') },
+  { value: 'cleaning_supplies', label: t('form.description') },
+  { value: 'amplifiers', label: t('form.description') }
 ];
 
 const brandOptions = [
-  { value: '', label: 'Tümü' },
+  { value: '', label: t('filters.all_categories') },
   { value: 'Phonak', label: 'Phonak' },
   { value: 'Oticon', label: 'Oticon' },
   { value: 'Widex', label: 'Widex' },
@@ -31,13 +32,13 @@ const brandOptions = [
 ];
 
 const statusOptions = [
-  { value: '', label: 'Tümü' },
-  { value: 'available', label: 'Mevcut' },
+  { value: '', label: t('filters.all_categories') },
+  { value: 'available', label: t('status.in_stock') },
   { value: 'assigned', label: 'Atanmış' },
   { value: 'maintenance', label: 'Bakımda' },
   { value: 'retired', label: 'Emekli' },
-  { value: 'low_stock', label: 'Düşük Stok' },
-  { value: 'out_of_stock', label: 'Stok Dışı' }
+  { value: 'low_stock', label: t('status.low_stock') },
+  { value: 'out_of_stock', label: t('status.out_of_stock') }
 ];
 
 const InventoryFilters: React.FC<InventoryFiltersProps> = ({
@@ -45,6 +46,7 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
   onFiltersChange,
   onClearFilters,
 }) => {
+  const { t } = useTranslation('inventory');
   const handleFilterChange = (key: keyof IInventoryFilters, value: string | undefined) => {
     onFiltersChange({
       ...filters,
@@ -53,20 +55,20 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6">
       <div className="flex flex-wrap items-center gap-4">
         {/* Search Input */}
         <div className="flex-1 min-w-[300px]">
           <div className="relative">
             <Input
               type="text"
-              placeholder="Ürün ara..."
+              placeholder={t('products.search_placeholder')}
               value={filters.search || ''}
               onChange={(e) => handleFilterChange('search', e.target.value || undefined)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
             />
             <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
+              className="absolute left-3 top-2.5 w-5 h-5 text-muted-foreground"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -81,34 +83,34 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
 
         {/* Category Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kategori:</label>
+          <label className="text-sm font-medium text-foreground">{t('form.category')}:</label>
           <Select
             value={filters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
             options={categoryOptions}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         {/* Brand Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Marka:</label>
+          <label className="text-sm font-medium text-foreground">{t('form.brand')}:</label>
           <Select
             value={filters.brand || ''}
             onChange={(e) => handleFilterChange('brand', e.target.value || undefined)}
             options={brandOptions}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         {/* Status Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Durum:</label>
+          <label className="text-sm font-medium text-foreground">{t('columns.status')}:</label>
           <Select
             value={filters.status || ''}
             onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
             options={statusOptions}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
@@ -117,7 +119,7 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="px-4 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          className="px-4 py-2 text-muted-foreground bg-muted rounded-2xl hover:bg-accent dark:hover:bg-gray-600 transition-colors"
         >
           Filtreleri Temizle
         </Button>

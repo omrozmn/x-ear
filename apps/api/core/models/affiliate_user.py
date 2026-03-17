@@ -1,10 +1,10 @@
+from core.models.base import Base
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, func
-from .base import db
 from sqlalchemy.orm import validates
 import re
 
 
-class AffiliateUser(db.Model):
+class AffiliateUser(Base):
     __tablename__ = 'affiliate_user'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

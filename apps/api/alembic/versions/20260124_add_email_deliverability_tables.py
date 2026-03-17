@@ -19,7 +19,6 @@ Also adds new columns to email_logs table:
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20260124_deliverability'

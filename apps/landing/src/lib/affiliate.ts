@@ -1,11 +1,11 @@
 import { apiClient, tokenManager } from './api-client';
 import { Affiliate, AffiliateRegisterRequest, AffiliateLoginRequest } from '@packages/types/affiliate';
 
-const API_BASE = '/api/affiliate';
+const API_BASE = '/api/affiliates';
 
 // Helper to unwrap backend response format { success: true, data: ... }
 const unwrap = (responseBody: any) => {
-  if (responseBody && responseBody.success && responseBody.data) {
+  if (responseBody && responseBody.success !== undefined && responseBody.data) {
     return responseBody.data;
   }
   return responseBody;
@@ -22,12 +22,12 @@ export const registerAffiliate = async (data: Omit<AffiliateRegisterRequest, 'ib
 export const loginAffiliate = async (data: AffiliateLoginRequest): Promise<Affiliate> => {
   const res = await apiClient.post(`${API_BASE}/login`, data);
   const result = unwrap(res.data);
-  
+
   // Save token to TokenManager if present
   if (result.token || result.access_token) {
     tokenManager.setToken(result.token || result.access_token);
   }
-  
+
   return result;
 };
 

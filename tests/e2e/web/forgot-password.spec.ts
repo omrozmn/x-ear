@@ -1,44 +1,50 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 
-const WEB_URL = process.env.WEB_BASE_URL || 'http://localhost:8080';
+const WEB_URL = process.env.WEB_BASE_URL || 'http://127.0.0.1:8080';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://127.0.0.1:5003';
 
-test.describe('Forgot Password Flow', () => {
+async function prepareOtpUsers(request: APIRequestContext) {
+  const response = await request.post(`${API_BASE_URL}/api/auth/test/prepare-otp-users`, {
+    headers: {
+      'Idempotency-Key': `otp-prepare-${Date.now()}-${Math.random()}`,
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+}
 
-    test('should display forgot password page', async ({ page }) => {
-        await page.goto(`${WEB_URL}/forgot-password`);
-        await page.waitForLoadState('networkidle');
+test.describe('Forgot Password OTP Flow', () => {
+  test.beforeEach(async ({ request, page }) => {
+    await prepareOtpUsers(request);
+    await page.goto(`${WEB_URL}/forgot-password`);
+    await page.waitForLoadState('networkidle');
+  });
 
-        // Verify page loads - either forgot password page or redirect to login
-        const pageContent = page.locator('body');
-        await expect(pageContent).toBeVisible({ timeout: 10000 });
-    });
+  test('moves from direct phone input to OTP verification and new password step', async ({ page }) => {
+    await page.locator('input[placeholder*="Kullanıcı adı"]').fill('5559876543');
+    await page.locator('button:has-text("Devam Et")').click();
 
-    test('should have input fields', async ({ page }) => {
-        await page.goto(`${WEB_URL}/forgot-password`);
-        await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: 'Doğrulama Kodu' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=/5559876543 numarasına gönderilen/i')).toBeVisible();
 
-        // Look for any input fields (may be on forgot-password or login page)
-        const inputs = page.locator('input').first();
-        await expect(inputs).toBeVisible({ timeout: 10000 });
-    });
+    const otpInput = page.locator('input#otp');
+    await otpInput.fill('123456');
+    await page.locator('button:has-text("Kodu Doğrula")').click();
 
-    test('should have action buttons', async ({ page }) => {
-        await page.goto(`${WEB_URL}/forgot-password`);
-        await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: 'Yeni Şifre' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('input#newPassword')).toBeVisible();
+  });
 
-        // Look for any buttons
-        const buttons = page.locator('button');
-        const buttonCount = await buttons.count();
-        expect(buttonCount).toBeGreaterThan(0);
-    });
+  test('supports username lookup and phone confirmation before OTP', async ({ page }) => {
+    await page.locator('input[placeholder*="Kullanıcı adı"]').fill('forgot_password_user');
+    await page.locator('button:has-text("Devam Et")').click();
 
-    test('should have navigation links', async ({ page }) => {
-        await page.goto(`${WEB_URL}/forgot-password`);
-        await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Güvenlik Doğrulaması')).toBeVisible({ timeout: 10000 });
 
-        // Look for any links
-        const links = page.locator('a');
-        const linkCount = await links.count();
-        expect(linkCount).toBeGreaterThanOrEqual(0);
-    });
+    const phoneInput = page.locator('input[type="tel"]');
+    await phoneInput.fill('5559876543');
+    await page.locator('button:has-text("Kod Gönder")').click();
+
+    await expect(page.getByRole('heading', { name: 'Doğrulama Kodu' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('input#otp')).toBeVisible();
+  });
 });

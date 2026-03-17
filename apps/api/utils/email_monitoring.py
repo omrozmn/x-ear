@@ -1,7 +1,6 @@
 """Email monitoring utilities for observability and PII masking."""
 
 import logging
-import re
 import time
 from collections import defaultdict
 from contextlib import contextmanager

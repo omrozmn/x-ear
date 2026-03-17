@@ -8,7 +8,6 @@ from models.user import User
 from models.admin_user import AdminUser
 from models.affiliate_user import AffiliateUser
 from models.tenant import Tenant
-import uuid
 from models.base import db
 from services.affiliate_service import AffiliateService
 from utils.tenant_security import _skip_filter

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/utils/document_scanner.py
+# hypothesis_version: 6.151.6
+
+[0.02, 0.5, 1.2, 500.0, 500, '..', '.jpeg', '.jpg', '/tmp/', 'float32']

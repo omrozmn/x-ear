@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Party } from '../../types/party/party-base.types';
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input, Select, DatePicker } from '@x-ear/ui-web';
 
 interface SGKQueryFormProps {
   party: Party;
@@ -12,7 +12,7 @@ interface SGKQueryData {
   partyId: string;
   tcNumber: string;
   queryType: string;
-  queryDate: string;
+  queryDate: Date | null;
   notes?: string;
 }
 
@@ -25,7 +25,7 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
     partyId: party.id || '',
     tcNumber: party.tcNumber || '',
     queryType: '',
-    queryDate: new Date().toISOString().split('T')[0],
+    queryDate: new Date(),
     notes: '',
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -34,10 +34,17 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleDateChange = (date: Date | null) => {
+    setFormData(prev => ({ ...prev, queryDate: date }));
+    if (errors.queryDate) {
+      setErrors(prev => ({ ...prev, queryDate: '' }));
     }
   };
 
@@ -54,7 +61,7 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
     }
 
     // Date validation
-    if (formData.queryDate && new Date(formData.queryDate) > new Date()) {
+    if (formData.queryDate && formData.queryDate > new Date()) {
       newErrors.queryDate = 'Sorgulama tarihi gelecek bir tarih olamaz';
     }
 
@@ -64,13 +71,13 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // SGK sorgulama işlemi burada yapılacak
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulated API call
@@ -90,13 +97,13 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
   ];
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">SGK Sorgulama</h2>
-      
+    <div className="max-w-2xl mx-auto p-6 bg-card rounded-2xl shadow-lg">
+      <h2 className="text-2xl font-bold text-foreground mb-6">SGK Sorgulama</h2>
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hasta Bilgileri */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Hasta Bilgileri</h3>
+        <div className="bg-muted p-4 rounded-2xl">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Hasta Bilgileri</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Hasta Adı"
@@ -118,8 +125,8 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
         </div>
 
         {/* Sorgulama Bilgileri */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Sorgulama Detayları</h3>
+        <div className="bg-muted p-4 rounded-2xl">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Sorgulama Detayları</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               label="Sorgulama Türü"
@@ -131,16 +138,16 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
               required
               error={errors.queryType}
             />
-            <Input
-              label="Sorgulama Tarihi"
-              name="queryDate"
-              type="date"
-              value={formData.queryDate}
-              onChange={handleInputChange}
-              fullWidth
-              required
-              error={errors.queryDate}
-            />
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-foreground ml-1">Sorgulama Tarihi</label>
+              <DatePicker
+                value={formData.queryDate}
+                onChange={handleDateChange}
+                fullWidth
+                required
+                error={errors.queryDate}
+              />
+            </div>
           </div>
           <div className="mt-4">
             <Input

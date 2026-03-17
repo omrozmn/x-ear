@@ -1,0 +1,13 @@
+Yeni AI Önerisi
+
+Merhaba,
+
+Sisteminiz için yeni bir AI önerisi oluşturuldu.
+
+Öneri ID: {{ proposal_id }}
+Açıklama: {{ description }}
+
+Lütfen öneriye gözden geçirmek için sisteme giriş yapın.
+
+---
+Bu otomatik bir mesajdır. Lütfen yanıtlamayın.

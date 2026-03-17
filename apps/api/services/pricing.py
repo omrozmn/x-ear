@@ -1,8 +1,6 @@
 from uuid import uuid4
 from datetime import timedelta, datetime, timezone
-from models.base import db
 from models.sales import PaymentPlan, PaymentInstallment
-from models.device import Device
 import logging
 
 def now_utc():
@@ -12,7 +10,7 @@ def now_utc():
 logger = logging.getLogger(__name__)
 
 
-def calculate_device_pricing(device_assignments, accessories, services, sgk_scheme, settings):
+def calculate_device_pricing(device_assignments, accessories, services, sgk_scheme, settings, db=None):
     try:
         base_total = 0.0  # List price toplamı (indirim öncesi)
         accessory_total = 0.0
@@ -30,7 +28,7 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
             inventory_item = None
             if inventory_id:
                 from models.inventory import InventoryItem
-                inventory_item = db.session.get(InventoryItem, inventory_id)
+                inventory_item = db.get(InventoryItem, inventory_id)
 
             if assignment.get('base_price') is not None:
                 list_price = float(assignment.get('base_price') or 0)
@@ -134,13 +132,13 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
         # Since sale_items_total already has sgk subtracted per item, we don't subtract it again from the total sum
         # party_responsible_amount = sale_items_total + extras
         party_responsible_amount = round(sale_items_total + accessory_total + service_total, 2)
-        sale_price_with_extras = patient_responsible_amount
+        sale_price_with_extras = party_responsible_amount
         
         # Ensure SGK doesn't exceed the list total (safety check)
         sgk_coverage_amount = round(min(sgk_coverage_amount, total_amount), 2)
         
         # Ensure party payment isn't negative
-        patient_responsible_amount = max(0.0, patient_responsible_amount)
+        patient_responsible_amount = max(0.0, party_responsible_amount)
 
         # Per-item SGK list (per-unit for assignment storage)
         per_item_sgk = [round(d['sgk_support'], 2) for d in per_item_details] if per_item_details else [0.0 for _ in device_assignments]
@@ -197,7 +195,7 @@ def calculate_payment_plan(principal, installments, interest_rate):
         raise
 
 
-def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_id=None):
+def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_id=None, db=None):
     try:
         plans = settings.get('payment', {}).get('plans', {})
         plan_conf = plans.get(plan_type, {}) if plans else {}
@@ -221,18 +219,20 @@ def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_
             status='active'
         )
 
-        for i in range(preview['installments']):
-            inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
-            due_date = now_utc() + timedelta(days=30 * (i + 1))
-            installment = PaymentInstallment(
-                id=inst_id,
-                payment_plan_id=plan_id,
-                installment_number=i + 1,
-                amount=preview['installment_amount'],
-                due_date=due_date,
-                status='pending'
-            )
-            db.session.add(installment)
+        if db:
+            for i in range(preview['installments']):
+                inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
+                due_date = now_utc() + timedelta(days=30 * (i + 1))
+                installment = PaymentInstallment(
+                    id=inst_id,
+                    payment_plan_id=plan_id,
+                    tenant_id=tenant_id,
+                    installment_number=i + 1,
+                    amount=preview['installment_amount'],
+                    due_date=due_date,
+                    status='pending'
+                )
+                db.add(installment)
 
         return payment_plan
 
@@ -241,7 +241,7 @@ def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_
         raise
 
 
-def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rate, principal_amount, tenant_id, branch_id=None):
+def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rate, principal_amount, tenant_id, branch_id=None, db=None):
     try:
         preview = calculate_payment_plan(principal_amount, custom_installments, custom_interest_rate)
         plan_id = f"pp_{uuid4().hex[:8]}_{now_utc().strftime('%d%m%Y%H%M%S') }"
@@ -259,18 +259,20 @@ def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rat
             status='active'
         )
 
-        for i in range(preview['installments']):
-            inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
-            due_date = now_utc() + timedelta(days=30 * (i + 1))
-            installment = PaymentInstallment(
-                id=inst_id,
-                payment_plan_id=plan_id,
-                installment_number=i + 1,
-                amount=preview['installment_amount'],
-                due_date=due_date,
-                status='pending'
-            )
-            db.session.add(installment)
+        if db:
+            for i in range(preview['installments']):
+                inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
+                due_date = now_utc() + timedelta(days=30 * (i + 1))
+                installment = PaymentInstallment(
+                    id=inst_id,
+                    payment_plan_id=plan_id,
+                    tenant_id=tenant_id,
+                    installment_number=i + 1,
+                    amount=preview['installment_amount'],
+                    due_date=due_date,
+                    status='pending'
+                )
+                db.add(installment)
 
         return payment_plan
 

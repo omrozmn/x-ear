@@ -224,7 +224,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
     if (!formData.brand) newErrors.brand = 'Marka seçimi zorunludur';
     if (!formData.model) newErrors.model = 'Model seçimi zorunludur';
-    if (!formData.serialNumber) newErrors.serialNumber = 'Seri numarası zorunludur';
+    // ✅ FIXED: Seri numarası artık zorunlu değil (User Request)
+    // if (!formData.serialNumber) newErrors.serialNumber = 'Seri numarası zorunludur';
     if (!formData.ear) newErrors.ear = 'Kulak seçimi zorunludur';
     if (!formData.assignedDate) newErrors.assignedDate = 'Atama tarihi zorunludur';
     if (!formData.reason) newErrors.reason = 'Atama sebebi zorunludur';
@@ -308,10 +309,10 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Device Search and Selection */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">Cihaz Seçimi</h3>
+          <h3 className="text-lg font-medium text-foreground">Cihaz Seçimi</h3>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               type="text"
               placeholder="Cihaz ara (marka, model)..."
@@ -321,28 +322,28 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           </div>
 
           {deviceSearch && (
-            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+            <div className="max-h-48 overflow-y-auto border border-border rounded-2xl">
               {filteredDevices.map((device) => (
                 <div
                   key={device.id}
                   onClick={() => handleDeviceSelect(device)}
-                  className={`p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${selectedDevice?.id === device.id ? 'bg-blue-50 border-blue-200' : ''
+                  className={`p-3 cursor-pointer hover:bg-muted border-b border-border last:border-b-0 ${selectedDevice?.id === device.id ? 'bg-primary/10 border-blue-200' : ''
                     }`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-gray-900">{device.brand} {device.model}</p>
-                      <p className="text-sm text-gray-500 capitalize">{device.type.replace('_', ' ')}</p>
+                      <p className="font-medium text-foreground">{device.brand} {device.model}</p>
+                      <p className="text-sm text-muted-foreground capitalize">{device.type.replace('_', ' ')}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900">{device.listPrice.toLocaleString('tr-TR')} ₺</p>
-                      <p className="text-sm text-gray-500">{device.availableSerials.length} adet mevcut</p>
+                      <p className="font-medium text-foreground">{device.listPrice.toLocaleString('tr-TR')} ₺</p>
+                      <p className="text-sm text-muted-foreground">{device.availableSerials.length} adet mevcut</p>
                     </div>
                   </div>
                 </div>
               ))}
               {filteredDevices.length === 0 && (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-muted-foreground">
                   Arama kriterinize uygun cihaz bulunamadı
                 </div>
               )}
@@ -350,23 +351,23 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           )}
 
           {selectedDevice && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <CheckCircle className="w-5 h-5 text-blue-600" />
+                <CheckCircle className="w-5 h-5 text-primary" />
                 <span className="font-medium text-blue-900">Seçili Cihaz</span>
               </div>
               <p className="text-blue-800">{selectedDevice.brand} {selectedDevice.model}</p>
-              <p className="text-sm text-blue-600">{selectedDevice.listPrice.toLocaleString('tr-TR')} ₺</p>
+              <p className="text-sm text-primary">{selectedDevice.listPrice.toLocaleString('tr-TR')} ₺</p>
             </div>
           )}
 
-          {errors.brand && <p className="text-red-600 text-sm">{errors.brand}</p>}
+          {errors.brand && <p className="text-destructive text-sm">{errors.brand}</p>}
         </div>
 
         {/* Serial Number Selection */}
         {selectedDevice && (
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-foreground">
               Seri Numarası *
             </label>
             <Select
@@ -381,13 +382,13 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               ]}
               className={errors.serialNumber ? 'border-red-300' : ''}
             />
-            {errors.serialNumber && <p className="text-red-600 text-sm">{errors.serialNumber}</p>}
+            {errors.serialNumber && <p className="text-destructive text-sm">{errors.serialNumber}</p>}
           </div>
         )}
 
         {/* Ear Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-foreground">
             Kulak Seçimi *
           </label>
           <div className="grid grid-cols-3 gap-3">
@@ -401,26 +402,26 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 key={option.value}
                 type="button"
                 onClick={() => handleInputChange('ear', option.value)}
-                className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${formData.ear === option.value
-                    ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                className={`p-3 rounded-2xl border-2 text-sm font-medium transition-colors ${formData.ear === option.value
+                  ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
+                  : 'border-border bg-card text-foreground hover:border-border'
                   }`}
               >
                 {option.label}
               </button>
             ))}
           </div>
-          {errors.ear && <p className="text-red-600 text-sm">{errors.ear}</p>}
+          {errors.ear && <p className="text-destructive text-sm">{errors.ear}</p>}
         </div>
 
         {/* Assignment Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-foreground">
               Atama Tarihi *
             </label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="date"
                 value={formData.assignedDate || ''}
@@ -428,11 +429,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 className={errors.assignedDate ? 'border-red-300' : ''}
               />
             </div>
-            {errors.assignedDate && <p className="text-red-600 text-sm">{errors.assignedDate}</p>}
+            {errors.assignedDate && <p className="text-destructive text-sm">{errors.assignedDate}</p>}
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-foreground">
               Atama Sebebi *
             </label>
             <Select
@@ -440,6 +441,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               onChange={(event) => handleInputChange('reason', event.target.value)}
               options={[
                 { value: '', label: 'Sebep seçin' },
+                { value: 'sale', label: 'Satış' },
                 { value: 'new', label: 'Yeni Hasta' },
                 { value: 'replacement', label: 'Değişim' },
                 { value: 'upgrade', label: 'Yükseltme' },
@@ -448,13 +450,13 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               ]}
               className={errors.reason ? 'border-red-300' : ''}
             />
-            {errors.reason && <p className="text-red-600 text-sm">{errors.reason}</p>}
+            {errors.reason && <p className="text-destructive text-sm">{errors.reason}</p>}
           </div>
         </div>
 
         {/* Status Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-foreground">
             Durum
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -469,9 +471,9 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 key={status.value}
                 type="button"
                 onClick={() => handleInputChange('status', status.value)}
-                className={`p-2 rounded-lg border text-sm font-medium transition-colors ${formData.status === status.value
-                    ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                className={`p-2 rounded-2xl border text-sm font-medium transition-colors ${formData.status === status.value
+                  ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
+                  : 'border-border bg-card text-foreground hover:border-border'
                   }`}
               >
                 {status.label}
@@ -483,11 +485,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         {/* Trial End Date (if status is trial) */}
         {formData.status === 'trial' && (
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-foreground">
               Deneme Bitiş Tarihi
             </label>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="date"
                 value={formData.trialEndDate || ''}
@@ -499,14 +501,14 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
         {/* Pricing Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <h3 className="text-lg font-medium text-foreground flex items-center">
             <DollarSign className="w-5 h-5 mr-2" />
             Fiyatlandırma
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-foreground">
                 Liste Fiyatı *
               </label>
               <div className="relative">
@@ -517,13 +519,13 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   placeholder="0"
                   className={errors.listPrice ? 'border-red-300' : ''}
                 />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₺</span>
               </div>
-              {errors.listPrice && <p className="text-red-600 text-sm">{errors.listPrice}</p>}
+              {errors.listPrice && <p className="text-destructive text-sm">{errors.listPrice}</p>}
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-foreground">
                 Satış Fiyatı
               </label>
               <div className="relative">
@@ -534,15 +536,15 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   placeholder="0"
                   className={errors.salePrice ? 'border-red-300' : ''}
                 />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₺</span>
               </div>
-              {errors.salePrice && <p className="text-red-600 text-sm">{errors.salePrice}</p>}
+              {errors.salePrice && <p className="text-destructive text-sm">{errors.salePrice}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-foreground">
                 SGK Katkısı
               </label>
               <div className="relative">
@@ -553,13 +555,13 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   placeholder="0"
                   className={errors.sgkReduction ? 'border-red-300' : ''}
                 />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₺</span>
               </div>
-              {errors.sgkReduction && <p className="text-red-600 text-sm">{errors.sgkReduction}</p>}
+              {errors.sgkReduction && <p className="text-destructive text-sm">{errors.sgkReduction}</p>}
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-foreground">
                 Hasta Ödemesi
               </label>
               <div className="relative">
@@ -569,18 +571,18 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   onChange={(e) => handleInputChange('partyPayment', parseFloat(e.target.value) || 0)}
                   placeholder="0"
                   readOnly
-                  className="bg-gray-50"
+                  className="bg-muted"
                 />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₺</span>
               </div>
-              <p className="text-xs text-gray-500">Otomatik hesaplanır (Satış Fiyatı - SGK Katkısı)</p>
+              <p className="text-xs text-muted-foreground">Otomatik hesaplanır (Satış Fiyatı - SGK Katkısı)</p>
             </div>
           </div>
         </div>
 
         {/* Payment Method */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-foreground">
             Ödeme Yöntemi
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -597,9 +599,9 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   key={method.value}
                   type="button"
                   onClick={() => handleInputChange('paymentMethod', method.value)}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${formData.paymentMethod === method.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  className={`p-3 rounded-2xl border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${formData.paymentMethod === method.value
+                    ? 'border-blue-500 bg-primary/10 text-primary'
+                    : 'border-border bg-card text-foreground hover:border-border'
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -612,11 +614,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
         {/* Notes */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-foreground">
             Notlar
           </label>
           <div className="relative">
-            <FileText className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+            <FileText className="absolute left-3 top-3 text-muted-foreground w-4 h-4" />
             <Textarea
               value={formData.notes || ''}
               onChange={(e) => handleInputChange('notes', e.target.value)}
@@ -627,7 +629,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+        <div className="flex justify-end space-x-3 pt-6 border-t border-border">
           <Button
             type="button"
             onClick={handleClose}

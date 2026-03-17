@@ -4,8 +4,6 @@ SYSTEMATIC ENDPOINT TESTING - ALL 450 ENDPOINTS BY MODULE
 Tests every module systematically to identify all working and failing endpoints
 """
 import requests
-import json
-from collections import defaultdict
 
 BASE_URL = 'http://localhost:5003'
 

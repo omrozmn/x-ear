@@ -15,10 +15,9 @@ This test uses Hypothesis to generate random domain configurations and verify th
 IMPORTANT: These tests use REAL DNS queries (no mocks) as per X-Ear CRM rules.
 """
 
+from hypothesis import given, strategies as st, settings, HealthCheck
 import pytest
-from hypothesis import given, strategies as st, settings, assume, HealthCheck
-import dns.resolver
-import dns.exception
+pytestmark = pytest.mark.real_spf  # Use real SPF validation, not the autouse mock
 
 from services.dns_validation_service import DNSValidationService
 

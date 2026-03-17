@@ -1,0 +1,188 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - button [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - generic [ref=e8]:
+          - img "X-Ear Logo" [ref=e9]
+          - heading "X-EAR CRM" [level=2] [ref=e10]
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - generic [ref=e13] [cursor=pointer]:
+            - img [ref=e15]
+            - generic [ref=e17]: Dashboard
+        - listitem [ref=e18]:
+          - generic [ref=e19] [cursor=pointer]:
+            - img [ref=e21]
+            - generic [ref=e26]: Patients
+        - listitem [ref=e27]:
+          - generic [ref=e28] [cursor=pointer]:
+            - img [ref=e30]
+            - generic [ref=e32]: Appointments
+        - listitem [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e39]: Invoices
+            - img [ref=e41]
+        - listitem [ref=e43]:
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e46]
+            - generic [ref=e50]: Inventory
+        - listitem [ref=e51]:
+          - generic [ref=e52] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e58]: Suppliers
+        - listitem [ref=e59]:
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e64]: POS
+        - listitem [ref=e65]:
+          - generic [ref=e66] [cursor=pointer]:
+            - img [ref=e68]
+            - generic [ref=e72]: Cashflow
+        - listitem [ref=e73]:
+          - generic [ref=e74] [cursor=pointer]:
+            - img [ref=e76]
+            - generic [ref=e78]: SMS Campaign
+        - listitem [ref=e79]:
+          - generic [ref=e80] [cursor=pointer]:
+            - img [ref=e82]
+            - generic [ref=e85]: Reports
+        - listitem [ref=e86]:
+          - generic [ref=e87] [cursor=pointer]:
+            - img [ref=e89]
+            - generic [ref=e92]: Automation
+        - listitem [ref=e93]:
+          - generic [ref=e94] [cursor=pointer]:
+            - img [ref=e96]
+            - generic [ref=e99]: Settings
+            - img [ref=e101]
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - generic [ref=e105]:
+          - heading "Dashboard" [level=1] [ref=e106]
+          - generic [ref=e108] [cursor=pointer]:
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - img [ref=e113]
+              - generic [ref=e116]: Search or start action with AI...
+            - generic [ref=e118]:
+              - generic [ref=e119]: ⌘
+              - text: K
+          - generic [ref=e120]:
+            - button "Koyu Tema" [ref=e121] [cursor=pointer]:
+              - img [ref=e122]
+            - button "TR" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e129]: TR
+            - button "Notifications" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+            - button "No Tenant" [ref=e136] [cursor=pointer]:
+              - img [ref=e137]
+              - generic [ref=e141]: No Tenant
+              - img [ref=e142]
+            - 'button "Debug: super_admin" [ref=e145] [cursor=pointer]':
+              - img [ref=e146]
+              - generic [ref=e155]: "Debug: super_admin"
+              - img [ref=e156]
+            - button "admin super_admin" [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e164]:
+                - generic [ref=e165]: admin
+                - generic [ref=e166]: super_admin
+              - img [ref=e167]
+      - main [ref=e169]:
+        - generic [ref=e170]:
+          - generic [ref=e173]:
+            - generic [ref=e175]:
+              - combobox [ref=e176]:
+                - option "Bugün"
+                - option "Son 1 Hafta" [selected]
+                - option "Son 1 Ay"
+                - option "Son Çeyrek"
+              - generic:
+                - img
+            - button [ref=e177] [cursor=pointer]:
+              - img [ref=e178]
+          - generic [ref=e183]:
+            - generic [ref=e184] [cursor=pointer]:
+              - generic [ref=e186]:
+                - img [ref=e188]
+                - generic [ref=e193]: +12%
+              - generic [ref=e194]:
+                - heading "0" [level=3] [ref=e195]
+                - paragraph [ref=e196]: Toplam Hasta
+            - generic [ref=e197] [cursor=pointer]:
+              - generic [ref=e199]:
+                - img [ref=e201]
+                - generic [ref=e203]: +5%
+              - generic [ref=e204]:
+                - heading "0" [level=3] [ref=e205]
+                - paragraph [ref=e206]: Aktif Denemeler
+            - generic [ref=e207] [cursor=pointer]:
+              - generic [ref=e209]:
+                - img [ref=e211]
+                - generic [ref=e214]: +8%
+              - generic [ref=e215]:
+                - heading "₺0" [level=3] [ref=e216]
+                - paragraph [ref=e217]: Aylık Ciro
+            - generic [ref=e218] [cursor=pointer]:
+              - generic [ref=e220]:
+                - img [ref=e222]
+                - generic [ref=e224]: 3 bekleyen
+              - generic [ref=e225]:
+                - heading "0" [level=3] [ref=e226]
+                - paragraph [ref=e227]: Bugünkü Randevular
+          - generic [ref=e229]:
+            - generic [ref=e230]:
+              - heading "Hızlı İstatistikler" [level=3] [ref=e231]
+              - generic [ref=e232]: Bugün
+            - generic [ref=e233]:
+              - generic [ref=e234]:
+                - generic [ref=e235]:
+                  - img [ref=e237]
+                  - generic [ref=e242]: Aktif Hastalar
+                - generic [ref=e244]: "0"
+              - generic [ref=e245]:
+                - generic [ref=e246]:
+                  - img [ref=e248]
+                  - generic [ref=e250]: Günlük Ciro
+                - generic [ref=e252]: ₺0
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - img [ref=e256]
+                  - generic [ref=e258]: Bekleyen Randevular
+                - generic [ref=e260]: "0"
+              - generic [ref=e261]:
+                - generic [ref=e262]:
+                  - img [ref=e264]
+                  - generic [ref=e267]: Biten Denemeler
+                - generic [ref=e269]: "0"
+          - generic [ref=e270]:
+            - generic [ref=e271]:
+              - heading "Hasta Dağılımı" [level=3] [ref=e272]
+              - generic [ref=e274]:
+                - img [ref=e275]
+                - text: Bu içeriği görüntüleme izniniz yok
+            - generic [ref=e277]:
+              - heading "Son Aktiviteler" [level=3] [ref=e278]
+              - generic [ref=e280]:
+                - img [ref=e281]
+                - text: Bu içeriği görüntüleme izniniz yok
+  - generic:
+    - contentinfo:
+      - button "Open TanStack Router Devtools" [ref=e283] [cursor=pointer]:
+        - generic [ref=e284]:
+          - img [ref=e286]
+          - img [ref=e321]
+        - generic [ref=e355]: "-"
+        - generic [ref=e356]: TanStack Router
+  - generic [ref=e357]:
+    - img [ref=e359]
+    - button "Open Tanstack query devtools" [ref=e407] [cursor=pointer]:
+      - img [ref=e408]
+```

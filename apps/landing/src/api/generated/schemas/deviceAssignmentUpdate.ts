@@ -21,7 +21,9 @@ import type { DeviceAssignmentUpdateDiscountValue } from './deviceAssignmentUpda
 import type { DeviceAssignmentUpdateSgkScheme } from './deviceAssignmentUpdateSgkScheme';
 import type { DeviceAssignmentUpdateSgkSupportType } from './deviceAssignmentUpdateSgkSupportType';
 import type { DeviceAssignmentUpdateSalePrice } from './deviceAssignmentUpdateSalePrice';
+import type { DeviceAssignmentUpdateListPrice } from './deviceAssignmentUpdateListPrice';
 import type { DeviceAssignmentUpdatePatientPayment } from './deviceAssignmentUpdatePatientPayment';
+import type { DeviceAssignmentUpdateNetPayable } from './deviceAssignmentUpdateNetPayable';
 import type { DeviceAssignmentUpdateSgkReduction } from './deviceAssignmentUpdateSgkReduction';
 import type { DeviceAssignmentUpdateSgkSupport } from './deviceAssignmentUpdateSgkSupport';
 import type { DeviceAssignmentUpdateDownPayment } from './deviceAssignmentUpdateDownPayment';
@@ -53,7 +55,9 @@ export interface DeviceAssignmentUpdate {
   sgkScheme?: DeviceAssignmentUpdateSgkScheme;
   sgkSupportType?: DeviceAssignmentUpdateSgkSupportType;
   salePrice?: DeviceAssignmentUpdateSalePrice;
+  listPrice?: DeviceAssignmentUpdateListPrice;
   patientPayment?: DeviceAssignmentUpdatePatientPayment;
+  netPayable?: DeviceAssignmentUpdateNetPayable;
   sgkReduction?: DeviceAssignmentUpdateSgkReduction;
   sgkSupport?: DeviceAssignmentUpdateSgkSupport;
   downPayment?: DeviceAssignmentUpdateDownPayment;

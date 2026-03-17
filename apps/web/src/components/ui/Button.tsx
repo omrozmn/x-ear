@@ -1,23 +1,18 @@
 import { Button as UIButton } from '@x-ear/ui-web';
 import React from 'react';
 
-type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost';
+type UIButtonProps = React.ComponentProps<typeof UIButton>;
+
+type Props = Omit<UIButtonProps, 'variant'> & {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'success' | 'danger' | 'default';
 };
 
-export const Button: React.FC<Props> = ({ variant = 'primary', children, style, ...rest }) => {
-  const base = 'px-3 py-1 rounded text-sm';
-  const cls =
-    variant === 'primary'
-      ? `${base} bg-blue-600 text-white hover:bg-blue-700`
-      : variant === 'secondary'
-        ? `${base} bg-gray-100 text-gray-900`
-        : `${base} bg-transparent`;
-  return (
-    <UIButton className={cls} {...rest} style={style} variant='default'>
-      {children}
-    </UIButton>
-  );
+/**
+ * Local Button wrapper that delegates to @x-ear/ui-web Button.
+ * Maps variant names 1:1 so the design system stays consistent.
+ */
+export const Button: React.FC<Props> = ({ variant = 'primary', ...rest }) => {
+  return <UIButton variant={variant} {...rest} />;
 };
 
 export default Button;

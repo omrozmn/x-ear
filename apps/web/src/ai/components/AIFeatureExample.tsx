@@ -13,7 +13,8 @@
  */
 
 import React from 'react';
-import { AIFeatureWrapper, useAIFeatureAvailability } from './AIFeatureWrapper';
+import { AIFeatureWrapper } from './AIFeatureWrapper';
+import { useAIFeatureAvailability } from '../hooks/useAIFeatureAvailability';
 import { AIChatWidget } from './AIChatWidget';
 import { PendingActionBadge } from './PendingActionBadge';
 
@@ -31,7 +32,7 @@ export function AIChatFeatureExample(): React.ReactElement {
     <AIFeatureWrapper
       capability="chat"
       fallback={
-        <div className="p-4 bg-gray-100 rounded-lg text-gray-600">
+        <div className="p-4 bg-muted rounded-2xl text-muted-foreground">
           AI Chat şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.
         </div>
       }
@@ -79,7 +80,7 @@ export function AIConditionalFeatureExample(): React.ReactElement {
 
   if (!available) {
     return (
-      <div className="p-4 border border-yellow-300 bg-yellow-50 rounded-lg">
+      <div className="p-4 border border-yellow-300 bg-warning/10 rounded-2xl">
         <p className="text-yellow-800">
           AI özelliği kullanılamıyor: {message}
         </p>
@@ -91,8 +92,8 @@ export function AIConditionalFeatureExample(): React.ReactElement {
   }
 
   return (
-    <div className="p-4 border border-green-300 bg-green-50 rounded-lg">
-      <p className="text-green-800">AI özelliği kullanılabilir!</p>
+    <div className="p-4 border border-green-300 bg-success/10 rounded-2xl">
+      <p className="text-success">AI özelliği kullanılabilir!</p>
       {/* Your AI-dependent content here */}
     </div>
   );
@@ -135,9 +136,9 @@ export function AIDynamicFallbackExample(): React.ReactElement {
     <AIFeatureWrapper
       capability="ocr"
       fallback={(reason, message) => (
-        <div className={`p-4 rounded-lg ${reason === 'quota_exceeded'
-            ? 'bg-yellow-50 border-yellow-300'
-            : 'bg-red-50 border-red-300'
+        <div className={`p-4 rounded-2xl ${reason === 'quota_exceeded'
+          ? 'bg-warning/10 border-yellow-300'
+          : 'bg-destructive/10 border-red-300'
           } border`}>
           <h3 className="font-semibold">
             {reason === 'quota_exceeded'
@@ -148,9 +149,9 @@ export function AIDynamicFallbackExample(): React.ReactElement {
         </div>
       )}
     >
-      <div className="p-4 bg-white rounded-lg shadow">
+      <div className="p-4 bg-card rounded-2xl shadow">
         <h3 className="font-semibold">Belge Tarama (OCR)</h3>
-        <p className="text-gray-600">Belgenizi yükleyin, AI otomatik olarak tanıyacak.</p>
+        <p className="text-muted-foreground">Belgenizi yükleyin, AI otomatik olarak tanıyacak.</p>
       </div>
     </AIFeatureWrapper>
   );
@@ -172,14 +173,14 @@ export function AIPartyContextExample(): React.ReactElement {
       capability="actions"
       requirePartyContext
       fallback={
-        <div className="p-4 bg-gray-100 rounded-lg text-gray-600">
+        <div className="p-4 bg-muted rounded-2xl text-muted-foreground">
           Bu özelliği kullanmak için önce bir hasta seçin.
         </div>
       }
     >
-      <div className="p-4 bg-white rounded-lg shadow">
+      <div className="p-4 bg-card rounded-2xl shadow">
         <h3 className="font-semibold">Hasta AI Asistanı</h3>
-        <p className="text-gray-600">Seçili hasta için AI önerileri</p>
+        <p className="text-muted-foreground">Seçili hasta için AI önerileri</p>
       </div>
     </AIFeatureWrapper>
   );

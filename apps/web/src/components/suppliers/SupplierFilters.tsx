@@ -21,17 +21,17 @@ export function SupplierFilters({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Status Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Durum
           </label>
           <div className="flex gap-2">
             <button
               data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: undefined })}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 !filters?.status
-                  ? 'bg-blue-100 text-blue-700 border-blue-300'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  ? 'bg-primary/10 text-primary border-blue-300'
+                  : 'bg-card text-foreground border-border hover:bg-muted'
               } border`}
             >
               Tümü
@@ -39,10 +39,10 @@ export function SupplierFilters({
             <button
               data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: 'ACTIVE' })}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 filters?.status === 'ACTIVE'
-                  ? 'bg-green-100 text-green-700 border-green-300'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  ? 'bg-success/10 text-success border-green-300'
+                  : 'bg-card text-foreground border-border hover:bg-muted'
               } border`}
             >
               Aktif
@@ -50,10 +50,10 @@ export function SupplierFilters({
             <button
               data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: 'INACTIVE' })}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 filters?.status === 'INACTIVE'
-                  ? 'bg-gray-100 text-gray-700 border-gray-400'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  ? 'bg-muted text-foreground border-gray-400'
+                  : 'bg-card text-foreground border-border hover:bg-muted'
               } border`}
             >
               Pasif
@@ -63,7 +63,7 @@ export function SupplierFilters({
 
         {/* City Filter */}
         <div>
-          <label htmlFor="city-filter" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="city-filter" className="block text-sm font-medium text-foreground mb-2">
             Şehir
           </label>
           <input
@@ -73,7 +73,7 @@ export function SupplierFilters({
             placeholder="Şehir filtrele..."
             value={filters?.city || ''}
             onChange={(e) => onFiltersChange({ ...(filters || {}), city: e.target.value || undefined })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 

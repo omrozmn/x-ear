@@ -14,11 +14,9 @@ from sqlalchemy.orm.attributes import flag_modified
 from database import get_db
 from schemas.base import ResponseEnvelope
 from schemas.tenants import (
-    SubscriptionResponse, SignupResponse, CurrentSubscriptionResponse,
-    TenantRead, PlanRead
+    SubscriptionResponse, SignupResponse, CurrentSubscriptionResponse
 )
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-
+from middleware.unified_access import UnifiedAccess, require_access
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
@@ -103,7 +101,6 @@ def subscribe(
     """Subscribe to a plan (Mock Payment)"""
     from models.tenant import Tenant, TenantStatus
     from models.plan import Plan
-    from models.user import User
     
     user = access.user
     if not user:
@@ -165,14 +162,15 @@ def subscribe(
     
     if plan.features and isinstance(plan.features, list):
         for feature in plan.features:
-            key = feature.get('key')
-            limit = feature.get('limit', 0)
-            if key:
-                feature_usage[key] = {
-                    'limit': limit,
-                    'used': 0,
-                    'last_reset': start_date.isoformat()
-                }
+            if isinstance(feature, dict):
+                key = feature.get('key')
+                limit = feature.get('limit', 0)
+                if key:
+                    feature_usage[key] = {
+                        'limit': limit,
+                        'used': 0,
+                        'last_reset': start_date.isoformat()
+                    }
     
     # Process SMS Package
     if request_data.sms_package_id:
@@ -187,6 +185,22 @@ def subscribe(
     tenant.feature_usage = feature_usage
     flag_modified(tenant, "feature_usage")
     
+    # Generate Referral Commission
+    if tenant.affiliate_id and plan.price and float(plan.price) > 0:
+        try:
+            from services.commission_service import CommissionService
+            commission_amount = float(plan.price) * 0.10  # 10% commission
+            CommissionService.create_commission(
+                db=db,
+                affiliate_id=tenant.affiliate_id,
+                tenant_id=tenant.id,
+                event='signup_subscription',
+                amount=commission_amount
+            )
+        except Exception as e:
+            logger.error(f"Failed to create commission for tenant {tenant.id}: {e}")
+            # Do not fail subscription if commission fails
+
     db.commit()
     
     return ResponseEnvelope(data=SubscriptionResponse(
@@ -228,8 +242,10 @@ def complete_signup(
     
     # Create Tenant if not exists
     tenant = None
-    if user.tenant_id:
-        tenant = db.get(Tenant, user.tenant_id)
+    # Check if user has tenant_id attribute (User model has it, AdminUser doesn't)
+    user_tenant_id = getattr(user, 'tenant_id', None)
+    if user_tenant_id:
+        tenant = db.get(Tenant, user_tenant_id)
     
     if not tenant:
         company_name = request_data.company_name or f"{user.first_name}'s Clinic"
@@ -286,6 +302,130 @@ def complete_signup(
         tenant=serialize_tenant(tenant),
         user={'id': user.id, 'email': user.email, 'role': user.role},
         token=request_data.token
+    ))
+
+# ── Feature-flag definitions ──────────────────────────────────────
+# Every sidebar menu item maps to a feature key.  Plan.features JSON
+# stores the enabled keys: {"invoices": true, "sgk": true, ...}
+# Features NOT listed in a plan are disabled by default.
+# Super-admin / impersonating always get ALL features.
+
+# Core features always available (no plan restriction)
+ALL_FEATURE_DEFAULTS = {
+    'patients': True, 'appointments': True, 'inventory': True,
+    'suppliers': True, 'sales': True, 'purchases': True,
+    'payments': True, 'campaigns': True, 'website_builder': True,
+    'invoices': True, 'invoices.outgoing': True, 'invoices.incoming': True,
+    'invoices.proformas': True, 'invoices.summary': True, 'invoices.new': True,
+    'sgk': True, 'sgk.upload': True, 'sgk.reports': True,
+    'reports': True, 'invoice_normalizer': True, 'cashflow': True,
+    'pos': True, 'automation': True, 'ai_chat': True, 'uts': True,
+    'integrations_ui': False, 'pricing_ui': False, 'security_ui': False,
+}
+
+
+class FeaturesResponse(BaseModel):
+    features: dict  # {feature_key: bool}
+    plan_name: Optional[str] = None
+    is_super_admin: bool = False
+    sector: str = "hearing"
+    enabled_modules: list[str] = []
+
+
+@router.get("/features", operation_id="listSubscriptionFeatures", response_model=ResponseEnvelope[FeaturesResponse])
+def get_enabled_features(
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Return enabled feature flags for the current tenant's plan.
+    
+    Reads admin-configured flags from SystemSetting table (key='features').
+    Each flag has mode='visible' or 'hidden', and optional plan restrictions.
+    """
+    import json
+    from models.tenant import Tenant
+    from models.plan import Plan
+    from core.models.system_setting import SystemSetting
+
+    # Super-admin or impersonating admin → everything enabled
+    if access.is_super_admin or (access.is_admin and access.is_impersonating):
+        from config.module_registry import get_all_modules
+        return ResponseEnvelope(data=FeaturesResponse(
+            features={f: True for f in ALL_FEATURE_DEFAULTS},
+            plan_name='Super Admin',
+            is_super_admin=True,
+            sector='hearing',
+            enabled_modules=[m.module_id for m in get_all_modules()],
+        ))
+
+    # Read admin-configured feature flags from SystemSetting
+    setting = db.query(SystemSetting).filter_by(key='features').first()
+    admin_flags = {}
+    if setting and setting.value:
+        try:
+            admin_flags = json.loads(setting.value) if isinstance(setting.value, str) else setting.value
+        except Exception:
+            admin_flags = {}
+
+    # Determine tenant's plan
+    tenant = db.get(Tenant, access.tenant_id) if access.tenant_id else None
+    plan = None
+    plan_id = None
+    if tenant:
+        plan_id = getattr(tenant, 'current_plan_id', None)
+        if plan_id:
+            plan = db.get(Plan, plan_id)
+
+    plan_name = plan.name if plan else (getattr(tenant, 'current_plan', None) if tenant else None)
+
+    # Derive sector and country before feature evaluation
+    from config.module_registry import get_enabled_module_ids
+    tenant_sector = getattr(tenant, 'sector', None) or 'hearing'
+    tenant_country = getattr(tenant, 'country_code', None)
+
+    # Build final feature map
+    features: dict = {}
+    for key, default_val in ALL_FEATURE_DEFAULTS.items():
+        flag = admin_flags.get(key)
+        if flag and isinstance(flag, dict):
+            mode = flag.get('mode', 'visible')
+            if mode == 'hidden':
+                features[key] = False
+                continue
+            # Check plan restriction
+            allowed_plans = flag.get('plans', [])
+            if allowed_plans and plan_id:
+                features[key] = plan_id in allowed_plans
+            elif allowed_plans and not plan_id:
+                features[key] = False
+            else:
+                features[key] = True
+            # Check country restriction
+            allowed_countries = flag.get('countries', [])
+            if allowed_countries and features[key]:
+                if not tenant_country or tenant_country not in allowed_countries:
+                    features[key] = False
+            # Check sector restriction
+            allowed_sectors = flag.get('sectors', [])
+            if allowed_sectors and features[key]:
+                if tenant_sector not in allowed_sectors:
+                    features[key] = False
+        else:
+            features[key] = default_val
+
+    # Parent→child inheritance: if parent hidden, children hidden too
+    for parent_key in ['invoices', 'sgk']:
+        if not features.get(parent_key, True):
+            for child_key in [k for k in features if k.startswith(parent_key + '.')]:
+                features[child_key] = False
+    enabled_module_ids = list(get_enabled_module_ids(tenant_sector))
+
+    return ResponseEnvelope(data=FeaturesResponse(
+        features=features,
+        plan_name=plan_name,
+        is_super_admin=False,
+        sector=tenant_sector,
+        enabled_modules=enabled_module_ids,
     ))
 
 @router.get("/current", operation_id="listSubscriptionCurrent", response_model=ResponseEnvelope[CurrentSubscriptionResponse])

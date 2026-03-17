@@ -133,6 +133,31 @@ export interface ChatResponse {
   processingTimeMs: number;
   piiDetected: boolean;
   phiDetected: boolean;
+  actionPlan?: ActionPlan;
+  matchedCapability?: MatchedCapability;
+}
+
+/**
+ * Slot definition from matched capability for UI rendering
+ */
+export interface MatchedSlot {
+  name: string;
+  prompt: string;
+  uiType: 'entity_search' | 'enum' | 'date' | 'number' | 'text' | 'file' | 'boolean' | 'time';
+  sourceEndpoint?: string;
+  enumOptions?: string[];
+  validationRules?: Record<string, unknown>;
+}
+
+/**
+ * Matched capability with slots for auto slot-filling UI
+ */
+export interface MatchedCapability {
+  name: string;
+  displayName?: string;
+  description: string;
+  category: string;
+  slots: MatchedSlot[];
 }
 
 // =============================================================================
@@ -156,6 +181,7 @@ export interface ActionPlan {
 
 export type ActionPlanStatus =
   | 'pending'
+  | 'ready'
   | 'approved'
   | 'rejected'
   | 'executing'
@@ -252,6 +278,7 @@ export interface AIContext {
   role: AIRole;
   profile: AIProfile;
   capability?: AICapability;
+  language?: string;
 }
 
 export type AIRole = 'PARTY' | 'STAFF' | 'ADMIN' | 'SUPER_ADMIN';

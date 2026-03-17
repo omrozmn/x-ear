@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { Modal, Button, Input, Alert } from '@x-ear/ui-web';
 import { Box, Folder, DollarSign, Tag, Truck, Star } from 'lucide-react';
@@ -52,6 +53,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
   onBulkOperation,
   isLoading = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [operationType, setOperationType] = useState<string>('');
   const [formData, setFormData] = useState({
     stock: '',
@@ -130,16 +132,16 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Toplu İşlemler"
+      title={t('bulk_operations.title')}
       size="md"
     >
       <div className="space-y-6">
         <Alert variant="info" className="dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-100">
-          {selectedItems.length} ürün seçildi. Bu işlem geri alınamaz.
+          {t('bulk_operations.selected_count', { count: selectedItems.length })}
         </Alert>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">İşlem Türü</label>
+          <label className="block text-sm font-medium text-foreground mb-2">{t('bulk_operations.title')}</label>
           <div className="grid grid-cols-3 gap-2">
             {OPERATION_TYPES.map(op => (
               <button
@@ -148,13 +150,13 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
                 type="button"
                 onClick={() => setOperationType(op.value)}
                 aria-pressed={operationType === op.value}
-                className={`flex items-center space-x-2 p-3 border rounded-md text-sm focus:outline-none transition-colors ${operationType === op.value
-                  ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/40 dark:border-blue-500'
+                className={`flex items-center space-x-2 p-3 border rounded-xl text-sm focus:outline-none transition-colors ${operationType === op.value
+                  ? 'bg-primary/10 border-blue-300 dark:border-blue-500'
                   : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
                   }`}
               >
-                <span className={`text-gray-700 dark:text-gray-300 ${operationType === op.value ? 'dark:text-white' : ''}`}>{op.icon}</span>
-                <span className={`text-left text-sm text-gray-800 dark:text-gray-200 ${operationType === op.value ? 'dark:text-white' : ''}`}>{op.label}</span>
+                <span className={`text-foreground ${operationType === op.value ? '' : ''}`}>{op.icon}</span>
+                <span className={`text-left text-sm text-foreground ${operationType === op.value ? '' : ''}`}>{op.label}</span>
               </button>
             ))}
           </div>
@@ -163,7 +165,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
         {operationType === 'update_stock' && (
           <div>
             <Input
-              label="Yeni Stok Miktarı"
+              label={t('stock.current_stock')}
               type="number"
               value={formData.stock}
               onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
@@ -188,7 +190,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
         {operationType === 'update_price' && (
           <div>
             <Input
-              label="Yeni Fiyat (₺)"
+              label={t('pricing.sale_price')}
               type="number"
               step="0.01"
               value={formData.price}
@@ -197,12 +199,12 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
               className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">KDV Oranı (%)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{t('form.vat_rate')}</label>
               <select
                 data-allow-raw="true"
                 value={formData.kdv}
                 onChange={(e) => setFormData(prev => ({ ...prev, kdv: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring dark:bg-gray-700 dark:text-white"
               >
                 <option value="">(Aynı bırak)</option>
                 <option value="0">0%</option>
@@ -223,6 +225,10 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
               onChange={(val) => setFormData(prev => ({ ...prev, supplier: val }))}
               placeholder="Tedarikçi adını girin veya seçin"
               required
+              onSupplierCreated={(_name, id) => {
+                const path = id ? `/suppliers/${id}` : '/suppliers';
+                window.open(path, '_blank');
+              }}
             />
           </div>
         )}
@@ -242,7 +248,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
           <div className="space-y-3">
             <div className="flex space-x-2">
               <Input
-                label="Yeni Özellik"
+                label={t('form.description')}
                 value={formData.newFeature}
                 onChange={(e) => setFormData(prev => ({ ...prev, newFeature: e.target.value }))}
                 placeholder="Özellik adını girin..."
@@ -267,14 +273,14 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             </div>
             {formData.features.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Eklenecek Özellikler:
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {formData.features.map((feature, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200"
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-200"
                     >
                       {feature}
                       <Button
@@ -286,7 +292,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
                             features: prev.features.filter((_, i) => i !== index)
                           }));
                         }}
-                        className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100 p-0 h-auto"
+                        className="ml-1 text-primary hover:text-blue-800 dark:hover:text-blue-100 p-0 h-auto"
                       >
                         ×
                       </Button>
@@ -305,7 +311,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             variant="ghost"
             onClick={handleClose}
             disabled={isLoading}
-            className="text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="text-muted-foreground hover:bg-muted dark:hover:bg-gray-700"
           >
             İptal
           </Button>
@@ -313,12 +319,12 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             onClick={handleSubmit}
             disabled={!operationType || isLoading}
             loading={isLoading}
-            className={`inline-flex items-center px-4 py-2 rounded-md ${selectedOperation?.color === 'red' ? 'bg-red-600 hover:bg-red-700 text-white' :
-              selectedOperation?.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700 text-white' :
+            className={`inline-flex items-center px-4 py-2 rounded-xl ${selectedOperation?.color === 'red' ? 'bg-red-600 hover:bg-red-700 text-white' :
+              selectedOperation?.color === 'blue' ? 'premium-gradient tactile-press text-white' :
                 selectedOperation?.color === 'green' ? 'bg-green-600 hover:bg-green-700 text-white' :
                   selectedOperation?.color === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
                     selectedOperation?.color === 'purple' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
-                      'bg-blue-600 hover:bg-blue-700 text-white'
+                      'premium-gradient tactile-press text-white'
               }`}
           >
             <span className="mr-2">{selectedOperation?.icon}</span>

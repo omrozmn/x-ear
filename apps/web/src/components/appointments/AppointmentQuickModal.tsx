@@ -140,7 +140,7 @@ export function AppointmentQuickModal({
           <Text className="text-xl font-semibold">
             Hızlı Randevu
           </Text>
-          <Text className="text-sm text-gray-600 mt-1">
+          <Text className="text-sm text-muted-foreground mt-1">
             {format(selectedDate, 'dd MMMM yyyy, EEEE', { locale: tr })}
           </Text>
         </div>

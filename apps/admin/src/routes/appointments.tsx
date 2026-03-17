@@ -1,6 +1,13 @@
+import { lazy, Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import AdminAppointmentsPage from '../pages/admin/AdminAppointmentsPage'
+import PageLoadingFallback from '../components/PageLoadingFallback'
+
+const AdminAppointmentsPage = lazy(() => import('../pages/admin/AdminAppointmentsPage'))
 
 export const Route = createFileRoute('/appointments')({
-    component: AdminAppointmentsPage,
+    component: () => (
+        <Suspense fallback={<PageLoadingFallback />}>
+            <AdminAppointmentsPage />
+        </Suspense>
+    ),
 })

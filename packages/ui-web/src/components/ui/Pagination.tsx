@@ -113,10 +113,11 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   // Base button classes
   const baseButtonClasses = clsx(
-    'border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+    'border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600',
+    'text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
     'transition-colors duration-200 font-medium',
     currentSizeClasses.button,
-    disabled && 'opacity-50 cursor-not-allowed hover:bg-white'
+    disabled && 'opacity-50 cursor-not-allowed hover:bg-white dark:hover:bg-gray-700'
   );
 
   // Handle page change
@@ -142,7 +143,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       {/* Items per page selector */}
       {showItemsPerPage && onItemsPerPageChange && (
         <div className="flex items-center gap-2">
-          <span className={clsx('text-gray-700', currentSizeClasses.text)}>
+          <span className={clsx('text-gray-700 dark:text-gray-300', currentSizeClasses.text)}>
             {itemsPerPageText}
           </span>
           <select
@@ -150,7 +151,9 @@ export const Pagination: React.FC<PaginationProps> = ({
             onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
             disabled={disabled}
             className={clsx(
-              'border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+              'border border-gray-300 dark:border-gray-600 rounded-md',
+              'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
               currentSizeClasses.select,
               disabled && 'opacity-50 cursor-not-allowed'
             )}
@@ -217,7 +220,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                   1
                 </button>
                 {visiblePages[0] > 2 && (
-                  <span className={clsx('px-2', currentSizeClasses.text, 'text-gray-500')}>
+                  <span className={clsx('px-2', currentSizeClasses.text, 'text-gray-500 dark:text-gray-400')}>
                     ...
                   </span>
                 )}
@@ -247,7 +250,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             {visiblePages[visiblePages.length - 1] < totalPages && (
               <>
                 {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
-                  <span className={clsx('px-2', currentSizeClasses.text, 'text-gray-500')}>
+                  <span className={clsx('px-2', currentSizeClasses.text, 'text-gray-500 dark:text-gray-400')}>
                     ...
                   </span>
                 )}
@@ -303,7 +306,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
       {/* Total items info */}
       {showTotalItems && totalItems && (
-        <div className={clsx('text-gray-700', currentSizeClasses.text)}>
+        <div className={clsx('text-gray-700 dark:text-gray-300', currentSizeClasses.text)}>
           {startItem}-{endItem} {ofText} {totalItems} {totalItemsText}
         </div>
       )}

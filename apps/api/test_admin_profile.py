@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import sys
 sys.path.insert(0, '.')
-from app import app, db
+from app import app
 from models.admin_user import AdminUser
-import jwt as pyjwt
 
 with app.app_context():
     # Find admin user

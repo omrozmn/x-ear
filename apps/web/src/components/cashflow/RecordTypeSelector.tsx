@@ -37,13 +37,19 @@ export function RecordTypeSelector({
   const handleAddType = () => {
     if (!newType.trim() || !transactionType) return;
 
+    const trimmedType = newType.trim();
     const category = transactionType as 'income' | 'expense';
-    if (customTypes[category].includes(newType.trim())) return;
+    if (customTypes[category].includes(trimmedType)) {
+      onSelectType(trimmedType as RecordType);
+      setNewType('');
+      return;
+    }
 
     setCustomTypes({
       ...customTypes,
-      [category]: [...customTypes[category], newType.trim()],
+      [category]: [...customTypes[category], trimmedType],
     });
+    onSelectType(trimmedType as RecordType);
     setNewType('');
   };
 
@@ -69,7 +75,7 @@ export function RecordTypeSelector({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Kayıt Türü *</label>
+      <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-200">Kayıt Türü *</label>
 
       {/* Add New Type */}
       <div className="flex space-x-2 mb-4">
@@ -86,7 +92,8 @@ export function RecordTypeSelector({
       </div>
 
       {/* Type Pills */}
-      <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg bg-gray-50 min-h-[60px]">
+      <div className="min-h-[60px] rounded-2xl border border-slate-200 bg-white/88 p-3 shadow-sm shadow-slate-200/50 dark:border-slate-700 dark:bg-slate-900/82">
+        <div className="flex flex-wrap gap-2">
         {allTypes.map((type) => {
           const isCustom = customTypes[transactionType as 'income' | 'expense'].includes(type);
           const isSelected = selectedType === type;
@@ -100,8 +107,8 @@ export function RecordTypeSelector({
                     ? 'bg-green-600 text-white ring-2 ring-green-600'
                     : 'bg-red-600 text-white ring-2 ring-red-600'
                   : transactionType === 'income'
-                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                    ? 'bg-success/10 text-green-900 hover:bg-green-200 dark:text-green-100 dark:hover:bg-green-900/50'
+                    : 'bg-destructive/10 text-red-900 hover:bg-red-200 dark:text-red-100 dark:hover:bg-red-900/50'
                 }`}
             >
               <span>{RECORD_TYPE_LABELS[type as RecordType] || type}</span>
@@ -112,7 +119,7 @@ export function RecordTypeSelector({
                     e.stopPropagation();
                     handleRemoveType(type, transactionType as 'income' | 'expense');
                   }}
-                  className="ml-2 hover:text-red-600"
+                  className="ml-2 hover:text-destructive"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -120,6 +127,7 @@ export function RecordTypeSelector({
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

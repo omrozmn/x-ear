@@ -8,7 +8,6 @@ import os
 import sys
 import json
 import requests
-from datetime import datetime
 
 # Add parent to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

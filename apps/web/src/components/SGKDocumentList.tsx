@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button, Input, Select } from '@x-ear/ui-web';
+import { ConfirmDialog } from './ui/ConfirmDialog';
 import {
   SGKDocument,
   SGKDocumentFilters,
@@ -56,6 +57,9 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   // Document viewer state
   const [viewerDocument, setViewerDocument] = useState<SGKDocument | null>(null);
   const [showViewer, setShowViewer] = useState(false);
+
+  // Confirm dialog state
+  const [confirmState, setConfirmState] = useState<{open: boolean, action?: () => void, description?: string}>({open: false});
 
   // Load documents function
 
@@ -132,11 +136,11 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const getProcessingStatusColor = (status: SGKProcessingStatus): string => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-      case 'failed': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      case 'pending': return 'bg-warning/10 text-yellow-800 dark:text-yellow-300';
+      case 'processing': return 'bg-primary/10 text-blue-800 dark:text-blue-300';
+      case 'completed': return 'bg-success/10 text-success';
+      case 'failed': return 'bg-destructive/10 text-red-800 dark:text-red-300';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -190,23 +194,26 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   const handleBulkDelete = async () => {
     if (selectedDocuments.size === 0) return;
 
-    const confirmMessage = `${selectedDocuments.size} belgeyi silmek istediğinizden emin misiniz?`;
-    if (!window.confirm(confirmMessage)) return;
+    setConfirmState({
+      open: true,
+      description: `${selectedDocuments.size} belgeyi silmek istediğinizden emin misiniz?`,
+      action: async () => {
+        setBatchLoading(true);
+        try {
+          const deletePromises = Array.from(selectedDocuments).map(id =>
+            sgkService.deleteDocument(id)
+          );
+          await Promise.all(deletePromises);
 
-    setBatchLoading(true);
-    try {
-      const deletePromises = Array.from(selectedDocuments).map(id =>
-        sgkService.deleteDocument(id)
-      );
-      await Promise.all(deletePromises);
-
-      await loadDocuments();
-      setSelectedDocuments(new Set());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Toplu silme işlemi başarısız');
-    } finally {
-      setBatchLoading(false);
-    }
+          await loadDocuments();
+          setSelectedDocuments(new Set());
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Toplu silme işlemi başarısız');
+        } finally {
+          setBatchLoading(false);
+        }
+      }
+    });
   };
 
   const handleBulkDownload = async () => {
@@ -241,21 +248,21 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   // Bulk status update handler - available for future batch status feature
   // const handleBulkStatusUpdate = async (status: SGKWorkflowStatus) => {
-  //   if (selectedDocuments.size === 0) return;
-  //   setBatchLoading(true);
-  //   try {
-  //     const selectedDocs = sortedDocuments.filter(doc => selectedDocuments.has(doc.id));
-  //     const updatePromises = selectedDocs
-  //       .filter(doc => doc.workflow?.id)
-  //       .map(doc => sgkService.updateWorkflowStatus(doc.workflow!.id, status));
-  //     await Promise.all(updatePromises);
-  //     await loadDocuments();
-  //     setSelectedDocuments(new Set());
-  //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : 'Toplu durum güncelleme başarısız');
-  //   } finally {
-  //     setBatchLoading(false);
-  //   }
+  // if (selectedDocuments.size === 0) return;
+  // setBatchLoading(true);
+  // try {
+  // const selectedDocs = sortedDocuments.filter(doc => selectedDocuments.has(doc.id));
+  // const updatePromises = selectedDocs
+  // .filter(doc => doc.workflow?.id)
+  // .map(doc => sgkService.updateWorkflowStatus(doc.workflow!.id, status));
+  // await Promise.all(updatePromises);
+  // await loadDocuments();
+  // setSelectedDocuments(new Set());
+  // } catch (err) {
+  // setError(err instanceof Error ? err.message : 'Toplu durum güncelleme başarısız');
+  // } finally {
+  // setBatchLoading(false);
+  // }
   // };
 
   // Document viewer handlers
@@ -287,16 +294,20 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
 
   // Handle delete
-  const handleDelete = async (documentId: string) => {
-    if (!window.confirm('Bu belgeyi silmek istediğinizden emin misiniz?')) return;
-
-    try {
-      await sgkService.deleteDocument(documentId);
-      await loadDocuments();
-      onDocumentDelete?.(documentId);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Belge silme işlemi başarısız');
-    }
+  const handleDelete = (documentId: string) => {
+    setConfirmState({
+      open: true,
+      description: 'Bu belgeyi silmek istediğinizden emin misiniz?',
+      action: async () => {
+        try {
+          await sgkService.deleteDocument(documentId);
+          await loadDocuments();
+          onDocumentDelete?.(documentId);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Belge silme işlemi başarısız');
+        }
+      }
+    });
   };
 
 
@@ -324,10 +335,10 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   return (
     <div className="p-4">
       {/* Filters */}
-      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 mb-4 ${compact ? 'text-sm' : ''}`}>
+      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-4 mb-4 ${compact ? 'text-sm' : ''}`}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Arama</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Arama</label>
             <Input
               type="text"
               placeholder="Belge adı, türü veya açıklama"
@@ -336,7 +347,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Belge Türü</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Belge Türü</label>
             <Select
               value={selectedType}
               onChange={(e) => handleTypeChange(e.target.value as SGKDocumentType | '')}
@@ -352,7 +363,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Workflow Durumu</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Workflow Durumu</label>
             <Select
               value={selectedStatus}
               onChange={(e) => handleStatusChange(e.target.value as SGKWorkflowStatus | '')}
@@ -366,7 +377,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">İşleme Durumu</label>
+            <label className="block text-sm font-medium text-foreground mb-1">İşleme Durumu</label>
             <Select
               value={selectedProcessingStatus}
               onChange={(e) => handleProcessingStatusChange(e.target.value as SGKProcessingStatus | '')}
@@ -383,7 +394,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
       </div>
 
       {/* Documents List */}
-      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg ${compact ? 'text-sm' : ''}`}>
+      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl ${compact ? 'text-sm' : ''}`}>
         <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white">Belgeler</h4>
           {showActions && (
@@ -410,14 +421,14 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
         </div>
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {sortedDocuments.length === 0 ? (
-            <div className="p-4 text-sm text-gray-500 dark:text-gray-400">Belge bulunamadı</div>
+            <div className="p-4 text-sm text-muted-foreground">Belge bulunamadı</div>
           ) : (
             sortedDocuments.map((doc) => (
-              <div key={doc.id} className="p-4 grid grid-cols-1 md:grid-cols-4 gap-2 items-center hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <div key={doc.id} className="p-4 grid grid-cols-1 md:grid-cols-4 gap-2 items-center hover:bg-muted dark:hover:bg-gray-700/50">
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">{doc.filename}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{getDocumentTypeLabel(doc.documentType)} • {formatFileSize(doc.fileSize || 0)}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{formatDate(doc.createdAt)}</div>
+                  <div className="text-xs text-muted-foreground">{getDocumentTypeLabel(doc.documentType)} • {formatFileSize(doc.fileSize || 0)}</div>
+                  <div className="text-xs text-muted-foreground">{formatDate(doc.createdAt)}</div>
                 </div>
                 <div>
                   <span className={`px-2 py-1 rounded text-xs ${getProcessingStatusColor(doc.processingStatus as SGKProcessingStatus)}`}>
@@ -426,7 +437,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
                 </div>
                 <div>
                   {doc.workflow?.currentStatus && (
-                    <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                    <span className="px-2 py-1 rounded text-xs bg-muted text-foreground">
                       {doc.workflow.currentStatus}
                     </span>
                   )}
@@ -473,6 +484,18 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
           onDownload={handleDownloadDocument}
         />
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmState.open}
+        title="Silme Onayı"
+        description={confirmState.description || 'Bu kaydı silmek istediğinizden emin misiniz?'}
+        onClose={() => setConfirmState({open: false})}
+        onConfirm={() => { confirmState.action?.(); setConfirmState({open: false}); }}
+        confirmLabel="Sil"
+        cancelLabel="İptal"
+        variant="danger"
+      />
     </div>
   );
 };

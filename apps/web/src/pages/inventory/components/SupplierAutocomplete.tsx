@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input, Button } from '@x-ear/ui-web';
 import { useAuthStore } from '../../../stores/authStore';
 import { useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
 import {
   useListSuppliers,
@@ -15,6 +17,8 @@ import {
 interface SupplierAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  onSupplierCreated?: (supplierName: string, supplierId?: string) => void;
+  onSupplierSelect?: (supplier: { id?: string; name: string }) => void;
   placeholder?: string;
   label?: string;
   className?: string;
@@ -25,12 +29,15 @@ interface SupplierAutocompleteProps {
 export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   value,
   onChange,
+  onSupplierCreated,
+  onSupplierSelect,
   placeholder = "Tedarikçi adı",
   label = "Tedarikçi",
   className = '',
   error,
   required = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [isOpen, setIsOpen] = useState(false);
   // Debounce search term to prevent excessive API calls
   const [debouncedSearch, setDebouncedSearch] = useState(value);
@@ -235,8 +242,37 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     setIsOpen(true);
   };
 
-  const handleSupplierSelect = (supplier: string) => {
-    onChange(supplier);
+  const handleSupplierSelect = (supplierName: string) => {
+    let supplierId: string | undefined;
+    if (suppliersData) {
+      let supplierArray: unknown[] = [];
+      if (Array.isArray(suppliersData)) {
+        supplierArray = suppliersData;
+      } else if ((suppliersData as Record<string, unknown>)?.data) {
+        const innerData = (suppliersData as Record<string, unknown>).data;
+        if (Array.isArray(innerData)) {
+          supplierArray = innerData;
+        } else if (typeof innerData === 'object' && innerData !== null) {
+          const innerDataObj = innerData as Record<string, unknown>;
+          if (innerDataObj.data && Array.isArray(innerDataObj.data)) {
+            supplierArray = innerDataObj.data;
+          }
+        }
+      }
+
+      const matchedSupplier = supplierArray.find((item) => {
+        const supplier = item as Record<string, unknown>;
+        const currentName = String(supplier.companyName || supplier.company_name || supplier.name || '');
+        return currentName.toLocaleLowerCase('tr-TR') === supplierName.toLocaleLowerCase('tr-TR');
+      }) as Record<string, unknown> | undefined;
+
+      if (matchedSupplier?.id !== undefined && matchedSupplier?.id !== null) {
+        supplierId = String(matchedSupplier.id);
+      }
+    }
+
+    onChange(supplierName);
+    onSupplierSelect?.({ id: supplierId, name: supplierName });
     setIsOpen(false);
     inputRef.current?.blur();
   };
@@ -248,18 +284,53 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     if (!newSupplier) return;
 
     try {
-      await createSupplierMutation.mutateAsync({ data: { name: newSupplier, companyName: newSupplier } });
-      console.log('✅ New supplier created:', newSupplier);
+      const result = await createSupplierMutation.mutateAsync({ data: { name: newSupplier, companyName: newSupplier } });
+
+      // Extract created supplier ID from response
+      const createdId = (result as Record<string, unknown>)?.data
+        ? String(((result as Record<string, unknown>).data as Record<string, unknown>)?.id || '')
+        : '';
 
       // Invalidate React Query cache to refetch suppliers
       queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });
+
+      // Show toast with edit/dismiss actions
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-2">
+            <span className="text-sm">
+              <strong>{newSupplier}</strong> tedarikçi olarak eklendi. Detaylarını düzenlemek ister misiniz?
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                data-allow-raw="true"
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  onSupplierCreated?.(newSupplier, createdId);
+                }}
+                className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 whitespace-nowrap"
+              >
+                Tedarikçiye Git
+              </button>
+              <button
+                data-allow-raw="true"
+                onClick={() => toast.dismiss(t.id)}
+                className="px-3 py-1 text-xs font-medium bg-accent text-foreground rounded-xl hover:bg-gray-300 whitespace-nowrap"
+              >
+                Daha Sonra
+              </button>
+            </div>
+          </div>
+        ),
+        { duration: 8000 }
+      );
     } catch (error: unknown) {
       if ((error as { response?: { status?: number } }).response?.status === 409) {
-        console.log('Supplier already exists, using existing:', newSupplier);
-        // Invalidate cache
+        toast.success(`${newSupplier} zaten mevcut, kullanılıyor.`);
         queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });
       } else {
-        console.warn('Failed to persist supplier to API, using locally:', error);
+        toast.error('Tedarikçi eklenirken bir hata oluştu');
+        console.warn('Failed to persist supplier to API:', error);
       }
     }
 
@@ -299,7 +370,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
         {/* Dropdown arrow */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
           <svg
-            className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''
+            className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''
               }`}
             fill="currentColor"
             viewBox="0 0 20 20"
@@ -318,16 +389,16 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
         <div
           ref={dropdownRef}
           style={dropdownStyle}
-          className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-lg max-h-60 overflow-y-auto"
         >
           {isLoading && (
-            <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 italic">
+            <div className="px-4 py-3 text-sm text-muted-foreground italic">
               Yükleniyor...
             </div>
           )}
 
           {isError && (
-            <div className="px-4 py-3 text-sm text-red-500 dark:text-red-400">
+            <div className="px-4 py-3 text-sm text-destructive">
               Tedarikçiler yüklenirken hata oluştu.
             </div>
           )}
@@ -339,7 +410,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
               size="sm"
               type="button"
               onClick={() => handleSupplierSelect(supplier)}
-              className="w-full px-4 py-3 text-left text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none first:rounded-t-lg last:rounded-b-lg transition-colors"
+              className="w-full px-4 py-3 text-left text-sm text-gray-900 dark:text-gray-100 hover:bg-muted dark:hover:bg-gray-700 focus:bg-muted dark:focus:bg-gray-700 focus:outline-none first:rounded-t-lg last:rounded-b-lg transition-colors"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -351,7 +422,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
               }}
             >
               <div className="flex items-center">
-                <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-muted-foreground mr-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clipRule="evenodd" />
                   <path d="M6 8h8v2H6V8zm0 4h8v2H6v-2z" />
                 </svg>
@@ -372,11 +443,11 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
                   handleCreateNew();
                 }
               }}
-              className="px-4 py-2 cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 focus:bg-green-100 dark:focus:bg-green-900/40 focus:outline-none transition-colors border-t border-gray-200 dark:border-gray-700"
+              className="px-4 py-2 cursor-pointer bg-success/10 hover:bg-success/10 dark:hover:bg-green-900/40 focus:bg-success/10 dark:focus:bg-green-900/40 focus:outline-none transition-colors border-t border-border"
             >
               <div className="flex items-center gap-2">
-                <Plus className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                <Plus className="w-4 h-4 text-success" />
+                <span className="text-sm font-medium text-success">
                   "{value}" tedarikçisini ekle
                 </span>
               </div>

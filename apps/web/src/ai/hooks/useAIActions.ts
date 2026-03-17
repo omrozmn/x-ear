@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 // eslint-disable-next-line no-restricted-imports
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 import type {
   CreateActionRequest,
   ApproveActionRequest,
@@ -159,7 +159,7 @@ interface AIBackendError {
  */
 function parseErrorResponse(error: unknown): AIError {
   // Check if it's an axios error with response
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     const data = (error.response?.data as AIBackendError) || {};
 
     // Backend returns error in { code, message, ... } format
@@ -234,23 +234,28 @@ function createInitialProgress(plan: ActionPlan): ExecutionProgress {
  * Helper to map API ActionPlanResponse to local ActionPlan
  */
 function mapActionPlanResponse(apiPlan: ApiActionPlanResponse): ActionPlan {
+  if (!apiPlan?.plan_id || !Array.isArray(apiPlan?.steps)) {
+    throw {
+      code: 'INFERENCE_ERROR',
+      message: 'Invalid action plan response: missing plan_id or steps',
+    } as AIError;
+  }
   return {
     planId: apiPlan.plan_id,
-    status: apiPlan.status as ActionPlanStatus,
-    overallRiskLevel: apiPlan.overall_risk_level as RiskLevel,
-    requiresApproval: apiPlan.requires_approval,
-    planHash: apiPlan.plan_hash,
+    status: (apiPlan.status ?? 'pending') as ActionPlanStatus,
+    overallRiskLevel: (apiPlan.overall_risk_level ?? 'low') as RiskLevel,
+    requiresApproval: apiPlan.requires_approval ?? false,
+    planHash: apiPlan.plan_hash ?? '',
     approvalToken: apiPlan.approval_token || undefined,
-    createdAt: apiPlan.created_at,
-    // expiresAt: apiPlan.expires_at,
+    createdAt: apiPlan.created_at ?? new Date().toISOString(),
     steps: apiPlan.steps.map((s: ApiActionStepResponse) => ({
-      stepNumber: s.step_number,
-      toolName: s.tool_name,
-      toolSchemaVersion: s.tool_schema_version,
+      stepNumber: s.step_number ?? 0,
+      toolName: s.tool_name ?? '',
+      toolSchemaVersion: s.tool_schema_version ?? '',
       parameters: s.parameters || {},
-      description: s.description,
-      riskLevel: s.risk_level as RiskLevel,
-      requiresApproval: s.requires_approval,
+      description: s.description ?? '',
+      riskLevel: (s.risk_level ?? 'low') as RiskLevel,
+      requiresApproval: s.requires_approval ?? false,
     })),
   };
 }

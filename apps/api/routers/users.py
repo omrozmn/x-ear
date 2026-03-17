@@ -14,9 +14,8 @@ from schemas.users import UserRead, UserMeRead
 
 from models.user import User
 from models.tenant import Tenant
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Users"])
@@ -66,7 +65,7 @@ class PasswordChange(BaseModel):
 
 @router.get("/users", operation_id="listUsers", response_model=ResponseEnvelope[List[UserRead]])
 def list_users(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access("users.view")),
     db_session: Session = Depends(get_db)
@@ -110,6 +109,8 @@ def create_user(
         )
     
     # Check tenant limits
+    tenant = None
+    existing_users_count = 0
     try:
         tenant = db_session.get(Tenant, access.tenant_id)
         if tenant:
@@ -127,6 +128,13 @@ def create_user(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    # Validate username is provided
+    if not user_in.username:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="username is required", code="USERNAME_REQUIRED").model_dump(mode="json")
+        )
     
     if db_session.query(User).filter_by(username=user_in.username).first():
         raise HTTPException(
@@ -154,7 +162,7 @@ def create_user(
 
 @router.get("/users/me", operation_id="listUserMe", response_model=ResponseEnvelope[UserMeRead])
 def get_me(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Get current user profile"""
@@ -239,8 +247,8 @@ def get_me(
     
     user = access.user
     
-    # Check if this is an admin user - access.is_admin is set for admin tokens
-    if access.is_admin and user:
+    # Only platform/admin principals should use the admin serialization branch.
+    if access.user_type == "admin" and user:
         payload = build_payload(user, is_admin_user=True)
         return ResponseEnvelope(data=UserMeRead(**payload))
     
@@ -279,6 +287,49 @@ def update_me(
         status_code=404,
         detail=ApiError(message="Not found", code="USER_NOT_FOUND").model_dump(mode="json")
     )
+
+
+class ImpersonationConsentUpdate(BaseModel):
+    allow_impersonation: bool = Field(..., alias="allowImpersonation")
+
+    model_config = {"populate_by_name": True}
+
+
+class ImpersonationConsentRead(BaseModel):
+    allow_impersonation: bool = Field(alias="allowImpersonation")
+
+    model_config = {"populate_by_name": True, "from_attributes": True}
+
+
+@router.get("/users/me/impersonation-consent", operation_id="getUserMeImpersonationConsent", response_model=ResponseEnvelope[ImpersonationConsentRead])
+def get_impersonation_consent(
+    access: UnifiedAccess = Depends(require_access()),
+):
+    """Get the current user's impersonation consent setting."""
+    user = access.user
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return ResponseEnvelope(data=ImpersonationConsentRead(
+        allowImpersonation=getattr(user, "allow_impersonation", False),
+    ))
+
+
+@router.put("/users/me/impersonation-consent", operation_id="updateUserMeImpersonationConsent", response_model=ResponseEnvelope[ImpersonationConsentRead])
+def update_impersonation_consent(
+    body: ImpersonationConsentUpdate,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db),
+):
+    """Toggle impersonation consent for the current user."""
+    user = access.user
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.allow_impersonation = body.allow_impersonation
+    db_session.commit()
+    logger.info("User %s set allow_impersonation=%s", user.id, body.allow_impersonation)
+    return ResponseEnvelope(data=ImpersonationConsentRead(
+        allowImpersonation=user.allow_impersonation,
+    ))
 
 @router.post("/users/me/password", operation_id="createUserMePassword")
 def change_password(

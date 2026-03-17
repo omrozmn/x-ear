@@ -1,7 +1,6 @@
 import sys
 import os
 import pytest
-import asyncio
 
 # Add apps/backend to sys.path
 sys.path.append(os.path.join(os.getcwd(), "apps/backend"))

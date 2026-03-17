@@ -8,7 +8,7 @@
  * @requirements Requirement 7: Admin Audit Log Viewer
  */
 
-import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/api/orval-mutator';
 import type {
   AuditLogEntry,
@@ -59,7 +59,8 @@ export interface UseAIAuditOptions {
  */
 interface BackendAuditLogEntry {
   id: string;
-  timestamp: string;
+  timestamp?: string;
+  event_timestamp?: string;
   event_type: string;
   tenant_id: string;
   user_id: string;
@@ -78,11 +79,49 @@ interface BackendAuditLogEntry {
  * Backend audit log response format
  */
 interface BackendAuditLogResponse {
-  entries: BackendAuditLogEntry[];
+  entries?: BackendAuditLogEntry[];
+  items?: BackendAuditLogEntry[];
   total: number;
   page: number;
   page_size: number;
   has_more: boolean;
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function parseAuditEntries(value: unknown): BackendAuditLogEntry[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) => {
+    if (!isObject(entry)) {
+      return [];
+    }
+
+    return [{
+      id: getString(entry.id) ?? '',
+      timestamp: getString(entry.timestamp) ?? getString(entry.event_timestamp) ?? '',
+      event_type: getString(entry.event_type) ?? '',
+      tenant_id: getString(entry.tenant_id) ?? '',
+      user_id: getString(entry.user_id) ?? '',
+      party_id: getString(entry.party_id),
+      request_id: getString(entry.request_id),
+      action_id: getString(entry.action_id),
+      risk_level: getString(entry.risk_level),
+      outcome: getString(entry.outcome) ?? 'failure',
+      event_data: isObject(entry.event_data) ? entry.event_data : {},
+      diff_snapshot: isObject(entry.diff_snapshot) ? entry.diff_snapshot : undefined,
+      ip_address: getString(entry.ip_address),
+      user_agent: getString(entry.user_agent),
+    }];
+  });
 }
 
 /**
@@ -112,10 +151,16 @@ async function fetchAuditLogs(
     params,
   });
 
+  const actualData = isObject(response) && 'data' in response && isObject(response.data) ? response.data : response;
+  const entrySource = isObject(actualData)
+    ? (Array.isArray(actualData.entries) ? actualData.entries : actualData.items)
+    : actualData;
+  const rawEntries = parseAuditEntries(entrySource);
+
   // Transform backend response to frontend types
-  const entries: AuditLogEntry[] = response.entries.map((entry) => ({
+  const entries: AuditLogEntry[] = rawEntries.map((entry) => ({
     log_id: entry.id,
-    timestamp: entry.timestamp,
+    timestamp: entry.timestamp ?? '',
     event_type: entry.event_type as AuditEventType,
     tenant_id: entry.tenant_id,
     user_id: entry.user_id,
@@ -132,10 +177,12 @@ async function fetchAuditLogs(
 
   return {
     entries,
-    total: response.total,
-    page: Math.floor(offset / pageSize) + 1,
-    page_size: response.page_size,
-    has_more: response.has_more,
+    total: isObject(actualData) && typeof actualData.total === 'number' ? actualData.total : entries.length,
+    page: isObject(actualData) && typeof actualData.page === 'number' ? actualData.page : Math.floor(offset / pageSize) + 1,
+    page_size: isObject(actualData) && typeof actualData.page_size === 'number' ? actualData.page_size : pageSize,
+    has_more: isObject(actualData) && typeof actualData.has_more === 'boolean'
+      ? actualData.has_more
+      : (offset + entries.length) < (isObject(actualData) && typeof actualData.total === 'number' ? actualData.total : entries.length),
   };
 }
 
@@ -191,10 +238,10 @@ export function useAIAudit(options: UseAIAuditOptions = {}): UseAIAuditReturn {
 
   // Flatten all pages into a single entries array
   const entries = infiniteQuery.data?.pages.flatMap((page) => page.entries) ?? [];
-  
+
   // Get total from the first page (it's the same across all pages)
   const total = infiniteQuery.data?.pages[0]?.total ?? 0;
-  
+
   // Check if there are more entries to load
   const hasMore = infiniteQuery.hasNextPage ?? false;
 

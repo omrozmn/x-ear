@@ -1,4 +1,5 @@
 import React, { useRef, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Card, Textarea, Input, useToastHelpers, Select } from '@x-ear/ui-web';
 import {
     AlertTriangle,
@@ -24,20 +25,13 @@ import { unwrapArray } from '@/utils/response-unwrap';
 
 const SMS_SEGMENT_LENGTH = 155;
 
-// Dynamic fields for SMS personalization
-const DYNAMIC_FIELDS = [
-    { key: '{{AD}}', label: 'Hasta Adı', description: 'Hastanın adı' },
-    { key: '{{SOYAD}}', label: 'Hasta Soyadı', description: 'Hastanın soyadı' },
-    { key: '{{FIRMA_ADI}}', label: 'Firma Adı', description: 'Firmanın adı' },
-    { key: '{{FIRMA_TELEFONU}}', label: 'Firma Telefonu', description: 'Firmanın telefon numarası' }
-];
-
 interface SingleSmsTabProps {
     creditBalance: number;
     creditLoading: boolean;
 }
 
 export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => {
+    const { t } = useTranslation('campaigns');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [recipientName, setRecipientName] = useState('');
     const [message, setMessage] = useState('');
@@ -47,6 +41,14 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
     const { token } = useAuthStore();
+
+    // Dynamic fields for SMS personalization
+    const DYNAMIC_FIELDS = [
+        { key: '{{AD}}', label: t('variables.patient_name'), description: t('variables.patient_name') },
+        { key: '{{SOYAD}}', label: t('variables.patient_surname'), description: t('variables.patient_surname') },
+        { key: '{{FIRMA_ADI}}', label: t('variables.companyName'), description: t('variables.companyName') },
+        { key: '{{FIRMA_TELEFONU}}', label: t('variables.companyPhone'), description: t('variables.companyPhone') }
+    ];
 
     // Get SMS headers for sender selection - only fetch if authenticated
     const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmHeaders(
@@ -116,7 +118,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
         const name = recipientName || 'Ahmet';
         const nameParts = name.split(' ');
         const firstName = nameParts[0] || 'Ahmet';
-        const lastName = nameParts.slice(1).join(' ') || 'Yılmaz';
+        const lastName = nameParts.slice(1).join(' ') || 'Yilmaz';
 
         preview = preview
             .replace(/\{\{AD\}\}/g, firstName)
@@ -129,15 +131,15 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
 
     const handleSendSms = async () => {
         if (!isValidPhone) {
-            showWarningToast('Geçersiz telefon numarası', 'Lütfen geçerli bir telefon numarası girin.');
+            showWarningToast(t('sms.single.invalidPhoneWarning'), t('sms.single.invalidPhoneWarningDesc'));
             return;
         }
         if (smsSegments === 0) {
-            showWarningToast('Mesaj metni eksik', 'SMS gönderimi yapmadan önce bir mesaj yazmalısınız.');
+            showWarningToast(t('sms.bulk.messageEmpty'), t('sms.bulk.messageEmptyDesc'));
             return;
         }
         if (!creditEnough) {
-            showErrorToast('Yetersiz SMS kredisi', 'Lütfen kredi satın alın.');
+            showErrorToast(t('sms.bulk.insufficientCredits'), t('sms.bulk.insufficientCreditsDesc'));
             return;
         }
 
@@ -152,7 +154,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                 }
             });
 
-            showSuccessToast('SMS Gönderildi', `${phoneNumber} numarasına SMS başarıyla gönderildi.`);
+            showSuccessToast(t('sms.single.sentSuccess'), t('sms.single.sentSuccessDesc', { phone: phoneNumber }));
 
             // Reset form
             setPhoneNumber('');
@@ -160,7 +162,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
             setMessage('');
         } catch (error) {
             console.error('SMS sending failed:', error);
-            showErrorToast('Gönderim Hatası', 'SMS gönderilemedi. Lütfen tekrar deneyin.');
+            showErrorToast(t('sms.single.sendError'), t('sms.single.sendErrorDesc'));
         } finally {
             setIsSending(false);
         }
@@ -175,15 +177,15 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                     <div className="flex items-center gap-2">
                         <Phone className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         <div>
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">Alıcı Bilgileri</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">SMS göndermek istediğiniz kişinin bilgilerini girin</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{t('sms.single.recipientInfo')}</p>
+                            <p className="text-sm text-muted-foreground">{t('sms.single.recipientInfoDesc')}</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-1 mb-1">
-                                <Phone className="w-3 h-3" /> Telefon Numarası *
+                            <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1 mb-1">
+                                <Phone className="w-3 h-3" /> {t('sms.single.phoneRequired')}
                             </label>
                             <Input
                                 type="tel"
@@ -193,42 +195,42 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                                 className={`w-full ${phoneNumber && !isValidPhone ? 'border-red-300 focus:border-red-500' : ''}`}
                             />
                             {phoneNumber && !isValidPhone && (
-                                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                                <p className="text-xs text-destructive mt-1 flex items-center gap-1">
                                     <AlertTriangle className="w-3 h-3" />
-                                    Geçerli bir telefon numarası girin
+                                    {t('sms.single.invalidPhone')}
                                 </p>
                             )}
                         </div>
 
                         <div>
-                            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-1 mb-1">
-                                <User className="w-3 h-3" /> Alıcı Adı (Opsiyonel)
+                            <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1 mb-1">
+                                <User className="w-3 h-3" /> {t('sms.single.recipientNameOptional')}
                             </label>
                             <Input
                                 type="text"
-                                placeholder="Alıcının adı"
+                                placeholder={t('sms.single.recipientNamePlaceholder')}
                                 value={recipientName}
                                 onChange={(e) => setRecipientName(e.target.value)}
                                 className="w-full"
                             />
-                            <p className="text-xs text-gray-400 mt-1">
-                                Dinamik alanlar için kullanılır
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {t('sms.single.usedForDynamicFields')}
                             </p>
                         </div>
 
                         {headers.length > 0 && (
                             <div>
-                                <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 block">
-                                    Gönderici Başlığı
+                                <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                                    {t('sms.filters.senderHeader')}
                                 </label>
                                 <Select
                                     value={selectedHeader}
                                     onChange={(e) => setSelectedHeader(e.target.value)}
                                     options={headersLoading
-                                        ? [{ value: '', label: 'Başlıklar Yükleniyor...' }]
+                                        ? [{ value: '', label: t('sms.filters.headersLoading') }]
                                         : headersError
-                                            ? [{ value: '', label: 'Başlık Hatası' }]
-                                            : [{ value: '', label: 'Varsayılan' },
+                                            ? [{ value: '', label: t('sms.filters.headerError') }]
+                                            : [{ value: '', label: t('sms.filters.headerDefault') },
                                             ...headers.map((h) => ({
                                                 value: h.id || h.headerText || '',
                                                 label: h.headerText || ''
@@ -246,29 +248,29 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                 <Card className="p-6 space-y-4 dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex items-center gap-2">
                         <CreditCard className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                        <p className="text-lg font-semibold text-gray-900 dark:text-white">Kredi Özeti</p>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">{t('sms.credit.summary')}</p>
                     </div>
                     <div className="space-y-3">
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">SMS Sayısı</span>
+                            <span className="text-muted-foreground">{t('sms.credit.smsCount')}</span>
                             <span className="font-semibold dark:text-gray-200">{smsSegments || '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Gerekli Kredi</span>
+                            <span className="text-muted-foreground">{t('sms.credit.requiredCredits')}</span>
                             <span className="font-semibold dark:text-gray-200">{creditsNeeded || '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Mevcut Kredi</span>
+                            <span className="text-muted-foreground">{t('sms.credit.availableCredits')}</span>
                             <span className="font-semibold text-indigo-600 dark:text-indigo-400">{formatNumber(creditBalance)}</span>
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${creditEnough ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${creditEnough ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-destructive/10 text-destructive'}`}>
                             {creditEnough ? (
                                 <CheckCircle className="w-4 h-4" />
                             ) : (
                                 <AlertTriangle className="w-4 h-4" />
                             )}
                             <span className="text-sm font-medium">
-                                {creditEnough ? 'Kredi yeterli' : 'Yetersiz kredi'}
+                                {creditEnough ? t('sms.credit.creditSufficient') : t('sms.credit.creditInsufficient')}
                             </span>
                         </div>
                     </div>
@@ -281,8 +283,8 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                     <div className="flex items-center gap-2">
                         <MessageSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         <div>
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">SMS Mesajı</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Göndermek istediğiniz mesajı yazın</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{t('sms.message.smsMessage')}</p>
+                            <p className="text-sm text-muted-foreground">{t('sms.message.writeMessage')}</p>
                         </div>
                     </div>
                     {creditEnough && message.trim() ? (
@@ -294,7 +296,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
 
                 {/* Dynamic Fields */}
                 <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Dinamik Alanlar</p>
+                    <p className="text-xs font-medium text-muted-foreground">{t('variables.dynamicFields')}</p>
                     <div className="flex flex-wrap gap-2">
                         {DYNAMIC_FIELDS.map((field) => (
                             <button
@@ -302,7 +304,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                                 key={field.key}
                                 type="button"
                                 onClick={() => insertDynamicField(field.key)}
-                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                                 title={field.description}
                             >
                                 <Plus className="w-3 h-3" />
@@ -319,13 +321,11 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                         className="w-full min-h-[200px] resize-none"
                         value={message}
                         onChange={(event) => setMessage(event.target.value)}
-                        placeholder="SMS mesajınızı buraya yazın...
-
-Örnek: Sayın {{AD}} {{SOYAD}}, X-Ear ailesi olarak sizlere hoş geldiniz demekten mutluluk duyarız."
+                        placeholder={t('sms.message.singlePlaceholder')}
                     />
                     <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {message.length} karakter / {smsSegments} SMS
+                        <p className="text-xs text-muted-foreground">
+                            {t('sms.message.charsPerSms', { chars: message.length, sms: smsSegments })}
                         </p>
                         <Button
                             variant="outline"
@@ -335,7 +335,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                             className="flex items-center gap-1"
                         >
                             <Eye className="w-4 h-4" />
-                            Önizle
+                            {t('sms.message.previewBtn')}
                         </Button>
                     </div>
                 </div>
@@ -349,12 +349,12 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                     {isSending ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Gönderiliyor...
+                            {t('sms.single.sendingText')}
                         </>
                     ) : (
                         <>
                             <Send className="w-4 h-4" />
-                            SMS Gönder
+                            {t('sms.single.sendSms')}
                         </>
                     )}
                 </Button>
@@ -365,28 +365,28 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
                         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('sms.preview.title')}</h3>
                             <button
                                 data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="p-1 rounded-2xl hover:bg-muted dark:hover:bg-gray-700 transition-colors"
                             >
-                                <X className="w-5 h-5 text-gray-500" />
+                                <X className="w-5 h-5 text-muted-foreground" />
                             </button>
                         </div>
                         <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                                <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">
-                                    Alıcı: {phoneNumber || '05XX XXX XX XX'}
+                            <div className="bg-muted rounded-2xl p-4">
+                                <p className="text-xs text-muted-foreground mb-2">
+                                    {t('sms.single.recipientLabel')} {phoneNumber || '05XX XXX XX XX'}
                                     {recipientName && ` (${recipientName})`}
                                 </p>
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600">
-                                    <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{getPreviewMessage}</p>
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-border">
+                                    <p className="text-sm text-foreground whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                                <p>Karakter sayısı: {getPreviewMessage.length}</p>
-                                <p>SMS sayısı: {Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH))}</p>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                                <p>{t('sms.preview.charCount', { count: getPreviewMessage.length })}</p>
+                                <p>{t('sms.preview.smsCount', { count: Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH)) })}</p>
                             </div>
                         </div>
                         <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
@@ -395,7 +395,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                                 className="w-full"
                                 onClick={() => setShowPreview(false)}
                             >
-                                Tamam
+                                {t('sms.preview.ok')}
                             </Button>
                         </div>
                     </div>

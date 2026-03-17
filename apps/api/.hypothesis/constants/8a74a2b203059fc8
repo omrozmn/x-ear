@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/middleware/tenant_context.py
+# hypothesis_version: 6.151.9
+
+['http', 'skip_filter', 'tenant_id', 'type']

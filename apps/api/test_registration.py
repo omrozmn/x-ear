@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import requests
-import json
 
 def test_registration():
     url = "http://localhost:5002/register"

@@ -7,7 +7,6 @@ Merge auto-generated OpenAPI spec with manual spec:
 """
 
 import yaml
-import sys
 from pathlib import Path
 
 def load_yaml(path):
@@ -38,7 +37,7 @@ def merge_specs(manual_spec, auto_spec):
     # Find new paths in auto-generated
     new_paths = auto_paths - manual_paths
     
-    print(f"📊 Stats:")
+    print("📊 Stats:")
     print(f"   Manual spec: {len(manual_paths)} paths")
     print(f"   Auto-generated: {len(auto_paths)} paths")
     print(f"   New paths to add: {len(new_paths)}")

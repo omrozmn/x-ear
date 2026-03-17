@@ -6,13 +6,13 @@ from datetime import datetime
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.appointment import Appointment
 from core.models.party import Party
 from models.tenant import Tenant
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.appointments import AppointmentRead  # Import AppointmentRead schema
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/appointments", tags=["Admin Appointments"])
@@ -23,7 +23,7 @@ class AppointmentListResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminAppointments", response_model=AppointmentListResponse)
 async def get_all_appointments(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     tenant_id: Optional[str] = None,
@@ -35,40 +35,41 @@ async def get_all_appointments(
 ):
     """Get list of ALL appointments from ALL tenants"""
     try:
-        query = db.query(Appointment).join(Party)
-        
-        if search:
-            query = query.filter(
-                (Party.first_name.ilike(f"%{search}%")) |
-                (Party.last_name.ilike(f"%{search}%")) |
-                (Party.phone.ilike(f"%{search}%"))
-            )
-        
-        if access.tenant_id:
-            query = query.filter(Appointment.tenant_id == access.tenant_id)
-        
-        if status:
-            query = query.filter(Appointment.status == status)
-        
-        if start_date:
-            try:
-                start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
-                query = query.filter(Appointment.date >= start)
-            except ValueError:
-                pass
-        
-        if end_date:
-            try:
-                end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-                query = query.filter(Appointment.date <= end)
-            except ValueError:
-                pass
-        
-        total = query.count()
-        appointments = query.order_by(
-            Appointment.date.desc(), 
-            Appointment.time.desc()
-        ).offset((page - 1) * limit).limit(limit).all()
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Appointment).join(Party)
+            
+            if search:
+                query = query.filter(
+                    (Party.first_name.ilike(f"%{search}%")) |
+                    (Party.last_name.ilike(f"%{search}%")) |
+                    (Party.phone.ilike(f"%{search}%"))
+                )
+            
+            if access.tenant_id:
+                query = query.filter(Appointment.tenant_id == access.tenant_id)
+            
+            if status:
+                query = query.filter(Appointment.status == status)
+            
+            if start_date:
+                try:
+                    start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+                    query = query.filter(Appointment.date >= start)
+                except ValueError:
+                    pass
+            
+            if end_date:
+                try:
+                    end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+                    query = query.filter(Appointment.date <= end)
+                except ValueError:
+                    pass
+            
+            total = query.count()
+            appointments = query.order_by(
+                Appointment.date.desc(), 
+                Appointment.time.desc()
+            ).offset((page - 1) * limit).limit(limit).all()
         
         appointments_list = []
         for appt in appointments:

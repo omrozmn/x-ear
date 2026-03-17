@@ -1,6 +1,5 @@
-from models.base import db
-from models.stock_movement import StockMovement
-from models.inventory import InventoryItem
+from core.database import SessionLocal
+from core.models.stock_movement import StockMovement
 from datetime import datetime
 
 def create_stock_movement(
@@ -30,7 +29,7 @@ def create_stock_movement(
         StockMovement: Created stock movement record
     """
     if session is None:
-        session = db.session
+        session = SessionLocal()
         
     movement = StockMovement(
         inventory_id=inventory_id,

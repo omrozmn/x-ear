@@ -4,10 +4,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 import sys
 import os
-import json
 import uuid
-from datetime import datetime
-from decimal import Decimal
 
 # Setup Flask context
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
@@ -119,7 +116,7 @@ def run_comprehensive_tests():
         # Verify Persistence
         db.session.expire_all()
         a_db = db.session.get(DeviceAssignment, assignment_id)
-        print(f"   DB Check:")
+        print("   DB Check:")
         print(f"     Parameters: SGK Scheme={a_db.sgk_scheme}, Disc Type={a_db.discount_type}, Disc Value={a_db.discount_value}")
         print(f"     Calculated: SGK Support={a_db.sgk_support} (Exp: >0), Net Payable={a_db.net_payable}")
         

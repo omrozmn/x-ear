@@ -118,13 +118,13 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
 
   return (
     <div>
-      <span className="text-lg font-bold text-gray-700 block mb-3">
+      <span className="text-lg font-bold text-foreground block mb-3">
         SGK Entegrasyonu
       </span>
       
       <div className="space-y-4">
         {/* Party Criteria Display */}
-        <div className="p-3 bg-blue-50 rounded-md">
+        <div className="p-3 bg-primary/10 rounded-xl">
           <div className="flex gap-4">
             <Badge>Yaş: {partyAge}</Badge>
             <Badge>
@@ -157,23 +157,23 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
 
         {/* Selected Scheme Details */}
         {selectedScheme && (
-          <div className="p-4 bg-green-50 rounded-md border border-green-200">
+          <div className="p-4 bg-success/10 rounded-xl border border-green-200">
             <div className="space-y-2">
-              <span className="font-bold text-green-700">
+              <span className="font-bold text-success">
                 {selectedScheme.name}
               </span>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-sm text-gray-600">Kapsam Oranı</span>
+                  <span className="text-sm text-muted-foreground">Kapsam Oranı</span>
                   <span className="font-bold block">%{(selectedScheme.coverage * 100).toFixed(0)}</span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-600">Maksimum Tutar</span>
+                  <span className="text-sm text-muted-foreground">Maksimum Tutar</span>
                   <span className="font-bold block">₺{selectedScheme.maxAmount.toLocaleString()}</span>
                 </div>
               </div>
               {selectedScheme.description && (
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-muted-foreground">
                   {selectedScheme.description}
                 </span>
               )}
@@ -187,7 +187,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
           <div className="flex gap-2">
             <label
               htmlFor="sgk-document"
-              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border border-border text-foreground hover:bg-muted rounded-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring cursor-pointer"
             >
               {sgkDocumentUploaded ? <Check className="w-4 h-4 mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
               {sgkDocumentUploaded ? "Belge Yüklendi" : "Belge Yükle"}

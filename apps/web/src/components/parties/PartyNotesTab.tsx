@@ -6,8 +6,8 @@ import {
   createPartyNotes,
   deletePartyNote,
   updatePartyNote,
-  createPartyTimeline
 } from '@/api/client/parties.client';
+import { createPartyTimeline } from '@/api/client/timeline.client';
 import type {
   PatientNoteCreate as PartyNoteCreate,
   PatientNoteUpdate as PartyNoteUpdate,
@@ -52,17 +52,22 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
       // Let's look at import: listPartyNotes. 
       // If we use 'as any', we are bypassing. 
       // Let's safe-cast to unknown record for now to read .data if types are missing
-      const responseData = (response as unknown as { data: Array<{ id: string; content?: string; createdAt?: string; createdBy?: string; type?: string }> })?.data || [];
+      const responseData = (response as unknown as { data: Array<{ id: string; content?: string; createdAt?: string; createdBy?: string; createdByName?: string; type?: string }> })?.data || [];
 
       if (Array.isArray(responseData)) {
         // Map API response to PartyNote interface
-        const notesList: PartyNote[] = responseData.map((note) => ({
-          id: note.id || '',
-          text: note.content || '',
-          date: note.createdAt || new Date().toISOString(),
-          author: note.createdBy || 'system',
-          type: (note.type as PartyNote['type']) || undefined
-        }));
+        const notesList: PartyNote[] = responseData.map((note) => {
+          // Use createdByName from backend if available, fallback to createdBy or 'System'
+          const authorName = note.createdByName || note.createdBy || 'System';
+          
+          return {
+            id: note.id || '',
+            text: note.content || '',
+            date: note.createdAt || new Date().toISOString(),
+            author: authorName,
+            type: (note.type as PartyNote['type']) || undefined
+          };
+        });
 
         setNotes(notesList);
       }
@@ -225,7 +230,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Hasta Notları</h3>
         <Button
           onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="premium-gradient tactile-press"
         >
           <Plus className="w-4 h-4 mr-2" />
           Not Ekle
@@ -234,7 +239,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
 
       {/* Add Note Form */}
       {showAddForm && (
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm border dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border dark:border-slate-800">
           <div className="flex justify-between items-center mb-3">
             <h4 className="font-medium text-gray-900 dark:text-gray-100">Yeni Not</h4>
             <Button
@@ -249,8 +254,8 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
             placeholder="Not içeriğini yazınız..."
             value={newNoteContent}
             onChange={(e) => setNewNoteContent(e.target.value)}
-            rows={4}
-            className="mb-3"
+            rows={8}
+            className="mb-3 w-full"
           />
           <div className="flex justify-end space-x-2">
             <Button onClick={handleCancelAdd} variant="outline">
@@ -268,7 +273,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
       <div className="space-y-4">
         {notes.length > 0 ? (
           notes.map((note) => (
-            <div key={note.id} className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm border dark:border-slate-800">
+            <div key={note.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border dark:border-slate-800">
               {editingNote && editingNote.id === note.id ? (
                 // Edit Mode
                 <div>
@@ -285,8 +290,8 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
                   <Textarea
                     value={editNoteContent}
                     onChange={(e) => setEditNoteContent(e.target.value)}
-                    rows={4}
-                    className="mb-3"
+                    rows={8}
+                    className="mb-3 w-full"
                   />
                   <div className="flex justify-end space-x-2">
                     <Button onClick={handleCancelEdit} variant="outline">
@@ -315,13 +320,13 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
                         onClick={() => handleDeleteNote(note.id)}
                         variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-800"
+                        className="text-destructive hover:text-red-800"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-muted-foreground">
                     {note.date ? new Date(note.date).toLocaleString('tr-TR') : ''}
                     <span> • Yazar: {note.author}</span>
                   </div>
@@ -330,7 +335,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
             </div>
           ))
         ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-muted-foreground">
             <p>Henüz not bulunmamaktadır.</p>
           </div>
         )}

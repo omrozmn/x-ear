@@ -2,9 +2,9 @@
 FastAPI Invoices Router - Migrated from Flask routes/invoices/
 Handles invoice CRUD operations
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from typing import Optional, List
+from datetime import datetime, timezone
 import logging
 import uuid
 import csv
@@ -17,13 +17,13 @@ except ImportError:
 
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from sqlalchemy.exc import IntegrityError
 
 from schemas.base import ResponseEnvelope
 from schemas.invoices import (
     InvoiceCreate, InvoiceUpdate, InvoiceRead, BatchInvoiceGenerateRequest,
-    BulkUploadResponse, InvoicePrintQueueResponse, InvoiceAddToQueueRequest, InvoiceTemplate, InvoicePrintQueueItem
+    BulkUploadResponse, InvoicePrintQueueResponse, InvoiceAddToQueueRequest, InvoiceTemplate
 )
-from models.user import User
 from models.invoice import Invoice
 from core.models.party import Party
 from models.sales import Sale
@@ -31,9 +31,8 @@ from models.efatura_outbox import EFaturaOutbox
 from models.user import ActivityLog
 from utils.efatura import build_return_invoice_xml, write_outbox_file
 import os
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Invoices"])
@@ -65,8 +64,8 @@ def get_invoices(
         total = query.count()
         invoices = query.offset((page - 1) * per_page).limit(per_page).all()
         
+        # Use Pydantic schema for type-safe serialization
         return ResponseEnvelope(
-            # Use Pydantic schema for type-safe serialization (NO to_dict())
             data=[InvoiceRead.model_validate(inv) for inv in invoices],
             meta={
                 "page": page,
@@ -94,10 +93,17 @@ def get_print_queue(
         
         items = []
         for inv in invoices:
+            # Get party name from relationship or use patient_name field
+            party_name = inv.patient_name
+            if inv.party and hasattr(inv.party, 'full_name'):
+                party_name = inv.party.full_name
+            elif inv.party and hasattr(inv.party, 'first_name'):
+                party_name = f"{inv.party.first_name or ''} {inv.party.last_name or ''}".strip()
+            
             items.append({
                 'id': inv.id,
                 'invoiceNumber': inv.invoice_number,
-                'partyName': inv.patient_name or (inv.patient.full_name if inv.patient else 'Unknown'),
+                'partyName': party_name or 'Unknown',
                 'amount': inv.device_price,
                 'queuedAt': inv.updated_at.isoformat() if inv.updated_at else inv.created_at.isoformat(),
                 'priority': 'normal',
@@ -248,7 +254,7 @@ def batch_generate_invoices(
                     continue
                 
                 # Generate invoice number using Gapless Sequence
-                from models.sequence import Sequence
+                from core.models.sequence import Sequence
                 year = now_utc().year
                 next_val = Sequence.next_number(db_session, sale.tenant_id, 'invoice', year, 'INV')
                 invoice_number = f"INV{year}{next_val:05d}"
@@ -325,7 +331,7 @@ def get_invoice(
     if not invoice or invoice.status == 'deleted':
         raise HTTPException(status_code=404, detail={"message": "Invoice not found", "code": "NOT_FOUND"})
     
-    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    # Use Pydantic schema for type-safe serialization
     return ResponseEnvelope(data=InvoiceRead.model_validate(invoice))
 
 @router.post("/invoices", operation_id="createInvoices", response_model=ResponseEnvelope[InvoiceRead], status_code=201)
@@ -352,11 +358,16 @@ def create_invoice(
                 raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         
         # Generate invoice number using Gapless Sequence
-        from models.sequence import Sequence
+        # CRITICAL FIX: Commit sequence BEFORE creating invoice
+        # This prevents sequence rollback when invoice creation fails
+        # Trade-off: May create gaps in sequence if invoice fails, but prevents UNIQUE constraint errors
+        from core.models.sequence import Sequence
         year = datetime.utcnow().year
         next_val = Sequence.next_number(db_session, access.tenant_id, 'invoice', year, 'INV')
+        db_session.commit()  # Commit sequence immediately
         invoice_number = f"INV{year}{next_val:05d}"
         
+        # Now create invoice with the committed sequence number
         invoice = Invoice(
             # id is auto-generated (Integer primary key)
             tenant_id=access.tenant_id,
@@ -373,14 +384,29 @@ def create_invoice(
         db_session.commit()
         db_session.refresh(invoice)
         
-        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        # Use Pydantic schema for type-safe serialization
         return ResponseEnvelope(data=InvoiceRead.model_validate(invoice))
     except HTTPException:
+        db_session.rollback()  # Explicitly rollback on HTTP exceptions
         raise
+    except IntegrityError as e:
+        db_session.rollback()
+        logger.warning(f"Invoice creation failed - integrity error: {e}")
+        # Check if it's an invoice_number duplicate
+        if 'invoice_number' in str(e):
+            raise HTTPException(
+                status_code=409,
+                detail={"message": "Invoice number already exists", "code": "DUPLICATE_INVOICE_NUMBER"}
+            )
+        # Other integrity errors
+        raise HTTPException(
+            status_code=409,
+            detail={"message": "Duplicate entry", "code": "DUPLICATE"}
+        )
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create invoice error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/invoices/{invoice_id}", operation_id="updateInvoice", response_model=ResponseEnvelope[InvoiceRead])
 def update_invoice(
@@ -554,7 +580,7 @@ def send_to_gib(
         db_session.commit()
         db_session.refresh(invoice)
 
-        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        # Use Pydantic schema for type-safe serialization
         return ResponseEnvelope(data={
             'invoice': InvoiceRead.model_validate(invoice).model_dump(by_alias=True),
             'outbox': {
@@ -581,11 +607,11 @@ async def bulk_upload_invoices(
 ):
     """Bulk upload invoices from CSV/XLSX"""
     try:
-        if not access.tenant_id:
-             # Allow if super admin sends tenant_id in form? FastAPI UploadFile doesn't mix easily with Form params in same obj usually?
-             # Actually I can add `tenant_id: str = Form(...)`.
-             # But for now, let's assume tenant context is usually present or required.
-             raise HTTPException(status_code=400, detail="Tenant context required")
+        # Use effective_tenant_id if impersonating, otherwise use tenant_id
+        effective_tenant = access.effective_tenant_id or access.tenant_id
+        
+        if not effective_tenant or effective_tenant == 'system':
+            raise HTTPException(status_code=400, detail="Tenant context required")
 
         filename = (file.filename or '').lower()
         content = await file.read()
@@ -656,9 +682,9 @@ async def bulk_upload_invoices(
                     return None
                 
                 invoice_number = get_val(['invoiceNumber', 'invoice_number', 'no', 'fatura_no'])
-                patient_name = get_val(['patientName', 'patient_name', 'hasta', 'isim'])
+                party_name = get_val(['patientName', 'party_name', 'hasta', 'isim'])
                 
-                if not (invoice_number or patient_name):
+                if not (invoice_number or party_name):
                     errors.append({'row': row_num, 'error': 'Missing invoice number or patient name'})
                     continue
                 
@@ -667,7 +693,7 @@ async def bulk_upload_invoices(
                 if invoice_number:
                     existing = db_session.query(Invoice).filter(
                         Invoice.invoice_number == invoice_number, 
-                        Invoice.tenant_id == access.tenant_id
+                        Invoice.tenant_id == effective_tenant
                     ).first()
                 
                 # Payload prep
@@ -691,28 +717,52 @@ async def bulk_upload_invoices(
                 i_date = parse_date(issue_date) or datetime.utcnow()
                 d_date = parse_date(due_date)
 
+                # Resolve party_id from TC, phone, or name
+                resolved_party = None
+                if patient_tc:
+                    resolved_party = db_session.query(Party).filter(
+                        Party.tc_number == patient_tc,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+                if not resolved_party and patient_phone:
+                    resolved_party = db_session.query(Party).filter(
+                        Party.phone == patient_phone,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+                if not resolved_party and party_name:
+                    parts = party_name.strip().split(' ', 1)
+                    if len(parts) == 2:
+                        resolved_party = db_session.query(Party).filter(
+                            Party.first_name == parts[0],
+                            Party.last_name == parts[1],
+                            Party.tenant_id == effective_tenant
+                        ).first()
+
                 if existing:
-                    existing.patient_name = patient_name or existing.patient_name
+                    existing.patient_name = party_name or existing.patient_name
                     existing.patient_tc = patient_tc or existing.patient_tc
                     existing.currency = currency or existing.currency
-                    if i_date: existing.invoice_date = i_date
+                    if resolved_party and not existing.party_id:
+                        existing.party_id = resolved_party.id
+                    if i_date: existing.issue_date = i_date
                     if d_date: existing.due_date = d_date
-                    
+
                     if grand_total:
                         try: existing.grand_total = float(grand_total); existing.device_price = float(grand_total)
                         except: pass
-                    
+
                     if patient_phone:
                          existing.notes = (existing.notes or '') + "\\nPhone: " + str(patient_phone)
-                    
+
                     updated += 1
                 else:
                     new_inv = Invoice(
-                        tenant_id=access.tenant_id,
+                        tenant_id=effective_tenant,
                         invoice_number=invoice_number,
-                        patient_name=patient_name,
+                        patient_name=party_name,
                         patient_tc=patient_tc,
-                        invoice_date=i_date,
+                        party_id=resolved_party.id if resolved_party else None,
+                        issue_date=i_date,
                         due_date=d_date,
                         currency=currency,
                         created_by=access.user_id,

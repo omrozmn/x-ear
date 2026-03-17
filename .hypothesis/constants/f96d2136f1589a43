@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/unsubscribe.py
+# hypothesis_version: 6.151.9
+
+[200, 400, 500, '***', '...', '/page', '/unsubscribe', '@', 'Email scenario', 'INVALID_TOKEN', 'MISSING_TOKEN', 'Server error', 'Token is required', 'Unsubscribe token', 'code', 'description', 'getUnsubscribePage', 'ip_address', 'message', 'processUnsubscribe', 'public', 'recipient', 'scenario', 'token', 'unknown', 'user-agent']

@@ -72,7 +72,7 @@ export function SpecialBaseModal({
         ></div>
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="inline-block align-bottom bg-card rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           {/* Header */}
           <div className="bg-blue-600 px-6 py-4">
             <h3 className="text-lg font-medium text-white">
@@ -82,7 +82,7 @@ export function SpecialBaseModal({
           </div>
 
           {/* Body */}
-          <div className="bg-white px-6 py-4">
+          <div className="bg-card px-6 py-4">
             <div className="space-y-4">
               {/* Özel Matrah Tutarı */}
               <div>
@@ -97,7 +97,7 @@ export function SpecialBaseModal({
                   fullWidth
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Özel matrah tutarını giriniz
                 </p>
               </div>
@@ -116,7 +116,7 @@ export function SpecialBaseModal({
                   fullWidth
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Özel matrah oranını giriniz (0-100 arası)
                 </p>
               </div>
@@ -130,20 +130,20 @@ export function SpecialBaseModal({
                   readOnly
                   disabled
                   fullWidth
-                  className="bg-gray-50"
+                  className="bg-muted"
                 />
-                <p className="mt-1 text-sm text-blue-600">
+                <p className="mt-1 text-sm text-primary">
                   Otomatik hesaplanmıştır
                 </p>
               </div>
 
               {/* Hesaplama Formülü */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3">
                 <p className="text-sm text-blue-800">
                   <strong>Hesaplama:</strong> KDV = (Özel Matrah Tutarı × Özel Matrah Oranı) / 100
                 </p>
                 {specialBaseAmount && specialBaseRate && (
-                  <p className="text-sm text-blue-700 mt-1">
+                  <p className="text-sm text-primary mt-1">
                     KDV = ({specialBaseAmount} × {specialBaseRate}) / 100 = {calculatedTax} TL
                   </p>
                 )}
@@ -152,12 +152,12 @@ export function SpecialBaseModal({
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+          <div className="bg-muted px-6 py-4 flex justify-end space-x-3">
             <Button
               type="button"
               onClick={handleCancel}
               variant="default"
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800"
+              className="bg-accent hover:bg-gray-300 text-foreground"
             >
               İptal
             </Button>
@@ -165,7 +165,7 @@ export function SpecialBaseModal({
               type="button"
               onClick={handleSave}
               variant="default"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="premium-gradient tactile-press text-white"
               disabled={!specialBaseAmount || !specialBaseRate}
             >
               Kaydet

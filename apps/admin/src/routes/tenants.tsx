@@ -1,6 +1,13 @@
+import { lazy, Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import TenantsPage from '../pages/admin/TenantsPage'
+import PageLoadingFallback from '../components/PageLoadingFallback'
+
+const TenantsPage = lazy(() => import('../pages/admin/TenantsPage'))
 
 export const Route = createFileRoute('/tenants')({
-    component: TenantsPage,
+    component: () => (
+        <Suspense fallback={<PageLoadingFallback />}>
+            <TenantsPage />
+        </Suspense>
+    ),
 })

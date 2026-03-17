@@ -1,15 +1,12 @@
 import React from 'react';
-import { useIsMobile } from '../hooks/useBreakpoint';
-import { MobileUnsupportedPage } from '../components/mobile/MobileUnsupportedPage';
 import { DesktopReportsPage } from './DesktopReportsPage';
+import { MobileReportsPage } from './reports/MobileReportsPage';
+import { useIsMobile } from '@/hooks/useBreakpoint';
 
 export const ReportsPage: React.FC = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) {
-    return <MobileUnsupportedPage title="Raporlar" />;
-  }
-
+  if (isMobile) return <MobileReportsPage />;
   return <DesktopReportsPage />;
 };
 

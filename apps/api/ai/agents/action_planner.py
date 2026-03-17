@@ -23,10 +23,10 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Set
 from enum import Enum
 
-from ai.config import get_ai_config, AIPhase
-from ai.schemas.llm_outputs import IntentOutput, IntentType, ActionPlanOutput, OperationOutput
-from ai.tools import ToolRegistry, get_tool_registry, RiskLevel, ToolDefinition, ToolExecutionMode
-from ai.runtime.model_client import LocalModelClient, get_model_client, ModelResponse
+from ai.config import get_ai_config
+from ai.schemas.llm_outputs import IntentOutput, IntentType
+from ai.tools import ToolRegistry, get_tool_registry, RiskLevel
+from ai.runtime.model_client import LocalModelClient, get_model_client
 from ai.runtime.circuit_breaker import get_inference_circuit_breaker, CircuitBreakerOpenError
 from ai.capability_registry import get_allowed_tool_names
 
@@ -104,8 +104,8 @@ class ActionPlan:
             "missingParameters": self.missing_parameters,
             "slotFillingPrompt": self.slot_filling_prompt,
             "stepCount": self.step_count,
-            "createdAt": self.created_at.isoformat(),
-            "expiresAt": self.expires_at.isoformat() if self.expires_at else None,
+            "createdAt": self.created_at.isoformat() if hasattr(self.created_at, "isoformat") else str(self.created_at),
+            "expiresAt": self.expires_at.isoformat() if self.expires_at and hasattr(self.expires_at, "isoformat") else None,
         }
 
 
@@ -124,12 +124,14 @@ class ActionPlannerResult:
     
     @property
     def needs_approval(self) -> bool:
-        return self.plan.requires_approval if self.plan else False
+        if self.plan is not None:
+            return bool(self.plan.requires_approval)
+        return False
     
     def to_dict(self) -> dict:
         return {
             "status": self.status.value,
-            "plan": self.plan.to_dict() if self.plan else None,
+            "plan": self.plan.to_dict() if self.plan is not None else None,
             "errorMessage": self.error_message,
             "deniedPermissions": self.denied_permissions,
             "processingTimeMs": self.processing_time_ms,
@@ -149,6 +151,7 @@ User intent:
 - Type: {intent_type}
 - Entities: {entities}
 - Reasoning: {reasoning}
+- Language: {language}
 
 Generate a JSON action plan with the following structure:
 {{
@@ -156,11 +159,11 @@ Generate a JSON action plan with the following structure:
         {{
             "tool_name": "tool_name_here",
             "parameters": {{"param1": "value1"}},
-            "description": "What this step does",
-            "rollback_procedure": "How to undo this step (if applicable)"
+            "description": "What this step does (translated to {language})",
+            "rollback_procedure": "How to undo this step (if applicable, in {language})"
         }}
     ],
-    "reasoning": "Why these actions were chosen"
+    "reasoning": "Why these actions were chosen (in {language})"
 }}
 
 If no actions are needed (e.g., for a simple query), return:
@@ -212,7 +215,7 @@ class ActionPlanner:
     def _generate_plan_id(self, tenant_id: str, user_id: str) -> str:
         """Generate a unique plan ID."""
         import uuid
-        return f"plan_{tenant_id}_{uuid.uuid4().hex[:12]}"
+        return f"plan_{tenant_id}_{str(uuid.uuid4().hex)[:12]}"
     
     def _compute_plan_hash(self, steps: List[ActionStep]) -> str:
         """Compute hash of the action plan for integrity verification."""
@@ -294,40 +297,55 @@ class ActionPlanner:
             tool_name = op.get("tool_name")
             try:
                 tool = self.tool_registry.get_tool(tool_name)
-                # Get required parameters from tool schema
-                # For now, we'll use a simple heuristic based on common patterns
-                if tool_name == "createParty":
-                    required_params.extend(["first_name", "last_name", "phone"])
-                elif tool_name == "appointment_create":
-                    required_params.extend(["party_id", "date", "time"])
-                elif tool_name == "device_assign":
-                    required_params.extend(["party_id", "device_id"])
+                # Get required parameters from tool schema definition
+                if hasattr(tool, 'required_parameters') and tool.required_parameters:
+                    required_params.extend(tool.required_parameters)
+                elif hasattr(tool, 'schema') and isinstance(tool.schema, dict):
+                    # Extract from JSON Schema if available
+                    schema_required = tool.schema.get("required", [])
+                    required_params.extend(schema_required)
             except Exception:
                 continue
         return required_params
     
-    def _generate_slot_prompt(self, parameter_name: str) -> str:
+    def _generate_slot_prompt(self, parameter_name: str, language: str = "tr") -> str:
         """
         Generate user-friendly prompt for missing parameter.
         
         Args:
             parameter_name: Name of the missing parameter
+            language: Target language
             
         Returns:
             User-friendly prompt asking for the parameter
         """
         prompts = {
-            "party_id": "Hangi kişi veya kuruluş için işlem yapmak istiyorsunuz? Lütfen isim veya ID belirtin.",
-            "first_name": "Lütfen adını belirtin.",
-            "last_name": "Lütfen soyadını belirtin.",
-            "phone": "Lütfen telefon numarasını belirtin.",
-            "email": "Lütfen e-posta adresini belirtin.",
-            "device_id": "Hangi cihazdan bahsediyorsunuz? Lütfen cihaz adı veya seri numarasını belirtin.",
-            "amount": "Miktar nedir? Lütfen bir sayı belirtin.",
-            "date": "Hangi tarih için? Lütfen tarihi belirtin (örn: 2025-01-25).",
-            "time": "Saat kaçta? Lütfen saati belirtin (örn: 14:30).",
+            "tr": {
+                "party_id": "Hangi kişi veya kuruluş için işlem yapmak istiyorsunuz? Lütfen isim veya ID belirtin.",
+                "first_name": "Lütfen adını belirtin.",
+                "last_name": "Lütfen soyadını belirtin.",
+                "phone": "Lütfen telefon numarasını belirtin.",
+                "email": "Lütfen e-posta adresini belirtin.",
+                "device_id": "Hangi cihazdan bahsediyorsunuz? Lütfen cihaz adı veya seri numarasını belirtin.",
+                "amount": "Miktar nedir? Lütfen bir sayı belirtin.",
+                "date": "Hangi tarih için? Lütfen tarihi belirtin (örn: 2025-01-25).",
+                "time": "Saat kaçta? Lütfen saati belirtin (örn: 14:30).",
+            },
+            "en": {
+                "party_id": "For which person or organization would you like to perform the operation? Please specify name or ID.",
+                "first_name": "Please specify the first name.",
+                "last_name": "Please specify the last name.",
+                "phone": "Please specify the phone number.",
+                "email": "Please specify the email address.",
+                "device_id": "Which device are you referring to? Please specify device name or serial number.",
+                "amount": "What is the amount? Please specify a number.",
+                "date": "For which date? Please specify the date (e.g., 2025-01-25).",
+                "time": "At what time? Please specify the time (e.g., 14:30).",
+            }
         }
-        return prompts.get(parameter_name, f"Lütfen {parameter_name} bilgisini belirtin.")
+        
+        lang_prompts = prompts.get(language, prompts["tr"])
+        return lang_prompts.get(parameter_name, f"Please specify {parameter_name}." if language == "en" else f"Lütfen {parameter_name} bilgisini belirtin.")
     
     async def create_plan(
         self,
@@ -336,6 +354,7 @@ class ActionPlanner:
         user_id: str,
         user_permissions: Set[str],
         context: Optional[Dict[str, Any]] = None,
+        language: str = "tr",
     ) -> ActionPlannerResult:
         """
         Create an action plan from user intent.
@@ -371,6 +390,7 @@ class ActionPlanner:
             intent_type=intent.intent_type.value,
             entities=json.dumps(intent.entities, ensure_ascii=False),
             reasoning=intent.reasoning or "No reasoning provided",
+            language="Turkish" if language == "tr" else "English",
         )
         
         # Call LLM with circuit breaker
@@ -415,12 +435,17 @@ class ActionPlanner:
                 processing_time_ms=(time.time() - start_time) * 1000,
             )
         
-        # Build action steps
+        # Build action steps (enforce max step limit to prevent DoS)
+        MAX_STEPS = 20
+        actions_list = plan_data["actions"][:MAX_STEPS]
+        if len(plan_data["actions"]) > MAX_STEPS:
+            logger.warning(f"Action plan truncated from {len(plan_data['actions'])} to {MAX_STEPS} steps")
+
         steps = []
         tool_schema_versions = {}
         required_permissions = set()
-        
-        for i, action in enumerate(plan_data["actions"], 1):
+
+        for i, action in enumerate(actions_list, 1):
             tool_name = action.get("tool_name")
             
             # Get tool definition
@@ -469,7 +494,7 @@ class ActionPlanner:
         # Generate slot-filling prompt if needed
         slot_prompt = None
         if missing_params:
-            slot_prompt = self._generate_slot_prompt(missing_params[0])
+            slot_prompt = self._generate_slot_prompt(missing_params[0], language=language)
         
         # Calculate overall risk
         overall_risk = self._calculate_overall_risk(steps)
@@ -512,10 +537,11 @@ class ActionPlanner:
         user_id: str,
         user_permissions: Set[str],
         context: Optional[Dict[str, Any]] = None,
+        language: str = "tr",
     ) -> ActionPlannerResult:
         """Synchronous version of create_plan."""
         import asyncio
-        return asyncio.run(self.create_plan(intent, tenant_id, user_id, user_permissions, context))
+        return asyncio.run(self.create_plan(intent, tenant_id, user_id, user_permissions, context, language))
     
     def _parse_plan_response(self, response: str) -> dict:
         """Parse LLM response into plan data."""
@@ -524,7 +550,7 @@ class ActionPlanner:
         # Handle markdown code blocks
         if response.startswith("```"):
             lines = response.split("\n")
-            json_lines = []
+            json_lines: List[str] = []
             in_json = False
             for line in lines:
                 if line.startswith("```") and not in_json:
@@ -544,6 +570,7 @@ class ActionPlanner:
         tenant_id: str,
         user_id: str,
         user_permissions: Set[str],
+        language: str = "tr",
     ) -> ActionPlannerResult:
         """
         Create a simple plan without LLM.
@@ -591,12 +618,17 @@ class ActionPlanner:
                 
                 # Create step
                 tool = self.tool_registry.get_tool("createParty")
+                description = (
+                    f"Create party record for {parameters['first_name']} {parameters['last_name']}"
+                    if language == "en" else
+                    f"{parameters['first_name']} {parameters['last_name']} için hasta kaydı oluştur"
+                )
                 step = ActionStep(
                     step_number=1,
                     tool_name="createParty",
                     tool_schema_version=tool.schema_version,
                     parameters=parameters,
-                    description=f"{parameters['first_name']} {parameters['last_name']} için hasta kaydı oluştur",
+                    description=description,
                     risk_level=tool.risk_level,
                     requires_approval=False,
                 )
@@ -612,6 +644,71 @@ class ActionPlanner:
                     requires_approval=False,
                     plan_hash=self._compute_plan_hash([step]),
                     tool_schema_versions={"createParty": tool.schema_version},
+                )
+                
+                return ActionPlannerResult(
+                    status=PlannerStatus.SUCCESS,
+                    plan=plan,
+                    processing_time_ms=(time.time() - start_time) * 1000,
+                )
+        
+        # SGK Monthly Invoice Draft fallback
+        if intent.intent_type == IntentType.ACTION and intent.entities:
+            if "total_amount" in intent.entities and "dosya_referans_no" in intent.entities:
+                parameters = {
+                    "total_amount": intent.entities.get("total_amount"),
+                    "dosya_referans_no": intent.entities.get("dosya_referans_no"),
+                    "mukellef_kodu": intent.entities.get("mukellef_kodu"),
+                }
+                
+                # Check permissions
+                required_permissions = {"invoices.write"}
+                denied = self._check_permissions(user_permissions, required_permissions)
+                if denied:
+                    return ActionPlannerResult(
+                        status=PlannerStatus.PERMISSION_DENIED,
+                        denied_permissions=denied,
+                        error_message=f"Missing permissions: {', '.join(denied)}",
+                        processing_time_ms=(time.time() - start_time) * 1000,
+                    )
+                
+                # Create step
+                try:
+                    tool = self.tool_registry.get_tool("createSgkMonthlyInvoiceDraft")
+                except Exception:
+                    # Tool might not be registered yet, skip fallback
+                    return ActionPlannerResult(
+                        status=PlannerStatus.NO_ACTIONS_NEEDED,
+                        processing_time_ms=(time.time() - start_time) * 1000,
+                    )
+
+                description = (
+                    f"Create SGK monthly invoice draft for amount {parameters['total_amount']}"
+                    if language == "en" else
+                    f"{parameters['total_amount']} tutarında aylık SGK fatura taslağı oluştur"
+                )
+                
+                step = ActionStep(
+                    step_number=1,
+                    tool_name="createSgkMonthlyInvoiceDraft",
+                    tool_schema_version=tool.schema_version,
+                    parameters=parameters,
+                    description=description,
+                    risk_level=tool.risk_level,
+                    requires_approval=True, # Financial actions usually do
+                )
+                
+                # Create plan
+                plan = ActionPlan(
+                    plan_id=self._generate_plan_id(tenant_id, user_id),
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    intent=intent,
+                    steps=[step],
+                    overall_risk_level=RiskLevel.HIGH, # Financial
+                    requires_approval=True,
+                    plan_hash=self._compute_plan_hash([step]),
+                    tool_schema_versions={"createSgkMonthlyInvoiceDraft": tool.schema_version},
                 )
                 
                 return ActionPlannerResult(
@@ -656,7 +753,8 @@ class ActionPlanner:
         """
         if plan.expires_at is None:
             return False
-        return datetime.now(timezone.utc) > plan.expires_at
+        now = datetime.now(timezone.utc)
+        return bool(now > plan.expires_at) if plan.expires_at is not None else False
 
 
 # Global instance

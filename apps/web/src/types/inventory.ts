@@ -1,11 +1,13 @@
 // Inventory Types for X-Ear CRM
 // Based on legacy inventory structure and OpenAPI schema
 
-export type InventoryCategory = 
-  | 'hearing_aid' 
-  | 'battery' 
-  | 'accessory' 
-  | 'ear_mold' 
+export type InventoryCategory =
+  | 'hearing_aid'
+  | 'hearing_aid_battery'
+  | 'implant_battery'
+  | 'battery'
+  | 'accessory'
+  | 'ear_mold'
   | 'cleaning_supplies'
   | 'amplifiers';
 
@@ -38,8 +40,9 @@ export interface InventoryItem {
   stockCode?: string;
   supplier?: string;
   unit?: string;
+  packageQuantity?: number; // Number of items per package (e.g., 6 batteries per pack)
   description?: string;
-  
+
   // Stock tracking
   availableInventory: number;
   totalInventory: number;
@@ -65,6 +68,12 @@ export interface InventoryItem {
   // Hearing aid specific
   ear?: EarDirection;
   direction?: EarDirection;
+
+  // Technical specifications for recommendation engine
+  maxOutputSpl?: number;
+  maxGain?: number;
+  fittingRangeMin?: number;
+  fittingRangeMax?: number;
   
   // SGK and tracking
   sgkCode?: string;
@@ -79,6 +88,8 @@ export interface InventoryItem {
   gtipCode?: string; // GTİP kodu (ihracat için)
   priceIncludesKdv?: boolean;
   costIncludesKdv?: boolean;
+  utsStatusLabel?: string;
+  utsStatusTone?: 'success' | 'warning' | 'danger' | 'secondary';
   
   // Status and metadata
   status?: InventoryStatus;
@@ -234,6 +245,7 @@ export interface InventoryFormData {
   stockCode?: string;
   supplier?: string;
   unit?: string;
+  packageQuantity?: number;
   description?: string;
   availableInventory: number;
   reorderLevel: number;
@@ -267,6 +279,7 @@ export interface CreateInventoryData {
   stockCode?: string;
   supplier?: string;
   unit?: string;
+  packageQuantity?: number;
   description?: string;
   cost?: number;
   features?: string[];

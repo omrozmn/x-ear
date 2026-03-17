@@ -1,14 +1,15 @@
 # System Models: Settings
+from sqlalchemy import Column, String, Text
 from .base import db, BaseModel, JSONMixin
 
 class Settings(BaseModel, JSONMixin):
     __tablename__ = 'settings'
 
     # Primary key (usually single record with id='system_settings')
-    id = db.Column(db.String(50), primary_key=True, default='system_settings')
+    id = Column(String(50), primary_key=True, default='system_settings')
     
     # Settings data as JSON
-    settings_data = db.Column(db.Text, nullable=False)
+    settings_data = Column(Text, nullable=False)
 
     @property
     def settings_json(self):

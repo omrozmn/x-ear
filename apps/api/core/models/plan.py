@@ -2,30 +2,30 @@
 Plan model for subscription plans
 """
 
+from core.models.base import Base
 import uuid
 from datetime import datetime
-from enum import Enum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer
-from sqlalchemy.orm import relationship
-from models.base import db
+from enum import Enum as PyEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer, Index, Enum as SQLEnum, ForeignKey
 
 
-class PlanType(Enum):
+class PlanType(PyEnum):
     """Plan type enumeration"""
     BASIC = "BASIC"
     PRO = "PRO"
     ENTERPRISE = "ENTERPRISE"
     CUSTOM = "CUSTOM"
+    PAID = "PAID"
 
 
-class BillingInterval(Enum):
+class BillingInterval(PyEnum):
     """Billing interval enumeration"""
     MONTHLY = "MONTHLY"
     YEARLY = "YEARLY"
     QUARTERLY = "QUARTERLY"
 
 
-class Plan(db.Model):
+class Plan(Base):
     """Plan model for subscription plans"""
     
     __tablename__ = 'plans'
@@ -39,9 +39,9 @@ class Plan(db.Model):
     description = Column(Text, nullable=True)
     
     # Plan type and pricing
-    plan_type = Column(db.Enum(PlanType), nullable=False, index=True)
+    plan_type = Column(SQLEnum(PlanType), nullable=False, index=True)
     price = Column(Numeric(10, 2), nullable=False)
-    billing_interval = Column(db.Enum(BillingInterval), default=BillingInterval.MONTHLY, nullable=False)
+    billing_interval = Column(SQLEnum(BillingInterval), default=BillingInterval.MONTHLY, nullable=False)
     
     # Features and limits
     features = Column(JSON, nullable=True)  # Feature list and limits
@@ -49,6 +49,10 @@ class Plan(db.Model):
     max_storage_gb = Column(Integer, nullable=True)  # null = unlimited
     retention_days = Column(Integer, nullable=True, default=365)  # Data retention period (Phase 0)
     
+    # Sector & Country scoping
+    sector = Column(String(30), nullable=True, index=True)  # hearing, pharmacy, hospital, hotel, beauty, general, medical, optic
+    country_code = Column(String(2), ForeignKey('countries.code'), nullable=True, index=True)  # ISO 3166-1 alpha-2
+
     # Status
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_public = Column(Boolean, default=True, nullable=False)  # Public or private plan
@@ -62,11 +66,14 @@ class Plan(db.Model):
     
     # Indexes
     __table_args__ = (
-        db.Index('idx_plans_name', 'name'),
-        db.Index('idx_plans_slug', 'slug'),
-        db.Index('idx_plans_plan_type', 'plan_type'),
-        db.Index('idx_plans_is_active', 'is_active'),
-        db.Index('idx_plans_is_public', 'is_public'),
+        Index('idx_plans_name', 'name'),
+        Index('idx_plans_slug', 'slug'),
+        Index('idx_plans_plan_type', 'plan_type'),
+        Index('idx_plans_is_active', 'is_active'),
+        Index('idx_plans_is_public', 'is_public'),
+        Index('idx_plans_sector', 'sector'),
+        Index('idx_plans_country_code', 'country_code'),
+        Index('idx_plans_sector_country', 'sector', 'country_code'),
     )
     
     def __init__(self, **kwargs):

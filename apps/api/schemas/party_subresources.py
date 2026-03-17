@@ -1,8 +1,7 @@
 """
 Party Subresources Schemas - Pydantic models for Party Notes, etc.
 """
-from typing import Optional, List, Any
-from datetime import datetime
+from typing import Optional, List
 from pydantic import Field, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
@@ -19,6 +18,8 @@ class PartyNoteRead(AppBaseModel, IDMixin, TimestampMixin):
     title: Optional[str] = None
     content: str
     is_private: bool = Field(False, alias="isPrivate")
+    created_by: Optional[str] = Field(None, alias="createdBy")
+    created_by_name: Optional[str] = Field(None, alias="createdByName")
 
 
 class PartyNoteCreate(AppBaseModel):

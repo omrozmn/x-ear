@@ -1,0 +1,17 @@
+AI İşlem Onayı Gerekiyor
+
+Merhaba,
+
+Aşağıdaki AI işlemi onayınızı bekliyor:
+
+İşlem ID: {{ action_id }}
+İşlem Türü: {{ action_type }}
+Açıklama: {{ description }}
+Risk Seviyesi: {{ risk_level }}
+
+İşlemi onaylamak veya reddetmek için lütfen sisteme giriş yapın.
+
+Onay URL: {{ approval_url }}
+
+---
+Bu otomatik bir mesajdır. Lütfen yanıtlamayın.

@@ -14,7 +14,7 @@ from schemas.branches import BranchRead
 from models.branch import Branch
 from models.tenant import Tenant
 
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)
@@ -86,8 +86,8 @@ def get_branches(
             # Non-super admin without tenant_id should see nothing
             return ResponseEnvelope(data=[])
         
-        # Branch filtering for tenant admins
-        if access.is_tenant_admin and access.user and hasattr(access.user, 'branches'):
+        # Branch filtering for users with explicit branch access
+        if not access.is_super_admin and access.user and hasattr(access.user, 'branches'):
             user_branch_ids = [b.id for b in access.user.branches]
             if user_branch_ids:
                 query = query.filter(Branch.id.in_(user_branch_ids))
@@ -106,6 +106,8 @@ def create_branch(
 ):
     """Create a new branch"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        
         # Only tenant admins or super admins can create branches
         if not access.is_super_admin and not access.is_tenant_admin:
             raise HTTPException(
@@ -113,25 +115,18 @@ def create_branch(
                 detail=ApiError(message="Only tenant admins can create branches", code="FORBIDDEN").model_dump(mode="json")
             )
         
-        # Determine access.tenant_id
-        access.tenant_id = access.tenant_id
-        if not access.tenant_id:
-            access.tenant_id = branch_in.tenant_id
-            if not access.tenant_id:
-                raise HTTPException(
-                    status_code=400,
-                    detail=ApiError(message="access.tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
-                )
+        # Get effective tenant ID (supports impersonation)
+        tenant_id = get_effective_tenant_id(access)
         
         # Check branch limits
-        tenant = db_session.get(Tenant, access.tenant_id)
+        tenant = db_session.get(Tenant, tenant_id)
         if not tenant:
             raise HTTPException(
                 status_code=404,
                 detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
             )
         
-        existing_branch_count = db_session.query(Branch).filter_by(tenant_id=access.tenant_id).count()
+        existing_branch_count = db_session.query(Branch).filter_by(tenant_id=tenant_id).count()
         max_branches = tenant.max_branches or 1
         
         if existing_branch_count >= max_branches:
@@ -150,7 +145,7 @@ def create_branch(
             )
         
         branch = Branch(
-            tenant_id=access.tenant_id,
+            tenant_id=tenant_id,
             name=branch_in.name,
             address=branch_in.address,
             phone=branch_in.phone,

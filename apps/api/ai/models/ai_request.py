@@ -9,9 +9,7 @@ Requirements:
 This model stores the initial AI request before processing.
 """
 
-from datetime import datetime
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
 
 from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean, Index
@@ -122,6 +120,8 @@ class AIRequest(Base):
         Index("ix_ai_requests_user_created", "user_id", "created_at"),
         Index("ix_ai_requests_status_created", "status", "created_at"),
         Index("ix_ai_requests_legal_hold_created", "legal_hold", "created_at"),
+        # Composite index for the most common query pattern: tenant + status + date range
+        Index("ix_ai_requests_tenant_status_created", "tenant_id", "status", "created_at"),
     )
     
     def to_dict(self) -> dict:

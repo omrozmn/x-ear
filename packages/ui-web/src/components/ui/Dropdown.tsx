@@ -60,7 +60,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
       {isOpen && (
         <div
-          className={`absolute z-50 min-w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 ${positionClasses[position]}`}
+          className={`absolute z-50 min-w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg py-1 ${positionClasses[position]}`}
         >
           {items.map((item, index) => (
             <button

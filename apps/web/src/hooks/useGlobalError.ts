@@ -6,7 +6,7 @@
  */
 
 import { useContext } from 'react';
-import { GlobalErrorContext } from '../contexts/GlobalErrorContext';
+import { GlobalErrorContext } from '../contexts/GlobalErrorContextType';
 
 export const useGlobalError = () => {
   const context = useContext(GlobalErrorContext);

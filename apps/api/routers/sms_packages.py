@@ -3,14 +3,14 @@ FastAPI SMS Packages Router - Migrated from Flask routes/sms_packages.py
 Handles SMS package management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, List
+from typing import List, Optional
 import logging
 
 from sqlalchemy.orm import Session
 
+from core.dependencies import get_current_admin_user
 from database import get_db
 from schemas.base import ResponseEnvelope, ResponseMeta
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
 
 from schemas.sms import (
     SmsPackageCreate,
@@ -26,13 +26,19 @@ router = APIRouter(tags=["SMS"])
 # --- Public Routes ---
 
 @router.get("/sms-packages", operation_id="listSmsPackages", response_model=ResponseEnvelope[List[BaseSmsPackageRead]])
-def list_public_packages(db: Session = Depends(get_db)):
+def list_public_packages(
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
+    db: Session = Depends(get_db)
+):
     """List all active SMS packages (Public)"""
     try:
         from models.sms_package import SmsPackage
-        
-        packages = db.query(SmsPackage).filter_by(is_active=True).order_by(SmsPackage.price).all()
-        
+
+        query = db.query(SmsPackage).filter_by(is_active=True)
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
+        packages = query.order_by(SmsPackage.price).all()
+
         return ResponseEnvelope(data=[
             BaseSmsPackageRead.model_validate(p)
             for p in packages
@@ -46,19 +52,21 @@ def list_public_packages(db: Session = Depends(get_db)):
 
 @router.get("/admin/sms/packages", operation_id="listAdminSmPackages", response_model=ResponseEnvelope[List[DetailedSmsPackageRead]])
 def list_admin_packages(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
-    access: UnifiedAccess = Depends(require_access()),
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """List all SMS packages (Admin)"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
-        
+
         from models.sms_package import SmsPackage
-        
-        query = db.query(SmsPackage).order_by(SmsPackage.price)
+
+        query = db.query(SmsPackage)
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
+        query = query.order_by(SmsPackage.price)
         total = query.count()
         
         offset = (page - 1) * limit
@@ -86,22 +94,22 @@ def list_admin_packages(
 @router.post("/admin/sms/packages", operation_id="createAdminSmPackages", status_code=201, response_model=ResponseEnvelope[DetailedSmsPackageRead])
 def create_package(
     request_data: SmsPackageCreate,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Create a new SMS package (Admin)"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
-        
+
         from models.sms_package import SmsPackage
         
         pkg = SmsPackage(
             name=request_data.name,
             description=request_data.description,
-            sms_count=request_data.smsCount,
+            sms_count=request_data.sms_count,
             price=request_data.price,
-            is_active=request_data.isActive
+            currency=request_data.currency,
+            country_code=request_data.country_code,
+            is_active=request_data.is_active
         )
         db.add(pkg)
         db.commit()
@@ -119,14 +127,12 @@ def create_package(
 def update_package(
     package_id: str,
     request_data: SmsPackageUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Update an SMS package (Admin)"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
-        
+
         from models.sms_package import SmsPackage
         
         pkg = db.get(SmsPackage, package_id)
@@ -137,12 +143,16 @@ def update_package(
             pkg.name = request_data.name
         if request_data.description is not None:
             pkg.description = request_data.description
-        if request_data.smsCount is not None:
-            pkg.sms_count = request_data.smsCount
+        if request_data.sms_count is not None:
+            pkg.sms_count = request_data.sms_count
         if request_data.price is not None:
             pkg.price = request_data.price
-        if request_data.isActive is not None:
-            pkg.is_active = request_data.isActive
+        if request_data.currency is not None:
+            pkg.currency = request_data.currency
+        if request_data.country_code is not None:
+            pkg.country_code = request_data.country_code
+        if request_data.is_active is not None:
+            pkg.is_active = request_data.is_active
         
         db.commit()
         
@@ -158,14 +168,12 @@ def update_package(
 @router.delete("/admin/sms/packages/{package_id}", operation_id="deleteAdminSmPackage")
 def delete_package(
     package_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Delete an SMS package (Admin)"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
-        
+
         from models.sms_package import SmsPackage
         
         pkg = db.get(SmsPackage, package_id)

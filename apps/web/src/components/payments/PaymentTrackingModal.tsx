@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
 import {
   Button,
   Input,
@@ -9,19 +12,16 @@ import {
   CardTitle,
   Badge,
   Alert,
-  Spinner
+  Spinner,
+  DatePicker
 } from '@x-ear/ui-web';
 import {
   X,
   CreditCard,
-  Calendar,
-  DollarSign,
-  CheckCircle,
-  AlertCircle,
   Clock,
-  FileText,
   Plus,
-  Trash2
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import type { SaleRead } from '@/api/client/sales.client';
 import type { ExtendedSaleRead } from '@/types/extended-sales';
@@ -33,15 +33,18 @@ import {
   getListPartyPaymentRecordsQueryKey,
   getListSalePromissoryNotesQueryKey
 } from '@/api/client/payments.client';
+import { getListSalesQueryKey } from '@/api/client/sales.client';
 import type { RoutersPaymentsPaymentRecordCreate } from '@/api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { formatDateForInput } from '@/utils/date';
 
 // interface ExtendedSaleRead extends SaleRead {
-//   partyPayment?: number;
+// partyPayment?: number;
 // }
 
 interface PaymentRecord {
   id: string;
+  saleId?: string; // Added to filter by sale
   amount: number;
   paymentDate: string;
   paymentMethod: string;
@@ -83,23 +86,26 @@ interface PaymentTrackingModalProps {
   onClose: () => void;
   sale: SaleRead;
   onPaymentUpdate: () => void;
+  /** When true, renders as inline content — no backdrop, no header, no footer */
+  embedded?: boolean;
 }
 
 export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   isOpen,
   onClose,
   sale,
-  onPaymentUpdate
+  onPaymentUpdate,
+  embedded = false,
 }) => {
-  const [activeTab, setActiveTab] = useState<'payments' | 'installments' | 'promissory'>('payments');
+  const { t } = useTranslation('payments');
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [isPaymentHistoryOpen, setIsPaymentHistoryOpen] = useState(true);
 
   // Data states
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
+  const [, setPromissoryNotes] = useState<PromissoryNote[]>([]);
   const [installments, setInstallments] = useState<Installment[]>([]);
-  const [promissoryNotes, setPromissoryNotes] = useState<PromissoryNote[]>([]);
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary>({
     totalAmount: 0,
     totalPaid: 0,
@@ -107,23 +113,23 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     overdueAmount: 0
   });
 
+  // Generate unique reference number
+  const generateReferenceNumber = () => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `PAY-${timestamp}-${random}`;
+  };
+
   // Form states
   const [newPayment, setNewPayment] = useState({
     amount: 0,
     paymentMethod: 'cash',
-    paymentDate: new Date().toISOString().split('T')[0],
+    paymentDate: formatDateForInput(new Date()),
     notes: '',
-    referenceNumber: ''
+    referenceNumber: generateReferenceNumber()
   });
 
-  const [newPromissoryNote, setNewPromissoryNote] = useState({
-    amount: 0,
-    dueDate: '',
-    description: '',
-    noteNumber: ''
-  });
-
-  // Orval Hooks for real data
+  // Orval Hooks for real data - FILTER BY SALE ID
   const { data: paymentRecordsResponse } = useListPartyPaymentRecords(sale.partyId, undefined, {
     query: {
       queryKey: getListPartyPaymentRecordsQueryKey(sale.partyId),
@@ -138,40 +144,53 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     }
   });
 
-  const createPaymentMutation = useCreatePaymentRecords();
-
-  // Unwrap data safely using strict types
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const realPaymentRecords = unwrapArray<PaymentRecord>(paymentRecordsResponse) || [];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const realPromissoryNotes = unwrapArray<PromissoryNote>(promissoryNotesResponse) || [];
+  const createPaymentMutation = useCreatePaymentRecords({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate payment records for this party
+        queryClient.invalidateQueries({ queryKey: getListPartyPaymentRecordsQueryKey(sale.partyId) });
+        // Invalidate sales list so paidAmount column updates immediately in SalesPage
+        queryClient.invalidateQueries({ queryKey: getListSalesQueryKey() });
+      }
+    }
+  });
 
   // Mock Installments (Backend Missing) and Data Sync
   useEffect(() => {
     if (isOpen) {
+      // Unwrap data safely using strict types and FILTER BY SALE ID
+      const allPaymentRecords = unwrapArray<PaymentRecord>(paymentRecordsResponse) || [];
+      // Filter to only show payments for THIS sale
+      let realPaymentRecords = allPaymentRecords.filter(p => p.saleId === sale.id);
+
+      // WORKAROUND: If sale has paidAmount but no payment records, add initial down payment
+      if (sale.paidAmount && sale.paidAmount > 0 && realPaymentRecords.length === 0) {
+        realPaymentRecords = [{
+          id: 'initial-down-payment',
+          saleId: sale.id,
+          amount: sale.paidAmount,
+          paymentDate: sale.saleDate || new Date().toISOString(),
+          paymentMethod: sale.paymentMethod || 'cash',
+          status: 'paid',
+          notes: t('initialDownPayment', 'İlk Ön Ödeme')
+        }];
+      }
+
+      const realPromissoryNotes = unwrapArray<PromissoryNote>(promissoryNotesResponse) || [];
+
       // Mock Installments
       const mockInstallments: Installment[] = [
-        { id: '1', installmentNumber: 1, amount: 1000, dueDate: '2024-01-15', status: 'paid', paidDate: '2024-01-15', notes: 'İlk taksit' },
-        { id: '2', installmentNumber: 2, amount: 1000, dueDate: '2024-02-15', status: 'paid', paidDate: '2024-02-15', notes: 'İkinci taksit' }
+        { id: '1', installmentNumber: 1, amount: 1000, dueDate: '2024-01-15', status: 'paid', paidDate: '2024-01-15', notes: t('firstInstallment', 'İlk taksit') },
+        { id: '2', installmentNumber: 2, amount: 1000, dueDate: '2024-02-15', status: 'paid', paidDate: '2024-02-15', notes: t('secondInstallment', 'İkinci taksit') }
       ];
+
+      setPaymentRecords(realPaymentRecords);
+      setPromissoryNotes(realPromissoryNotes);
       setInstallments(mockInstallments);
     }
-  }, [isOpen]);
+  }, [isOpen, paymentRecordsResponse, promissoryNotesResponse, sale.id, sale.paidAmount, sale.saleDate, sale.paymentMethod]);
 
-  // Sync real data to state
-  useEffect(() => {
-    if (realPaymentRecords) setPaymentRecords(realPaymentRecords);
-    if (realPromissoryNotes) setPromissoryNotes(realPromissoryNotes);
-  }, [realPaymentRecords, realPromissoryNotes]);
-
-  // Calculate summary
-  useEffect(() => {
-    const summary = calculatePaymentSummary(paymentRecords, installments);
-    setPaymentSummary(summary);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentRecords, installments]);
-
-  const calculatePaymentSummary = (payments: PaymentRecord[], installmentList: Installment[]): PaymentSummary => {
+  const calculatePaymentSummary = useCallback((payments: PaymentRecord[], installmentList: Installment[]): PaymentSummary => {
     const totalPaid = payments
       .filter(p => p.status === 'paid')
       .reduce((sum, p) => sum + p.amount, 0);
@@ -193,83 +212,89 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       nextDueDate: nextDue?.dueDate,
       nextDueAmount: nextDue?.amount
     };
-  };
+  }, [sale]);
+
+  // Calculate summary
+  useEffect(() => {
+    const summary = calculatePaymentSummary(paymentRecords, installments);
+    setPaymentSummary(summary);
+  }, [paymentRecords, installments, calculatePaymentSummary]);
 
   // Record new payment using Orval mutation
-  const handleRecordPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!sale.id) return;
-
-    setError(null);
-    setSuccess(null);
+  const handleRecordPayment = async () => {
+    if (!sale.id) {
+      return;
+    }
 
     if (newPayment.amount <= 0) {
-      setError('Ödeme tutarı 0\'dan büyük olmalıdır');
+      toast.error(t('amountMustBePositive', 'Ödeme tutarı 0\'dan büyük olmalıdır'));
       return;
     }
 
     if (newPayment.amount > paymentSummary.remainingBalance) {
-      setError('Ödeme tutarı kalan bakiyeden fazla olamaz');
+      toast.error(t('amountExceedsBalance', 'Ödeme tutarı kalan bakiyeden fazla olamaz'));
       return;
     }
 
     setIsLoading(true);
+
     try {
       const paymentData: RoutersPaymentsPaymentRecordCreate = {
         partyId: sale.partyId,
+        saleId: sale.id,
         amount: newPayment.amount,
         paymentDate: newPayment.paymentDate,
         paymentMethod: newPayment.paymentMethod,
-        notes: newPayment.notes
+        notes: newPayment.notes,
+        referenceNumber: newPayment.referenceNumber
       };
 
       await createPaymentMutation.mutateAsync({ data: paymentData });
 
-      setSuccess('Ödeme başarıyla kaydedildi');
+      toast.success(t('paymentSaved', 'Ödeme başarıyla kaydedildi'));
+      window.dispatchEvent(new CustomEvent('dashboard:refresh'));
+      window.dispatchEvent(new CustomEvent('party-timeline:refresh', {
+        detail: { partyId: sale.partyId }
+      }));
+
+      // Reset form with new reference number
       setNewPayment({
         amount: 0,
         paymentMethod: 'cash',
-        paymentDate: new Date().toISOString().split('T')[0],
+        paymentDate: formatDateForInput(new Date()),
         notes: '',
-        referenceNumber: ''
+        referenceNumber: generateReferenceNumber()
       });
 
+      await new Promise(resolve => setTimeout(resolve, 500));
       onPaymentUpdate();
 
-    } catch (err) {
-      console.error('Error recording payment:', err);
-      setError('Ödeme kaydedilirken hata oluştu');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string }; message?: string } }; message?: string };
+      const errorMessage = error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        t('paymentSaveError', 'Ödeme kaydedilirken hata oluştu');
 
-  // Pay installment (mock implementation until API is available)
-  const handlePayInstallment = async (installmentId: string) => {
-    if (!sale.id) return;
-
-    setIsLoading(true);
-    try {
-      // Mock installment payment
-      setInstallments(prev => prev.map(installment =>
-        installment.id === installmentId
-          ? { ...installment, status: 'paid' as const, paidDate: new Date().toISOString().split('T')[0] }
-          : installment
-      ));
-
-      setSuccess('Taksit ödemesi başarıyla kaydedildi');
-      // Installments are mock, no need to reload
-      onPaymentUpdate();
-
-    } catch (err) {
-      console.error('Error paying installment:', err);
-      setError('Taksit ödemesi kaydedilirken hata oluştu');
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
 
+
+
+
+  const getPaymentMethodLabel = (method: string): string => {
+    const labels: Record<string, string> = {
+      'cash': t('paymentMethods.cash', 'Nakit'),
+      'card': t('paymentMethods.card', 'Kredi Kartı'),
+      'bank_transfer': t('paymentMethods.bank_transfer', 'Havale'),
+      'check': t('paymentMethods.check', 'Çek')
+    };
+    return labels[method] || method;
+  };
 
   if (!isOpen) return null;
 
@@ -286,11 +311,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      paid: { color: 'bg-green-100 text-green-800', label: 'Ödendi' },
-      pending: { color: 'bg-yellow-100 text-yellow-800', label: 'Bekliyor' },
-      overdue: { color: 'bg-red-100 text-red-800', label: 'Gecikmiş' },
-      cancelled: { color: 'bg-gray-100 text-gray-800', label: 'İptal' },
-      active: { color: 'bg-blue-100 text-blue-800', label: 'Aktif' }
+      paid: { color: 'bg-success/10 text-success', label: t('status.paid', 'Ödendi') },
+      pending: { color: 'bg-warning/10 text-yellow-800', label: t('status.pending', 'Bekliyor') },
+      overdue: { color: 'bg-destructive/10 text-red-800', label: t('status.overdue', 'Gecikmiş') },
+      cancelled: { color: 'bg-muted text-foreground', label: t('status.cancelled', 'İptal') },
+      active: { color: 'bg-primary/10 text-blue-800', label: t('status.active', 'Aktif') }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -302,66 +327,69 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+    <div
+      className={embedded ? '' : 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]'}
+      data-testid="payment-tracking-modal"
+      onClick={embedded ? undefined : (e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className={embedded ? '' : 'bg-card rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto'}
+        onClick={embedded ? undefined : (e) => e.stopPropagation()}
+      >
+        {/* Header — hidden when embedded */}
+        {!embedded && (
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <h3 className="text-lg font-medium text-foreground flex items-center">
             <CreditCard className="w-5 h-5 mr-2" />
-            Ödeme Takibi - Satış #{sale.id}
+            {t('trackingTitle', 'Ödeme Takibi')} - {t('sale', 'Satış')} #{sale.id}
           </h3>
-          <Button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+          <Button
+            type="button"
+            onClick={onClose}
+            className="p-1 text-muted-foreground hover:text-muted-foreground rounded-lg"
+          >
             <X className="w-5 h-5" />
           </Button>
         </div>
-
-        {/* Error and Success Messages */}
-        {error && (
-          <Alert className="mb-4 bg-red-50 border-red-200 text-red-800">
-            <AlertCircle className="w-4 h-4" />
-            <span>{error}</span>
-          </Alert>
         )}
 
-        {success && (
-          <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
-            <CheckCircle className="w-4 h-4" />
-            <span>{success}</span>
-          </Alert>
-        )}
+
 
         {/* Payment Summary */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Toplam Tutar</div>
-              <div className="text-2xl font-bold text-gray-900">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.totalAmount', 'Toplam Tutar')}</div>
+              <div className="text-lg md:text-2xl font-bold text-foreground">
                 {formatCurrency(paymentSummary.totalAmount)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Ödenen</div>
-              <div className="text-2xl font-bold text-green-600">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.paid', 'Ödenen')}</div>
+              <div className="text-lg md:text-2xl font-bold text-success">
                 {formatCurrency(paymentSummary.totalPaid)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Kalan</div>
-              <div className="text-2xl font-bold text-blue-600">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.remaining', 'Kalan')}</div>
+              <div className="text-lg md:text-2xl font-bold text-primary">
                 {formatCurrency(paymentSummary.remainingBalance)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Gecikmiş</div>
-              <div className="text-2xl font-bold text-red-600">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.overdue', 'Gecikmiş')}</div>
+              <div className="text-lg md:text-2xl font-bold text-destructive">
                 {formatCurrency(paymentSummary.overdueAmount)}
               </div>
             </CardContent>
@@ -370,146 +398,164 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
         {/* Next Due Alert */}
         {paymentSummary.nextDueDate && (
-          <Alert className="mb-4 bg-yellow-50 border-yellow-200 text-yellow-800">
+          <Alert className="mb-4 bg-warning/10 border-yellow-200 text-yellow-800">
             <Clock className="w-4 h-4" />
-            <span>
-              Sonraki ödeme: {formatDate(paymentSummary.nextDueDate)} - {formatCurrency(paymentSummary.nextDueAmount || 0)}
+            <span className="text-sm">
+              {t('nextPayment', 'Sonraki ödeme')}: {formatDate(paymentSummary.nextDueDate)} - {formatCurrency(paymentSummary.nextDueAmount || 0)}
             </span>
           </Alert>
         )}
 
-        {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { key: 'payments', label: 'Ödemeler', icon: DollarSign },
-              { key: 'installments', label: 'Taksitler', icon: Calendar },
-              { key: 'promissory', label: 'Senetler', icon: FileText }
-            ].map(({ key, label, icon: Icon }) => (
-              <button
-                data-allow-raw="true"
-                key={key}
-                onClick={() => setActiveTab(key as typeof activeTab)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === key
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+        {/* Payment Content - NO TABS */}
+        <div className="space-y-4 md:space-y-6">
+          {/* New Payment Form */}
+          <Card>
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center text-base md:text-lg">
+                <Plus className="w-4 h-4 mr-2" />
+                {t('newPaymentRecord', 'Yeni Ödeme Kaydet')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.nativeEvent.stopImmediatePropagation();
+                  return false;
+                }}
+                className="space-y-4"
               >
-                <Icon className="w-4 h-4 mr-2" />
-                {label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'payments' && (
-          <div className="space-y-6">
-            {/* New Payment Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Yeni Ödeme Kaydet
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleRecordPayment} className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label>Tutar</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={newPayment.amount}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Ödeme Yöntemi</Label>
-                      <select
-                        data-allow-raw="true"
-                        value={newPayment.paymentMethod}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="cash">Nakit</option>
-                        <option value="card">Kredi Kartı</option>
-                        <option value="bank_transfer">Havale</option>
-                        <option value="check">Çek</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Ödeme Tarihi</Label>
-                      <Input
-                        type="date"
-                        value={newPayment.paymentDate}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, paymentDate: e.target.value }))}
-                        required
-                      />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <div>
+                    <Label className="text-xs md:text-sm">{t('form.amount', 'Tutar')} *</Label>
+                    <Input
+                      data-testid="payment-amount-input"
+                      type="number"
+                      step="0.01"
+                      value={newPayment.amount === 0 ? '' : newPayment.amount}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNewPayment(prev => ({ ...prev, amount: val === '' ? 0 : parseFloat(val) || 0 }));
+                      }}
+                      placeholder="0.00"
+                      required
+                      className="text-sm md:text-base"
+                    />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Referans No</Label>
-                      <Input
-                        value={newPayment.referenceNumber}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, referenceNumber: e.target.value }))}
-                        placeholder="İşlem numarası, çek no, vb."
-                      />
-                    </div>
-                    <div>
-                      <Label>Notlar</Label>
-                      <Input
-                        value={newPayment.notes}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Ödeme notları"
-                      />
-                    </div>
+                  <div>
+                    <Label className="text-xs md:text-sm">{t('form.paymentDate', 'Ödeme Tarihi')} *</Label>
+                    <DatePicker
+                      data-testid="payment-date-input"
+                      value={newPayment.paymentDate ? new Date(newPayment.paymentDate) : null}
+                      onChange={(date) => setNewPayment(prev => ({ ...prev, paymentDate: date ? formatDateForInput(date) : '' }))}
+                      required
+                      fullWidth
+                    />
                   </div>
+                  <div>
+                    <Label className="text-xs md:text-sm">{t('form.paymentMethod', 'Ödeme Yöntemi')} *</Label>
+                    <select
+                      data-allow-raw="true"
+                      data-testid="payment-method-select"
+                      value={newPayment.paymentMethod}
+                      onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring bg-card"
+                    >
+                      <option value="cash">{t('paymentMethods.cash', 'Nakit')}</option>
+                      <option value="card">{t('paymentMethods.card', 'Kredi Kartı')}</option>
+                      <option value="bank_transfer">{t('paymentMethods.bank_transfer', 'Havale')}</option>
+                      <option value="check">{t('paymentMethods.check', 'Çek')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-xs md:text-sm">{t('form.notes', 'Notlar')}</Label>
+                    <Input
+                      value={newPayment.notes}
+                      onChange={(e) => setNewPayment(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder={t('form.notesPlaceholder', 'Ödeme notları')}
+                      className="text-sm md:text-base w-full"
+                    />
+                  </div>
+                </div>
 
-                  <Button type="submit" disabled={isLoading} className="w-full">
-                    {isLoading && <Spinner className="w-4 h-4 mr-2" />}
-                    Ödeme Kaydet
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    void handleRecordPayment();
+                  }}
+                  disabled={isLoading}
+                  className="w-full mt-2"
+                  data-testid="payment-submit-button"
+                >
+                  {isLoading && <Spinner className="w-4 h-4 mr-2" />}
+                  {t('savePayment', 'Ödeme Kaydet')}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-            {/* Payment Records */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Ödeme Geçmişi</CardTitle>
-              </CardHeader>
-              <CardContent>
+          {/* Payment Records - COLLAPSIBLE */}
+          <Card>
+            <CardHeader
+              className="cursor-pointer hover:bg-muted transition-colors pb-3 md:pb-6"
+              onClick={() => setIsPaymentHistoryOpen(!isPaymentHistoryOpen)}
+            >
+              <CardTitle className="flex items-center justify-between text-base md:text-lg">
+                <span>{t('paymentHistory', 'Ödeme Geçmişi')}</span>
+                {isPaymentHistoryOpen ? (
+                  <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                )}
+              </CardTitle>
+            </CardHeader>
+            {isPaymentHistoryOpen && (
+              <CardContent className="pt-0 md:pt-4">
                 {paymentRecords.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Henüz ödeme kaydı bulunmuyor
+                  <div className="text-center py-6 md:py-8 text-muted-foreground text-sm md:text-base">
+                    {t('noPaymentRecords', 'Henüz ödeme kaydı bulunmuyor')}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {paymentRecords.map((payment) => (
-                      <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="text-lg font-medium">
-                            {formatCurrency(payment.amount)}
+                      <div key={payment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border rounded-xl hover:bg-muted gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
+                          <div className="flex justify-between items-center sm:block">
+                            <div className="text-lg md:text-xl font-semibold text-foreground">
+                              {formatCurrency(payment.amount)}
+                            </div>
+                            {/* Status badge on mobile right side */}
+                            <div className="sm:hidden">
+                              {getStatusBadge(payment.status)}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-600">
-                            {formatDate(payment.paymentDate)}
+
+                          <div className="flex flex-col">
+                            <div className="text-sm font-medium text-foreground">
+                              {formatDate(payment.paymentDate)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {getPaymentMethodLabel(payment.paymentMethod)}
+                            </div>
+                            {payment.referenceNumber && (
+                              <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                                Ref: {payment.referenceNumber}
+                              </div>
+                            )}
                           </div>
-                          <div className="text-sm text-gray-600 capitalize">
-                            {payment.paymentMethod}
-                          </div>
-                          {payment.referenceNumber && (
-                            <div className="text-xs text-gray-500">
-                              Ref: {payment.referenceNumber}
+
+                          {payment.notes && (
+                            <div className="text-sm text-muted-foreground italic bg-muted p-2 rounded-md sm:bg-transparent sm:p-0">
+                              "{payment.notes}"
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center space-x-2">
+
+                        {/* Status badge on desktop right side */}
+                        <div className="hidden sm:flex items-center space-x-2">
                           {getStatusBadge(payment.status)}
                         </div>
                       </div>
@@ -517,169 +563,18 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                   </div>
                 )}
               </CardContent>
-            </Card>
-          </div>
-        )}
+            )}
+          </Card>
+        </div>
 
-        {activeTab === 'installments' && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Taksit Planı</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {installments.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Taksit planı bulunmuyor
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {installments.map((installment) => (
-                      <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="text-sm font-medium">
-                            Taksit {installment.installmentNumber}
-                          </div>
-                          <div className="text-lg font-medium">
-                            {formatCurrency(installment.amount)}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            Vade: {formatDate(installment.dueDate)}
-                          </div>
-                          {installment.paidDate && (
-                            <div className="text-sm text-green-600">
-                              Ödendi: {formatDate(installment.paidDate)}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {getStatusBadge(installment.status)}
-                          {installment.status === 'pending' && (
-                            <Button
-                              size="sm"
-                              onClick={() => handlePayInstallment(installment.id)}
-                              disabled={isLoading}
-                            >
-                              Öde
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {activeTab === 'promissory' && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Yeni Senet Ekle
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Senet Tutarı</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newPromissoryNote.amount}
-                      onChange={(e) => setNewPromissoryNote(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div>
-                    <Label>Vade Tarihi</Label>
-                    <Input
-                      type="date"
-                      value={newPromissoryNote.dueDate}
-                      onChange={(e) => setNewPromissoryNote(prev => ({ ...prev, dueDate: e.target.value }))}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <Label>Senet Numarası</Label>
-                    <Input
-                      value={newPromissoryNote.noteNumber}
-                      onChange={(e) => setNewPromissoryNote(prev => ({ ...prev, noteNumber: e.target.value }))}
-                      placeholder="Senet numarası"
-                    />
-                  </div>
-                  <div>
-                    <Label>Açıklama</Label>
-                    <Input
-                      value={newPromissoryNote.description}
-                      onChange={(e) => setNewPromissoryNote(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Senet açıklaması"
-                    />
-                  </div>
-                </div>
-
-                <Button className="w-full mt-4" disabled={isLoading}>
-                  {isLoading && <Spinner className="w-4 h-4 mr-2" />}
-                  Senet Ekle
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Senet Listesi</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {promissoryNotes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Senet bulunmuyor
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {promissoryNotes.map((note) => (
-                      <div key={note.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="text-sm font-medium">
-                            {note.noteNumber}
-                          </div>
-                          <div className="text-lg font-medium">
-                            {formatCurrency(note.amount)}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            Vade: {formatDate(note.dueDate)}
-                          </div>
-                          {note.description && (
-                            <div className="text-sm text-gray-500">
-                              {note.description}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {getStatusBadge(note.status)}
-                          <Button size="sm" variant="outline">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Footer */}
+        {/* Footer — hidden when embedded */}
+        {!embedded && (
         <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
           <Button onClick={onClose} variant="outline">
-            Kapat
+            {t('close', 'Kapat')}
           </Button>
         </div>
+        )}
       </div>
     </div>
   );

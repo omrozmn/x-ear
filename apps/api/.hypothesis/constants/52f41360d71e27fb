@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/constants.py
+# hypothesis_version: 6.151.6
+
+['Aksesuar', 'Bakım', 'Malzeme', 'Pil', 'accessory', 'aksesuar', 'availableInventory', 'bakim', 'bakım', 'battery', 'category', 'hearing_aid', 'hearing_aid_battery', 'implant pili', 'implant_battery', 'isitme cihazi', 'isitme cihazi pili', 'işitme cihazı', 'işitme cihazı pili', 'maintenance', 'malzeme', 'pil', 'supplies', 'totalInventory', 'usedInventory', 'İmplant Pili', 'İşitme Cihazı', 'İşitme Cihazı Pili', 'İşitme cihazı']

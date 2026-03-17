@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Package, Search, Filter, ScanLine, Tag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Package, Search, Filter, ScanLine, Tag, CheckSquare, Square, X, Trash2, Edit } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
@@ -9,6 +10,12 @@ import { formatCurrency } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 import { toast } from 'react-hot-toast';
+import { Modal, Button } from '@x-ear/ui-web';
+import { InventoryForm } from '@/components/inventory/InventoryForm';
+import { useNewActionStore } from '@/stores/newActionStore';
+import { BarcodeScannerModal } from '@/components/barcode';
+import { useBarcodeKeyboardInput } from '@/hooks/useBarcodeKeyboardInput';
+import type { InventoryItem as InventoryFormItem } from '@/types/inventory';
 
 interface InventoryItem {
     id: string;
@@ -23,10 +30,61 @@ interface InventoryItem {
 }
 
 export const MobileInventoryPage: React.FC = () => {
+    const { t } = useTranslation('inventory');
     const [items, setItems] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchValue, setSearchValue] = useState('');
     const { triggerSelection } = useHaptic();
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    const toggleSelect = (id: string) => {
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedIds(newSet);
+        triggerSelection();
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === items.length && items.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(items.map(item => item.id)));
+        }
+        triggerSelection();
+    };
+
+    const handleCancelSelection = () => {
+        setIsSelectionMode(false);
+        setSelectedIds(new Set());
+        triggerSelection();
+    };
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    const handleBarcodeScan = useCallback((barcode: string) => {
+        setIsScannerOpen(false);
+        // Search for the scanned barcode
+        setSearchValue(barcode);
+        toast.success(`Barkod okundu: ${barcode}`);
+    }, []);
+
+    // USB barcode scanner support on page level
+    useBarcodeKeyboardInput({
+        onScan: handleBarcodeScan,
+        enabled: true,
+    });
+
+    const { triggered, resetNewAction } = useNewActionStore();
+
+    useEffect(() => {
+        if (triggered) {
+            setIsAddModalOpen(true);
+            resetNewAction();
+        }
+    }, [triggered, resetNewAction]);
 
     const loadInventory = useCallback(async () => {
         try {
@@ -72,30 +130,48 @@ export const MobileInventoryPage: React.FC = () => {
 
     const handleScan = () => {
         triggerSelection();
-        toast.success('Kamera ile tarama özelliği hazırlanıyor');
+        setIsScannerOpen(true);
     };
 
     return (
         <MobileLayout>
             <MobileHeader
-                title="Envanter"
+                title={isSelectionMode ? t('bulk_operations.selected_count', { count: selectedIds.size }) : t('products.title')}
                 showBack={false}
                 actions={
-                    <button data-allow-raw="true" className="p-2 text-gray-600 dark:text-gray-300">
-                        <Filter className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        {isSelectionMode ? (
+                            <>
+                                <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-primary font-medium">
+                                    {selectedIds.size === items.length && items.length > 0 ? t('bulk_operations.deselect_all') : t('bulk_operations.select_all')}
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-muted-foreground">
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-primary font-medium">
+                                    {t('bulk_operations.select_all')}
+                                </Button>
+                                <Button variant="ghost" size="sm" className="p-2 text-muted-foreground">
+                                    <Filter className="h-5 w-5" />
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 }
             />
 
             {/* Search & Scan Bar */}
-            <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 z-20">
+            <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-border sticky top-14 z-20">
                 <div className="flex gap-2">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
                             data-allow-raw="true"
                             type="text"
-                            placeholder="Ürün, marka, model ara..."
+                            placeholder={t('products.search_placeholder')}
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white dark:focus:bg-gray-700 transition-all border border-transparent focus:border-primary-100 dark:focus:border-primary-900 dark:text-white dark:placeholder-gray-400"
@@ -104,7 +180,7 @@ export const MobileInventoryPage: React.FC = () => {
                     <button
                         data-allow-raw="true"
                         onClick={handleScan}
-                        className="p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-600 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border border-transparent"
+                        className="p-2.5 bg-gray-50 rounded-xl text-muted-foreground active:bg-muted dark:active:bg-gray-700 transition-colors border border-transparent"
                     >
                         <ScanLine className="h-5 w-5" />
                     </button>
@@ -123,16 +199,34 @@ export const MobileInventoryPage: React.FC = () => {
                                 key={item.id}
                                 onClick={() => {
                                     triggerSelection();
-                                    toast('Detay görünümü yakında', { icon: '🚧' });
+                                    if (isSelectionMode) {
+                                        toggleSelect(item.id);
+                                    } else {
+                                        setSelectedItem(item);
+                                    }
                                 }}
-                                className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm active:scale-[0.99] transition-transform"
+                                className={cn(
+                                    "p-4 rounded-xl border shadow-sm active:scale-[0.99] transition-all relative overflow-hidden",
+                                    selectedIds.has(item.id)
+                                        ? "border-blue-500 bg-primary/10/50 dark:border-blue-500"
+                                        : "bg-white dark:bg-gray-800 border-border"
+                                )}
                             >
-                                <div className="flex gap-4">
-                                    <div className="h-16 w-16 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        {item.imageUrl ? (
-                                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded-lg" />
+                                {isSelectionMode && (
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        {selectedIds.has(item.id) ? (
+                                            <CheckSquare className="w-7 h-7 text-primary" />
                                         ) : (
-                                            <Package className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+                                            <Square className="w-7 h-7 text-gray-300" />
+                                        )}
+                                    </div>
+                                )}
+                                <div className={cn("flex gap-4 transition-all", isSelectionMode && "pr-8")}>
+                                    <div className="h-16 w-16 bg-gray-50 dark:bg-gray-700 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                        {item.imageUrl ? (
+                                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded-2xl" />
+                                        ) : (
+                                            <Package className="h-8 w-8 text-gray-300" />
                                         )}
                                     </div>
 
@@ -146,21 +240,21 @@ export const MobileInventoryPage: React.FC = () => {
                                             </p>
                                         </div>
 
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                        <p className="text-xs text-muted-foreground font-medium mb-2">
                                             {item.brand} {item.model}
                                         </p>
 
                                         <div className="flex items-center gap-3">
                                             <div className={cn(
-                                                "text-xs px-2 py-0.5 rounded-md font-medium flex items-center gap-1",
-                                                (item.availableInventory || item.available_inventory || 0) > 0 ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300" : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                                "text-xs px-2 py-0.5 rounded-xl font-medium flex items-center gap-1",
+                                                (item.availableInventory || item.available_inventory || 0) > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                                             )}>
                                                 <Tag className="h-3 w-3" />
-                                                Stok: {item.availableInventory || item.available_inventory || 0}
+                                                {t('columns.stock')}: {item.availableInventory || item.available_inventory || 0}
                                             </div>
 
                                             {item.category && (
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md">
+                                                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-xl">
                                                     {typeof item.category === 'string' ? item.category : item.category.name}
                                                 </span>
                                             )}
@@ -172,19 +266,77 @@ export const MobileInventoryPage: React.FC = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
-                                <Package className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+                                <Package className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Ürün Bulunamadı</h3>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                                Arama kriterlerinize uygun ürün yok.
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('products.not_found')}</h3>
+                            <p className="text-muted-foreground text-sm mt-1">
+                                {t('products.not_found')}
                             </p>
                         </div>
                     )}
                 </div>
             </PullToRefresh>
 
-            <FloatingActionButton
-                onClick={() => toast('Yeni ürün ekleme masaüstünde yapılmalıdır', { icon: '💻' })}
+            {/* Bulk Action Bar */}
+            {selectedIds.size > 0 && isSelectionMode && (
+                <div className="fixed bottom-24 left-4 right-4 z-40 bg-gray-900 dark:bg-gray-800 rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between pointer-events-auto transition-transform">
+                    <span className="text-sm font-medium text-white">{t('bulk_operations.selected_count', { count: selectedIds.size })}</span>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
+                            <Edit className="w-4 h-4 mr-1.5" /> {t('actions.edit')}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
+                            <Trash2 className="w-4 h-4 mr-1.5" /> {t('actions.delete')}
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {!isSelectionMode && (
+                <FloatingActionButton
+                    onClick={() => setIsAddModalOpen(true)}
+                />
+            )}
+
+            <Modal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                title={t('form.add_product')}
+                size="xl"
+            >
+                <InventoryForm
+                    onSave={() => {
+                        setIsAddModalOpen(false);
+                        handleRefresh();
+                    }}
+                    onCancel={() => setIsAddModalOpen(false)}
+                />
+            </Modal>
+
+            <Modal
+                isOpen={!!selectedItem}
+                onClose={() => setSelectedItem(null)}
+                title={t('actions.view_details')}
+                size="xl"
+            >
+                {selectedItem && (
+                    <InventoryForm
+                        item={selectedItem as unknown as InventoryFormItem}
+                        onSave={() => {
+                            setSelectedItem(null);
+                            handleRefresh();
+                        }}
+                        onCancel={() => setSelectedItem(null)}
+                    />
+                )}
+            </Modal>
+
+            <BarcodeScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onScan={handleBarcodeScan}
+                mode="lookup"
+                title="Ürün Barkodu Tara"
             />
         </MobileLayout>
     );

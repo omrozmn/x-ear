@@ -3,10 +3,10 @@ import os
 # Add backend root to path to allow imports from app, models, etc.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 """Super quick seeder - use existing seed_faker_data.py for most data"""
-import sys, os
+import sys
+import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from app import app
-from models.base import db
 from utils.tenant_security import _skip_filter
 
 def run():
@@ -33,7 +33,7 @@ def run():
         tenant_count = Tenant.query.count()
         role_count = Role.query.count()
         
-        print(f"\n📊 Current Data:")
+        print("\n📊 Current Data:")
         print(f"   - Tenants: {tenant_count}")
         print(f"   - Patients: {patient_count}")
         print(f"   - Suppliers: {supplier_count}")

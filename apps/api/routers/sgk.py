@@ -3,41 +3,42 @@ FastAPI SGK Router - Migrated from Flask routes/sgk.py
 Handles SGK document management and OCR processing
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 import logging
 import os
 import tempfile
 
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
+from sqlalchemy import func
 import glob
 import re
 import random
 import hashlib
 
 from schemas.base import ResponseEnvelope
-from models.user import User
 from core.models.party import Party
 from schemas.parties import PartyRead
 from schemas.sgk import SgkDocumentRead
 
 from schemas.sgk import (
-    SgkDocumentRead, UploadSGKDocumentRequest, EReceiptQueryRequest,
+    UploadSGKDocumentRequest, EReceiptQueryRequest,
     PatientRightsQueryRequest, WorkflowCreateRequest, WorkflowUpdateRequest,
     WorkflowStatusUpdate,
     SgkDocumentListResponse, SgkDocumentResponse, SgkUploadResponse,
     SgkEReceiptResponse, SgkEReceiptListResponse, SgkPatientRightsResponse,
     SgkWorkflowResponse
 )
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["SGK"])
+from middleware.require_module import require_module
+from fastapi import Depends as _Depends
+
+router = APIRouter(tags=["SGK"], dependencies=[_Depends(require_module("sgk"))])
 
 MAX_UPLOAD_FILES = 50
 ALLOWED_IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp'}
@@ -75,7 +76,7 @@ def list_sgk_documents(
         docs = []
         # Try to get from SGKDocument model if available
         try:
-            from models.sgk import SGKDocument
+            from core.models.sgk import SGKDocument
             docs = db_session.query(SGKDocument).filter(
                 SGKDocument.tenant_id == access.tenant_id
             ).all()
@@ -104,7 +105,7 @@ def upload_sgk_document(
         doc_data['created_at'] = datetime.now().isoformat()
         
         try:
-            from models.sgk import SGKDocument
+            from core.models.sgk import SGKDocument
             doc = SGKDocument.from_dict(doc_data)
             db_session.add(doc)
             db_session.commit()
@@ -115,46 +116,47 @@ def upload_sgk_document(
         logger.error(f"Upload SGK doc error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/sgk/documents/{document_id}", operation_id="getSgkDocument")
-def get_sgk_document(
-    document_id: str,
-    db_session: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
-):
-    """Get SGK document"""
-    try:
-        from models.sgk import SGKDocument
-        doc = db_session.get(SGKDocument, document_id)
-        if not doc:
-            raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
-        return ResponseEnvelope(data=SgkDocumentResponse(document=SgkDocumentRead.model_validate(doc).model_dump(by_alias=True)))
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Get SGK doc error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# TODO: SGK model not implemented yet - endpoints disabled
+# @router.get("/sgk/documents/{document_id}", operation_id="getSgkDocument")
+# def get_sgk_document(
+#     document_id: str,
+#     db_session: Session = Depends(get_db),
+#     access: UnifiedAccess = Depends(require_access())
+# ):
+#     """Get SGK document"""
+#     try:
+#         from core.models.sgk import SGKDocument
+#         doc = db_session.get(SGKDocument, document_id)
+#         if not doc:
+#             raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
+#         return ResponseEnvelope(data=SgkDocumentResponse(document=SgkDocumentRead.model_validate(doc).model_dump(by_alias=True)))
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"Get SGK doc error: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/sgk/documents/{document_id}", operation_id="deleteSgkDocument")
-def delete_sgk_document(
-    document_id: str,
-    db_session: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
-):
-    """Delete SGK document"""
-    try:
-        from models.sgk import SGKDocument
-        doc = db_session.get(SGKDocument, document_id)
-        if not doc:
-            raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
-        db_session.delete(doc)
-        db_session.commit()
-        return ResponseEnvelope(message="Document deleted")
-    except HTTPException:
-        raise
-    except Exception as e:
-        db_session.rollback()
-        logger.error(f"Delete SGK doc error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.delete("/sgk/documents/{document_id}", operation_id="deleteSgkDocument")
+# def delete_sgk_document(
+#     document_id: str,
+#     db_session: Session = Depends(get_db),
+#     access: UnifiedAccess = Depends(require_access())
+# ):
+#     """Delete SGK document"""
+#     try:
+#         from core.models.sgk import SGKDocument
+#         doc = db_session.get(SGKDocument, document_id)
+#         if not doc:
+#             raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
+#         db_session.delete(doc)
+#         db_session.commit()
+#         return ResponseEnvelope(message="Document deleted")
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         db_session.rollback()
+#         logger.error(f"Delete SGK doc error: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 # Note: /ocr/process endpoint moved to ocr.py to avoid duplication
 
@@ -424,7 +426,14 @@ def list_delivered_ereceipts(
 
 class PatientRightsQueryRequest(BaseModel):
     tcNumber: str
-    partyId: Optional[str] = None
+    partyId: Optional[str] = Field(None, alias="partyId")
+    
+    
+    model_config = ConfigDict(populate_by_name=True)
+        
+    @property
+    def party_id(self):
+        return self.partyId
 
 @router.post("/sgk/patient-rights/query", operation_id="createSgkPatientRightQuery")
 def query_patient_rights(
@@ -435,7 +444,7 @@ def query_patient_rights(
     """SGK hasta hakları sorgulama endpoint'i"""
     try:
         tc_number = request_data.tcNumber
-        party_id = request_data.partyId
+        party_id = request_data.party_id
         
         if not tc_number:
             raise HTTPException(status_code=400, detail={"message": "TC numarası gerekli", "code": "MISSING_TC"})
@@ -489,6 +498,12 @@ class WorkflowCreateRequest(BaseModel):
     partyId: str
     documentId: Optional[str] = None
     workflowType: Optional[str] = "approval"
+    
+    model_config = ConfigDict(populate_by_name=True)
+        
+    @property
+    def party_id(self):
+        return self.partyId
 
 @router.post("/sgk/workflow/create", operation_id="createSgkWorkflowCreate")
 def create_sgk_workflow(
@@ -498,7 +513,7 @@ def create_sgk_workflow(
 ):
     """SGK workflow oluşturma endpoint'i"""
     try:
-        party_id = request_data.partyId
+        party_id = request_data.party_id
         
         if not party_id:
             raise HTTPException(status_code=400, detail={"message": "Grup ID gerekli", "code": "MISSING_PARTY"})
@@ -632,7 +647,6 @@ def update_workflow_status(
 # This duplicate was causing OpenAPI conflicts
 
 from fastapi.responses import Response
-
 @router.get("/sgk/e-receipts/{receipt_id}/download-patient-form", operation_id="listSgkEReceiptDownloadPatientForm")
 def download_patient_form(
     receipt_id: str,
@@ -654,7 +668,7 @@ def seed_test_patients(
     """
     try:
         # Only enable in non-production to avoid accidental DB pollution
-        if os.getenv('FLASK_ENV', 'production') == 'production' and os.getenv('APP_ENV', 'production') == 'production':
+        if os.getenv('ENVIRONMENT', 'production') == 'production' and os.getenv('APP_ENV', 'production') == 'production':
              raise HTTPException(status_code=403, detail="Seeding disabled in production")
 
         svc = get_nlp_service()

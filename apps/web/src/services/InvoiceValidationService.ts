@@ -1,5 +1,6 @@
 import { InvoiceFormData, InvoiceValidation, InvoiceItem } from '../types/invoice';
 import { InvoiceValidationUtils } from '../utils/invoice-validation';
+import { resolveCustomerTaxId } from '../utils/customerTaxId';
 
 export interface ValidationRule {
   field: string;
@@ -283,17 +284,14 @@ export class InvoiceValidationService {
       });
     }
 
-    // TC Kimlik No algoritma kontrolü
-    if (formData.customerTcNumber) {
-      if (!this.validateTCKN(formData.customerTcNumber)) {
-        errors.customerTcNumber = 'Geçersiz T.C. Kimlik Numarası';
-      }
-    }
-
-    // Vergi No format kontrolü
-    if (formData.customerTaxNumber) {
-      if (!/^\d{10}$/.test(formData.customerTaxNumber)) {
-        errors.customerTaxNumber = 'Vergi numarası 10 haneli olmalıdır';
+    const customerTaxId = resolveCustomerTaxId(formData);
+    if (customerTaxId) {
+      if (/^\d{11}$/.test(customerTaxId)) {
+        if (!this.validateTCKN(customerTaxId)) {
+          errors.customerTcNumber = 'Geçersiz T.C. Kimlik Numarası';
+        }
+      } else if (!/^\d{10}$/.test(customerTaxId)) {
+        errors.customerTaxNumber = 'Vergi numarası 10 haneli veya T.C. kimlik numarası 11 haneli olmalıdır';
       }
     }
 

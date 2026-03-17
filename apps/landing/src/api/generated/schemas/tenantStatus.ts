@@ -15,4 +15,6 @@ export const TenantStatus = {
   inactive: 'inactive',
   suspended: 'suspended',
   trial: 'trial',
+  cancelled: 'cancelled',
+  pending: 'pending',
 } as const;

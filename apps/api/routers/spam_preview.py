@@ -8,27 +8,26 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Body
 from sqlalchemy.orm import Session
 
+from core.dependencies import get_current_admin_user
 from core.database import get_db
-from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
-from schemas import ResponseEnvelope
+from schemas import ResponseEnvelope, AppBaseModel
 from services.spam_filter_service import get_spam_filter_service
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/spam-preview", tags=["admin"])
 
 
-class SpamPreviewRequest(BaseModel):
+class SpamPreviewRequest(AppBaseModel):
     """Request for spam score preview."""
     
     subject: str = Field(..., description="Email subject")
-    body_text: str = Field(..., description="Email body (plain text)")
-    body_html: Optional[str] = Field(None, description="Email body (HTML)")
+    body_text: str = Field(..., description="Email body (plain text)", alias="bodyText")
+    body_html: Optional[str] = Field(None, description="Email body (HTML)", alias="bodyHtml")
 
 
-class SpamWarning(BaseModel):
+class SpamWarning(AppBaseModel):
     """Spam warning detail."""
     
     category: str = Field(..., description="Warning category")
@@ -36,7 +35,7 @@ class SpamWarning(BaseModel):
     severity: str = Field(..., description="Severity level (low/medium/high)")
 
 
-class SpamPreviewResponse(BaseModel):
+class SpamPreviewResponse(AppBaseModel):
     """Response for spam score preview."""
     
     spam_score: float = Field(..., description="Spam score (0-20+)")
@@ -55,7 +54,7 @@ class SpamPreviewResponse(BaseModel):
 )
 async def preview_spam_score(
     request: SpamPreviewRequest = Body(...),
-    access: UnifiedAccess = Depends(require_access("admin.emails.send")),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[SpamPreviewResponse]:
     """
@@ -71,16 +70,14 @@ async def preview_spam_score(
     - Detailed warnings
     - Recommendations to improve score
     """
-    user = access.user
-    tenant_id = access.tenant_id
     
     service = get_spam_filter_service()
     
     # Analyze content
     result = service.analyze_content(
         subject=request.subject,
-        body_text=request.body_text,
-        body_html=request.body_html
+        text_body=request.body_text,
+        html_body=request.body_html
     )
     
     # Format warnings

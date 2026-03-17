@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@x-ear/ui-web';
-import { User, Mail, Shield, Key, Save, Phone, Eye, EyeOff, Edit2 } from 'lucide-react';
+import { User, Mail, Shield, Key, Save, Phone, Eye, EyeOff, Edit2, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { generateUsername } from '../utils/stringUtils';
+import { customInstance } from '@/api/orval-mutator';
 import {
     useListUserMe,
     useUpdateUserMe,
@@ -11,9 +12,12 @@ import {
     getListUserMeQueryKey
 } from '@/api/client/users.client';
 import { ResponseEnvelopeUserRead, UserUpdate } from '@/api/generated/schemas';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { useTranslation } from 'react-i18next';
 
 
 export const DesktopProfilePage: React.FC = () => {
+  const { t } = useTranslation('settings_extra');
 
 
     const { user, setUser, verifyOtp, sendOtp } = useAuthStore();
@@ -50,6 +54,10 @@ export const DesktopProfilePage: React.FC = () => {
     const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
 
+    // Impersonation consent
+    const [allowImpersonation, setAllowImpersonation] = useState(false);
+    const [impersonationLoading, setImpersonationLoading] = useState(false);
+
     // API Hooks (Query & Mutations)
     const { data: userDataResponse, isError, isLoading, error } = useListUserMe({
         query: {
@@ -84,7 +92,7 @@ export const DesktopProfilePage: React.FC = () => {
     const updateMeMutation = useUpdateUserMe({
         mutation: {
             onSuccess: (responseData: ResponseEnvelopeUserRead) => {
-                toast.success('Profil bilgileri güncellendi');
+                toast.success(t('profileUpdated', 'Profil bilgileri güncellendi'));
                 const updatedUser = responseData.data;
                 if (updatedUser && user) {
                     setUser({
@@ -100,7 +108,7 @@ export const DesktopProfilePage: React.FC = () => {
                 }
             },
             onError: () => {
-                toast.error('Güncelleme başarısız');
+                toast.error(t('updateFailed', 'Güncelleme başarısız'));
             }
         }
     });
@@ -108,7 +116,7 @@ export const DesktopProfilePage: React.FC = () => {
     const changePasswordMutation = useCreateUserMePassword({
         mutation: {
             onSuccess: () => {
-                toast.success('Şifre başarıyla değiştirildi');
+                toast.success(t('passwordChanged', 'Şifre başarıyla değiştirildi'));
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
@@ -123,9 +131,9 @@ export const DesktopProfilePage: React.FC = () => {
                 const passwordError = error as PasswordError;
                 const status = passwordError.response?.status;
                 if (status === 403 || status === 401) {
-                    toast.error('Mevcut şifreniz hatalı.');
+                    toast.error(t('wrongCurrentPassword', 'Mevcut şifreniz hatalı.'));
                 } else {
-                    toast.error(passwordError.response?.data?.error || 'Şifre değiştirilemedi');
+                    toast.error(passwordError.response?.data?.error || t('passwordChangeFailed', 'Şifre değiştirilemedi'));
                 }
             }
         }
@@ -168,23 +176,33 @@ export const DesktopProfilePage: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userDataResponse, setUser]);
 
+    // Load impersonation consent
+    React.useEffect(() => {
+        customInstance<{ data: { allowImpersonation: boolean } }>({
+            url: '/api/users/me/impersonation-consent',
+            method: 'GET',
+        }).then(res => {
+            setAllowImpersonation(res.data?.allowImpersonation ?? false);
+        }).catch(() => { /* ignore if endpoint not yet available */ });
+    }, []);
+
     // 2. CONDITIONAL RETURNS FOR UI STATE (After all hooks)
 
     // Show loading spinner while fetching
     if (isLoading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex items-center justify-center py-32">
             <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Profil yükleniyor...</p>
+                <p className="mt-4 text-muted-foreground">Profil yükleniyor...</p>
             </div>
         </div>
     );
 
     // Show error if fetch failed
     if (isError) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex items-center justify-center py-32">
             <div className="text-center">
-                <p className="text-red-600 mb-4">Profil bilgileri yüklenemedi</p>
+                <p className="text-destructive mb-4">Profil bilgileri yüklenemedi</p>
                 <button data-allow-raw="true"
                     onClick={() => window.location.reload()}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -201,9 +219,9 @@ export const DesktopProfilePage: React.FC = () => {
             setIsVerifyingPhone(true);
             await sendOtp(phone);
             setShowOtpInput(true);
-            toast.success('Doğrulama kodu gönderildi');
+            toast.success(t('verificationCodeSent', 'Doğrulama kodu gönderildi'));
         } catch (error: unknown) {
-            toast.error((error as Error).message || 'Kod gönderilemedi');
+            toast.error((error as Error).message || t('codeNotSent', 'Kod gönderilemedi'));
         } finally {
             setIsVerifyingPhone(false);
         }
@@ -214,12 +232,12 @@ export const DesktopProfilePage: React.FC = () => {
         try {
             setIsVerifyingPhone(true);
             await verifyOtp(otpCode);
-            toast.success('Telefon numarası doğrulandı');
+            toast.success(t('phoneVerified', 'Telefon numarası doğrulandı'));
             setShowOtpInput(false);
             setOtpCode('');
             setIsEditingPhone(false);
         } catch (error: unknown) {
-            toast.error((error as Error).message || 'Doğrulama başarısız');
+            toast.error((error as Error).message || t('verificationFailed', 'Doğrulama başarısız'));
         } finally {
             setIsVerifyingPhone(false);
         }
@@ -242,7 +260,7 @@ export const DesktopProfilePage: React.FC = () => {
         e.preventDefault();
 
         if (newPassword !== confirmPassword) {
-            toast.error('Yeni şifreler eşleşmiyor');
+            toast.error(t('passwordsMismatch', 'Yeni şifreler eşleşmiyor'));
             return;
         }
 
@@ -256,10 +274,12 @@ export const DesktopProfilePage: React.FC = () => {
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profil Ayarları</h1>
-                <p className="text-gray-500 dark:text-gray-400">Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin.</p>
-            </div>
+            <DesktopPageHeader
+                title=t('profileSettings', t('profileSettings', 'Profil Ayarları'))
+                description=t('profileDescription', t('profileDescription', 'Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin.'))
+                icon={<User className="w-6 h-6" />}
+                eyebrow={{ tr: 'Hesap', en: 'Account' }}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Info Card */}
@@ -273,23 +293,23 @@ export const DesktopProfilePage: React.FC = () => {
                     <CardContent>
                         <form onSubmit={handleUpdateProfile} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label className="text-sm font-medium text-foreground">
                                     Kullanıcı Adı
                                 </label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         className="pl-10"
-                                        placeholder="Kullanıcı Adı"
+                                        placeholder={t('usernamePlaceholder', 'Kullanıcı Adı')}
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Ad
                                     </label>
                                     <Input
@@ -302,11 +322,11 @@ export const DesktopProfilePage: React.FC = () => {
                                             // We will update it.
                                             setUsername(generateUsername(newVal, lastName));
                                         }}
-                                        placeholder="Adınız"
+                                        placeholder={t('firstNamePlaceholder', 'Adınız')}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Soyad
                                     </label>
                                     <Input
@@ -316,34 +336,34 @@ export const DesktopProfilePage: React.FC = () => {
                                             setLastName(newVal);
                                             setUsername(generateUsername(firstName, newVal));
                                         }}
-                                        placeholder="Soyadınız"
+                                        placeholder={t('lastNamePlaceholder', 'Soyadınız')}
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label className="text-sm font-medium text-foreground">
                                     E-posta Adresi
                                 </label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="pl-10"
-                                        placeholder="ornek@email.com"
+                                        placeholder={t('emailPlaceholder', 'ornek@email.com')}
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label className="text-sm font-medium text-foreground">
                                     Rol
                                 </label>
                                 <div className="relative">
-                                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
-                                        value={user?.role || 'Kullanıcı'}
+                                        value={user?.role || t('userRole', 'Kullanıcı')}
                                         disabled
                                         className="pl-10 bg-gray-50 dark:bg-gray-800 capitalize"
                                     />
@@ -353,7 +373,7 @@ export const DesktopProfilePage: React.FC = () => {
                             <div className="pt-4">
                                 <Button type="submit" disabled={updateMeMutation.isPending} className="w-full">
                                     <Save className="w-4 h-4 mr-2" />
-                                    {updateMeMutation.isPending ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                                    {updateMeMutation.isPending ? t('saving', 'Kaydediliyor...') : t('saveChanges', 'Değişiklikleri Kaydet')}
                                 </Button>
                             </div>
                         </form>
@@ -372,12 +392,12 @@ export const DesktopProfilePage: React.FC = () => {
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Telefon Numarası
                                     </label>
                                     <div className="flex gap-2">
                                         <div className="relative flex-1">
-                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                             <Input
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
@@ -412,7 +432,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     {user?.isPhoneVerified && !isEditingPhone && (
                                         <div className="flex items-center gap-2 mt-1">
                                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            <span className="text-xs text-green-600 font-medium">Numaranız doğrulanmış</span>
+                                            <span className="text-xs text-success font-medium">{t('phoneIsVerified', 'Numaranız doğrulanmış')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -421,7 +441,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     <div className="space-y-2 pt-2 border-t">
                                         {showOtpInput && (
                                             <>
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                <label className="text-sm font-medium text-foreground">
                                                     Doğrulama Kodu
                                                 </label>
                                                 <div className="flex gap-2">
@@ -431,7 +451,7 @@ export const DesktopProfilePage: React.FC = () => {
                                                         onChange={(e) => setOtpCode(e.target.value)}
                                                         placeholder="XXXXXX"
                                                         maxLength={6}
-                                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-center tracking-widest text-lg"
+                                                        className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-center tracking-widest text-lg"
                                                     />
                                                     <Button
                                                         onClick={handleVerify}
@@ -440,11 +460,11 @@ export const DesktopProfilePage: React.FC = () => {
                                                         Onayla
                                                     </Button>
                                                 </div>
-                                                <p className="text-xs text-gray-500">Telefonunuza gönderilen 6 haneli kodu giriniz.</p>
+                                                <p className="text-xs text-muted-foreground">{t('enter6DigitCode', 'Telefonunuza gönderilen 6 haneli kodu giriniz.')}</p>
                                             </>
                                         )}
                                         {isEditingPhone && !showOtpInput && (
-                                            <p className="text-xs text-gray-500">Yeni numaranızı girdikten sonra 'Doğrula' butonuna basınız.</p>
+                                            <p className="text-xs text-muted-foreground">{t('enterNewPhoneThenVerify', "Yeni numaranızı girdikten sonra 'Doğrula' butonuna basınız.")}</p>
                                         )}
                                     </div>
                                 )}
@@ -463,7 +483,7 @@ export const DesktopProfilePage: React.FC = () => {
                         <CardContent>
                             <form onSubmit={handleUpdatePassword} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Mevcut Şifre
                                     </label>
                                     <div className="relative">
@@ -478,7 +498,7 @@ export const DesktopProfilePage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Yeni Şifre
                                     </label>
                                     <div className="relative">
@@ -493,7 +513,7 @@ export const DesktopProfilePage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Yeni Şifre (Tekrar)
                                     </label>
                                     <div className="relative">
@@ -511,19 +531,75 @@ export const DesktopProfilePage: React.FC = () => {
                                     <button data-allow-raw="true"
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                                        className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
                                     >
                                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        {showPassword ? 'Şifreleri Gizle' : 'Şifreleri Göster'}
+                                        {showPassword ? t('hidePasswords', 'Şifreleri Gizle') : t('showPasswords', 'Şifreleri Göster')}
                                     </button>
                                 </div>
 
                                 <div className="pt-4">
                                     <Button type="submit" variant="outline" disabled={changePasswordMutation.isPending} className="w-full">
-                                        {changePasswordMutation.isPending ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
+                                        {changePasswordMutation.isPending ? t('updating', 'Güncelleniyor...') : t('updatePassword', 'Şifreyi Güncelle')}
                                     </Button>
                                 </div>
                             </form>
+                        </CardContent>
+                    </Card>
+
+                    {/* Impersonation Consent Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Users className="w-5 h-5" />
+                                Yönetici Erişim İzni
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                        Platform yöneticisine erişim izni ver
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Bu izni verdiğinizde, platform yöneticisi destek amacıyla hesabınıza erişebilir.
+                                        İzni istediğiniz zaman geri alabilirsiniz.
+                                    </p>
+                                </div>
+                                <button
+                                    data-allow-raw="true"
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={allowImpersonation}
+                                    disabled={impersonationLoading}
+                                    onClick={async () => {
+                                        const newVal = !allowImpersonation;
+                                        setImpersonationLoading(true);
+                                        try {
+                                            await customInstance({
+                                                url: '/api/users/me/impersonation-consent',
+                                                method: 'PUT',
+                                                data: { allowImpersonation: newVal },
+                                            });
+                                            setAllowImpersonation(newVal);
+                                            toast.success(newVal ? t('adminAccessGranted', 'Yönetici erişim izni verildi') : t('adminAccessRevoked', 'Yönetici erişim izni kaldırıldı'));
+                                        } catch {
+                                            toast.error(t('permissionUpdateFailed', 'İzin güncellenemedi'));
+                                        } finally {
+                                            setImpersonationLoading(false);
+                                        }
+                                    }}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                        allowImpersonation ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
+                                    } ${impersonationLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${
+                                            allowImpersonation ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -531,5 +607,3 @@ export const DesktopProfilePage: React.FC = () => {
         </div>
     );
 };
-
-

@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(__file__))
 from database import SessionLocal
 from models.user import User
 from models.tenant import Tenant
-import uuid
 
 def create_tenant_user():
     db = SessionLocal()

@@ -34,6 +34,8 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/config/turnstile'): 'public',
     ('POST', '/api/register-phone'): 'public',
     ('POST', '/api/verify-registration-otp'): 'public',
+    ('GET', '/api/blog/'): 'public',
+    ('GET', '/api/blog/<slug>'): 'public',
     
     # =========================================================================
     # AUTH - Kimlik Doğrulama
@@ -205,7 +207,17 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/cash-records'): 'cash_records:read',
     ('POST', '/cash-records'): 'cash_records:write',
     ('DELETE', '/cash-records/<record_id>'): 'cash_records:delete',
-    
+
+    # Personnel
+    ('GET', '/api/personnel/overview'): 'team.view',
+    ('GET', '/api/personnel/employees'): 'team.view',
+    ('GET', '/api/personnel/leave'): 'team.view',
+    ('GET', '/api/personnel/documents'): 'team.view',
+    ('GET', '/api/personnel/compensation'): 'team.view',
+    ('GET', '/api/personnel/settings'): 'team.permissions',
+    ('PUT', '/api/personnel/settings'): 'team.permissions',
+    ('GET', '/api/admin/personnel/overview'): None,
+
     # Unified Cash Records
     ('GET', '/unified-cash-records'): 'finance:read',
     ('GET', '/unified-cash-records/summary'): 'finance:read',
@@ -676,8 +688,28 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/birfatura/inbox/file'): 'invoice:read',
     ('POST', '/api/OutEBelgeV2/GetInBoxDocuments'): 'invoice:read',
     ('POST', '/api/OutEBelgeV2/GetInBoxDocumentsWithDetail'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/GetOutBoxDocumentsWithDetail'): 'invoice:read',
     ('POST', '/api/OutEBelgeV2/PreviewDocumentReturnPDF'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/PreviewDocumentReturnHTML'): 'invoice:read',
     ('POST', '/api/OutEBelgeV2/DocumentDownloadByUUID'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/GetEnvelopeStatusFromGIB'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/ReEnvelopeAndSend'): 'integration.birfatura.edit',
+    ('POST', '/api/OutEBelgeV2/GetCodeListByType'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/GetTaxOfficesAndCodes'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/GetUserPK'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/GetUserGB'): 'integration.birfatura.read',
+    ('POST', '/api/OutEBelgeV2/GibUserList'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/UpdateUnreadedStatus'): 'invoice:read',
+    ('POST', '/api/OutEBelgeV2/GetOutBoxDocumentByUUID'): 'invoice:read',
+    ('GET', '/api/invoices/{invoice_id}/status'): 'invoice:read',
+    ('GET', '/api/invoices/{invoice_id}/provider-detail'): 'invoice:read',
+    ('POST', '/api/invoices/{invoice_id}/retry-send'): 'integration.birfatura.edit',
+    ('POST', '/api/invoices/{invoice_id}/mark-read'): 'invoice:read',
+    ('GET', '/api/birfatura/reference/code-lists'): 'invoice:read',
+    ('GET', '/api/birfatura/reference/tax-offices'): 'invoice:read',
+    ('GET', '/api/birfatura/recipients/check'): 'invoice:read',
+    ('GET', '/api/birfatura/recipients/tags'): 'invoice:read',
+    ('GET', '/api/birfatura/sender-tags'): 'integration.birfatura.read',
     
     # =========================================================================
     # OCR
@@ -710,6 +742,12 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/admin/users/all'): 'platform.users.read',
     ('PUT', '/api/admin/users/all/<user_id>'): 'platform.users.manage',
     ('DELETE', '/api/admin/users/<user_id>'): 'users:delete',
+    
+    # Admin Blog Management
+    ('GET', '/api/admin/blog/'): 'platform.blog.read',
+    ('POST', '/api/admin/blog/'): 'platform.blog.manage',
+    ('PUT', '/api/admin/blog/<post_id>'): 'platform.blog.manage',
+    ('DELETE', '/api/admin/blog/<post_id>'): 'platform.blog.manage',
     
     # Admin Patients
     ('GET', '/api/admin/patients'): 'platform.patients.read',
@@ -806,19 +844,19 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/admin/activity-logs/stats'): 'activity_logs:read',
     
     # Tenant Management (Super Admin)
-    ('GET', '/api/admin/tenants'): 'platform.tenants.read',
-    ('POST', '/api/admin/tenants'): 'platform.tenants.manage',
-    ('GET', '/api/admin/tenants/<tenant_id>'): 'platform.tenants.read',
-    ('PUT', '/api/admin/tenants/<tenant_id>'): 'platform.tenants.manage',
-    ('DELETE', '/api/admin/tenants/<tenant_id>'): 'platform.tenants.manage',
-    ('POST', '/api/admin/tenants/<tenant_id>/suspend'): 'platform.tenants.manage',
-    ('POST', '/api/admin/tenants/<tenant_id>/activate'): 'platform.tenants.manage',
-    ('GET', '/api/admin/tenants/<tenant_id>/users'): 'platform.tenants.read',
-    ('POST', '/api/admin/tenants/<tenant_id>/subscribe'): 'platform.tenants.manage',
-    ('POST', '/api/admin/tenants/<tenant_id>/users'): 'platform.tenants.manage',
-    ('PUT', '/api/admin/tenants/<tenant_id>/users/<user_id>'): 'users:write',
-    ('POST', '/api/admin/tenants/<tenant_id>/addons'): 'platform.tenants.manage',
-    ('PUT', '/api/admin/tenants/<tenant_id>/status'): 'platform.tenants.manage',
+    ('GET', '/api/admin/tenants'): 'admin.tenants.view',
+    ('POST', '/api/admin/tenants'): 'admin.tenants.create',
+    ('GET', '/api/admin/tenants/<tenant_id>'): 'admin.tenants.view',
+    ('PUT', '/api/admin/tenants/<tenant_id>'): 'admin.tenants.edit',
+    ('DELETE', '/api/admin/tenants/<tenant_id>'): 'admin.tenants.delete',
+    ('POST', '/api/admin/tenants/<tenant_id>/suspend'): 'admin.tenants.edit',
+    ('POST', '/api/admin/tenants/<tenant_id>/activate'): 'admin.tenants.edit',
+    ('GET', '/api/admin/tenants/<tenant_id>/users'): 'admin.tenants.view',
+    ('POST', '/api/admin/tenants/<tenant_id>/subscribe'): 'admin.tenants.edit',
+    ('POST', '/api/admin/tenants/<tenant_id>/users'): 'admin.users.create',
+    ('PUT', '/api/admin/tenants/<tenant_id>/users/<user_id>'): 'admin.users.edit',
+    ('POST', '/api/admin/tenants/<tenant_id>/addons'): 'admin.tenants.edit',
+    ('PUT', '/api/admin/tenants/<tenant_id>/status'): 'admin.tenants.edit',
     
     # System Settings (Super Admin)
     ('GET', '/api/admin/settings'): 'platform.settings.read',
@@ -988,8 +1026,5 @@ def get_endpoints_for_permission(permission: str) -> list:
     endpoints = []
     for (method, path), perm in ENDPOINT_PERMISSIONS.items():
         if perm == permission:
-            endpoints.append(f"{method} {path
-    # Auto-added missing entries
-
-}")
+            endpoints.append(f"{method} {path}")
     return endpoints

@@ -5,11 +5,11 @@ Tracks and calculates email deliverability metrics for monitoring and alerting.
 
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Optional
+from typing import Dict
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
-from core.models.email import SMTPEmailLog
+from core.models.communication import EmailLog
 from core.models.email_deliverability import EmailBounce, EmailComplaint, DeliverabilityMetrics
 from core.models.base import gen_id
 
@@ -40,11 +40,11 @@ class DeliverabilityMetricsService:
         start_time = now - timedelta(hours=time_window_hours)
         
         # Count sent emails
-        sent_count = self.db.query(func.count(SMTPEmailLog.id)).filter(
+        sent_count = self.db.query(func.count(EmailLog.id)).filter(
             and_(
-                SMTPEmailLog.tenant_id == tenant_id,
-                SMTPEmailLog.status == "sent",
-                SMTPEmailLog.created_at >= start_time
+                EmailLog.tenant_id == tenant_id,
+                EmailLog.status == "sent",
+                EmailLog.created_at >= start_time
             )
         ).scalar() or 0
         
@@ -108,11 +108,12 @@ class DeliverabilityMetricsService:
             id=gen_id("deliv_metric"),
             tenant_id=tenant_id,
             date=now.date(),
-            sent_count=metrics["sent_count"],
-            bounce_count=metrics["bounce_count"],
-            spam_count=metrics["spam_count"],
+            emails_sent=metrics["sent_count"],
+            emails_delivered=metrics["sent_count"] - metrics["bounce_count"],
+            emails_bounced=metrics["bounce_count"],
+            emails_complained=metrics["spam_count"],
             bounce_rate=metrics["bounce_rate"],
-            spam_rate=metrics["spam_rate"],
+            complaint_rate=metrics["spam_rate"],
             deliverability_rate=metrics["deliverability_rate"],
             created_at=now,
             updated_at=now
@@ -230,9 +231,9 @@ class DeliverabilityMetricsService:
         for snapshot in snapshots:
             trend_data.append({
                 "date": snapshot.date.isoformat(),
-                "sent_count": snapshot.sent_count,
+                "sent_count": snapshot.emails_sent,
                 "bounce_rate": snapshot.bounce_rate,
-                "spam_rate": snapshot.spam_rate,
+                "spam_rate": snapshot.complaint_rate,
                 "deliverability_rate": snapshot.deliverability_rate
             })
         

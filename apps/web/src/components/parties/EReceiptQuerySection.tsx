@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Input } from '@x-ear/ui-web';
 import { CheckCircle, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Material {
   code: string;
@@ -118,7 +119,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
       if (onError) {
         onError('Önce e-reçete sorgulayın');
       } else {
-        alert('Önce e-reçete sorgulayın');
+        toast('Önce e-reçete sorgulayın');
       }
       return;
     }
@@ -134,7 +135,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
       if (onError) {
         onError('Lütfen en az bir malzeme seçin');
       } else {
-        alert('Lütfen en az bir malzeme seçin');
+        toast('Lütfen en az bir malzeme seçin');
       }
       return;
     }
@@ -159,7 +160,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border p-6" data-section="e-receipt-query">
+    <div className="bg-card rounded-2xl border p-6" data-section="e-receipt-query">
       <h3 className="text-lg font-semibold mb-4">E-Reçete Sorgulama</h3>
       <div className="space-y-4">
         <div className="flex space-x-3">
@@ -181,12 +182,12 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
 
         {/* E-Receipt Result */}
         {eReceiptResult && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-success/10 border border-green-200 rounded-2xl p-4">
             <div className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-success mt-0.5 mr-3 flex-shrink-0" />
               <div className="flex-1">
                 <h4 className="font-medium text-green-900 mb-2">E-reçete Bulundu</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm text-green-800 mb-4">
+                <div className="grid grid-cols-2 gap-4 text-sm text-success mb-4">
                   <div><strong>E-reçete No:</strong> {eReceiptResult.receiptNo}</div>
                   <div><strong>Tarih:</strong> {eReceiptResult.receiptDate}</div>
                   <div><strong>Doktor:</strong> {eReceiptResult.doctorName}</div>
@@ -194,7 +195,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                 </div>
 
                 {/* Global Date Setting */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <label htmlFor="globalDate" className="text-sm font-medium text-blue-800">
@@ -207,7 +208,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                         value={globalDate}
                         max={new Date().toISOString().split('T')[0]}
                         onChange={(e) => handleGlobalDateChange(e.target.value)}
-                        className="text-sm border border-blue-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="text-sm border border-blue-300 rounded px-2 py-1 focus:ring-2 focus:ring-ring focus:border-blue-500"
                       />
                     </div>
                     <Button
@@ -225,7 +226,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                   {eReceiptResult.materials.map((material, index) => {
                     const selection = materialSelections[material.code] || { selected: false, date: globalDate };
                     return (
-                      <div key={material.code} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                      <div key={material.code} className="flex items-center justify-between p-3 border border-border rounded-2xl">
                         <div className="flex items-center">
                           <input
                             data-allow-raw="true"
@@ -233,18 +234,18 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                             id={`material_${index}`}
                             checked={selection.selected}
                             onChange={(e) => handleMaterialSelection(material.code, e.target.checked)}
-                            className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="mr-3 rounded border-border text-primary focus:ring-ring"
                           />
                           <div>
-                            <label htmlFor={`material_${index}`} className="font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor={`material_${index}`} className="font-medium text-foreground cursor-pointer">
                               {material.name}
                             </label>
-                            <p className="text-sm text-gray-600">Kod: {material.code} • {material.kdv}</p>
+                            <p className="text-sm text-muted-foreground">Kod: {material.code} • {material.kdv}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-sm">
-                            <label htmlFor={`date_${index}`} className="block text-gray-600 mb-1">
+                            <label htmlFor={`date_${index}`} className="block text-muted-foreground mb-1">
                               Başvuru Tarihi:
                             </label>
                             <input
@@ -255,7 +256,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                               max={new Date().toISOString().split('T')[0]}
                               onChange={(e) => handleMaterialDateChange(material.code, e.target.value)}
                               disabled={!selection.selected}
-                              className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                              className="text-sm border border-border rounded px-2 py-1 focus:ring-2 focus:ring-ring focus:border-blue-500 disabled:bg-muted disabled:cursor-not-allowed"
                             />
                           </div>
                         </div>

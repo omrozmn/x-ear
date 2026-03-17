@@ -9,6 +9,7 @@ from .base import AppBaseModel, IDMixin, TimestampMixin
 class PlanBase(AppBaseModel):
     """Base plan schema"""
     name: str = Field(..., description="Plan name")
+    slug: Optional[str] = Field(None, description="Plan slug (auto-generated if not provided)")
     description: Optional[str] = Field(None, description="Plan description")
     plan_type: str = Field("BASIC", alias="planType", description="Plan type")
     price: float = Field(..., description="Plan price")
@@ -16,6 +17,8 @@ class PlanBase(AppBaseModel):
     features: Optional[Union[Dict[str, Any], List[Any]]] = Field(None, description="Plan features")
     max_users: Optional[int] = Field(None, alias="maxUsers", description="Max users")
     max_storage_gb: Optional[int] = Field(None, alias="maxStorageGb", description="Max storage in GB")
+    sector: Optional[str] = Field(None, description="Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)")
+    country_code: Optional[str] = Field(None, alias="countryCode", description="ISO 3166-1 alpha-2 country code")
     is_active: bool = Field(True, alias="isActive", description="Is plan active")
     is_public: bool = Field(True, alias="isPublic", description="Is plan public")
 
@@ -46,6 +49,8 @@ class PlanUpdate(AppBaseModel):
     is_active: Optional[bool] = Field(None, alias="isActive")
     is_public: Optional[bool] = Field(None, alias="isPublic")
     max_users: Optional[int] = Field(None, alias="maxUsers")
+    sector: Optional[str] = None
+    country_code: Optional[str] = Field(None, alias="countryCode")
 
 
 class DetailedPlanRead(PlanBase, IDMixin, TimestampMixin):

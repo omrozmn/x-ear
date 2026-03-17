@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/personnel_compensation_service.py
+# hypothesis_version: 6.151.6
+
+[999999, '0', '0.01', '100', 'Agustos', 'Aktarima Hazir', 'Aralik', 'Ekim', 'Eylul', 'Haziran', 'Hedef + Kademeli', 'Hedef + Sabit', 'Hedef Bekleniyor', 'Kademeli', 'Kasim', 'Mart', 'Mayis', 'Nisan', 'Ocak', 'Sabit Yuzde', 'Subat', 'Taslak', 'Temmuz', 'baseRate', 'collected_amount', 'collectionRule', 'compensation', 'current_month', 'down_payment_only', 'fixed_rate', 'full_collection_only', 'modelType', 'paid', 'periodMode', 'previous_month', 'rate', 'targetAmount', 'targetEnabled', 'threshold', 'tiered', 'tiers']

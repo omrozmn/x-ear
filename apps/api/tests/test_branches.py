@@ -20,7 +20,7 @@ def generate_test_token(user_id, role, tenant_id='tenant-1'):
 @pytest.fixture
 def branch_data(db_session):
     suffix = str(uuid.uuid4())[:8]
-    tenant = Tenant(id=f"t_{suffix}", name="Test Tenant", slug=f"slug_{suffix}", owner_email=f"o_{suffix}@x.com", billing_email=f"b_{suffix}@x.com", is_active=True)
+    tenant = Tenant(id=f"t_{suffix}", name="Test Tenant", slug=f"slug_{suffix}", owner_email=f"o_{suffix}@x.com", billing_email=f"b_{suffix}@x.com", is_active=True, max_branches=10)
     db_session.add(tenant)
     db_session.commit()
 

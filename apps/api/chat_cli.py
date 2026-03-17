@@ -5,7 +5,6 @@ Allows chatting with the AI layer from the terminal.
 """
 
 import requests
-import json
 import uuid
 import sys
 import time
@@ -18,9 +17,33 @@ YELLOW = "\033[93m"
 RESET = "\033[0m"
 
 def get_headers():
+    from jose import jwt
+    from datetime import datetime, timedelta, timezone
+    
+    import os
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+    
+    config = {
+        "SECRET_KEY": os.getenv("JWT_SECRET_KEY", "super-secret-jwt-key-for-development"),
+        "ALGORITHM": os.getenv("JWT_ALGORITHM", "HS256")
+    }
+
+    payload = {
+        "sub": "usr_dd3907b0",
+        "tenant_id": "8d9d943f-c774-4ee5-90b1-eed8800deb8d",
+        "role": "tenant",
+        "exp": datetime.now(timezone.utc) + timedelta(hours=1)
+    }
+
+    token = jwt.encode(payload, config["SECRET_KEY"], algorithm=config["ALGORITHM"])
+    
     return {
         "Content-Type": "application/json",
-        "Idempotency-Key": str(uuid.uuid4())
+        "Idempotency-Key": str(uuid.uuid4()),
+        "X-Tenant-Id": "8d9d943f-c774-4ee5-90b1-eed8800deb8d",
+        "X-User-Id": "usr_dd3907b0",
+        "Authorization": f"Bearer {token}"
     }
 
 def print_slow(text):
@@ -33,9 +56,9 @@ def print_slow(text):
 
 def chat_loop():
     print(f"{BLUE}=" * 60)
-    print(f"🤖 X-Ear AI Terminal Interface")
-    print(f"Type 'exit', 'quit', or 'q' to end the session.")
-    print(f"=" * 60 + f"{RESET}\n")
+    print("🤖 X-Ear AI Terminal Interface")
+    print("Type 'exit', 'quit', or 'q' to end the session.")
+    print("=" * 60 + f"{RESET}\n")
 
     session_id = f"cli_{uuid.uuid4().hex[:8]}"
     context = {}

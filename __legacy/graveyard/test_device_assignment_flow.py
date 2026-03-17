@@ -4,9 +4,7 @@ Test script to verify device assignment flow end-to-end
 Tests: Form submission -> DB persistence -> UI updates across all tabs
 """
 import requests
-import json
 import time
-from datetime import datetime
 
 BASE_URL = "http://localhost:5003"
 
@@ -148,7 +146,7 @@ def test_device_assignment_flow():
     
     print("\n" + "=" * 50)
     print("🎉 Device Assignment Flow Test Completed!")
-    print(f"📊 Test Results Summary:")
+    print("📊 Test Results Summary:")
     print(f"   - Patient ID: {patient_id}")
     print(f"   - Sale ID: {sale_id}")
     print(f"   - Devices found: {len(devices)}")

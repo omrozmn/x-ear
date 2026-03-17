@@ -14,6 +14,7 @@ import {
   Shield
 } from 'lucide-react';
 import { PartySearchItem } from '../../types/party/party-search.types';
+import { useTranslation } from 'react-i18next';
 
 interface PartyCardProps {
   party: PartySearchItem;
@@ -45,16 +46,17 @@ export function PartyCard({
   compact = false,
   className = ''
 }: PartyCardProps) {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const [showMenu, setShowMenu] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success" size="sm">Aktif</Badge>;
+        return <Badge variant="success" size="sm">{t('card.active')}</Badge>;
       case 'inactive':
-        return <Badge variant="warning" size="sm">Pasif</Badge>;
+        return <Badge variant="warning" size="sm">{t('card.inactive')}</Badge>;
       case 'archived':
-        return <Badge variant="secondary" size="sm">Arşiv</Badge>;
+        return <Badge variant="secondary" size="sm">{t('card.archived')}</Badge>;
       default:
         return <Badge variant="secondary" size="sm">{status}</Badge>;
     }
@@ -65,11 +67,11 @@ export function PartyCard({
       case 'premium':
         return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
       case 'standard':
-        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+        return 'bg-primary/10 text-blue-800 border-blue-200 dark:text-blue-300 dark:border-blue-800';
       case 'basic':
-        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+        return 'bg-muted text-foreground border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+        return 'bg-muted text-foreground border-border';
     }
   };
 
@@ -98,7 +100,7 @@ export function PartyCard({
   if (compact) {
     return (
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
+        className={`bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 hover:shadow-md transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
           } ${className}`}
         onClick={handleCardClick}
       >
@@ -120,7 +122,7 @@ export function PartyCard({
               <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                 {party.firstName || ''} {party.lastName || ''}
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 {formatDate(party.registrationDate)}
               </p>
             </div>
@@ -144,7 +146,7 @@ export function PartyCard({
                 </Button>
 
                 {showMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                  <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-lg z-10">
                     <div className="py-1">
                       <button
                         data-allow-raw="true"
@@ -153,10 +155,10 @@ export function PartyCard({
                           onClick?.(party);
                           setShowMenu(false);
                         }}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                        className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 flex items-center"
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        Görüntüle
+                        {t('card.view')}
                       </button>
 
                       {onEdit && (
@@ -167,10 +169,10 @@ export function PartyCard({
                             onEdit(party);
                             setShowMenu(false);
                           }}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                          className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center"
                         >
                           <Edit className="h-4 w-4 mr-2" />
-                          Düzenle
+                          {t('card.edit')}
                         </button>
                       )}
 
@@ -182,10 +184,10 @@ export function PartyCard({
                             onDelete(party);
                             setShowMenu(false);
                           }}
-                          className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                          className="w-full px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10 flex items-center"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Sil
+                          {t('card.delete')}
                         </button>
                       )}
                     </div>
@@ -201,7 +203,7 @@ export function PartyCard({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
+      className={`bg-white dark:bg-gray-800 rounded-2xl border border-border hover:shadow-lg transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
         } ${className}`}
       onClick={handleCardClick}
     >
@@ -239,7 +241,7 @@ export function PartyCard({
                 <div className="mt-2">
                   <Badge variant="warning" size="sm">
                     <AlertCircle className="h-3 w-3 mr-1" />
-                    Yüksek Öncelik ({party.priority})
+                    {t('card.high_priority', { score: party.priority })}
                   </Badge>
                 </div>
               )}
@@ -261,7 +263,7 @@ export function PartyCard({
               </Button>
 
               {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-lg z-10">
                   <div className="py-1">
                     <button
                       data-allow-raw="true"
@@ -270,10 +272,10 @@ export function PartyCard({
                         onClick?.(party);
                         setShowMenu(false);
                       }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                      className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 flex items-center"
                     >
                       <Eye className="h-4 w-4 mr-3" />
-                      Detayları Görüntüle
+                      {t('card.view_details')}
                     </button>
 
                     {onEdit && (
@@ -284,10 +286,10 @@ export function PartyCard({
                           onEdit(party);
                           setShowMenu(false);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                        className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 flex items-center"
                       >
                         <Edit className="h-4 w-4 mr-3" />
-                        Düzenle
+                        {t('card.edit')}
                       </button>
                     )}
 
@@ -299,10 +301,10 @@ export function PartyCard({
                           onDelete(party);
                           setShowMenu(false);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
+                        className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 flex items-center"
                       >
                         <Trash2 className="h-4 w-4 mr-3" />
-                        Sil
+                        {t('card.delete')}
                       </button>
                     )}
                   </div>
@@ -319,15 +321,15 @@ export function PartyCard({
           {/* Contact Info */}
           <div className="space-y-2">
             {party.phone && (
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <Phone className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
                 {party.phone}
               </div>
             )}
 
             {party.email && (
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <Mail className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
                 {party.email}
               </div>
             )}
@@ -335,22 +337,22 @@ export function PartyCard({
 
           {/* Stats */}
           <div className="space-y-2">
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <Calendar className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
-              Kayıt: {formatDate(party.registrationDate)}
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+              {t('card.registration')}: {formatDate(party.registrationDate)}
             </div>
 
             {party.deviceCount > 0 && (
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <Activity className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
-                {party.deviceCount} Cihaz
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
+                {t('card.device_count', { count: party.deviceCount })}
               </div>
             )}
 
             {party.hasInsurance && (
-              <div className="flex items-center text-sm text-green-600 dark:text-green-400">
+              <div className="flex items-center text-sm text-success">
                 <Shield className="h-4 w-4 mr-2" />
-                Sigortalı
+                {t('card.insured')}
               </div>
             )}
           </div>
@@ -358,7 +360,7 @@ export function PartyCard({
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 rounded-b-lg">
+      <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-border rounded-b-lg">
         <div className="flex items-center justify-between">
           {/* Labels */}
           <div className="flex flex-wrap gap-1">
@@ -366,7 +368,7 @@ export function PartyCard({
               party.labels.slice(0, 3).map((label, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
+                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-300"
                 >
                   {label}
                 </span>
@@ -374,7 +376,7 @@ export function PartyCard({
             )}
 
             {party.labels && party.labels.length > 3 && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
                 +{party.labels.length - 3}
               </span>
             )}
@@ -383,13 +385,13 @@ export function PartyCard({
           {/* Balance */}
           <div className="text-right">
             {party.outstandingBalance > 0 ? (
-              <div className="text-sm font-medium text-red-600 dark:text-red-400">
-                Borç: {formatCurrency(party.outstandingBalance)}
+              <div className="text-sm font-medium text-destructive">
+                {t('card.debt')}: {formatCurrency(party.outstandingBalance)}
               </div>
             ) : (
-              <div className="flex items-center text-sm text-green-600 dark:text-green-400">
+              <div className="flex items-center text-sm text-success">
                 <CheckCircle className="h-4 w-4 mr-1" />
-                Bakiye Temiz
+                {t('card.balance_clear')}
               </div>
             )}
           </div>

@@ -220,31 +220,31 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <h3 className="text-lg font-medium text-foreground flex items-center">
             <FileText className="w-5 h-5 mr-2" />
             {mode === 'create' ? 'Yeni Senet Oluştur' : mode === 'edit' ? 'Senet Düzenle' : 'Senet Detayları'}
           </h3>
           <Button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-muted-foreground hover:text-muted-foreground"
           >
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         {error && (
-          <Alert className="mb-4 bg-red-50 border-red-200">
-            <AlertCircle className="h-4 w-4 text-red-600" />
+          <Alert className="mb-4 bg-destructive/10 border-red-200">
+            <AlertCircle className="h-4 w-4 text-destructive" />
             <AlertDescription className="text-red-800">{error}</AlertDescription>
           </Alert>
         )}
 
         {success && (
-          <Alert className="mb-4 bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">{success}</AlertDescription>
+          <Alert className="mb-4 bg-success/10 border-green-200">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <AlertDescription className="text-success">{success}</AlertDescription>
           </Alert>
         )}
 
@@ -252,8 +252,8 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
           <div className="space-y-6">
             {/* Customer & Sale Info */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+              <div className="bg-muted p-4 rounded-2xl">
+                <h4 className="font-medium text-foreground mb-2 flex items-center">
                   <User className="w-4 h-4 mr-2" />
                   Müşteri Bilgileri
                 </h4>
@@ -276,8 +276,8 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
               </div>
 
               {sale && (
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                <div className="bg-primary/10 p-4 rounded-2xl">
+                  <h4 className="font-medium text-foreground mb-2 flex items-center">
                     <Building className="w-4 h-4 mr-2" />
                     Satış Bilgileri
                   </h4>
@@ -293,7 +293,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
 
             {/* Status Warning */}
             {mode !== 'create' && formData.status === 'overdue' && (
-              <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+              <div className="bg-destructive/10 border border-red-200 p-4 rounded-2xl">
                 <div className="flex items-center text-red-800">
                   <AlertTriangle className="w-5 h-5 mr-2" />
                   <span className="font-medium">Bu senet vadesi geçmiştir!</span>
@@ -303,14 +303,14 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
 
             {/* Note Details */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 flex items-center">
+              <h4 className="font-medium text-foreground flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
                 Senet Bilgileri
               </h4>
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Senet No *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Senet No *</label>
                   <Input
                     name="noteNumber"
                     value={formData.noteNumber}
@@ -321,7 +321,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Düzenleme Tarihi *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Düzenleme Tarihi *</label>
                   <Input
                     name="issueDate"
                     type="date"
@@ -332,7 +332,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vade Tarihi *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Vade Tarihi *</label>
                   <Input
                     name="dueDate"
                     type="date"
@@ -342,17 +342,17 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                     disabled={mode === 'view'}
                   />
                   {daysUntilDue > 0 && (
-                    <p className="text-xs text-gray-600 mt-1">{daysUntilDue} gün kaldı</p>
+                    <p className="text-xs text-muted-foreground mt-1">{daysUntilDue} gün kaldı</p>
                   )}
                   {isOverdue && (
-                    <p className="text-xs text-red-600 mt-1 font-medium">{Math.abs(daysUntilDue)} gün gecikmiş</p>
+                    <p className="text-xs text-destructive mt-1 font-medium">{Math.abs(daysUntilDue)} gün gecikmiş</p>
                   )}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Senet Tutarı *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Senet Tutarı *</label>
                   <Input
                     name="amount"
                     type="number"
@@ -365,13 +365,13 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Durum</label>
                   {mode === 'view' ? (
-                    <div className="px-3 py-2 bg-gray-100 rounded-md">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${formData.status === 'active' ? 'bg-green-100 text-green-800' :
-                        formData.status === 'paid' ? 'bg-blue-100 text-blue-800' :
-                          formData.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
+                    <div className="px-3 py-2 bg-muted rounded-xl">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${formData.status === 'active' ? 'bg-success/10 text-success' :
+                        formData.status === 'paid' ? 'bg-primary/10 text-blue-800' :
+                          formData.status === 'overdue' ? 'bg-destructive/10 text-red-800' :
+                            'bg-muted text-foreground'
                         }`}>
                         {formData.status === 'active' ? 'Aktif' :
                           formData.status === 'paid' ? 'Ödenmiş' :
@@ -383,7 +383,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                     <select data-allow-raw="true"
                       value={formData.status}
                       onChange={(e) => handleInputChange('status', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                       disabled={mode === 'create'}
                     >
                       <option value="active">Aktif</option>
@@ -397,7 +397,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
             </div>
 
             {/* Interest Calculation */}
-            <div className="bg-yellow-50 p-4 rounded-lg">
+            <div className="bg-warning/10 p-4 rounded-2xl">
               <div className="flex items-center mb-3">
                 <input data-allow-raw="true"
                   type="checkbox"
@@ -407,7 +407,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   className="mr-3"
                   disabled={mode === 'view'}
                 />
-                <label htmlFor="calculateInterest" className="text-sm font-medium text-gray-700">
+                <label htmlFor="calculateInterest" className="text-sm font-medium text-foreground">
                   Faiz hesaplama uygula
                 </label>
               </div>
@@ -415,7 +415,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
               {calculateInterest && (
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Yıllık Faiz Oranı (%)</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Yıllık Faiz Oranı (%)</label>
                     <Input data-allow-raw="true"
                       name="interestRate"
                       type="number"
@@ -427,14 +427,14 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Faiz Tutarı</label>
-                    <div className="px-3 py-2 bg-gray-100 rounded-md text-right font-medium">
+                    <label className="block text-sm font-medium text-foreground mb-1">Faiz Tutarı</label>
+                    <div className="px-3 py-2 bg-muted rounded-xl text-right font-medium">
                       {formatCurrency(totalWithInterest - (formData.amount || 0))}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Toplam Tutar</label>
-                    <div className="px-3 py-2 bg-blue-100 rounded-md text-right font-bold text-blue-800">
+                    <label className="block text-sm font-medium text-foreground mb-1">Toplam Tutar</label>
+                    <div className="px-3 py-2 bg-primary/10 rounded-xl text-right font-bold text-blue-800">
                       {formatCurrency(totalWithInterest)}
                     </div>
                   </div>
@@ -443,7 +443,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
             </div>
 
             {/* Guarantor Information */}
-            <div className="bg-purple-50 p-4 rounded-lg">
+            <div className="bg-purple-50 p-4 rounded-2xl">
               <div className="flex items-center mb-3">
                 <input data-allow-raw="true"
                   type="checkbox"
@@ -453,7 +453,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   className="mr-3"
                   disabled={mode === 'view'}
                 />
-                <label htmlFor="hasGuarantor" className="text-sm font-medium text-gray-700">
+                <label htmlFor="hasGuarantor" className="text-sm font-medium text-foreground">
                   Kefil bilgileri ekle
                 </label>
               </div>
@@ -462,7 +462,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Kefil Adı Soyadı</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Kefil Adı Soyadı</label>
                       <Input
                         name="guarantorName"
                         value={formData.guarantorName}
@@ -472,7 +472,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Kefil TC No</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Kefil TC No</label>
                       <Input
                         name="guarantorTcNumber"
                         value={formData.guarantorTcNumber}
@@ -485,7 +485,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Kefil Telefon</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Kefil Telefon</label>
                       <Input data-allow-raw="true"
                         name="guarantorPhone"
                         value={formData.guarantorPhone}
@@ -495,7 +495,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Kefil Adresi</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Kefil Adresi</label>
                       <Input
                         name="guarantorAddress"
                         value={formData.guarantorAddress}
@@ -511,7 +511,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Notlar</label>
               <Textarea
                 name="notes"
                 value={formData.notes}
@@ -523,8 +523,8 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
             </div>
 
             {/* Summary */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Özet</h4>
+            <div className="bg-muted p-4 rounded-2xl">
+              <h4 className="font-medium text-foreground mb-2">Özet</h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Ana Para:</span> {formatCurrency(formData.amount || 0)}
@@ -546,13 +546,13 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
               <Button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                className="px-4 py-2 text-foreground bg-muted hover:bg-accent rounded-xl"
               >
                 İptal
               </Button>
               <Button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+                className="px-6 py-2 premium-gradient tactile-press text-white rounded-xl flex items-center"
                 disabled={loading || isLoading}
               >
                 {(loading || isLoading) && <Loading className="w-4 h-4 mr-2" />}

@@ -5,31 +5,168 @@ import {
     MagnifyingGlassIcon,
     ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import Pagination from '@/components/ui/Pagination';
+import type { PartyListResponse, PartyRead } from '@/api/generated/schemas';
+import { useAdminResponsive } from '@/hooks';
+import { ResponsiveTable } from '@/components/responsive';
+import { isRecord, unwrapData } from '@/lib/orval-response';
+
+// Extended type to handle potentially missing properties in generated types vs runtime
+interface ExtendedParty extends PartyRead {
+    tenantName?: string;
+    branchName?: string;
+    tenant_name?: string;
+    branch_name?: string;
+    created_at?: string;
+}
+
+interface PaginationInfo {
+    total: number;
+    totalPages: number;
+}
+
+function getPatients(data: PartyListResponse | undefined): ExtendedParty[] {
+    const payload = unwrapData(data);
+    if (!isRecord(payload) || !Array.isArray(payload.parties)) {
+        return [];
+    }
+
+    return payload.parties.filter((patient): patient is ExtendedParty => isRecord(patient) && typeof patient.id === 'string');
+}
+
+function getPagination(data: PartyListResponse | undefined): PaginationInfo | null {
+    const payload = unwrapData(data);
+    if (!isRecord(payload) || !isRecord(payload.pagination)) {
+        return null;
+    }
+
+    return {
+        total: typeof payload.pagination.total === 'number' ? payload.pagination.total : 0,
+        totalPages: typeof payload.pagination.totalPages === 'number' ? payload.pagination.totalPages : 0,
+    };
+}
 
 const AdminPatientsPage: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+
     const { data: patientsData, isLoading, refetch } = useListAdminParties({
         page,
-        limit: 10,
-        search
+        limit,
+        search: search || undefined
     });
 
-    const patients = (patientsData as any)?.data?.parties || (patientsData as any)?.data?.patients || [];
-    const pagination = (patientsData as any)?.data?.pagination;
+    const patients = getPatients(patientsData);
+    const pagination = getPagination(patientsData);
+
+    // Determine total pages safely
+    const totalPages = pagination?.totalPages || Math.ceil((pagination?.total || 0) / limit) || 1;
+
+    const formatDate = (dateString?: string | null) => {
+        if (!dateString) return '-';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '-';
+            return date.toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: isMobile ? 'short' : 'long',
+                day: 'numeric',
+                ...(isMobile ? {} : { hour: '2-digit', minute: '2-digit' })
+            });
+        } catch {
+            return '-';
+        }
+    };
+
+    const columns = [
+        {
+            key: 'patient',
+            header: 'Hasta',
+            sortable: true,
+            sortKey: 'firstName',
+            render: (patient: ExtendedParty) => {
+                const firstName = patient.firstName || '';
+                const lastName = patient.lastName || '';
+                const email = patient.email || '';
+                return (
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                            <span className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
+                                {(firstName?.[0] || '').toUpperCase()}{(lastName?.[0] || '').toUpperCase()}
+                            </span>
+                        </div>
+                        <div className="ml-4 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{firstName} {lastName}</div>
+                            {email && <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{email}</div>}
+                        </div>
+                    </div>
+                );
+            }
+        },
+        {
+            key: 'tc',
+            header: 'TC Kimlik',
+            mobileHidden: true,
+            sortable: true,
+            sortKey: 'tcNumber',
+            render: (patient: ExtendedParty) => {
+                const tcKimlik = patient.tcNumber || patient.identityNumber || '-';
+                return <span className="text-sm text-gray-900 dark:text-white font-mono">{tcKimlik}</span>;
+            }
+        },
+        {
+            key: 'phone',
+            header: 'Telefon',
+            sortable: true,
+            render: (patient: ExtendedParty) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">{patient.phone || '-'}</span>
+            )
+        },
+        {
+            key: 'tenant',
+            header: 'Şube / Tenant',
+            mobileHidden: true,
+            sortable: true,
+            sortKey: 'tenantName',
+            render: (patient: ExtendedParty) => {
+                const tenantName = patient.tenantName || patient.tenant_name || '-';
+                const branchName = patient.branchName || patient.branch_name || '-';
+                return (
+                    <div className="flex flex-col">
+                        <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">{tenantName}</span>
+                        {branchName !== '-' && <span className="text-xs text-gray-400 dark:text-gray-500">{branchName}</span>}
+                    </div>
+                );
+            }
+        },
+        {
+            key: 'created',
+            header: 'Kayıt Tarihi',
+            mobileHidden: true,
+            sortable: true,
+            sortKey: 'createdAt',
+            render: (patient: ExtendedParty) => {
+                const createdAt = patient.createdAt || patient.created_at;
+                return <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(createdAt)}</span>;
+            }
+        }
+    ];
 
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6'}>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Global Hasta Yönetimi</h1>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>Global Hasta Yönetimi</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Tüm abonelerdeki hastaları görüntüleyin ve yönetin
                     </p>
                 </div>
                 <button
                     onClick={() => refetch()}
-                    className="p-2 text-gray-400 hover:text-gray-600"
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 touch-feedback"
+                    title="Listeyi Yenile"
                 >
                     <ArrowPathIcon className="h-5 w-5" />
                 </button>
@@ -37,14 +174,14 @@ const AdminPatientsPage: React.FC = () => {
 
             {/* Search */}
             <div className="mb-6">
-                <div className="relative rounded-md shadow-sm max-w-md">
+                <div className="relative rounded-xl shadow-sm">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </div>
                     <input
                         type="text"
-                        className="block w-full rounded-md border-gray-300 pl-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                        placeholder="Ad, Soyad, TC veya Telefon ile ara..."
+                        className="block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        placeholder="Ad, Soyad, TC, Telefon veya Abone Adı ile ara..."
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);
@@ -55,107 +192,49 @@ const AdminPatientsPage: React.FC = () => {
             </div>
 
             {/* List */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
                 {isLoading ? (
-                    <div className="p-6 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                        <p className="mt-2 text-sm text-gray-500">Yükleniyor...</p>
+                    <div className={`${isMobile ? 'p-8' : 'p-12'} text-center`}>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+                        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Hastalar yükleniyor...</p>
                     </div>
                 ) : patients.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500">
-                        <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <p className="mt-2">Hasta bulunamadı</p>
+                    <div className={`${isMobile ? 'p-8' : 'p-16'} text-center text-gray-500 dark:text-gray-400 flex flex-col items-center`}>
+                        <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-full mb-4">
+                            <UserIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium text-gray-900 dark:text-white`}>Hasta bulunamadı</h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Arama kriterlerinize uygun hasta kaydı bulunmuyor.</p>
+                        {search && (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium touch-feedback"
+                            >
+                                Aramayı Temizle
+                            </button>
+                        )}
                     </div>
                 ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hasta</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TC Kimlik</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Şube / Tenant</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kayıt Tarihi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {patients.map((patient: any) => (
-                                <tr key={patient.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10">
-                                                <span className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-medium">
-                                                    {patient.first_name?.[0]}{patient.last_name?.[0]}
-                                                </span>
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{patient.first_name} {patient.last_name}</div>
-                                                <div className="text-sm text-gray-500">{patient.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {patient.tc_kimlik || '-'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {patient.phone || '-'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {patient.tenant_name || patient.tenant_id}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {new Date(patient.created_at).toLocaleDateString('tr-TR')}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+                    <>
+                        <ResponsiveTable
+                            data={patients}
+                            columns={columns}
+                            keyExtractor={(patient) => patient.id!}
+                            emptyMessage="Hasta bulunamadı"
+                        />
 
-                {/* Pagination */}
-                {pagination && pagination.totalPages > 1 && (
-                    <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                        <div className="flex-1 flex justify-between sm:hidden">
-                            <button
-                                onClick={() => setPage(Math.max(1, page - 1))}
-                                disabled={page === 1}
-                                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                            >
-                                Önceki
-                            </button>
-                            <button
-                                onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
-                                disabled={page === pagination.totalPages}
-                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                            >
-                                Sonraki
-                            </button>
+                        {/* Pagination */}
+                        <div className={`bg-gray-50 dark:bg-gray-700/50 ${isMobile ? 'px-3 py-3' : 'px-4 py-3'} border-t border-gray-200 dark:border-gray-700 sm:px-6`}>
+                            <Pagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                totalItems={pagination?.total || 0}
+                                itemsPerPage={limit}
+                                onPageChange={setPage}
+                                onItemsPerPageChange={setLimit}
+                            />
                         </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-sm text-gray-700">
-                                    Toplam <span className="font-medium">{pagination.total}</span> kayıttan <span className="font-medium">{(page - 1) * 10 + 1}</span> - <span className="font-medium">{Math.min(page * 10, pagination.total)}</span> arası gösteriliyor
-                                </p>
-                            </div>
-                            <div>
-                                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                    <button
-                                        onClick={() => setPage(Math.max(1, page - 1))}
-                                        disabled={page === 1}
-                                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                                    >
-                                        Önceki
-                                    </button>
-                                    <button
-                                        onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
-                                        disabled={page === pagination.totalPages}
-                                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                                    >
-                                        Sonraki
-                                    </button>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
+                    </>
                 )}
             </div>
         </div>

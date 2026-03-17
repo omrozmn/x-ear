@@ -7,6 +7,7 @@ import { PricingForm } from './components/PricingForm';
 import { SerialNumberForm } from './components/SerialNumberForm';
 import { useDeviceAssignment } from './hooks/useDeviceAssignment';
 import { DeviceAssignment } from './components/AssignmentDetailsForm';
+import toast from 'react-hot-toast';
 
 export interface DeviceAssignmentFormProps {
   partyId: string;
@@ -65,7 +66,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     if (isManualMode) {
       if (!manualDevice.brand || !manualDevice.model) {
         // Simple validation for manual mode
-        alert('Marka ve Model zorunludur.');
+        toast('Marka ve Model zorunludur.');
         return;
       }
     }
@@ -98,7 +99,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         // Ensure pricing fields are present for manual mode (they might be 0/custom)
         // Since we don't have a base price from inventory, we rely on user input listPrice
         if (!assignmentData.listPrice) {
-          alert('Lütfen liste fiyatı giriniz.');
+          toast('Lütfen liste fiyatı giriniz.');
           return;
         }
       } else if (selectedDevice) {
@@ -167,7 +168,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Device Search - Only show in create mode or collapsed in edit mode */}
         {!assignment && (
-          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-2xl p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Cihaz Seçimi</h3>
               <Button
@@ -179,7 +180,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                   setSelectedDevice(null);
                   setSearchTerm('');
                 }}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-primary hover:text-primary"
               >
                 {isManualMode ? 'Stoktan Seç' : 'Manuel Ekle'}
               </Button>
@@ -189,7 +190,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marka</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Marka</label>
                     <Input
                       type="text"
                       value={manualDevice.brand}
@@ -199,7 +200,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Model</label>
                     <Input
                       type="text"
                       value={manualDevice.model}
@@ -228,14 +229,14 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
             For now, manual mode is primarily for NEW assignments where stock is missing. 
         */}
         {assignment && selectedDevice && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <div className="bg-primary/10 rounded-2xl p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Seçili Cihaz</p>
+                <p className="text-sm text-primary font-medium">Seçili Cihaz</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {selectedDevice.brand} {selectedDevice.model}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Barkod: {selectedDevice.barcode || '-'}</p>
+                <p className="text-sm text-muted-foreground">Barkod: {selectedDevice.barcode || '-'}</p>
               </div>
               <Button
                 type="button"
@@ -247,7 +248,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                   }
                 }}
                 variant="ghost"
-                className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-2xl transition-colors"
               >
                 Farklı Cihaz Seç
               </Button>
@@ -257,7 +258,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Device Search in edit mode (hidden by default) */}
         {assignment && (
-          <div id="device-search-section" style={{ display: 'none' }} className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+          <div id="device-search-section" style={{ display: 'none' }} className="bg-gray-50 dark:bg-slate-900 rounded-2xl p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Farklı Cihaz Seç</h3>
             <DeviceSearchForm
               searchTerm={searchTerm}
@@ -272,7 +273,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Assignment Details - Show if device selected OR isManualMode */}
         {(selectedDevice || isManualMode) && (
-          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-2xl p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Atama Detayları</h3>
             <AssignmentDetailsForm
               formData={formData}
@@ -285,7 +286,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Pricing */}
         {(selectedDevice || isManualMode) && formData.reason === 'sale' && (
-          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-2xl p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Fiyatlandırma</h3>
             <PricingForm
               formData={formData}
@@ -297,7 +298,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Serial Numbers */}
         {(selectedDevice || isManualMode) && (
-          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-2xl p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Seri Numarası</h3>
             <SerialNumberForm
               formData={formData}
@@ -311,22 +312,20 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Notes - At the bottom */}
         {(selectedDevice || isManualMode) && (
-          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-2xl p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Notlar</h3>
-            <div className="relative">
-              <Textarea
-                value={formData.notes || ''}
-                onChange={(e) => updateFormData('notes', e.target.value)}
-                placeholder="Cihaz ataması ile ilgili notlar..."
-                rows={3}
-                className="resize-none dark:bg-slate-800 dark:text-white"
-              />
-            </div>
+            <Textarea
+              value={formData.notes || ''}
+              onChange={(e) => updateFormData('notes', e.target.value)}
+              placeholder="Cihaz ataması ile ilgili notlar..."
+              rows={3}
+              className="w-full resize-none dark:bg-slate-800 dark:text-white"
+            />
           </div>
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-6 border-t border-border dark:border-slate-800">
           <Button
             type="button"
             variant="outline"

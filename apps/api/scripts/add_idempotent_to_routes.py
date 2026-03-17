@@ -13,7 +13,6 @@ Run from repository root with:
 The script edits files in place and creates a .bak backup for safety.
 """
 
-import os
 import re
 from pathlib import Path
 

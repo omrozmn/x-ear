@@ -47,7 +47,7 @@ test.describe('Service Operations (Replacements)', () => {
         await devicesTab.click();
 
         // 3. Ensure a device exists
-        let deviceCard = tenantPage.locator('[class*="device-card"], [class*="card"]').first();
+        const deviceCard = tenantPage.locator('[class*="device-card"], [class*="card"]').first();
         if (!(await deviceCard.isVisible())) {
             // Create a device
             const addDeviceBtn = tenantPage.getByRole('button', { name: /Cihaz Ekle|Add Device/i }).first();
@@ -101,7 +101,7 @@ test.describe('Service Operations (Replacements)', () => {
         await tenantPage.goto('/parties');
         await tenantPage.waitForLoadState('networkidle');
 
-        let firstRow = tenantPage.locator('table tbody tr').first();
+        const firstRow = tenantPage.locator('table tbody tr').first();
         if (await firstRow.isVisible()) {
             await firstRow.click();
 

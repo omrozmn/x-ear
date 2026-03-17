@@ -37,9 +37,9 @@ export const MobileSuppliersPage: React.FC = () => {
             />
 
             {/* Search Bar */}
-            <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 z-20">
+            <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-border sticky top-14 z-20">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="text"
                         placeholder="Şirket ara..."
@@ -61,10 +61,10 @@ export const MobileSuppliersPage: React.FC = () => {
                             <div
                                 key={supplier.id}
                                 onClick={() => triggerSelection()}
-                                className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm active:scale-[0.99] transition-transform"
+                                className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-border shadow-sm active:scale-[0.99] transition-transform"
                             >
                                 <div className="flex gap-4">
-                                    <div className="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400">
+                                    <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0 text-primary">
                                         <Truck className="h-6 w-6" />
                                     </div>
 
@@ -73,10 +73,10 @@ export const MobileSuppliersPage: React.FC = () => {
                                             {supplier.companyName}
                                         </h3>
 
-                                        <div className="text-xs text-gray-500 mt-1 space-y-1">
+                                        <div className="text-xs text-muted-foreground mt-1 space-y-1">
                                             {supplier.contactPerson && (
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{supplier.contactPerson}</span>
+                                                    <span className="font-medium text-foreground">{supplier.contactPerson}</span>
                                                 </div>
                                             )}
                                             {supplier.city && (
@@ -86,7 +86,7 @@ export const MobileSuppliersPage: React.FC = () => {
                                                 </div>
                                             )}
                                             {supplier.phone && (
-                                                <div className="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-400">
+                                                <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
                                                     <Phone className="h-3 w-3" />
                                                     <span>{supplier.phone}</span>
                                                 </div>
@@ -99,7 +99,7 @@ export const MobileSuppliersPage: React.FC = () => {
                                             onClick={(e) => handleCall(e, supplier.phone as string)}
                                             variant="ghost"
                                             size="sm"
-                                            className="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 self-center active:bg-green-100 dark:active:bg-green-900/40"
+                                            className="h-10 w-10 bg-success/10 rounded-full flex items-center justify-center text-success self-center active:bg-success/10 dark:active:bg-green-900/40"
                                         >
                                             <Phone className="h-5 w-5" />
                                         </Button>
@@ -110,7 +110,7 @@ export const MobileSuppliersPage: React.FC = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
-                                <Truck className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+                                <Truck className="h-8 w-8 text-gray-300" />
                             </div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Tedarikçi Bulunamadı</h3>
                         </div>

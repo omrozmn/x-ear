@@ -9,10 +9,7 @@ Tests:
 - List parties with pagination
 """
 
-import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime
-from jose import jwt
 
 
 class TestPartyCRUD:

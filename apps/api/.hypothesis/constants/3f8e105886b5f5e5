@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_blog.py
+# hypothesis_version: 6.151.6
+
+[400, 404, '/', '/admin/blog', '/{post_id}', 'Admin Blog', 'Post not found', 'Slug already exists', 'createAdminBlogPost', 'deleteAdminBlogPost', 'is_published', 'listAdminBlogPosts', 'message', 'updateAdminBlogPost']

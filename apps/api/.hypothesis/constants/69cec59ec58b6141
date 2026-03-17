@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_settings.py
+# hypothesis_version: 6.151.9
+
+[400, 500, '/admin/settings', '/backup', '/cache/clear', '/init-db', '587', 'AdminSettings', 'Backup job started', 'Settings updated', 'X-Ear CRM', 'ai_chat', 'appointments', 'automation', 'campaigns', 'cashflow', 'false', 'features', 'general', 'hidden', 'integrations_ui', 'inventory', 'invoice_normalizer', 'invoices', 'listAdminSettings', 'mail', 'maintenance', 'maintenance_mode', 'mode', 'patients', 'payments', 'plans', 'pos', 'pricing_ui', 'purchases', 'reports', 'sales', 'security_ui', 'sgk', 'site_name', 'smtp.gmail.com', 'smtp_host', 'smtp_pass', 'smtp_port', 'smtp_user', 'suppliers', 'updateAdminSettings', 'visible', 'website_builder']

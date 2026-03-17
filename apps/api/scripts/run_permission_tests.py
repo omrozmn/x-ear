@@ -126,7 +126,7 @@ class PermissionTestRunner:
             # Standard ResponseEnvelope structure: {"data": {"accessToken": "..."}}
             self.admin_token = resp_json.get('data', {}).get('accessToken')
             if self.admin_token:
-                print(f"   ✅ Admin token alındı")
+                print("   ✅ Admin token alındı")
                 return True
             else:
                 print(f"   ❌ Token bulunamadı: {resp_json}")
@@ -253,7 +253,7 @@ class PermissionTestRunner:
             
             token = self.get_role_token(role_name)
             if not token:
-                print(f"   ⚠️  Token alınamadı, rol atlanıyor")
+                print("   ⚠️  Token alınamadı, rol atlanıyor")
                 continue
             
             for method, path, permission, body, description in ENDPOINTS:

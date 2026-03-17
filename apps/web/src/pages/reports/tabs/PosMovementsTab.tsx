@@ -3,61 +3,67 @@ import {
     AlertTriangle,
     RefreshCw,
     Loader2,
-    Filter,
-    CreditCard,
-    Building,
-    Calendar
+    CreditCard
 } from 'lucide-react';
-import { Button, Select, Pagination } from '@x-ear/ui-web';
-import { unwrapObject, unwrapPaginated } from '../../../utils/response-unwrap';
+import { Button } from '@x-ear/ui-web';
+import { unwrapPaginated } from '../../../utils/response-unwrap';
 import {
-    useListReportPosMovements,
-    useListBanks
+    useListReportPosMovements
 } from '@/api/client/reports.client';
-import { ReportPosMovementItem, FilterState } from '../types';
-import type { ResponseMeta } from '@/api/generated/schemas';
+import { FilterState } from '../types';
+import type { PosMovementItem, ResponseMeta } from '@/api/generated/schemas';
+import { PosMovementsList } from '@/components/reports/PosMovementsList';
+import { TabExportButton } from '../components/TabExportButton';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useTranslation } from 'react-i18next';
 
 interface PosMovementsTabProps {
     filters: FilterState;
 }
 
 export function PosMovementsTab({ filters }: PosMovementsTabProps) {
+  const { t } = useTranslation('reports');
+    const { hasPermission } = usePermissions();
+    const canViewFinancials = hasPermission('sensitive.reports.pos_movements.financials.view');
     const [page, setPage] = useState(1);
-    const [bankFilter, setBankFilter] = useState<string>('');
-
-    // We use useListBanks mock/real endpoint if it exists, but checking the file content 
-    // previously it seems useListReportPosMovements might have handled banks filtering?
-    // Actually checking the original file, it assumes there might be a bank list.
-    // There is no `useListBanks` in `reports.client` usually. It might be in another client.
-    // But looking at the original file code snippet provided in memory/context, it didn't seem to fetch banks list explicitly for a dropdown from `reports.client`.
-    // Wait, I should check if `useListBanks` exists. If not, I'll skip the dropdown population or use hardcoded/derived values.
-    // To be safe, I will implement it without dynamic bank list first, or check `reports.client` via import.
-    // The original file code had `PosMovementsTab`. Let me try to see if I can find what it did.
-    // Assuming it just lists movements.
-
-    const { data: movementsData, isLoading, error, refetch } = useListReportPosMovements({
+    const reportParams = {
         page,
         per_page: 20,
         days: filters.days,
-        bank_id: bankFilter || undefined
-    });
-
-    const { data: movements, meta } = unwrapPaginated<ReportPosMovementItem>(movementsData);
-    const typedMeta = meta as ResponseMeta | undefined;
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
+    // Using Orval-generated hook for POS movements
+    const { data: reportData, isLoading, error, refetch } = useListReportPosMovements(
+        reportParams
+    );
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('tr-TR', {
             style: 'currency',
             currency: 'TRY',
-            minimumFractionDigits: 2
+            minimumFractionDigits: 0
         }).format(amount);
     };
+
+    const formatProtectedCurrency = (amount: number) => (
+        canViewFinancials ? formatCurrency(amount) : t('hiddenForRole', 'Bu rol icin gizli')
+    );
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     if (error) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -65,131 +71,63 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
         );
     }
 
-    // Calculate generic stats from visible data (or meta if available)
-    const totalVolume = movements.reduce((sum, item) => sum + item.amount, 0);
-    const successRate = movements.length > 0
-        ? (movements.filter(m => m.status === 'success').length / movements.length) * 100
-        : 0;
+    const { data, meta } = unwrapPaginated<PosMovementItem>(reportData);
+    const typedPosMeta = meta as ResponseMeta | undefined;
+    const summary = meta?.summary as { totalVolume?: number; successCount?: number; failCount?: number } | undefined;
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">POS Hareketleri ve Sanal POS Raporu</h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">{t('posMovements', 'POS Hareketleri')}</h3>
+                <TabExportButton filename="pos-hareketleri" rows={data as unknown as Array<Record<string, unknown>>} />
             </div>
 
-            {/* Summary Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex items-center gap-4">
-                    <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full text-purple-600 dark:text-purple-400">
-                        <CreditCard className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Toplam İşlem Hacmi</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalVolume)}</p>
-                        <p className="text-xs text-gray-500 mt-1">Görüntülenen kayıtlar için</p>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex items-center gap-4">
-                    <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
-                        <Filter className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">İşlem Sayısı</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">{movements.length}</p>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/40 rounded-xl p-5 border border-green-200 dark:border-green-800">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-green-500 p-3 rounded-xl">
+                            <CreditCard className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-success">Toplam Başarılı İşlem</p>
+                            <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                {formatProtectedCurrency(summary?.totalVolume || 0)}
+                            </p>
+                            <p className="text-xs text-success">{summary?.successCount || 0} işlem</p>
+                        </div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex items-center gap-4">
-                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400">
-                        <Building className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Başarı Oranı</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">%{successRate.toFixed(1)}</p>
+
+                <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/40 rounded-xl p-5 border border-red-200 dark:border-red-800">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-red-500 p-3 rounded-xl">
+                            <AlertTriangle className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-destructive">Başarısız İşlemler</p>
+                            <p className="text-2xl font-bold text-red-900 dark:text-red-100">
+                                {summary?.failCount || 0}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* Filter Bar */}
-            {/* 
-        Ideally we would have a bank list here. 
-        Since we are refactoring, we'll keep the UI structure but maybe without dynamic options if useListBanks is absent.
-      */}
-            {/* <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700"> ... </div> */}
 
             {/* Movements Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {isLoading ? (
-                    <div className="flex justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                    </div>
-                ) : movements.length > 0 ? (
-                    <>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                    <tr>
-                                        <th className="px-4 py-3 font-medium">Tarih</th>
-                                        <th className="px-4 py-3 font-medium">Banka/POS</th>
-                                        <th className="px-4 py-3 font-medium">Kart</th>
-                                        <th className="px-4 py-3 font-medium">İşlem</th>
-                                        <th className="px-4 py-3 font-medium">Durum</th>
-                                        <th className="px-4 py-3 font-medium text-right">Tutar</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {movements.map((item) => (
-                                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4 text-gray-400" />
-                                                    <span>{new Date(item.date).toLocaleString('tr-TR')}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 font-medium">
-                                                {item.bankName || 'Diğer'}
-                                            </td>
-                                            <td className="px-4 py-3 font-mono text-xs text-gray-500">
-                                                {item.cardNumberMasked ? `**** ${item.cardNumberMasked.slice(-4)}` : '-'}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {item.transactionType === 'sale' ? 'Satış' :
-                                                    item.transactionType === 'refund' ? 'İade' :
-                                                        item.transactionType === 'void' ? 'İptal' : item.transactionType}
-                                                {item.description && <span className="text-xs text-gray-500 block">{item.description}</span>}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${item.status === 'success'
-                                                        ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                        : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                                    }`}>
-                                                    {item.status === 'success' ? 'Başarılı' : 'Başarısız'}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-right font-medium">
-                                                {formatCurrency(item.amount)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                            <Pagination
-                                currentPage={page}
-                                totalPages={typedMeta?.totalPages || 1}
-                                onPageChange={setPage}
-                                itemsPerPage={20}
-                                totalItems={typedMeta?.total || movements.length}
-                            />
-                        </div>
-                    </>
-                ) : (
-                    <div className="text-center py-12 text-gray-500">
-                        Kayıt bulunamadı
-                    </div>
-                )}
-            </div>
+            <PosMovementsList
+                movements={data}
+                isLoading={isLoading}
+                canViewFinancials={canViewFinancials}
+                pagination={{
+                    current: page,
+                    pageSize: 20,
+                    total: typedPosMeta?.total || 0,
+                    showSizeChanger: true,
+                    pageSizeOptions: [10, 20, 50, 100],
+                    onChange: (newPage) => setPage(newPage)
+                }}
+            />
         </div>
     );
 }

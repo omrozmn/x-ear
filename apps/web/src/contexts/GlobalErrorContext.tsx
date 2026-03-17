@@ -1,33 +1,8 @@
-import React, { createContext, useCallback, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { getErrorMessage, isNetworkError, isUnauthorizedError } from '../hooks/useErrorHandler';
-import { Toast } from '../components/ErrorMessage'; // Adjust path if needed
-
-// Context Types
-export interface GlobalErrorContextType {
-  showError: (error: unknown, options?: ErrorOptions) => void;
-  showSuccess: (message: string, options?: Omit<ErrorOptions, 'type'>) => void;
-  showWarning: (message: string, options?: Omit<ErrorOptions, 'type'>) => void;
-  showInfo: (message: string, options?: Omit<ErrorOptions, 'type'>) => void;
-  clearError: (id: string) => void;
-  clearAllErrors: () => void;
-}
-
-interface ErrorOptions {
-  title?: string;
-  type?: 'error' | 'warning' | 'info' | 'success';
-  duration?: number; // Auto-dismiss after duration (ms), 0 = no auto-dismiss
-  persistent?: boolean; // Don't auto-dismiss
-  onRetry?: () => void;
-  retryText?: string;
-}
-
-interface ErrorNotification extends ErrorOptions {
-  id: string;
-  message: string;
-  timestamp: Date;
-}
-
-export const GlobalErrorContext = createContext<GlobalErrorContextType | undefined>(undefined);
+import { Toast } from '../components/ErrorMessage';
+import { GlobalErrorContext } from './GlobalErrorContextType';
+import type { GlobalErrorContextType, ErrorOptions, ErrorNotification } from './GlobalErrorContextType';
 
 // Provider IS a component, so it can be exported from here, but since hooks are also exported, 
 // strictly speaking it's mixed. But separating Provider + Context + Hook in one file is common pattern.

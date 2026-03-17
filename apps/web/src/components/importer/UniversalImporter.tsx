@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { Modal, Button, Select, Alert, Input } from '@x-ear/ui-web';
+import { Modal, Button, Select, Alert, Input, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { z } from 'zod';
 
 import { apiClient } from '../../api/orval-mutator';
@@ -101,6 +102,12 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
   const [step, setStep] = useState<number>(1);
   const [importResult, setImportResult] = useState<{ created: number; updated: number; errors: ImportError[] } | null>(null);
   const schema = zodSchema || defaultSchema;
+  const previewTableRows = preview.map((row, index) => ({ ...row, _idx: index }));
+  const previewColumns: Column<RowData & { _idx: number }>[] = entityFields.map((field) => ({
+    key: field.key,
+    title: field.label,
+    render: (value: unknown) => String(value ?? ''),
+  }));
 
   useEffect(() => {
     if (!file) {
@@ -122,9 +129,28 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         const normalized = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
         const fileNorm = headers.map(h => ({ h, n: normalized(h) }));
         entityFields.forEach(f => {
-          // try exact or fuzzy match
-          const keyNorm = normalized(f.label || f.key || '');
-          const found = fileNorm.find(x => x.n === keyNorm) || fileNorm.find(x => x.n.includes(keyNorm)) || fileNorm.find(x => keyNorm.includes(x.n));
+          // Try matching both Turkish label AND English key
+          const labelNorm = normalized(f.label || '');
+          const keyNorm = normalized(f.key || '');
+
+          // Priority 1: Exact match on label (Turkish)
+          let found = fileNorm.find(x => x.n === labelNorm);
+
+          // Priority 2: Exact match on key (English)
+          if (!found) {
+            found = fileNorm.find(x => x.n === keyNorm);
+          }
+
+          // Priority 3: Fuzzy match on label
+          if (!found) {
+            found = fileNorm.find(x => x.n.includes(labelNorm)) || fileNorm.find(x => labelNorm.includes(x.n));
+          }
+
+          // Priority 4: Fuzzy match on key
+          if (!found) {
+            found = fileNorm.find(x => x.n.includes(keyNorm)) || fileNorm.find(x => keyNorm.includes(x.n));
+          }
+
           initial[f.key] = found ? found.h : '';
         });
         setMapping(initial);
@@ -183,51 +209,53 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
     setIsProcessing(true);
     try {
       const rows = buildMappedRows();
-      // client-side validate all rows and collect errors
-      const allErrors: ImportError[] = [];
-      const validRows: RowData[] = [];
+      // Soft validation: collect warnings but send ALL rows (even with validation issues)
+      // Backend handles partial data gracefully - saves what it can, skips truly invalid rows
+      const allWarnings: ImportError[] = [];
+      const rowsToSend: RowData[] = [];
+
       for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        // Check if row has at least one non-empty value
+        const hasData = Object.values(row).some(v => v !== null && v !== undefined && String(v).trim() !== '');
+        if (!hasData) continue; // skip completely empty rows
+
+        // Validate but treat as warning, not blocker
         try {
-          const parsed = schema.parse(rows[i]) as RowData;
-          validRows.push(parsed);
+          schema.parse(row);
         } catch (e: unknown) {
           if (e && typeof e === 'object' && 'errors' in e) {
             const issues = (e as z.ZodError).errors.map((it) => `${it.path.join('.')}: ${it.message}`);
-            allErrors.push({ row: i + 1, issues });
-          } else {
-            allErrors.push({ row: i + 1, issues: [String(e)] });
+            allWarnings.push({ row: i + 1, issues });
           }
         }
+        // Always include the row — backend will save available fields
+        rowsToSend.push(row);
       }
 
-      // If there are validation errors, surface them but allow user to continue
-      if (allErrors.length > 0) {
-        setErrors(allErrors.slice(0, 50));
-        // still proceed to send validRows if any
+      // Show warnings but proceed with ALL rows
+      if (allWarnings.length > 0) {
+        setErrors(allWarnings.slice(0, 50));
       }
 
-      // Upload valid rows to backend as a CSV file using the parties bulk endpoint
+      // Upload ALL rows to backend — backend saves what it can
       let created = 0, updated = 0;
+      const allErrors: ImportError[] = [...allWarnings];
       try {
-        if (validRows.length > 0) {
-          const csv = Papa.unparse(validRows);
+        if (rowsToSend.length > 0) {
+          const csv = Papa.unparse(rowsToSend);
           const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
           const form = new FormData();
-          // Backend expects field name 'file'
           form.append('file', blob, 'import.csv');
 
-          const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk_upload';
-          const resp = await apiClient.post<BulkUploadResponse>(endpoint, form, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
+          const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk-upload';
+          const resp = await apiClient.post<BulkUploadResponse>(endpoint, form);
 
           if (resp?.data) {
             created = resp.data.created || 0;
             updated = resp.data.updated || 0;
-            // Merge server-side reported errors (if any) with client-side validation errors
             const serverErrors = resp.data.errors || [];
             if (serverErrors.length > 0) {
-              // normalize to same shape as client errors
               const sErrors = serverErrors.map((it) => ({
                 row: it.row || it.index || 0,
                 issues: [it.error || JSON.stringify(it)]
@@ -243,7 +271,6 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         onComplete?.(result);
       } catch (uploadErr) {
         console.error('Upload failed', uploadErr);
-        // Surface a generic error to the user via errors state
         setErrors(prev => [...prev, { row: 0, issues: [String(uploadErr)] }]);
         const result = { created, updated, errors: allErrors };
         setImportResult(result);
@@ -269,11 +296,11 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
 
   const renderMappingControls = () => (
     <div className="space-y-3">
-      <div className="text-sm text-gray-600">Başlık eşleştirmesi: CSV/XLS sütunlarını uygulama alanlarına eşleyin.</div>
+      <div className="text-sm text-muted-foreground">Başlık eşleştirmesi: CSV/XLS sütunlarını uygulama alanlarına eşleyin.</div>
       <div className="grid grid-cols-1 gap-2">
         {entityFields.map(f => (
           <div key={f.key} className="flex items-center space-x-2">
-            <div className="w-40 text-sm text-gray-700">{f.label}</div>
+            <div className="w-40 text-sm text-foreground">{f.label}</div>
             <Select
               value={mapping[f.key] || ''}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMapping(prev => ({ ...prev, [f.key]: e.target.value }))}
@@ -290,7 +317,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
       <div className="space-y-4">
         {sampleDownloadUrl && (
           <div className="flex justify-end">
-            <a href={sampleDownloadUrl} download className="text-sm text-gray-600">Örnek dosya indir</a>
+            <a href={sampleDownloadUrl} download className="text-sm text-muted-foreground">Örnek dosya indir</a>
           </div>
         )}
 
@@ -299,8 +326,8 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           {['Dosya Seç', 'Başlık Eşleştir', 'Önizleme', 'Yükle / Sonuçlar'].map((label, idx) => {
             const s = idx + 1;
             return (
-              <div key={s} className={`flex items-center space-x-2 ${step === s ? 'text-blue-600' : step > s ? 'text-green-600' : 'text-gray-500'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === s ? 'bg-blue-100' : step > s ? 'bg-green-100' : 'bg-gray-100'}`}>
+              <div key={s} className={`flex items-center space-x-2 ${step === s ? 'text-primary' : step > s ? 'text-success' : 'text-muted-foreground'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === s ? 'bg-primary/10' : step > s ? 'bg-success/10' : 'bg-muted'}`}>
                   <span className="text-sm font-medium">{s}</span>
                 </div>
                 <div className="text-sm font-medium">{label}</div>
@@ -312,9 +339,9 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         {/* Step content */}
         {step === 1 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Dosya Seç (.csv, .xlsx)</label>
+            <label className="block text-sm font-medium text-foreground mb-2">Dosya Seç (.csv, .xlsx)</label>
             <Input type="file" accept=".csv,.txt,.xlsx,.xls" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFile(e.target.files?.[0] || null)} />
-            <div className="text-sm text-gray-600 mt-2">{file ? `Seçili dosya: ${file.name} — ${fileRows.length} satır bulundu` : 'Lütfen bir CSV veya XLSX dosyası seçin'}</div>
+            <div className="text-sm text-muted-foreground mt-2">{file ? `Seçili dosya: ${file.name} — ${fileRows.length} satır bulundu` : 'Lütfen bir CSV veya XLSX dosyası seçin'}</div>
           </div>
         )}
 
@@ -328,23 +355,13 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         {step === 3 && (
           <div>
             <h4 className="font-medium">Önizleme (ilk {previewRows} satır)</h4>
-            <div className="overflow-auto border rounded mt-2">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {entityFields.map(f => <th key={f.key} className="px-2 py-1 text-left font-medium">{f.label}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.map((r, idx) => (
-                    <tr key={idx} className="border-t">
-                      {entityFields.map(f => (
-                        <td key={f.key} className="px-2 py-1">{String(r[f.key] ?? '')}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-2">
+              <DataTable<RowData & { _idx: number }>
+                data={previewTableRows}
+                columns={previewColumns}
+                rowKey="_idx"
+                emptyText="Önizleme verisi bulunamadı"
+              />
             </div>
 
             {errors.length > 0 && (
@@ -370,21 +387,31 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
             <h4 className="font-medium">Yükleme ve Sonuçlar</h4>
             {importResult ? (
               <div className="mt-3">
-                <div className="text-sm">Oluşturulan: <strong>{importResult.created}</strong></div>
-                <div className="text-sm">Güncellenen: <strong>{importResult.updated}</strong></div>
-                <div className="text-sm">Hatalı satır sayısı: <strong>{importResult.errors?.length || 0}</strong></div>
+                <div className="text-sm text-green-700">Oluşturulan: <strong>{importResult.created}</strong></div>
+                <div className="text-sm text-blue-700">Güncellenen: <strong>{importResult.updated}</strong></div>
                 {importResult.errors && importResult.errors.length > 0 && (
-                  <div className="mt-2 max-h-48 overflow-auto text-sm border rounded p-2">
-                    {importResult.errors.map((err, i) => (
-                      <div key={i} className="mb-2">
-                        Satır {err.row || i + 1}: {err.issues.join(', ')}
-                      </div>
-                    ))}
-                  </div>
+                  <>
+                    <div className="text-sm text-amber-600 mt-2">
+                      Uyarılar: <strong>{importResult.errors.length}</strong> satırda eksik veya hatalı alanlar var.
+                      Var olan veriler kaydedildi. Eksik alanları tamamlamak için tekrar yükleme yapabilirsiniz.
+                    </div>
+                    <div className="mt-2 max-h-48 overflow-auto text-sm border border-amber-200 bg-amber-50 rounded p-2">
+                      {importResult.errors.map((err, i) => (
+                        <div key={i} className="mb-1 text-amber-800">
+                          Satır {err.row || i + 1}: {err.issues.join(', ')}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {(!importResult.errors || importResult.errors.length === 0) && (
+                  <div className="text-sm text-green-600 mt-2">Tüm satırlar başarıyla işlendi.</div>
                 )}
               </div>
             ) : (
-              <div className="mt-3 text-sm text-gray-700">Hazırsanız verileri sunucuya yükleyin. Geçerli satırlar gönderilecek ve sonuç burada listelenecek.</div>
+              <div className="mt-3 text-sm text-foreground">
+                Hazırsanız verileri sunucuya yükleyin. Tüm satırlar gönderilecek — mevcut kayıtlar güncellenir, yeni kayıtlar oluşturulur. Eksik alanlar uyarı olarak gösterilir.
+              </div>
             )}
           </div>
         )}

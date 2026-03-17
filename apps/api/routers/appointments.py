@@ -4,18 +4,18 @@ Handles appointment CRUD, scheduling, availability
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime, timedelta
-from pydantic import BaseModel, Field
+from datetime import datetime, timedelta, timezone
 import logging
+import json
+import uuid
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 
 from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
-from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from schemas.base import ResponseEnvelope, ApiError
 from schemas.appointments import (
-    AppointmentRead, AppointmentCreate, AppointmentUpdate, 
     AppointmentRead, AppointmentCreate, AppointmentUpdate, 
     RescheduleRequest, AppointmentAvailability
 )
@@ -24,9 +24,8 @@ from models.enums import AppointmentStatus
 from core.models.party import Party
 from models.tenant import Tenant
 from services.event_service import event_service
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-
-
+from fastapi import BackgroundTasks
+from models.user import ActivityLog
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Appointments"])
@@ -66,7 +65,7 @@ def get_appointments(
     end_date: Optional[str] = None,
     party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=1000),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -183,6 +182,26 @@ def create_appointment(
         appointment.notes = data.get('notes')
         
         db_session.add(appointment)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_created',
+            entity_type='party',
+            entity_id=data['party_id'],
+            details=json.dumps({
+                "title": "Randevu oluşturuldu",
+                "description": f"{appointment.time} saatinde {appointment.appointment_type} randevusu planlandi",
+                "appointment_id": appointment.id,
+                "date": appointment.date.strftime('%Y-%m-%d'),
+                "time": appointment.time,
+                "appointment_type": appointment.appointment_type,
+            }),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         logger.info(f"Appointment created: {appointment.id}")
@@ -227,14 +246,21 @@ def create_appointment(
 
 @router.get("/appointments/availability", operation_id="listAppointmentAvailability", response_model=ResponseEnvelope[AppointmentAvailability])
 def get_availability(
-    date: str,
+    date: str = Query(None),  # Made optional
     duration: int = Query(30, ge=15, le=120),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get available time slots for a date"""
     try:
-        target_date = datetime.fromisoformat(date).date()
+        # If no date provided, use today
+        if not date:
+            from datetime import date as date_module
+            target_date = date_module.today()
+            date_str = target_date.isoformat()
+        else:
+            target_date = datetime.fromisoformat(date).date()
+            date_str = date
         
         query = db_session.query(Appointment).filter(
             func.date(Appointment.date) == target_date,
@@ -271,7 +297,7 @@ def get_availability(
             data={
                 "availableSlots": available_slots,
                 "occupiedSlots": list(occupied_slots),
-                "date": date
+                "date": date_str
             }
         )
     except Exception as e:
@@ -281,7 +307,7 @@ def get_availability(
 
 @router.get("/appointments/list", operation_id="listAppointmentList", response_model=ResponseEnvelope[List[AppointmentRead]])
 def list_appointments(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,
@@ -368,6 +394,18 @@ def update_appointment(
         if 'branch_id' in data:
             appointment.branch_id = data['branch_id']
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_updated',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu güncellendi", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:
@@ -387,6 +425,19 @@ def delete_appointment(
     try:
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         db_session.delete(appointment)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_deleted',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu silindi", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(message="Appointment deleted")
     except HTTPException:
@@ -411,6 +462,18 @@ def reschedule_appointment(
         appointment.time = reschedule_data.time
         appointment.status = 'rescheduled'
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_rescheduled',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu yeniden planlandı", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:
@@ -430,6 +493,19 @@ def cancel_appointment(
     try:
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = 'cancelled'
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_cancelled',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu iptal edildi", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:
@@ -449,6 +525,19 @@ def complete_appointment(
     try:
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = AppointmentStatus.COMPLETED
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_completed',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu tamamlandı", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:
@@ -457,5 +546,4 @@ def complete_appointment(
         db_session.rollback()
         logger.error(f"Complete appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 

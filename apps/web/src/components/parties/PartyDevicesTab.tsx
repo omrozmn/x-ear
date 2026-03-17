@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@x-ear/ui-web';
-import { FileText, Plus, Calendar, DollarSign, Settings, XCircle } from 'lucide-react';
+import { Plus, Settings, XCircle } from 'lucide-react';
 import { Party, PartyDevice } from '../../types/party';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { deleteDevice } from '@/api/client/devices.client';
-import { createPartyDeviceAssignments } from '@/api/client/sales.client';
+import { createPartyDeviceAssignments, updateDeviceAssignment } from '@/api/client/sales.client';
 import { useCreateReplacement } from '@/api/client/replacements.client';
-import { apiClient } from '@/api/orval-mutator';
-import type {
-  SaleRead
-} from '@/api/generated/schemas';
-
-import { ExtendedSaleRead } from '@/types/extended-sales';
 import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
 import { DeviceAssignment } from '../forms/device-assignment-form/components/AssignmentDetailsForm';
 import { PartyDeviceCard } from '../party/PartyDeviceCard';
@@ -60,16 +54,43 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
   // State for other API data
   // const [inventoryItems, setInventoryItems] = useState<InventoryItemRead[]>([]);
-  const [sales, setSales] = useState<SaleRead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  const syncDevicesAfterMutation = useCallback(async (
+    eventName: 'device:assigned' | 'device:updated' | 'device:removed',
+    expectedAssignmentIds: string[] = [],
+  ) => {
+    const maxAttempts = expectedAssignmentIds.length > 0 ? 4 : 2;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      const latestDevices = await refetchDevices();
+      const allAssignmentsVisible = expectedAssignmentIds.length === 0
+        || expectedAssignmentIds.every((assignmentId) => latestDevices.some(
+          (device) => device.id === assignmentId || device.assignmentId === assignmentId,
+        ));
+
+      if (allAssignmentsVisible) {
+        break;
+      }
+
+      if (attempt < maxAttempts - 1) {
+        await wait(350 * (attempt + 1));
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent(eventName));
+    window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
+  }, [refetchDevices]);
 
   const loadInventoryItems = useCallback(async () => {
     try {
       // const params: ListInventoryParams = {
-      //   page: 1,
-      //   per_page: 20,
-      //   // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
+      // page: 1,
+      // per_page: 20,
+      // // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
       // };
 
       // const response = await listInventory(params);
@@ -79,23 +100,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
     }
   }, []);
 
-  const loadPartySales = useCallback(async () => {
-    if (!party.id) return;
-
-    try {
-      // Note: This would need to be filtered by party ID in a real implementation
-      // For now, we'll use mock data structure
-      setSales([]);
-    } catch (err) {
-      console.error('Error loading party sales:', err);
-    }
-  }, [party.id]);
 
   // Load data on component mount (effect defined after callbacks)
   useEffect(() => {
     loadInventoryItems();
-    loadPartySales();
-  }, [loadInventoryItems, loadPartySales]);
+  }, [loadInventoryItems]);
 
   const mapToFormAssignment = (device: PartyDevice): DeviceAssignment => {
     return {
@@ -155,13 +164,13 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       const assignmentItem = {
         inventoryId: data.inventoryId as string,
         ear: data.ear as string || 'both',
-        reason: data.reason as string || 'Assignment',
+        reason: data.reason as string || 'other',
         basePrice: (data.basePrice as number) || (data.listPrice as number),
         discountType: data.discountType as string,
         discountValue: data.discountValue as number,
         salePrice: data.salePrice as number,
-        partyPayment: data.partyPayment as number,
-        sgkSupport: data.sgkSupport as number,
+        patientPayment: data.partyPayment as number,
+        sgkSupport: (data.sgkSupport as number) ?? (data.sgkReduction as number),
         sgkScheme: data.sgkScheme as string,
         serialNumber: data.serialNumber as string,
         serialNumberLeft: data.serialNumberLeft as string,
@@ -197,11 +206,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       // Debug logging disabled to reduce console noise
       // console.log('🚀 [handleAssignDevice] Payload:', JSON.stringify(payload, null, 2));
 
-      await createPartyDeviceAssignments(party.id!, payload);
-      showSuccess('Başarılı', 'Cihaz başarıyla atandı');
+      const response = await createPartyDeviceAssignments(party.id!, payload);
+      const assignmentIds = response?.data?.assignmentIds ?? [];
 
-      await refetchDevices();
-      await loadPartySales();
+      await syncDevicesAfterMutation('device:assigned', assignmentIds);
+      showSuccess('Başarılı', 'Cihaz başarıyla atandı');
       setShowDeviceForm(false);
       setError(null);
 
@@ -217,7 +226,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
   const handleRemoveDevice = async (deviceId: string) => {
     try {
       await deleteDevice(deviceId);
-      await refetchDevices();
+      await syncDevicesAfterMutation('device:removed');
     } catch (err) {
       console.error('Error removing device:', err);
       setError('Cihaz kaldırılırken hata oluştu');
@@ -250,7 +259,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       const fieldMapping: Record<string, string> = {
         sgkSupportType: 'sgk_scheme',
         sgkScheme: 'sgk_scheme',
-        listPrice: 'base_price',
+        listPrice: 'list_price',
         basePrice: 'base_price',
         discountType: 'discount_type',
         discountValue: 'discount_value',
@@ -264,7 +273,8 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         serialNumberLeft: 'serial_number_left',
         serialNumberRight: 'serial_number_right',
         salePrice: 'sale_price',
-        partyPayment: 'party_payment',
+        partyPayment: 'patient_payment',
+        netPayable: 'net_payable',
         sgkReduction: 'sgk_reduction',
         sgkSupport: 'sgk_support',
         isLoaner: 'is_loaner',
@@ -284,18 +294,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         transformedUpdates[backendKey] = value;
       }
 
-      // Use apiClient for manual update - PATCH method
-      await apiClient({
-        url: `/api/device-assignments/${deviceId}`,
-        method: 'PATCH',
-        data: transformedUpdates
-      });
+      // Use Orval-generated function for update — PATCH method
+      await updateDeviceAssignment(deviceId, transformedUpdates as Record<string, unknown> as import('@/api/generated/schemas').DeviceAssignmentUpdate);
 
-      // Refresh devices
-      await refetchDevices();
-
-      // Dispatch custom event to notify other tabs (e.g., Sales)
-      window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
+      await syncDevicesAfterMutation('device:updated');
 
       // If modal was open, handle closing/resetting
       if (showEditModal) {
@@ -419,22 +421,12 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
 
 
-  // Calculate quick stats from loaded data
-  const quickStats = {
-    activeDevices: devices.filter(d => d.status === 'assigned').length,
-    trials: devices.filter(d => d.trialStartDate).length,
-    totalValue: sales.reduce((sum, s) => sum + ((s as unknown as ExtendedSaleRead).totalAmount || 0), 0),
-    ereceiptsCount: 0 // This would come from a separate API
-  };
-
-
-
   if (loading && devices.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cihazlar yükleniyor...</p>
+          <p className="text-muted-foreground">Cihazlar yükleniyor...</p>
         </div>
       </div>
     );
@@ -442,79 +434,82 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
   return (
     <div className="space-y-6">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+      {/* Quick Stats - Hiddden per user request */}
+      {/* 
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Aktif Cihaz</p>
-              <p className="text-2xl font-bold text-green-600">{quickStats.activeDevices}</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">Aktif Cihaz</p>
+              <p className="text-xl md:text-2xl font-bold text-success">{quickStats.activeDevices}</p>
             </div>
-            <div className="p-2 bg-green-100 rounded-full">
-              <Settings className="w-6 h-6 text-green-600" />
+            <div className="p-1.5 md:p-2 bg-success/10 rounded-full">
+              <Settings className="w-5 h-5 md:w-6 md:h-6 text-success" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Deneme</p>
-              <p className="text-2xl font-bold text-blue-600">{quickStats.trials}</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">Deneme</p>
+              <p className="text-xl md:text-2xl font-bold text-primary">{quickStats.trials}</p>
             </div>
-            <div className="p-2 bg-blue-100 rounded-full">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <div className="p-1.5 md:p-2 bg-primary/10 rounded-full">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Toplam Değer</p>
-              <p className="text-2xl font-bold text-purple-600">₺{quickStats.totalValue.toLocaleString()}</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">Toplam Değer</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-600">₺{quickStats.totalValue.toLocaleString()}</p>
             </div>
-            <div className="p-2 bg-purple-100 rounded-full">
-              <DollarSign className="w-6 h-6 text-purple-600" />
+            <div className="p-1.5 md:p-2 bg-purple-100 rounded-full hidden sm:block">
+              <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">E-Reçete</p>
-              <p className="text-2xl font-bold text-orange-600">{quickStats.ereceiptsCount}</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">E-Reçete</p>
+              <p className="text-xl md:text-2xl font-bold text-orange-600">{quickStats.ereceiptsCount}</p>
             </div>
-            <div className="p-2 bg-orange-100 rounded-full">
-              <FileText className="w-6 h-6 text-orange-600" />
+            <div className="p-1.5 md:p-2 bg-orange-100 rounded-full hidden sm:block">
+              <FileText className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
             </div>
           </div>
         </div>
-      </div>
+      </div> 
+      */}
 
       {/* Header with Add Device Button */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Atanmış Cihazlar</h3>
+      <div className="flex justify-between items-center sm:mt-6">
+        <h3 className="text-base md:text-lg font-medium text-foreground">Atanmış Cihazlar</h3>
         <Button
           onClick={() => setShowDeviceForm(true)}
-          className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          aria-label="Cihaz ata"
+          className="inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base premium-gradient tactile-press text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors rounded-xl"
+          aria-label="Yeni Cihaz Ata"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4 md:w-5 md:h-5" />
+          <span>Yeni Cihaz Ata</span>
         </Button>
       </div>
 
       {/* Error Message */}
       {(error || devicesError) && (
-        <div className="rounded-md bg-red-50 p-4 border border-red-200">
+        <div className="rounded-xl bg-destructive/10 p-3 md:p-4 border border-red-200">
           <div className="flex">
             <div className="flex-shrink-0">
-              <XCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+              <XCircle className="h-4 w-4 md:h-5 md:w-5 text-red-400" aria-hidden="true" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Hata</h3>
-              <div className="mt-2 text-sm text-red-700">
+              <h3 className="text-xs md:text-sm font-medium text-red-800">Hata</h3>
+              <div className="mt-1 md:mt-2 text-xs md:text-sm text-destructive">
                 <p>{error || (devicesError instanceof Error ? devicesError.message : 'Cihazlar yüklenirken bir hata oluştu.')}</p>
               </div>
             </div>
@@ -524,12 +519,13 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       {/* Devices List - Row-based Layout for proper bilateral alignment */}
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <h4 className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
+        {/* Only show these headers on desktop, on mobile they take unnecessary space since cards have indicator labels */}
+        <div className="hidden md:grid grid-cols-2 gap-4">
+          <h4 className="text-sm font-medium text-destructive flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500"></span>
             Sağ Kulak
           </h4>
-          <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
+          <h4 className="text-sm font-medium text-primary flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500"></span>
             Sol Kulak
           </h4>
@@ -543,56 +539,110 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
             return dateB - dateA; // Descending - newest first
           });
 
-          // Group devices: bilateral devices should be in same row, single-ear devices get their own row
-          const bilateralDevices = sortedDevices.filter((d) => {
-            const ear = (d.ear || d.side || '').toLowerCase();
-            return ear === 'bilateral' || ear === 'b' || ear === 'both';
-          });
-
-          const rightOnlyDevices = sortedDevices.filter((d) => {
+          // Build rows by grouping devices that share the same saleId into one row,
+          // then sort all rows by newest device date. This keeps bilateral, right+left
+          // pairs, and single-ear devices in proper chronological order.
+          const isRight = (d: PartyDevice) => {
             const ear = (d.ear || d.side || '').toLowerCase();
             return ear === 'right' || ear === 'r' || ear === 'sağ';
-          });
-
-          const leftOnlyDevices = sortedDevices.filter((d) => {
+          };
+          const isLeft = (d: PartyDevice) => {
             const ear = (d.ear || d.side || '').toLowerCase();
             return ear === 'left' || ear === 'l' || ear === 'sol';
-          });
+          };
+          const isBilateral = (d: PartyDevice) => {
+            const ear = (d.ear || d.side || '').toLowerCase();
+            return ear === 'bilateral' || ear === 'b' || ear === 'both';
+          };
 
-          const rows: Array<{ right: PartyDevice | null; left: PartyDevice | null }> = [];
+          const rows: Array<{ right: PartyDevice | null; left: PartyDevice | null; newestDate: number }> = [];
+          const usedIds = new Set<string>();
+          const getSaleId = (device: PartyDevice): string | undefined => {
+            return (device as unknown as { saleId?: string }).saleId;
+          };
 
-          // Add bilateral devices (same device appears in both columns)
-          bilateralDevices.forEach((device) => {
-            rows.push({ right: device, left: device });
-          });
-
-          // Add single-ear devices
-          const maxSingleEar = Math.max(rightOnlyDevices.length, leftOnlyDevices.length);
-          for (let i = 0; i < maxSingleEar; i++) {
-            rows.push({
-              right: rightOnlyDevices[i] || null,
-              left: leftOnlyDevices[i] || null
-            });
+          // First pass: group devices that share the same saleId
+          const bySaleId = new Map<string, PartyDevice[]>();
+          for (const d of sortedDevices) {
+            const sid = getSaleId(d);
+            if (sid) {
+              if (!bySaleId.has(sid)) bySaleId.set(sid, []);
+              bySaleId.get(sid)!.push(d);
+            }
           }
+
+          for (const [, group] of bySaleId) {
+            const rightDev = group.find((d) => isRight(d));
+            const leftDev = group.find((d) => isLeft(d));
+            const bilateralDev = group.find((d) => isBilateral(d));
+
+            if (bilateralDev) {
+              rows.push({
+                right: bilateralDev, left: bilateralDev,
+                newestDate: new Date(bilateralDev.createdAt || 0).getTime()
+              });
+              usedIds.add(bilateralDev.id);
+            } else if (rightDev && leftDev) {
+              // Paired right+left from the same sale
+              rows.push({
+                right: rightDev, left: leftDev,
+                newestDate: Math.max(
+                  new Date(rightDev.createdAt || 0).getTime(),
+                  new Date(leftDev.createdAt || 0).getTime()
+                )
+              });
+              usedIds.add(rightDev.id);
+              usedIds.add(leftDev.id);
+            } else if (rightDev) {
+              rows.push({
+                right: rightDev, left: null,
+                newestDate: new Date(rightDev.createdAt || 0).getTime()
+              });
+              usedIds.add(rightDev.id);
+            } else if (leftDev) {
+              rows.push({
+                right: null, left: leftDev,
+                newestDate: new Date(leftDev.createdAt || 0).getTime()
+              });
+              usedIds.add(leftDev.id);
+            }
+          }
+
+          // Second pass: remaining devices not yet placed
+          const remaining = sortedDevices.filter((d) => !usedIds.has(d.id));
+          for (const d of remaining) {
+            if (isBilateral(d)) {
+              rows.push({ right: d, left: d, newestDate: new Date(d.createdAt || 0).getTime() });
+            } else if (isRight(d)) {
+              rows.push({ right: d, left: null, newestDate: new Date(d.createdAt || 0).getTime() });
+            } else if (isLeft(d)) {
+              rows.push({ right: null, left: d, newestDate: new Date(d.createdAt || 0).getTime() });
+            } else {
+              rows.push({ right: d, left: null, newestDate: new Date(d.createdAt || 0).getTime() });
+            }
+          }
+
+          // Sort rows by newest date descending
+          rows.sort((a, b) => b.newestDate - a.newestDate);
 
           if (rows.length === 0) {
             return (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center py-8 text-gray-400 border-2 border-dashed border-red-200 dark:border-red-800 rounded-lg bg-red-50/50 dark:bg-red-900/10">
-                  <p className="text-sm">Sağ kulak için cihaz atanmamış</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="text-center py-6 md:py-8 text-muted-foreground border-2 border-dashed border-red-200 dark:border-red-800 rounded-2xl bg-destructive/10/50">
+                  <p className="text-xs md:text-sm">Sağ kulak için cihaz atanmamış</p>
                 </div>
-                <div className="text-center py-8 text-gray-400 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
-                  <p className="text-sm">Sol kulak için cihaz atanmamış</p>
+                <div className="text-center py-6 md:py-8 text-muted-foreground border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-2xl bg-primary/10/50">
+                  <p className="text-xs md:text-sm">Sol kulak için cihaz atanmamış</p>
                 </div>
               </div>
             );
           }
 
           return rows.map((row, index) => (
-            <div key={index} className="grid grid-cols-2 gap-4">
+            <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {/* Right Ear */}
-              <div>
-                {row.right ? (
+              {row.right ? (
+                <div>
                   <PartyDeviceCard
                     key={`${row.right.id}-right-${index}`}
                     displaySide="right"
@@ -611,14 +661,14 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
                       }
                     }}
                   />
-                ) : (
-                  <div className="h-full min-h-[100px]"></div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="hidden md:block h-full min-h-[100px]"></div>
+              )}
 
               {/* Left Ear */}
-              <div>
-                {row.left ? (
+              {row.left ? (
+                <div>
                   <PartyDeviceCard
                     key={`${row.left.id}-left-${index}`}
                     displaySide="left"
@@ -637,10 +687,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
                       }
                     }}
                   />
-                ) : (
-                  <div className="h-full min-h-[100px]"></div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="hidden md:block h-full min-h-[100px]"></div>
+              )}
             </div>
           ));
         })()}
@@ -648,7 +698,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       {/* Empty State */}
       {devices.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>Henüz atanmış cihaz bulunmamaktadır.</p>
         </div>

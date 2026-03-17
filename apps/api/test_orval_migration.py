@@ -3,7 +3,6 @@ Backend API Testing for Orval Migration
 Tests all 9 migrated endpoints to ensure they work correctly
 """
 import requests
-import json
 
 BASE_URL = "http://localhost:5003"
 

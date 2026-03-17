@@ -38,7 +38,7 @@ def sync_admin_to_users():
                     existing.role = "SUPER_ADMIN"
                     existing.is_active = admin.is_active
                     db.commit()
-                    print(f"   Updated password and role")
+                    print("   Updated password and role")
                 else:
                     # Create new user
                     user = User(

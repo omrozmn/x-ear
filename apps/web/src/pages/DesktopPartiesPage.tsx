@@ -4,27 +4,35 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
-import { Button, Input, Modal, Pagination } from '@x-ear/ui-web';
+import React, { useState, useMemo } from 'react';
+import { Button, Input, Modal, Textarea, FieldWrapper, VStack } from '@x-ear/ui-web';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { useParties, useCreateParty, useDeleteParty } from '../hooks/useParties';
+import { useParties, useCreateParty, useDeleteParty, useUpdateParty } from '../hooks/useParties';
 import { Party } from '../types/party';
-import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings } from 'lucide-react';
+import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings, Download, MessageSquare, Mail, Phone, Send, X, AlertTriangle } from 'lucide-react';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
-import { useUpdateParty } from '../hooks/useParties';
 import { PartyFilters } from '../components/parties/PartyFilters';
 import { PartyList } from '../components/parties/PartyList';
-// import { PartyCSVUpload } from '../components/parties/csv/PartyCSVUpload'; // UniversalImporter is used instead
 import UniversalImporter from '../components/importer/UniversalImporter';
 import { useToastHelpers, Card } from '@x-ear/ui-web';
 import partiesSchema from '../components/importer/schemas/parties';
 import { PartyFilters as PartyFiltersType } from '../types/party/party-search.types';
 import { PartyStatus, PartySegment, PartyLabel } from '../types/party/party-base.types';
 import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
+import NoahImportModal from '../components/noah/NoahImportModal';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { useFeatures } from '../hooks/useFeatures';
+import { useGetWhatsAppSessionStatus } from '../api/generated/whats-app/whats-app';
+import { useListSmConfig, useListSmCredit } from '../api/generated/sms-integration/sms-integration';
+import { useCreateCommunicationMessageSendSms, useCreateCommunicationMessageSendEmail } from '../api/generated/communications/communications';
+import { useCreateWhatsAppSendBulk } from '../api/generated/whats-app/whats-app';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { useTranslation } from 'react-i18next';
 
 
 
 export function DesktopPartiesPage() {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const { success: showSuccess, error: showError } = useToastHelpers();
   const navigate = useNavigate();
   useParams({ strict: false });
@@ -33,8 +41,6 @@ export function DesktopPartiesPage() {
   const [searchValue, setSearchValue] = useState('');
   const [selectedParties, setSelectedParties] = useState<string[]>([]);
   const [showNewPartyModal, setShowNewPartyModal] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingParty, setEditingParty] = useState<Party | null>(null);
   const [filters, setFilters] = useState<PartyFiltersType>({});
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,21 +50,43 @@ export function DesktopPartiesPage() {
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [tagUpdateParty, setTagUpdateParty] = useState<Party | null>(null);
+  const [showNoahImport, setShowNoahImport] = useState(false);
+  const [bulkMessageModal, setBulkMessageModal] = useState<'sms' | 'whatsapp' | 'email' | null>(null);
+  const [bulkMessageText, setBulkMessageText] = useState('');
+  const [bulkEmailSubject, setBulkEmailSubject] = useState('');
+  const [bulkSending, setBulkSending] = useState(false);
+  const [confirmDeleteBulk, setConfirmDeleteBulk] = useState(false);
 
   // Hooks
-  const { data, isLoading, error } = useParties();
+  const { data, isLoading, error, refetch } = useParties();
   const parties = data?.parties || [];
-  const updatePartyMutation = useUpdateParty();
   const createPartyMutation = useCreateParty();
   const deletePartyMutation = useDeleteParty();
 
-  // Mock stats for now
-  const stats = {
-    total: (parties?.length || 0),
-    active: parties.filter(p => p.status === 'ACTIVE').length,
-    inactive: parties.filter(p => p.status === 'INACTIVE').length,
-    withDevices: 0
-  };
+  // Communication service checks
+  const { isFeatureEnabled } = useFeatures();
+  const campaignsEnabled = isFeatureEnabled('campaigns');
+  const { data: waStatus } = useGetWhatsAppSessionStatus({ query: { enabled: campaignsEnabled } });
+  const { data: smsConfig } = useListSmConfig({ query: { enabled: campaignsEnabled } });
+  const { data: smsCredit } = useListSmCredit({ query: { enabled: campaignsEnabled } });
+  const whatsappConnected = (waStatus as unknown as { status?: string })?.status === 'connected';
+  const smsActive = !!(smsConfig as unknown as { provider?: string })?.provider;
+  const smsCredits = (smsCredit as unknown as { data?: { credit?: number } })?.data?.credit ?? 0;
+  const emailActive = campaignsEnabled; // Email typically available if campaigns feature is on
+
+  // Bulk send mutations
+  const sendSmsMutation = useCreateCommunicationMessageSendSms();
+  const sendEmailMutation = useCreateCommunicationMessageSendEmail();
+  const sendWhatsAppBulkMutation = useCreateWhatsAppSendBulk();
+
+  // Selected parties data
+  const selectedPartiesData = useMemo(() =>
+    parties.filter(p => selectedParties.includes(p.id || '')),
+    [parties, selectedParties]
+  );
+
+  // Tag update mutation
+  const updatePartyMutation = useUpdateParty();
 
   // Handlers
   const handleSearch = (value: string) => {
@@ -66,17 +94,11 @@ export function DesktopPartiesPage() {
   };
 
   const handleRefresh = () => {
-    // refetch is not available in this hook, we'll use a different approach
-    window.location.reload();
+    refetch();
   };
 
   const handleNewParty = () => {
     setShowNewPartyModal(true);
-  };
-
-  const handleEditParty = (party: Party) => {
-    setEditingParty(party);
-    setIsEditModalOpen(true);
   };
 
   const handlePartySelect = (partyId: string) => {
@@ -135,8 +157,12 @@ export function DesktopPartiesPage() {
 
   const handleTagUpdate = async (partyId: string, updates: { tags?: string[]; status?: PartyStatus; segment?: PartySegment; acquisitionType?: string; branchId?: string }) => {
     try {
-      // Clean up updates object to remove undefined fields if needed, or simply pass
-      await updatePartyMutation.mutateAsync({ partyId, updates: updates as Partial<Party> });
+      await updatePartyMutation.mutateAsync({ 
+        partyId, 
+        updates
+      });
+      // Wait for refetch to complete before closing modal
+      await refetch();
       setTagUpdateParty(null);
     } catch (error) {
       console.error('Failed to update party tags:', error);
@@ -158,19 +184,63 @@ export function DesktopPartiesPage() {
       if (!matchesSearch) return false;
     }
 
-    // Status filter
+    // Status filter - case insensitive and typo-resistant comparison
     if (filters.status && filters.status.length > 0) {
-      if (!filters.status.includes(party.status as PartyStatus)) return false;
+      const normalizeStatus = (status: string) => {
+        return String(status || '')
+          .toUpperCase()
+          .trim()
+          .replace(/[İI]/g, 'I') // Turkish I normalization
+          .replace(/Ş/g, 'S')
+          .replace(/Ğ/g, 'G')
+          .replace(/Ü/g, 'U')
+          .replace(/Ö/g, 'O')
+          .replace(/Ç/g, 'C');
+      };
+      
+      const partyStatus = normalizeStatus(party.status ? String(party.status) : '');
+      const filterStatuses = filters.status.map(s => normalizeStatus(String(s || '')));
+      if (!filterStatuses.includes(partyStatus)) return false;
     }
 
-    // Segment filter
+    // Segment filter - case insensitive and typo-resistant comparison
     if (filters.segment && filters.segment.length > 0) {
-      if (!filters.segment.includes(party.segment as PartySegment)) return false;
+      const normalizeSegment = (segment: string) => {
+        return String(segment || '')
+          .toUpperCase()
+          .trim()
+          .replace(/[İI]/g, 'I')
+          .replace(/Ş/g, 'S')
+          .replace(/Ğ/g, 'G')
+          .replace(/Ü/g, 'U')
+          .replace(/Ö/g, 'O')
+          .replace(/Ç/g, 'C');
+      };
+      
+      const partySegment = normalizeSegment(party.segment || '');
+      const filterSegments = filters.segment.map(s => normalizeSegment(s));
+      if (!filterSegments.includes(partySegment)) return false;
     }
 
-    // Acquisition Type filter
+    // Acquisition Type filter - case insensitive and typo-resistant comparison
     if (filters.acquisitionType && filters.acquisitionType.length > 0) {
-      if (!party.acquisitionType || !filters.acquisitionType.includes(party.acquisitionType)) return false;
+      const normalizeAcquisition = (acq: string) => {
+        return String(acq || '')
+          .toLowerCase()
+          .trim()
+          .replace(/[ıi]/g, 'i')
+          .replace(/ş/g, 's')
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c')
+          .replace(/\s+/g, '-') // spaces to dashes
+          .replace(/_/g, '-'); // underscores to dashes
+      };
+      
+      const partyAcquisition = normalizeAcquisition(party.acquisitionType || '');
+      const filterAcquisitions = filters.acquisitionType.map(a => normalizeAcquisition(a));
+      if (!partyAcquisition || !filterAcquisitions.includes(partyAcquisition)) return false;
     }
 
     // Labels filter
@@ -186,6 +256,23 @@ export function DesktopPartiesPage() {
     if (filters.tags && filters.tags.length > 0) {
       const partyTags = party.tags || [];
       if (!filters.tags.every(t => partyTags.includes(t))) return false;
+    }
+
+    // Date range filter (registrationDateRange)
+    if (filters.registrationDateRange) {
+      const { start, end } = filters.registrationDateRange;
+      if (party.createdAt) {
+        const partyDate = new Date(party.createdAt);
+        if (start) {
+          const startDate = new Date(start);
+          if (partyDate < startDate) return false;
+        }
+        if (end) {
+          const endDate = new Date(end);
+          endDate.setHours(23, 59, 59, 999); // Include the entire end date
+          if (partyDate > endDate) return false;
+        }
+      }
     }
 
     return true;
@@ -205,6 +292,22 @@ export function DesktopPartiesPage() {
         aValue = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         bValue = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         break;
+      case 'status':
+        aValue = (a.status || '').toLowerCase();
+        bValue = (b.status || '').toLowerCase();
+        break;
+      case 'segment':
+        aValue = (a.segment || '').toLowerCase();
+        bValue = (b.segment || '').toLowerCase();
+        break;
+      case 'acquisitionType':
+        aValue = (a.acquisitionType || '').toLowerCase();
+        bValue = (b.acquisitionType || '').toLowerCase();
+        break;
+      case 'branchId':
+        aValue = (a.branchId || '').toLowerCase();
+        bValue = (b.branchId || '').toLowerCase();
+        break;
       default:
         return 0;
     }
@@ -214,96 +317,123 @@ export function DesktopPartiesPage() {
     return 0;
   });
 
+  // Stats based on FILTERED parties (updates dynamically with filters)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const stats = {
+    total: filteredParties.length,
+    active: filteredParties.filter(p => {
+      const status = String(p.status || '').toUpperCase();
+      return status === 'ACTIVE';
+    }).length,
+    inactive: filteredParties.filter(p => {
+      const status = String(p.status || '').toUpperCase();
+      return status === 'INACTIVE';
+    }).length,
+    newThisMonth: filteredParties.filter(p => {
+      if (!p.createdAt) return false;
+      const createdDate = new Date(p.createdAt);
+      return createdDate >= thirtyDaysAgo;
+    }).length
+  };
+
   // Paginated parties
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedParties = sortedParties.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hastalar</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Hasta kayıtlarını yönetin</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Yenile
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                // TODO: Navigate to settings page with parties tab active
-                alert('TODO: Ayarlar sayfasında hastalar sekmesi açılacak');
-              }}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Hasta Ayarları
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowCSVModal(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Toplu Yükle
-            </Button>
-            <Button onClick={handleNewParty}>
-              <Plus className="h-4 w-4 mr-2" />
-              Yeni Hasta
-            </Button>
-          </div>
-        </div>
+        <DesktopPageHeader
+          className="mb-4"
+          title={t('page.title')}
+          description={t('page.description')}
+          icon={<Users className="h-6 w-6" />}
+          eyebrow={{ tr: t('page.eyebrow_tr'), en: t('page.eyebrow_en') }}
+          actions={(
+            <>
+              <Button variant="outline" size="sm" onClick={handleRefresh}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {t('page.refresh')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigate({ to: '/settings/parties' });
+                }}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                {t('page.patient_settings')}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowCSVModal(true)}>
+                <Upload className="h-4 w-4 mr-2" />
+                {t('page.bulk_upload')}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowNoahImport(true)}>
+                <Download className="h-4 w-4 mr-2" />
+                {t('page.noah_import')}
+              </Button>
+              <Button onClick={handleNewParty}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('page.new_patient')}
+              </Button>
+            </>
+          )}
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Toplam</p>
+                <p className="text-sm text-muted-foreground">{t('stats.total')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
               </div>
-              <Users className="h-8 w-8 text-blue-500" />
+              <Users className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Aktif</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+                <p className="text-sm text-muted-foreground">{t('stats.active')}</p>
+                <p className="text-2xl font-bold text-success">{stats.active}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Pasif</p>
-                <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">{stats.inactive}</p>
+                <p className="text-sm text-muted-foreground">{t('stats.inactive')}</p>
+                <p className="text-2xl font-bold text-muted-foreground">{stats.inactive}</p>
               </div>
-              <Flame className="h-8 w-8 text-gray-400" />
+              <Flame className="h-8 w-8 text-muted-foreground" />
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cihazlı</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.withDevices}</p>
+                <p className="text-sm text-muted-foreground">{t('stats.new_30_days')}</p>
+                <p className="text-2xl font-bold text-primary">{stats.newThisMonth}</p>
               </div>
-              <Headphones className="h-8 w-8 text-purple-500" />
+              <Flame className="h-8 w-8 text-primary" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border p-4 mb-6">
         <div className="flex gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Ad, soyad, telefon veya TC ile ara..."
+                placeholder={t('search.placeholder_full')}
                 value={searchValue}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10 dark:bg-slate-800 dark:text-white dark:border-slate-700"
@@ -315,12 +445,12 @@ export function DesktopPartiesPage() {
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4 mr-2" />
-            Filtreler
+            {t('search.filters_button')}
           </Button>
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-4 pt-4 border-t border-border">
             <PartyFilters
               filters={filters}
               onChange={setFilters}
@@ -333,39 +463,297 @@ export function DesktopPartiesPage() {
       </div>
 
       {/* Party List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <RefreshCw className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Yükleniyor...</p>
+              <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">{t('messages.loading')}</p>
             </div>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-sm text-red-600">Bir hata oluştu</p>
+              <p className="text-sm text-destructive">{t('messages.error_occurred')}</p>
               <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
-                Tekrar Dene
+                {t('messages.retry')}
               </Button>
             </div>
           </div>
         ) : sortedParties.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Hasta bulunamadı</p>
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">{t('messages.no_patient_found')}</p>
               <Button variant="outline" size="sm" onClick={handleNewParty} className="mt-2">
                 <Plus className="h-4 w-4 mr-2" />
-                Yeni Hasta Ekle
+                {t('messages.add_new_patient')}
               </Button>
             </div>
           </div>
         ) : (
           <>
+            {/* Bulk Action Bar */}
+            {selectedParties.length > 0 && (
+              <div className="mb-4 bg-primary/5 border border-primary/20 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 space-y-3">
+                {/* Header row */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-primary">{t('bulk_actions.selected_count', { count: selectedParties.length })}</span>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedParties([])} className="text-xs text-muted-foreground h-7">
+                      <X className="h-3 w-3 mr-1" /> {t('bulk_actions.clear_selection')}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* SMS */}
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => setBulkMessageModal('sms')}
+                    disabled={!campaignsEnabled || !smsActive}
+                    title={!campaignsEnabled ? 'Kampanya modulu paketinize dahil degil' : !smsActive ? 'SMS servisi aktif degil (Ayarlar > Entegrasyonlar)' : `SMS gonder (${smsCredits} kredi)`}
+                    className="gap-1.5"
+                  >
+                    <Phone className="h-4 w-4" />
+                    {t('bulk_actions.sms_label')}
+                    {smsActive && smsCredits > 0 && <span className="text-[10px] text-muted-foreground">({smsCredits})</span>}
+                    {!smsActive && <span className="text-[10px] text-destructive">{t('bulk_actions.sms_closed')}</span>}
+                  </Button>
+
+                  {/* WhatsApp */}
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => setBulkMessageModal('whatsapp')}
+                    disabled={!campaignsEnabled || !whatsappConnected}
+                    title={!campaignsEnabled ? 'Kampanya modulu paketinize dahil degil' : !whatsappConnected ? 'WhatsApp bagli degil (Ayarlar > Entegrasyonlar)' : 'WhatsApp mesaj gonder'}
+                    className="gap-1.5"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    {t('bulk_actions.whatsapp_label')}
+                    {whatsappConnected && <span className="w-2 h-2 bg-success rounded-full" />}
+                    {!whatsappConnected && <span className="text-[10px] text-destructive">{t('bulk_actions.whatsapp_no_connection')}</span>}
+                  </Button>
+
+                  {/* Email */}
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => setBulkMessageModal('email')}
+                    disabled={!campaignsEnabled || !emailActive}
+                    title={!campaignsEnabled ? 'Kampanya modulu paketinize dahil degil' : 'E-posta gonder'}
+                    className="gap-1.5"
+                  >
+                    <Mail className="h-4 w-4" />
+                    {t('bulk_actions.email_label')}
+                  </Button>
+
+                  <div className="w-px h-6 bg-border mx-1" />
+
+                  {/* Export */}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const csvContent = selectedPartiesData
+                      .map(p => `${p.firstName},${p.lastName},${p.phone || ''},${p.email || ''},${p.tcNumber || ''}`)
+                      .join('\n');
+                    const blob = new Blob([`Ad,Soyad,Telefon,Email,TC\n${csvContent}`], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = 'hastalar.csv'; a.click();
+                    URL.revokeObjectURL(url);
+                    showSuccess(t('bulk_message.csv_downloaded'));
+                  }} className="gap-1.5">
+                    <Download className="h-4 w-4" /> {t('bulk_actions.export_label')}
+                  </Button>
+
+                  {/* Tag Update */}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    setTagUpdateParty(selectedPartiesData[0] || null);
+                  }} className="gap-1.5">
+                    <Settings className="h-4 w-4" /> {t('bulk_actions.tag_label')}
+                  </Button>
+
+                  {/* Delete */}
+                  <Button variant="danger" size="sm" onClick={() => setConfirmDeleteBulk(true)} className="gap-1.5">
+                    <Trash2 className="h-4 w-4" /> {t('bulk_actions.delete_label', { count: selectedParties.length })}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Bulk Message Modal */}
+            {bulkMessageModal && (
+              <Modal isOpen={true} onClose={() => { setBulkMessageModal(null); setBulkMessageText(''); setBulkEmailSubject(''); }}
+                title={bulkMessageModal === 'sms' ? t('bulk_message.sms_title') : bulkMessageModal === 'whatsapp' ? t('bulk_message.whatsapp_title') : t('bulk_message.email_title')}
+                size="lg"
+              >
+                <VStack spacing={5}>
+                  {/* Header with icon and count */}
+                  <div className="flex items-center gap-3 pb-4 border-b border-border">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bulkMessageModal === 'sms' ? 'bg-primary/10 text-primary' : bulkMessageModal === 'whatsapp' ? 'bg-success/10 text-success' : 'bg-info/10 text-info'}`}>
+                      {bulkMessageModal === 'sms' ? <Phone className="h-5 w-5" /> : bulkMessageModal === 'whatsapp' ? <MessageSquare className="h-5 w-5" /> : <Mail className="h-5 w-5" />}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground">
+                        {bulkMessageModal === 'sms' ? t('bulk_message.send_sms_to', { count: selectedParties.length }) : bulkMessageModal === 'whatsapp' ? t('bulk_message.send_whatsapp_to', { count: selectedParties.length }) : t('bulk_message.send_email_to', { count: selectedParties.length })}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {bulkMessageModal !== 'email'
+                          ? t('bulk_message.phone_available', { count: selectedPartiesData.filter(p => p.phone).length })
+                          : t('bulk_message.email_available', { count: selectedPartiesData.filter(p => p.email).length })
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Credit warning for SMS */}
+                  {bulkMessageModal === 'sms' && smsCredits < selectedParties.length && (
+                    <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-xl text-sm text-foreground">
+                      <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
+                      <span>{t('bulk_message.insufficient_sms_credit', { available: smsCredits, required: selectedParties.length })}</span>
+                    </div>
+                  )}
+
+                  {/* Recipients */}
+                  <FieldWrapper label={t('bulk_message.recipients')} hint={
+                    bulkMessageModal !== 'email'
+                      ? t('bulk_message.no_phone_hint', { count: selectedPartiesData.filter(p => !p.phone).length })
+                      : t('bulk_message.no_email_hint', { count: selectedPartiesData.filter(p => !p.email).length })
+                  }>
+                    <div className="p-3 bg-muted/50 border border-border rounded-xl max-h-24 overflow-y-auto">
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedPartiesData.slice(0, 8).map(p => (
+                          <span key={p.id} className="inline-flex items-center gap-1 px-2.5 py-1 bg-card border border-border rounded-full text-xs text-foreground">
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                            {p.firstName} {p.lastName}
+                          </span>
+                        ))}
+                        {selectedPartiesData.length > 8 && (
+                          <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold">
+                            {t('bulk_message.more_recipients', { count: selectedPartiesData.length - 8 })}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </FieldWrapper>
+
+                  {/* Email subject */}
+                  {bulkMessageModal === 'email' && (
+                    <FieldWrapper label={t('bulk_message.subject_label')} required>
+                      <Input
+                        placeholder={t('bulk_message.subject_placeholder')}
+                        value={bulkEmailSubject}
+                        onChange={(e) => setBulkEmailSubject(e.target.value)}
+                        className="w-full"
+                      />
+                    </FieldWrapper>
+                  )}
+
+                  {/* Message body */}
+                  <FieldWrapper
+                    label={bulkMessageModal === 'sms' ? t('bulk_message.sms_text_label') : bulkMessageModal === 'whatsapp' ? t('bulk_message.message_label') : t('bulk_message.email_body_label')}
+                    required
+                    hint={bulkMessageModal === 'sms'
+                      ? `${bulkMessageText.length} karakter / ${Math.ceil(bulkMessageText.length / 155) || 1} segment — Tahmini: ${(Math.ceil(bulkMessageText.length / 155) || 1) * selectedPartiesData.filter(p => p.phone).length} kredi`
+                      : undefined
+                    }
+                  >
+                    <Textarea
+                      placeholder={
+                        bulkMessageModal === 'sms' ? t('bulk_message.sms_placeholder')
+                        : bulkMessageModal === 'whatsapp' ? t('bulk_message.whatsapp_placeholder')
+                        : t('bulk_message.email_placeholder')
+                      }
+                      value={bulkMessageText}
+                      onChange={(e) => setBulkMessageText(e.target.value)}
+                      rows={bulkMessageModal === 'email' ? 8 : 5}
+                      className="w-full"
+                    />
+                  </FieldWrapper>
+
+                  {/* Footer actions */}
+                  <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
+                    <Button variant="ghost" size="md" onClick={() => { setBulkMessageModal(null); setBulkMessageText(''); setBulkEmailSubject(''); }}>
+                      {t('bulk_message.cancel')}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      icon={<Send className="h-4 w-4" />}
+                      disabled={!bulkMessageText.trim() || bulkSending || (bulkMessageModal === 'email' && !bulkEmailSubject.trim())}
+                      onClick={async () => {
+                        setBulkSending(true);
+                        try {
+                          let sent = 0;
+                          let failed = 0;
+
+                          if (bulkMessageModal === 'sms') {
+                            for (const p of selectedPartiesData) {
+                              if (!p.phone) { failed++; continue; }
+                              try {
+                                await sendSmsMutation.mutateAsync({ data: { phoneNumber: p.phone, message: bulkMessageText, partyId: p.id } });
+                                sent++;
+                              } catch { failed++; }
+                            }
+                          } else if (bulkMessageModal === 'whatsapp') {
+                            try {
+                              await sendWhatsAppBulkMutation.mutateAsync({
+                                data: {
+                                  message: bulkMessageText,
+                                  partyIds: selectedParties,
+                                }
+                              });
+                              sent = selectedPartiesData.filter(p => p.phone).length;
+                            } catch { failed = selectedParties.length; }
+                          } else if (bulkMessageModal === 'email') {
+                            for (const p of selectedPartiesData) {
+                              if (!p.email) { failed++; continue; }
+                              try {
+                                await sendEmailMutation.mutateAsync({ data: { toEmail: p.email, subject: bulkEmailSubject, bodyText: bulkMessageText, partyId: p.id } });
+                                sent++;
+                              } catch { failed++; }
+                            }
+                          }
+
+                          if (sent > 0) showSuccess(failed > 0 ? t('bulk_message.messages_sent_with_failures', { sent, failed }) : t('bulk_message.messages_sent', { sent }));
+                          else showError(t('bulk_message.send_failed'));
+
+                          setBulkMessageModal(null);
+                          setBulkMessageText('');
+                          setBulkEmailSubject('');
+                        } catch (e) {
+                          showError(t('bulk_message.bulk_send_error'));
+                        } finally {
+                          setBulkSending(false);
+                        }
+                      }}
+                    >
+                      {bulkSending ? t('bulk_message.sending') : t('bulk_message.send_count', { count: bulkMessageModal === 'email' ? selectedPartiesData.filter(p => p.email).length : selectedPartiesData.filter(p => p.phone).length })}
+                    </Button>
+                  </div>
+                </VStack>
+              </Modal>
+            )}
+
+            {/* Bulk Delete Confirm */}
+            <ConfirmDialog
+              isOpen={confirmDeleteBulk}
+              title={t('bulk_delete.title')}
+              description={t('bulk_delete.confirm_message', { count: selectedParties.length })}
+              onClose={() => setConfirmDeleteBulk(false)}
+              onConfirm={async () => {
+                for (const id of selectedParties) {
+                  const party = sortedParties.find(p => p.id === id);
+                  if (party) await handleDeleteParty(party);
+                }
+                setSelectedParties([]);
+                setConfirmDeleteBulk(false);
+              }}
+              confirmLabel={t('bulk_delete.confirm')}
+              cancelLabel={t('bulk_delete.cancel')}
+              variant="danger"
+            />
             <PartyList
               parties={paginatedParties}
-              onEdit={handleEditParty}
               onPartyClick={handlePartyClick}
               onDelete={handleDeleteParty}
               onPartySelect={handlePartySelect}
@@ -374,22 +762,20 @@ export function DesktopPartiesPage() {
               sortBy={sortBy}
               sortOrder={sortOrder}
               onTagClick={setTagUpdateParty}
-              showSelection={selectedParties.length > 0}
+              showSelection={true}
               showActions={true}
+              pagination={{
+                current: currentPage,
+                pageSize: itemsPerPage,
+                total: sortedParties.length,
+                showSizeChanger: true,
+                pageSizeOptions: [10, 20, 50, 100],
+                onChange: (page, newPageSize) => {
+                  setCurrentPage(page);
+                  setItemsPerPage(newPageSize);
+                }
+              }}
             />
-            <div className="border-t border-gray-200 p-4">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={Math.ceil(sortedParties.length / itemsPerPage)}
-                onPageChange={setCurrentPage}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={(newSize) => {
-                  setItemsPerPage(newSize);
-                  setCurrentPage(1);
-                }}
-                totalItems={sortedParties.length}
-              />
-            </div>
           </>
         )}
       </div>
@@ -402,38 +788,16 @@ export function DesktopPartiesPage() {
           try {
             const result = await createPartyMutation.mutateAsync(data as unknown as Omit<Party, 'id' | 'createdAt' | 'updatedAt'>);
             setShowNewPartyModal(false);
+            // Refetch to get updated list
+            await refetch();
             return result;
           } catch (e) {
             console.error('Failed to create party', e);
             throw e;
           }
         }}
-        title="Yeni Hasta"
+        title={t('form.new_patient')}
         isLoading={createPartyMutation.isPending}
-      />
-
-      {/* Edit Modal */}
-      <PartyFormModal
-        isOpen={isEditModalOpen}
-        onClose={() => { setIsEditModalOpen(false); setEditingParty(null); }}
-        onSubmit={async (updates) => {
-          try {
-            if (!editingParty?.id) return null;
-            await updatePartyMutation.mutateAsync({
-              partyId: editingParty.id,
-              updates: updates as Partial<Party>,
-            });
-            setIsEditModalOpen(false);
-            setEditingParty(null);
-            return editingParty;
-          } catch (e) {
-            console.error('Failed to update party', e);
-            throw e;
-          }
-        }}
-        initialData={editingParty || undefined}
-        title="Hasta Düzenle"
-        isLoading={updatePartyMutation.isPending}
       />
 
       {/* Tag Update Modal */}
@@ -442,6 +806,7 @@ export function DesktopPartiesPage() {
         onClose={() => setTagUpdateParty(null)}
         party={tagUpdateParty}
         onUpdate={handleTagUpdate}
+        isLoading={updatePartyMutation.isPending}
       />
 
       {/* CSV Upload Modal (now shared UniversalImporter with mapping + preview) */}
@@ -449,23 +814,32 @@ export function DesktopPartiesPage() {
         isOpen={showCSVModal}
         onClose={() => setShowCSVModal(false)}
         entityFields={[
-          { key: 'firstName', label: 'Ad' },
-          { key: 'lastName', label: 'Soyad' },
-          { key: 'tcNumber', label: 'TC Kimlik No' },
-          { key: 'phone', label: 'Telefon' },
-          { key: 'email', label: 'E-posta' },
-          { key: 'birthDate', label: 'Doğum Tarihi' },
-          { key: 'gender', label: 'Cinsiyet' }
+          { key: 'firstName', label: t('import.field_first_name') },
+          { key: 'lastName', label: t('import.field_last_name') },
+          { key: 'tcNumber', label: t('import.field_tc') },
+          { key: 'identityNumber', label: t('import.field_tc') },
+          { key: 'phone', label: t('import.field_phone') },
+          { key: 'email', label: t('import.field_email') },
+          { key: 'birthDate', label: t('import.field_birth_date') },
+          { key: 'gender', label: t('import.field_gender') },
+          { key: 'status', label: t('filters.status_label') },
+          { key: 'segment', label: t('filters.segment_label') },
+          { key: 'acquisitionType', label: t('filters.acquisition_type_label') },
+          { key: 'referredBy', label: t('acquisition.referral') },
+          { key: 'addressCity', label: t('form.city') },
+          { key: 'addressDistrict', label: t('form.district') },
+          { key: 'addressFull', label: t('form.address') },
+          { key: 'tags', label: t('header.tags_label') },
         ]}
         zodSchema={partiesSchema}
-        uploadEndpoint={'/api/parties/bulk_upload'}
-        modalTitle={'Toplu Hasta Yükleme'}
+        uploadEndpoint={'/api/parties/bulk-upload'}
+        modalTitle={t('import.modal_title')}
         sampleDownloadUrl={'/import_samples/parties_sample.csv'}
         onComplete={(res) => {
           if (res.errors && res.errors.length > 0) {
-            showError(`Hasta import tamamlandı — Hatalı satır: ${res.errors.length}`);
+            showError(t('import.complete_with_errors', { count: res.errors.length }));
           } else {
-            showSuccess(`Hasta import tamamlandı — Oluşturulan: ${res.created}`);
+            showSuccess(t('import.complete_success', { count: res.created }));
           }
           // refresh page data simply
           handleRefresh();
@@ -495,34 +869,41 @@ export function DesktopPartiesPage() {
       <Modal
         isOpen={!!partyToDelete}
         onClose={() => setPartyToDelete(null)}
-        title="Hastayı Sil"
+        title={t('delete_modal.title')}
         size="md"
       >
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-red-200 rounded-2xl">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                <Trash2 className="h-5 w-5 text-red-600" />
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-destructive" />
               </div>
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-900">
-                Bu hastayı silmek istediğinizden emin misiniz?
+                {t('delete_modal.confirm_question')}
               </h3>
-              <p className="mt-1 text-sm text-red-700">
+              <p className="mt-1 text-sm text-destructive">
                 {partyToDelete?.firstName} {partyToDelete?.lastName}
               </p>
             </div>
           </div>
-          <p className="text-sm text-gray-600">
-            Bu işlem geri alınamaz. Hasta kaydı ve tüm ilişkili veriler silinecektir.
+          <p className="text-sm text-muted-foreground">
+            {t('delete_modal.irreversible_warning')}
           </p>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setPartyToDelete(null)}>İptal</Button>
-            <Button variant="danger" onClick={confirmDelete}>Sil</Button>
+            <Button variant="outline" onClick={() => setPartyToDelete(null)}>{t('delete_modal.cancel')}</Button>
+            <Button variant="danger" onClick={confirmDelete}>{t('delete_modal.confirm')}</Button>
           </div>
         </div>
       </Modal>
+
+      {/* Noah Import Modal */}
+      <NoahImportModal
+        open={showNoahImport}
+        onClose={() => setShowNoahImport(false)}
+        onImportComplete={handleRefresh}
+      />
     </div>
   );
 }

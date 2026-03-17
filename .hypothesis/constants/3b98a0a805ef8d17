@@ -1,4 +1,0 @@
-# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/api_keys.py
-# hypothesis_version: 6.150.2
-
-[1000, 'createdBy', 'isActive', 'lastUsedAt', 'rateLimit', 'tenantId']

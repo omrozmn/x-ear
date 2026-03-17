@@ -34,20 +34,24 @@
     "test:critical-flows:sync": "playwright test tests/e2e/critical-flows/cross-app-sync",
     "test:critical-flows:watch": "playwright test tests/e2e/critical-flows --ui",
     "test:critical-flows:debug": "playwright test tests/e2e/critical-flows --debug",
-    "test:critical-flows:ci": "playwright test tests/e2e/critical-flows --reporter=list,html --workers=4"
+    "test:critical-flows:ci": "playwright test tests/e2e/critical-flows --reporter=list,html --workers=4",
+    "test:e2e:otp": "playwright test tests/e2e/auth/login.spec.ts tests/e2e/web/phone-verification.spec.ts tests/e2e/web/profile-phone-verification.spec.ts tests/e2e/web/forgot-password.spec.ts tests/e2e/landing/register-otp.spec.ts --project=web-auth-setup --project=web --project=web-public --project=admin-auth-setup --project=admin --project=landing --reporter=list"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
+    "@playwright/test": "^1.58.1",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-interactions": "^8.6.14",
     "@storybook/react": "^8.6.14",
     "@storybook/react-vite": "^8.6.14",
     "@storybook/test": "^8.6.14",
     "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "chromatic": "^13.3.0",
     "concurrently": "^8.2.2",
     "dotenv": "^17.2.3",
     "eslint": "^8.55.0",
+    "eslint-plugin-playwright": "^2.2.2",
     "eslint-plugin-boundaries": "^5.1.0",
     "prettier": "^3.1.0",
     "typescript": "^5.3.0"

@@ -20,6 +20,7 @@ export interface SupplierExtended extends Omit<BaseSupplier, 'name'> {
   name: string; // Required field
   companyName: string;
   companyCode?: string;
+  institutionNumber?: string;
   taxOffice?: string;
   mobile?: string;
   website?: string;

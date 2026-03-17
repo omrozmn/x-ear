@@ -5,7 +5,7 @@ import {
     PosMovementItem
 } from '@/api/generated/schemas';
 
-export type TabId = 'overview' | 'sales' | 'parties' | 'promissory' | 'remaining' | 'activity' | 'pos_movements';
+export type TabId = 'overview' | 'sales' | 'parties' | 'promissory' | 'remaining' | 'activity' | 'pos_movements' | 'report_tracking';
 
 export interface FilterState {
     dateRange: {
@@ -13,37 +13,69 @@ export interface FilterState {
         end: string;
     };
     branch?: string;
+    branches?: string[];
     days: number;
 }
 
 export interface ReportOverview {
-    total_revenue?: number;
-    total_sales?: number;
-    appointment_rate?: number;
-    conversion_rate?: number;
-    total_parties?: number;
-    new_parties?: number;
-    total_appointments?: number;
+    totalRevenue?: number;
+    totalSales?: number;
+    appointmentRate?: number;
+    conversionRate?: number;
+    totalPatients?: number;
+    newPatients?: number;
+    totalAppointments?: number;
 }
 
 export interface ReportFinancial {
-    payment_methods?: Record<string, { amount: number }>;
-    revenue_trend?: Record<string, number>;
-    product_sales?: Record<string, { sales: number; revenue: number }>;
+    paymentMethods?: Record<string, { amount: number }>;
+    revenueTrend?: Record<string, number>;
+    productSales?: Record<string, { sales: number; revenue: number }>;
 }
 
 export interface ReportParties {
-    party_segments?: {
+    summary?: {
+        totalPatients?: number;
+        newPatients?: number;
+        patientsWithSales?: number;
+        patientsWithUpcomingAppointments?: number;
+        highPriorityPatients?: number;
+    };
+    patientSegments?: {
         new: number;
         active: number;
         trial: number;
         inactive: number;
     };
-    status_distribution?: Record<string, number>;
+    statusDistribution?: Record<string, number>;
+    ageDistribution?: Record<string, number>;
+    acquisitionBreakdown?: Record<string, number>;
+    segmentBreakdown?: Record<string, number>;
 }
 
-// Use generated types
+export interface ReportTrackingItem {
+    id: string;
+    saleId?: string;
+    partyId?: string;
+    partyName: string;
+    branchId?: string;
+    branchName?: string;
+    brand?: string;
+    model?: string;
+    deviceName?: string;
+    serialNumber?: string;
+    ear?: string;
+    reportStatus?: string;
+    deliveryStatus?: string;
+    assignedDate?: string;
+    saleDate?: string;
+    updatedAt?: string;
+}
+
 export type ReportPromissoryNotes = ReportPromissoryNotesResponse;
-export type ReportPromissoryNoteByParty = PromissoryNotePatientItem;
+export type ReportPromissoryNoteByParty = PromissoryNotePatientItem & {
+    firstDueDate?: string;
+    lastDueDate?: string;
+};
 export type ReportPromissoryNoteListItem = PromissoryNoteListItem;
 export type ReportPosMovementItem = PosMovementItem;

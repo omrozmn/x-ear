@@ -74,6 +74,7 @@
         "patient_placeholder": "Hasta adı veya TC ile arayın...",
         "date": "Tarih *",
         "time": "Saat *",
+        "time_placeholder": "Saat seçin",
         "duration": "Süre (dakika) *",
         "type": "Randevu Türü *",
         "notes": "Notlar",

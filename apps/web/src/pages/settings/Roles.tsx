@@ -8,6 +8,9 @@ import {
     useDeleteRole
 } from '../../api/generated/roles/roles';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 interface Role {
     id: string;
@@ -21,6 +24,7 @@ interface Role {
 // Manual hooks replaced by Orval generated hooks
 
 export default function RolesSettings() {
+  const { t } = useTranslation('settings_extra');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -51,7 +55,7 @@ export default function RolesSettings() {
 
         try {
             await createRoleMutation.mutateAsync({ data: roleData });
-            setCreateSuccess('Rol başarıyla oluşturuldu!');
+            setCreateSuccess(t('roleCreatedSuccess', 'Rol başarıyla oluşturuldu!'));
             setRoleData({ name: '', description: '' });
             refetch();
             setTimeout(() => {
@@ -99,7 +103,7 @@ export default function RolesSettings() {
             await deleteRoleMutation.mutateAsync({ roleId });
             await refetch();
         } catch (err: unknown) {
-            alert((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Rol silinemedi.');
+            toast.error((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Rol silinemedi.');
         }
     };
 
@@ -115,24 +119,26 @@ export default function RolesSettings() {
         { category: 'Envanter', permissions: ['inventory:read', 'inventory:create', 'inventory:update', 'inventory:delete'] },
         { category: 'Faturalar', permissions: ['invoices:read', 'invoices:create', 'invoices:update', 'invoices:delete'] },
         { category: 'Raporlar', permissions: ['reports:read', 'reports:export'] },
-        { category: 'Ayarlar', permissions: ['settings:read', 'settings:update'] },
+        { category: t('settings', 'Ayarlar'), permissions: ['settings:read', 'settings:update'] },
         { category: 'Kullanıcılar', permissions: ['users:read', 'users:create', 'users:update', 'users:delete'] },
     ];
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Rol Yönetimi</h1>
-                    <p className="text-gray-500 dark:text-gray-400">Rolleri ve yetkilerini yönetin</p>
-                </div>
-                <Button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    icon={<Plus className="w-5 h-5" />}
-                >
-                    Yeni Rol Oluştur
-                </Button>
-            </div>
+            <SettingsSectionHeader
+                className="mb-8"
+                title="Rol Yönetimi"
+                description="Rolleri ve yetkilerini yönetin"
+                icon={<Shield className="w-6 h-6" />}
+                actions={(
+                    <Button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        icon={<Plus className="w-5 h-5" />}
+                    >
+                        Yeni Rol Oluştur
+                    </Button>
+                )}
+            />
 
             {/* Search Bar */}
             <div className="mb-6">
@@ -142,14 +148,14 @@ export default function RolesSettings() {
                         placeholder="Rol ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        leftIcon={<Search className="w-5 h-5 text-gray-400" />}
+                        leftIcon={<Search className="w-5 h-5 text-muted-foreground" />}
                         className="w-full"
                     />
                 </div>
             </div>
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center">
+                <div className="mb-6 p-4 bg-destructive/10 border border-red-200 text-destructive rounded-2xl flex items-center">
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Roller yüklenirken bir hata oluştu.</div>
@@ -163,27 +169,27 @@ export default function RolesSettings() {
             {/* Roles Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loading ? (
-                    <div className="col-span-full text-center py-12 text-gray-500">
+                    <div className="col-span-full text-center py-12 text-muted-foreground">
                         Yükleniyor...
                     </div>
                 ) : filteredRoles.length === 0 ? (
-                    <div className="col-span-full text-center py-12 text-gray-500">
+                    <div className="col-span-full text-center py-12 text-muted-foreground">
                         {searchTerm ? 'Arama kriterine uygun rol bulunamadı.' : 'Henüz rol eklenmemiş.'}
                     </div>
                 ) : (
                     filteredRoles.map((role) => (
                         <div
                             key={role.id}
-                            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center">
-                                    <div className="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
                                         <Shield className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 dark:text-white">{role.name}</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        <p className="text-sm text-muted-foreground">
                                             {role.permissions?.length || 0} yetki
                                         </p>
                                     </div>
@@ -201,7 +207,7 @@ export default function RolesSettings() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => handleDeleteRole(role.id)}
-                                        className="text-gray-400 hover:text-red-600"
+                                        className="text-muted-foreground hover:text-destructive"
                                         title="Sil"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -210,7 +216,7 @@ export default function RolesSettings() {
                             </div>
 
                             {role.description && (
-                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                                <p className="text-sm text-muted-foreground mb-4">
                                     {role.description}
                                 </p>
                             )}
@@ -220,14 +226,14 @@ export default function RolesSettings() {
                                     {role.permissions.slice(0, 3).map((perm, idx) => (
                                         <span
                                             key={idx}
-                                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-foreground"
                                         >
                                             <Lock className="w-3 h-3 mr-1" />
                                             {typeof perm === 'string' ? perm : perm.name}
                                         </span>
                                     ))}
                                     {role.permissions.length > 3 && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-foreground">
                                             +{role.permissions.length - 3} daha
                                         </span>
                                     )}
@@ -235,7 +241,7 @@ export default function RolesSettings() {
                             )}
 
                             {role.createdAt && (
-                                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500">
+                                <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
                                     Oluşturulma: {new Date(role.createdAt).toLocaleDateString('tr-TR')}
                                 </div>
                             )}
@@ -248,11 +254,11 @@ export default function RolesSettings() {
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Yeni Rol Oluştur</h2>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('createNewRole', 'Yeni Rol Oluştur')}</h2>
 
                         {createSuccess ? (
-                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <div className="flex items-center text-green-700">
+                            <div className="mb-6 p-4 bg-success/10 border border-green-200 rounded-2xl">
+                                <div className="flex items-center text-success">
                                     <CheckCircle2 className="w-5 h-5 mr-2" />
                                     {createSuccess}
                                 </div>
@@ -260,7 +266,7 @@ export default function RolesSettings() {
                         ) : (
                             <form onSubmit={handleCreateRole} className="space-y-6">
                                 <div>
-                                    <label htmlFor="role-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label htmlFor="role-name" className="block text-sm font-medium text-foreground mb-2">
                                         Rol Adı *
                                     </label>
                                     <Input
@@ -275,7 +281,7 @@ export default function RolesSettings() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="role-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label htmlFor="role-description" className="block text-sm font-medium text-foreground mb-2">
                                         Açıklama
                                     </label>
                                     <Textarea
@@ -289,12 +295,12 @@ export default function RolesSettings() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                                    <label className="block text-sm font-medium text-foreground mb-4">
                                         Yetkiler
                                     </label>
                                     <div className="space-y-4 max-h-64 overflow-y-auto">
                                         {availablePermissions.map((category) => (
-                                            <div key={category.category} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                            <div key={category.category} className="border border-border rounded-2xl p-4">
                                                 <h4 className="font-medium text-gray-900 dark:text-white mb-3">
                                                     {category.category}
                                                 </h4>
@@ -302,7 +308,7 @@ export default function RolesSettings() {
                                                     {category.permissions.map((perm) => (
                                                         <label key={perm} className="flex items-center space-x-2 text-sm">
                                                             <Checkbox />
-                                                            <span className="text-gray-700 dark:text-gray-300">
+                                                            <span className="text-foreground">
                                                                 {perm.split(':')[1]}
                                                             </span>
                                                         </label>
@@ -314,7 +320,7 @@ export default function RolesSettings() {
                                 </div>
 
                                 {createError && (
-                                    <div className="text-sm text-red-600 flex items-center">
+                                    <div className="text-sm text-destructive flex items-center">
                                         <AlertCircle className="w-4 h-4 mr-1" />
                                         {createError}
                                     </div>
@@ -366,7 +372,7 @@ export default function RolesSettings() {
 
                         <form onSubmit={handleUpdateRole} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-foreground mb-2">
                                     Rol Adı *
                                 </label>
                                 <Input
@@ -379,7 +385,7 @@ export default function RolesSettings() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-foreground mb-2">
                                     Açıklama
                                 </label>
                                 <Textarea
@@ -391,7 +397,7 @@ export default function RolesSettings() {
                             </div>
 
                             {createError && (
-                                <div className="text-sm text-red-600 flex items-center">
+                                <div className="text-sm text-destructive flex items-center">
                                     <AlertCircle className="w-4 h-4 mr-1" />
                                     {createError}
                                 </div>

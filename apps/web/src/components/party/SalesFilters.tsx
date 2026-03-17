@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
-import { Input, Select, Button } from '@x-ear/ui-web';
+import { Input, Select, Button, DatePicker } from '@x-ear/ui-web';
 
 interface SalesFiltersProps {
   searchTerm: string;
@@ -44,7 +44,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
       <div className="flex items-center space-x-4">
         <div className="flex-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="w-4 h-4 text-gray-400" />
+            <Search className="w-4 h-4 text-muted-foreground" />
           </div>
           <Input
             type="text"
@@ -64,9 +64,9 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
       </div>
 
       {showFilters && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted rounded-2xl">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Durum
             </label>
             <Select
@@ -82,7 +82,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Ödeme Yöntemi
             </label>
             <Select
@@ -99,38 +99,38 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Başlangıç Tarihi
             </label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => onDateFromChange(e.target.value)}
+            <DatePicker
+              value={dateFrom ? new Date(dateFrom) : null}
+              onChange={(date) => onDateFromChange(date ? date.toISOString().split('T')[0] : '')}
+              fullWidth
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Bitiş Tarihi
             </label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => onDateToChange(e.target.value)}
+            <DatePicker
+              value={dateTo ? new Date(dateTo) : null}
+              onChange={(date) => onDateToChange(date ? date.toISOString().split('T')[0] : '')}
+              fullWidth
             />
           </div>
         </div>
       )}
 
       {hasActiveFilters && (
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {filteredCount} / {totalCount} satış gösteriliyor
           </span>
           <Button
             onClick={onClearFilters}
             variant="ghost"
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-primary hover:text-blue-800 font-medium"
           >
             Filtreleri Temizle
           </Button>

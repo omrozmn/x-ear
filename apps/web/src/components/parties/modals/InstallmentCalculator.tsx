@@ -99,14 +99,14 @@ export function InstallmentCalculator({
   const installmentPlan = calculateInstallments(grandTotal, installmentCount);
 
   return (
-    <div className="bg-blue-50 p-4 rounded-lg">
+    <div className="bg-primary/10 p-4 rounded-2xl">
       <div className="flex justify-between items-center mb-4">
         <h4 className="font-medium text-blue-900">Taksit Detayları</h4>
         <Button
           type="button"
           onClick={autoFillInstallments}
           size="sm"
-          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+          className="text-primary hover:text-blue-800 flex items-center gap-1"
         >
           <Calculator size={14} />
           Otomatik Doldur
@@ -116,8 +116,8 @@ export function InstallmentCalculator({
       {/* Taksit Listesi - Legacy'deki installmentList */}
       <div className="space-y-3 max-h-64 overflow-y-auto">
         {installmentDetails.map((detail) => (
-          <div key={detail.id} className="grid grid-cols-12 gap-3 bg-white p-3 rounded-lg items-center border">
-            <span className="col-span-2 font-medium text-gray-700">
+          <div key={detail.id} className="grid grid-cols-12 gap-3 bg-card p-3 rounded-2xl items-center border">
+            <span className="col-span-2 font-medium text-foreground">
               Taksit {detail.id}:
             </span>
             <div className="col-span-5 flex items-center gap-2">
@@ -128,7 +128,7 @@ export function InstallmentCalculator({
                 onChange={(e) => updateInstallmentDetail(detail.id, 'amount', e.target.value)}
                 className="flex-1"
               />
-              <span className="text-gray-500 text-sm">TL</span>
+              <span className="text-muted-foreground text-sm">TL</span>
             </div>
             <div className="col-span-5">
               <Input
@@ -145,7 +145,7 @@ export function InstallmentCalculator({
       {/* Taksit Toplamı - Legacy'deki installmentTotal */}
       <div className="mt-4 pt-4 border-t border-blue-200 flex justify-between items-center">
         <span className="font-semibold text-blue-900">Taksit Toplamı:</span>
-        <span className="font-bold text-lg text-blue-600">
+        <span className="font-bold text-lg text-primary">
           {updateInstallmentTotal().toLocaleString('tr-TR')} TL
         </span>
       </div>

@@ -10,16 +10,10 @@ Tests:
 
 import pytest
 import time
-from datetime import datetime, timezone, timedelta
 
 from ai.services.metrics import (
     MetricsCollector,
     MetricType,
-    LatencyStats,
-    RateStats,
-    ApprovalStats,
-    QuotaStats,
-    SLAMetrics,
     get_metrics_collector,
     record_inference_latency,
     record_intent_latency,
@@ -43,7 +37,6 @@ from ai.services.alerting import (
     AlertThresholds,
     Alert,
     get_alerting_service,
-    check_and_alert,
     emit_circuit_breaker_alert,
 )
 

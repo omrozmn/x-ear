@@ -13,6 +13,9 @@ export {
   getListUserMeQueryKey,
   useUpdateUserMe,
   useCreateUserMePassword,
+  useGetUserMeImpersonationConsent,
+  getGetUserMeImpersonationConsentQueryKey,
+  useUpdateUserMeImpersonationConsent,
 } from '@/api/generated/index';
 
 export type { } from '@/api/generated/schemas';

@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 class Invoice(BaseModel, TenantScopedMixin):
@@ -22,6 +22,8 @@ class Invoice(BaseModel, TenantScopedMixin):
     device_name = Column(String(200))
     device_serial = Column(String(100))
     device_price = Column(Numeric(12,2), nullable=False)
+    issue_date = Column(DateTime, nullable=True, index=True)  # Fatura düzenleme tarihi
+    due_date = Column(DateTime, nullable=True)  # Vade tarihi
     
     # Patient info (denormalized for historical records)
     patient_name = Column(String(200))
@@ -74,8 +76,12 @@ class Invoice(BaseModel, TenantScopedMixin):
             'deviceName': self.device_name,
             'deviceSerial': self.device_serial,
             'devicePrice': self.device_price,
+            'issueDate': self.issue_date.isoformat() if self.issue_date else None,
+            'dueDate': self.due_date.isoformat() if self.due_date else None,
             'patientName': self.patient_name,
+            'partyName': self.patient_name,
             'patientTC': self.patient_tc,
+            'partyTC': self.patient_tc,
             'status': self.status,
             'sentToGib': self.sent_to_gib,
             'sentToGibAt': self.sent_to_gib_at.isoformat() if self.sent_to_gib_at else None,

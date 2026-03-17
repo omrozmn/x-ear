@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useMemo } from 'react';
 import { useAIStatus } from '../hooks/useAIStatus';
 import { useAIContext } from '../hooks/useAIContext';
@@ -127,7 +128,7 @@ function DefaultUnavailableFallback({
 
   return (
     <div
-      className={`flex items-center gap-3 p-4 ${bgColor} ${borderColor} border rounded-lg`}
+      className={`flex items-center gap-3 p-4 ${bgColor} ${borderColor} border rounded-2xl`}
       role="alert"
     >
       {/* Icon */}

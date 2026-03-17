@@ -24,7 +24,6 @@ if str(_api_dir) not in sys.path:
 
 import pytest
 from hypothesis import given, strategies as st, settings
-from collections import Counter
 
 from ai.runtime.model_registry import (
     ModelRegistry,

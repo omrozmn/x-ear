@@ -1,0 +1,174 @@
+[
+  {
+    "label": "SATIS_(Temel)",
+    "invoiceNo": "EAR2026000000023",
+    "guid": "4f1367f4-c866-4d1d-bf75-0e94a4a80268",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/SATIS_(Temel).pdf",
+    "xml_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    },
+    "html_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    }
+  },
+  {
+    "label": "SATIS_(Ticari)",
+    "invoiceNo": "EAR2026000000024",
+    "guid": "c5589d00-79a7-4eec-8948-6ac86b81f56f",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/SATIS_(Ticari).pdf",
+    "xml_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    },
+    "html_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    }
+  },
+  {
+    "label": "ISTISNA",
+    "invoiceNo": "EAR2026000000025",
+    "guid": "f79fbc97-4fc5-419b-8c0d-81cdb10bba69",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/ISTISNA.pdf",
+    "xml_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    },
+    "html_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    }
+  },
+  {
+    "label": "OZELMATRAH",
+    "invoiceNo": "EAR2026000000026",
+    "guid": "b58a3bdb-a738-4e55-8896-cd073fcaa660",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/OZELMATRAH.pdf",
+    "xml_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    },
+    "html_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    }
+  },
+  {
+    "label": "IHRACKAYITLI_(27)",
+    "invoiceNo": "EAR2026000000027",
+    "guid": "2c09657e-baf4-47a8-8f52-32e63c566ee8",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/IHRACKAYITLI_(27).pdf",
+    "xml_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    },
+    "html_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    }
+  },
+  {
+    "label": "TIBBI_CIHAZ",
+    "invoiceNo": "EAR2026000000028",
+    "guid": "7d93a9b5-7aa8-4058-b6da-76393804143a",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/TIBBI_CIHAZ.pdf",
+    "xml_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    },
+    "html_error": {
+      "Success": false,
+      "Message": "HATA: Doküman bulunamadı.",
+      "Code": "1195",
+      "Result": {
+        "content": null,
+        "documentNo": null
+      }
+    }
+  },
+  {
+    "label": "IHRACAT",
+    "invoiceNo": "BEF2026000000357",
+    "guid": "ea824596-f891-47a6-bfaf-ea7c48ec4f09",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/IHRACAT.pdf",
+    "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/IHRACAT.xml",
+    "xml_bytes": 63356,
+    "html_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/IHRACAT.html",
+    "html_bytes": 22780
+  },
+  {
+    "label": "SGK",
+    "invoiceNo": "BEF2026000000358",
+    "guid": "646fa121-1315-41ec-9357-236b97de6cda",
+    "pdf_status": 200,
+    "pdf_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/SGK.pdf",
+    "xml_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/SGK.xml",
+    "xml_bytes": 63717,
+    "html_path": "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/test_outbox/pdf_review_20260308/SGK.html",
+    "html_bytes": 23266
+  }
+]

@@ -5,7 +5,6 @@ Tüm rolleri temel endpoint'lerle test eder.
 """
 
 import requests
-import json
 
 BASE_URL = 'http://localhost:5003'
 

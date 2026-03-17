@@ -1,6 +1,6 @@
 // Ported from legacy/admin-panel/frontend/src/types/index.ts
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     success: boolean;
     data?: T;
     error?: {

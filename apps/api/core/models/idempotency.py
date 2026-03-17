@@ -1,4 +1,5 @@
-from datetime import datetime
+from sqlalchemy import Column, Boolean, DateTime, Integer, String, Text
+from core.models.base import Base
 import json
 from uuid import uuid4
 
@@ -9,22 +10,22 @@ def _gen_id():
     return uuid4().hex
 
 
-class IdempotencyKey(db.Model):
+class IdempotencyKey(Base):
     __tablename__ = 'idempotency_keys'
 
-    id = db.Column(db.String(36), primary_key=True, default=_gen_id)
-    idempotency_key = db.Column(db.String(128), nullable=False)
-    endpoint = db.Column(db.String(256), nullable=False)
-    user_id = db.Column(db.String(128), nullable=True)
-    request_hash = db.Column(db.String(64), nullable=True)  # SHA256 hex digest
+    id = Column(String(36), primary_key=True, default=_gen_id)
+    idempotency_key = Column(String(128), nullable=False)
+    endpoint = Column(String(256), nullable=False)
+    user_id = Column(String(128), nullable=True)
+    request_hash = Column(String(64), nullable=True)  # SHA256 hex digest
 
-    processing = db.Column(db.Boolean, nullable=False, default=False)
-    status_code = db.Column(db.Integer, nullable=True)
-    response_json = db.Column(db.Text, nullable=True)
-    headers_json = db.Column(db.Text, nullable=True)
+    processing = Column(Boolean, nullable=False, default=False)
+    status_code = Column(Integer, nullable=True)
+    response_json = Column(Text, nullable=True)
+    headers_json = Column(Text, nullable=True)
 
-    created_at = db.Column(db.DateTime, default=now_utc, nullable=False)
-    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc, nullable=False)
+    created_at = Column(DateTime, default=now_utc, nullable=False)
+    updated_at = Column(DateTime, default=now_utc, onupdate=now_utc, nullable=False)
 
     __table_args__ = (
         db.UniqueConstraint('idempotency_key', 'endpoint', 'user_id', 'request_hash', name='uix_idempotency_full_context'),

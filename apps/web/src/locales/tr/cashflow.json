@@ -1,0 +1,133 @@
+{
+  "page": {
+    "title": "Kasa Hareketleri",
+    "description": "Gelir ve gider kayıtlarının yönetimi",
+    "eyebrow": "Finans",
+    "loading": "Kasa hareketleri yükleniyor...",
+    "not_found": "Kasa hareketi bulunamadı"
+  },
+  "form": {
+    "title_income": "Gelir Kaydı Ekle",
+    "title_expense": "Gider Kaydı Ekle",
+    "title_edit": "Kaydı Düzenle",
+    "amount": "Tutar",
+    "description": "Açıklama",
+    "date": "Tarih",
+    "category": "Kategori",
+    "payment_method": "Ödeme Yöntemi",
+    "reference": "Referans No",
+    "notes": "Notlar",
+    "party": "İlgili Kişi/Kurum",
+    "select_party": "Kişi/Kurum Seç",
+    "receipt": "Makbuz/Fiş",
+    "upload_receipt": "Makbuz Yükle",
+    "recurring": "Tekrarlayan",
+    "recurring_period": "Tekrar Periyodu",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "daily": "Günlük",
+    "weekly": "Haftalık",
+    "monthly": "Aylık",
+    "yearly": "Yıllık"
+  },
+  "table": {
+    "date": "Tarih",
+    "description": "Açıklama",
+    "category": "Kategori",
+    "amount": "Tutar",
+    "type": "Tür",
+    "payment_method": "Ödeme Yöntemi",
+    "party": "İlgili",
+    "reference": "Referans",
+    "actions": "İşlemler",
+    "no_records": "Kayıt bulunamadı",
+    "income": "Gelir",
+    "expense": "Gider"
+  },
+  "filters": {
+    "search_placeholder": "Açıklama veya referans ara...",
+    "all_types": "Tüm Türler",
+    "income": "Gelir",
+    "expense": "Gider",
+    "all_categories": "Tüm Kategoriler",
+    "all_payment_methods": "Tüm Ödeme Yöntemleri",
+    "start_date": "Başlangıç Tarihi",
+    "end_date": "Bitiş Tarihi",
+    "today": "Bugün",
+    "this_week": "Bu Hafta",
+    "this_month": "Bu Ay",
+    "this_year": "Bu Yıl",
+    "custom_range": "Özel Aralık"
+  },
+  "actions": {
+    "add_income": "Gelir Ekle",
+    "add_expense": "Gider Ekle",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "view": "Görüntüle",
+    "export": "Dışa Aktar",
+    "print": "Yazdır",
+    "duplicate": "Kopyala"
+  },
+  "messages": {
+    "record_created": "Kayıt oluşturuldu",
+    "record_updated": "Kayıt güncellendi",
+    "record_deleted": "Kayıt silindi",
+    "save_failed": "Kaydetme başarısız",
+    "delete_failed": "Silme başarısız",
+    "delete_confirm": "Bu kaydı silmek istediğinizden emin misiniz?",
+    "export_success": "Dışa aktarma tamamlandı",
+    "export_failed": "Dışa aktarma başarısız"
+  },
+  "record_types": {
+    "sale": "Satış",
+    "purchase": "Alış",
+    "refund": "İade",
+    "salary": "Maaş",
+    "rent": "Kira",
+    "utility": "Fatura",
+    "tax": "Vergi",
+    "insurance": "Sigorta",
+    "maintenance": "Bakım",
+    "other_income": "Diğer Gelir",
+    "other_expense": "Diğer Gider"
+  },
+  "detail": {
+    "title": "Kayıt Detayı",
+    "created_by": "Oluşturan",
+    "created_at": "Oluşturulma Tarihi",
+    "updated_at": "Güncellenme Tarihi",
+    "attachments": "Ekler",
+    "history": "Değişiklik Geçmişi"
+  },
+  "mobile": {
+    "swipe_to_delete": "Silmek için kaydırın",
+    "pull_to_refresh": "Yenilemek için çekin",
+    "quick_add": "Hızlı Ekle"
+  },
+  "export": {
+    "title": "Kasa Hareketleri Dışa Aktarma",
+    "format": "Format",
+    "date_range": "Tarih Aralığı",
+    "include_receipts": "Makbuzları Dahil Et",
+    "csv": "CSV",
+    "excel": "Excel",
+    "pdf": "PDF",
+    "export_button": "Dışa Aktar"
+  },
+  "product_search": {
+    "placeholder": "Ürün veya hizmet ara...",
+    "no_results": "Sonuç bulunamadı",
+    "add_custom": "Özel kalem ekle"
+  },
+  "stats": {
+    "total_income": "Toplam Gelir",
+    "total_expense": "Toplam Gider",
+    "net_cashflow": "Net Nakit Akışı",
+    "daily_average": "Günlük Ortalama",
+    "monthly_trend": "Aylık Trend",
+    "income_vs_expense": "Gelir vs Gider",
+    "top_categories": "En Çok Harcanan Kategoriler",
+    "cash_balance": "Kasa Bakiyesi"
+  }
+}

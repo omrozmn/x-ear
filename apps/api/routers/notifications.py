@@ -18,7 +18,6 @@ from schemas.notifications import NotificationCreate as NotificationCreateSchema
 from schemas.notifications import NotificationRead, NotificationUpdate, NotificationStats, NotificationSettings
 from models.notification import Notification
 from models.system import Settings
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Notifications"])
@@ -36,17 +35,22 @@ class NotificationSettingsUpdate(BaseModel):
 @router.post("/notifications", operation_id="createNotifications", status_code=201, response_model=ResponseEnvelope[NotificationRead])
 def create_notification(
     notif_in: NotificationCreateSchema,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Create a new notification"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        
+        tenant_id = get_effective_tenant_id(access)
+        
         data = notif_in.model_dump(by_alias=False)
         
         notif = Notification.from_dict(data)
         if not notif.id:
             notif.id = f"notif_{now_utc().strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}"
         notif.user_id = notif.user_id or data.get('user_id') or 'system'
+        notif.tenant_id = tenant_id
         
         db_session.add(notif)
         db_session.commit()
@@ -60,9 +64,9 @@ def create_notification(
 @router.get("/notifications", operation_id="listNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 def list_notifications(
     user_id: Optional[str] = Query(None, alias="user_id"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """List notifications for a user"""
@@ -99,7 +103,7 @@ def list_notifications(
 @router.put("/notifications/{notification_id}/read", operation_id="updateNotificationRead", response_model=ResponseEnvelope[NotificationRead])
 def mark_notification_read(
     notification_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Mark notification as read"""
@@ -127,7 +131,7 @@ def mark_notification_read(
 def update_notification(
     notification_id: str,
     notif_in: NotificationUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Update a notification"""
@@ -155,7 +159,7 @@ def update_notification(
 @router.get("/notifications/stats", operation_id="listNotificationStats", response_model=ResponseEnvelope[NotificationStats])
 def notification_stats(
     user_id: Optional[str] = Query(None, alias="user_id"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Get notification stats for a user"""
@@ -182,7 +186,7 @@ def notification_stats(
 @router.delete("/notifications/{notification_id}", operation_id="deleteNotification", response_model=ResponseEnvelope[None])
 def delete_notification(
     notification_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Delete a notification"""
@@ -208,7 +212,7 @@ def delete_notification(
 @router.get("/notifications/settings", operation_id="listNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def get_user_notification_settings(
     user_id: Optional[str] = Query(None, alias="user_id"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Get user notification settings"""

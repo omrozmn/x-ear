@@ -6,9 +6,10 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.VITE_BASE || '/',
   plugins: [
     react(),
-    TanStackRouterVite() as any,
+    TanStackRouterVite(),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
@@ -74,20 +75,27 @@ export default defineConfig({
     })
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@x-ear/core': path.resolve(__dirname, '../../packages/core/src'),
       '@x-ear/ui-web': path.resolve(__dirname, '../../packages/ui-web/src'),
       'react': path.resolve(__dirname, './node_modules/react'),
+      'react/jsx-runtime': path.resolve(__dirname, './node_modules/react/jsx-runtime.js'),
+      'react/jsx-dev-runtime': path.resolve(__dirname, './node_modules/react/jsx-dev-runtime.js'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      'react-dom/client': path.resolve(__dirname, './node_modules/react-dom/client.js'),
     },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
   },
   server: {
     port: 8082,
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:5003',
+        target: 'http://127.0.0.1:5003',
         changeOrigin: true,
         secure: false,
       },

@@ -1,4 +1,3 @@
-import pytest
 import uuid
 from core.models.user import User
 

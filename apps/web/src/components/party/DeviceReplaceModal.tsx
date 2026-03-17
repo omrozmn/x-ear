@@ -251,8 +251,8 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     if (invoiceId && invoiceStatus === 'gib_sent') {
       return (
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" className="px-3 py-1 text-sm bg-green-50 text-green-800 border border-green-100">
-            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+          <Button size="sm" variant="ghost" className="px-3 py-1 text-sm bg-success/10 text-success border border-green-100">
+            <CheckCircle className="w-4 h-4 mr-2 text-success" />
             GİB'e gönderildi
           </Button>
         </div>
@@ -346,24 +346,24 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         showFooter={false}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Mevcut Cihaz</h4>
-            <p className="text-sm text-gray-700">
+          <div className="bg-muted rounded-2xl p-4">
+            <h4 className="text-sm font-medium text-foreground mb-2">Mevcut Cihaz</h4>
+            <p className="text-sm text-foreground">
               <strong>{device.brand} {device.model}</strong>
             </p>
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Seri No: {device.serialNumber || '-'}
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Değişim Sebebi *
             </label>
             <select data-allow-raw="true"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring"
               required
             >
               <option value="defective">Arızalı</option>
@@ -376,28 +376,28 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Notlar
             </label>
             <textarea data-allow-raw="true"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               placeholder="Değişim ile ilgili notlar..."
             />
           </div>
 
           {errorError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{errorError}</p>
+            <div className="bg-destructive/10 border border-red-200 rounded-2xl p-3 flex items-start">
+              <AlertCircle className="w-5 h-5 text-destructive mr-2 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-destructive">{errorError}</p>
             </div>
           )}
 
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Talep Edilen Yeni Cihaz (Tedarikten alınacak)</h4>
-            <p className="text-xs text-gray-600 mb-2">Tedarikten temin etmek istediğiniz modeli seçin. Seri takip edilen ürünler için seri seçimi yapın.</p>
+          <div className="bg-muted rounded-2xl p-4">
+            <h4 className="text-sm font-medium text-foreground mb-2">Talep Edilen Yeni Cihaz (Tedarikten alınacak)</h4>
+            <p className="text-xs text-muted-foreground mb-2">Tedarikten temin etmek istediğiniz modeli seçin. Seri takip edilen ürünler için seri seçimi yapın.</p>
             <div className="mt-3">
               <ProductSearchInput
                 className="w-full"
@@ -425,10 +425,10 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
 
             {selectedInventory && (
               <div className="mt-3 grid grid-cols-1 gap-2">
-                <div className="text-sm text-gray-700">Barkod: <strong>{selectedInventory.barcode || selectedInventory.sku || '-'}</strong></div>
+                <div className="text-sm text-foreground">Barkod: <strong>{selectedInventory.barcode || selectedInventory.sku || '-'}</strong></div>
                 {(selectedInventory.availableSerials && selectedInventory.availableSerials.length > 0) && (
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Seri No Seçimi (mevcut)</label>
+                    <label className="block text-xs text-muted-foreground mb-1">Seri No Seçimi (mevcut)</label>
                     <select data-allow-raw="true" value={selectedSerial || ''} onChange={(e) => setSelectedSerial(e.target.value)} className="w-full px-3 py-2 border rounded">
                       <option value="">-- Seri seçin --</option>
                       {(selectedInventory.availableSerials || []).map((s) => (
@@ -441,16 +441,16 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             )}
           </div>
 
-          <div className="bg-white rounded-lg p-4 border">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Önceki Değişim Kayıtları</h4>
+          <div className="bg-card rounded-2xl p-4 border">
+            <h4 className="text-sm font-medium text-foreground mb-2">Önceki Değişim Kayıtları</h4>
             {actionMessage && (
-              <div className="mb-2 text-sm text-blue-700">{actionMessage}</div>
+              <div className="mb-2 text-sm text-primary">{actionMessage}</div>
             )}
 
             {loadingReplacements ? (
-              <div className="text-sm text-gray-500">Yükleniyor...</div>
+              <div className="text-sm text-muted-foreground">Yükleniyor...</div>
             ) : replacementsList.length === 0 ? (
-              <div className="text-sm text-gray-500">Bu hasta için değişim kaydı yok.</div>
+              <div className="text-sm text-muted-foreground">Bu hasta için değişim kaydı yok.</div>
             ) : (
               <ul className="space-y-3">
                 {replacementsList.map((rep) => (

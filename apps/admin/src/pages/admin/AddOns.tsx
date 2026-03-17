@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { z } from 'zod';
 
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -9,31 +9,134 @@ import {
     useUpdateAdminAddon,
     useDeleteAdminAddon,
 } from '@/lib/api-client';
+import type { AddonCreate, AddonListResponse, AddonRead, AddonUpdate, ListAdminAddonsParams } from '@/api/generated/schemas';
 
-// Local type definition (not exported from generated client)
 interface AddOn {
-    id?: string;
-    name?: string;
+    id: string;
+    name: string;
     slug?: string;
-    price?: number;
-    addon_type?: string;
-    is_active?: boolean;
+    price: number;
+    addonType?: string;
+    isActive?: boolean;
     description?: string;
-    limit_amount?: number;
-    unit_name?: string;
+    limitAmount?: number;
+    unitName?: string;
     currency?: string;
+    sector?: string;
+    countryCode?: string;
 }
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '@/components/ui/Pagination';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import { unwrapData } from '@/lib/orval-response';
+import { SectorCountryFilter, SectorCountryFormFields, getSectorLabel, getCountryLabel } from '@/components/ui/SectorCountryFilter';
+
+interface PaginationInfo {
+    totalPages?: number;
+    total?: number;
+}
+
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+        };
+    };
+}
+
+type AddonType = 'FLAT_FEE' | 'PER_USER' | 'USAGE_BASED';
+
+interface AddOnFormData {
+    name: string;
+    price: number;
+    description: string;
+    addon_type: AddonType;
+    is_active: boolean;
+    currency: string;
+    sector: string;
+    countryCode: string;
+}
+
+const addonFormSchema = z.object({
+    name: z.string().min(1, 'Eklenti adi gerekli'),
+    price: z.number().min(0, 'Fiyat 0 veya ustu olmali'),
+    addon_type: z.enum(['FLAT_FEE', 'PER_USER', 'USAGE_BASED'], { errorMap: () => ({ message: 'Gecerli bir tip secin' }) }),
+});
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    const apiError = error as ApiErrorLike;
+    return apiError.response?.data?.error?.message || fallback;
+}
+
+function isAddonRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function normalizeAddon(value: AddonRead | Record<string, unknown>): AddOn | null {
+    if (!isAddonRecord(value)) {
+        return null;
+    }
+
+    const id = typeof value.id === 'string' ? value.id : null;
+    const name = typeof value.name === 'string' ? value.name : null;
+    const price = typeof value.price === 'number' ? value.price : null;
+
+    if (!id || !name || price === null) {
+        return null;
+    }
+
+    return {
+        id,
+        name,
+        price,
+        slug: typeof value.slug === 'string' ? value.slug : undefined,
+        description: typeof value.description === 'string' ? value.description : undefined,
+        currency: typeof value.currency === 'string' ? value.currency : undefined,
+        addonType: typeof value.addonType === 'string' ? value.addonType : typeof value.addon_type === 'string' ? value.addon_type : undefined,
+        isActive: typeof value.isActive === 'boolean' ? value.isActive : typeof value.is_active === 'boolean' ? value.is_active : undefined,
+        limitAmount: typeof value.limitAmount === 'number' ? value.limitAmount : typeof value.limit_amount === 'number' ? value.limit_amount : undefined,
+        unitName: typeof value.unitName === 'string' ? value.unitName : typeof value.unit_name === 'string' ? value.unit_name : undefined,
+        sector: typeof value.sector === 'string' ? value.sector : undefined,
+        countryCode: typeof value.countryCode === 'string' ? value.countryCode : typeof value.country_code === 'string' ? value.country_code : undefined,
+    };
+}
+
+function getAddons(data: AddonListResponse | undefined): AddOn[] {
+    const responseData = unwrapData<Record<string, unknown>>(data);
+    if (!responseData || typeof responseData !== 'object' || !('addons' in responseData) || !Array.isArray(responseData.addons)) {
+        return [];
+    }
+
+    return responseData.addons
+        .map((addon) => normalizeAddon(addon as AddonRead | Record<string, unknown>))
+        .filter((addon): addon is AddOn => addon !== null);
+}
+
+function getPagination(data: AddonListResponse | undefined): PaginationInfo {
+    const responseData = unwrapData<Record<string, unknown>>(data);
+    if (!responseData || typeof responseData !== 'object' || !('pagination' in responseData) || !isAddonRecord(responseData.pagination)) {
+        return {};
+    }
+
+    return {
+        totalPages: typeof responseData.pagination.totalPages === 'number' ? responseData.pagination.totalPages : undefined,
+        total: typeof responseData.pagination.total === 'number' ? responseData.pagination.total : undefined,
+    };
+}
 
 const AddOns: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const queryClient = useQueryClient();
     const [page, setPage] = React.useState(1);
     const [limit, setLimit] = React.useState(10);
-    const { data: addonsData, isLoading, error } = useListAdminAddons({ page, limit } as any);
-    const addons = (addonsData as any)?.data?.addons || (addonsData as any)?.addons || [];
-    const pagination = (addonsData as any)?.data?.pagination || (addonsData as any)?.pagination;
+    const params: ListAdminAddonsParams = { page, limit };
+    const { data: addonsData, isLoading, error } = useListAdminAddons(params);
+    const addons = getAddons(addonsData);
+    const pagination = getPagination(addonsData);
 
     const { mutateAsync: createAddon } = useCreateAdminAddon();
     const { mutateAsync: updateAddon } = useUpdateAdminAddon();
@@ -43,13 +146,13 @@ const AddOns: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
     const [editingAddon, setEditingAddon] = React.useState<AddOn | null>(null);
     const [deletingAddonId, setDeletingAddonId] = React.useState<string | null>(null);
-    const [formData, setFormData] = React.useState<Partial<AddOn>>({
+    const [formData, setFormData] = React.useState<AddOnFormData>({
         name: '',
         price: 0,
         description: '',
-        limit_amount: 0,
-        unit_name: '',
+        addon_type: 'FLAT_FEE',
         is_active: true,
+        currency: 'TRY',
     });
     const [isStatusModalOpen, setIsStatusModalOpen] = React.useState(false);
     const [statusAddon, setStatusAddon] = React.useState<AddOn | null>(null);
@@ -60,8 +163,9 @@ const AddOns: React.FC = () => {
             setFormData({
                 name: addon.name || '',
                 price: addon.price || 0,
-                addon_type: (addon.addon_type as any) || 'FLAT_FEE',
-                is_active: addon.is_active ?? true,
+                description: addon.description || '',
+                addon_type: (addon.addonType || 'FLAT_FEE') as AddonType,
+                is_active: addon.isActive ?? true,
                 currency: addon.currency || 'TRY'
             });
         } else {
@@ -69,6 +173,7 @@ const AddOns: React.FC = () => {
             setFormData({
                 name: '',
                 price: 0,
+                description: '',
                 addon_type: 'FLAT_FEE',
                 is_active: true,
                 currency: 'TRY'
@@ -82,23 +187,40 @@ const AddOns: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+
+        const validation = addonFormSchema.safeParse(formData);
+        if (!validation.success) {
+            toast.error(validation.error.errors[0].message);
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
+            const payload: AddonCreate | AddonUpdate = {
+                name: formData.name,
+                price: formData.price,
+                description: formData.description,
+                addonType: formData.addon_type,
+                isActive: formData.is_active,
+                currency: formData.currency,
+            };
+
             if (editingAddon) {
                 await updateAddon({
-                    addonId: editingAddon.id!,
-                    data: formData as any
+                    addonId: editingAddon.id,
+                    data: payload
                 });
                 toast.success('Eklenti güncellendi');
             } else {
                 await createAddon({
-                    data: formData as any
+                    data: payload as AddonCreate
                 });
                 toast.success('Eklenti oluşturuldu');
             }
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             setIsModalOpen(false);
-        } catch (e: any) {
-            toast.error(e.response?.data?.error?.message || 'İşlem başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'İşlem başarısız'));
         } finally {
             setIsSubmitting(false);
         }
@@ -117,8 +239,8 @@ const AddOns: React.FC = () => {
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             toast.success('Eklenti silindi');
             setIsDeleteModalOpen(false);
-        } catch (e: any) {
-            toast.error(e.response?.data?.error?.message || 'Silme başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Silme başarısız'));
         } finally {
             setIsSubmitting(false);
         }
@@ -131,105 +253,125 @@ const AddOns: React.FC = () => {
 
     const confirmStatusChange = async () => {
         if (!statusAddon?.id) return;
+        if (!statusAddon.name) return;
         setIsSubmitting(true);
         try {
             await updateAddon({
                 addonId: statusAddon.id,
                 data: {
-                    name: statusAddon.name!,
-                    price: statusAddon.price!,
-                    isActive: !statusAddon.is_active
+                    name: statusAddon.name,
+                    price: statusAddon.price,
+                    isActive: !(statusAddon.isActive ?? false)
                 }
             });
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             toast.success('Eklenti durumu güncellendi');
             setIsStatusModalOpen(false);
-        } catch (e: any) {
-            toast.error(e.response?.data?.error?.message || 'Güncelleme başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    const columns = [
+        {
+            key: 'name',
+            header: 'İsim',
+            render: (addon: AddOn) => (
+                <div>
+                    <div className="font-medium text-gray-900 dark:text-white">{addon.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{addon.slug}</div>
+                </div>
+            )
+        },
+        {
+            key: 'addon_type',
+            header: 'Tip',
+            mobileHidden: true,
+            render: (addon: AddOn) => (
+                <span className="text-gray-500 dark:text-gray-400">{addon.addonType}</span>
+            )
+        },
+        {
+            key: 'price',
+            header: 'Fiyat (TRY)',
+            render: (addon: AddOn) => (
+                <span className="text-gray-900 dark:text-white">{addon.price?.toLocaleString('tr-TR') ?? '-'} TL</span>
+            )
+        },
+        {
+            key: 'is_active',
+            header: 'Durum',
+            render: (addon: AddOn) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(addon.isActive) ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
+                    {(addon.isActive) ? 'Aktif' : 'Pasif'}
+                </span>
+            )
+        },
+        {
+            key: 'actions',
+            header: 'İşlemler',
+            render: (addon: AddOn) => (
+                <div className="flex justify-end space-x-2">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleStatusChangeClick(addon); }}
+                        className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 touch-feedback ${(addon.isActive)
+                            ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500 dark:bg-yellow-900 dark:text-yellow-200'
+                            : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500 dark:bg-green-900 dark:text-green-200'
+                            }`}
+                        title={(addon.isActive) ? 'Pasif Yap' : 'Aktif Yap'}
+                    >
+                        {(addon.isActive) ? 'Pasife Al' : 'Aktifleştir'}
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleOpenModal(addon); }}
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 touch-feedback"
+                        title="Düzenle"
+                    >
+                        <PencilIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(addon.id); }}
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 touch-feedback"
+                        title="Sil"
+                    >
+                        <TrashIcon className="h-4 w-4" />
+                    </button>
+                </div>
+            )
+        }
+    ];
 
     return (
         <>
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-semibold text-gray-900">Eklentiler (Add-ons)</h1>
-                        <p className="mt-1 text-sm text-gray-500">Ek paketleri ve özellikleri yönetin</p>
+                        <h1 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Eklentiler (Add-ons)</h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Ek paketleri ve özellikleri yönetin</p>
                     </div>
                     <button
                         onClick={() => handleOpenModal()}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
                     >
                         <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                        Eklenti Ekle
+                        {!isMobile && 'Eklenti Ekle'}
                     </button>
                 </div>
 
                 {isLoading ? (
-                    <div className="p-6 text-center">Yükleniyor...</div>
+                    <div className="p-6 text-center text-gray-500 dark:text-gray-400">Yükleniyor...</div>
                 ) : error ? (
-                    <div className="p-6 text-center text-red-600">Eklentiler yüklenirken hata oluştu</div>
+                    <div className="p-6 text-center text-red-600 dark:text-red-400">Eklentiler yüklenirken hata oluştu</div>
                 ) : (
-                    <div className="bg-white shadow rounded-lg overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İsim</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tip</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat (TRY)</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {addons.map((addon: any) => (
-                                    <tr key={addon.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <div className="font-medium">{addon.name}</div>
-                                            <div className="text-xs text-gray-500">{addon.slug}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{addon.addon_type}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{addon.price?.toLocaleString('tr-TR') ?? '-'} TL</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${addon.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                {addon.is_active ? 'Aktif' : 'Pasif'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end space-x-2">
-                                                <button
-                                                    onClick={() => handleStatusChangeClick(addon)}
-                                                    className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${addon.is_active
-                                                        ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500'
-                                                        : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500'
-                                                        }`}
-                                                    title={addon.is_active ? 'Pasif Yap' : 'Aktif Yap'}
-                                                >
-                                                    {addon.is_active ? 'Pasife Al' : 'Aktifleştir'}
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenModal(addon)}
-                                                    className="text-blue-600 hover:text-blue-900"
-                                                    title="Düzenle"
-                                                >
-                                                    <PencilIcon className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(addon.id!)}
-                                                    className="text-red-600 hover:text-red-900"
-                                                    title="Sil"
-                                                >
-                                                    <TrashIcon className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
+                        <ResponsiveTable
+                            data={addons}
+                            columns={columns}
+                            keyExtractor={(addon: AddOn) => addon.id}
+                            emptyMessage="Eklenti bulunamadı."
+                        />
                         <Pagination
                             currentPage={page}
                             totalPages={pagination?.totalPages || 1}
@@ -257,7 +399,7 @@ const AddOns: React.FC = () => {
                                     id="addon-name"
                                     type="text"
                                     required
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
@@ -269,7 +411,7 @@ const AddOns: React.FC = () => {
                                     type="number"
                                     required
                                     min="0"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                     value={formData.price}
                                     onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                                 />
@@ -278,9 +420,9 @@ const AddOns: React.FC = () => {
                                 <label htmlFor="addon-type" className="block text-sm font-medium text-gray-700">Tip</label>
                                 <select
                                     id="addon-type"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                     value={formData.addon_type}
-                                    onChange={(e) => setFormData({ ...formData, addon_type: e.target.value as any })}
+                                    onChange={(e) => setFormData({ ...formData, addon_type: e.target.value as AddonType })}
                                 >
                                     <option value="FLAT_FEE">Sabit Ücret</option>
                                     <option value="PER_USER">Kullanıcı Başına</option>
@@ -291,7 +433,7 @@ const AddOns: React.FC = () => {
                                 <Dialog.Close asChild>
                                     <button
                                         type="button"
-                                        className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                        className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                                     >
                                         İptal
                                     </button>
@@ -299,7 +441,7 @@ const AddOns: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="inline-flex justify-center rounded-xl border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting ? 'İşleniyor...' : (editingAddon ? 'Güncelle' : 'Oluştur')}
                                 </button>
@@ -332,7 +474,7 @@ const AddOns: React.FC = () => {
                             <Dialog.Close asChild>
                                 <button
                                     type="button"
-                                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                    className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                                 >
                                     İptal
                                 </button>
@@ -340,7 +482,7 @@ const AddOns: React.FC = () => {
                             <button
                                 onClick={handleConfirmDelete}
                                 disabled={isSubmitting}
-                                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex justify-center rounded-xl border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? 'Siliniyor...' : 'Sil'}
                             </button>
@@ -369,13 +511,13 @@ const AddOns: React.FC = () => {
                             </Dialog.Title>
                         </div>
                         <div className="mb-6 text-sm text-gray-500">
-                            Bu eklentinin durumunu <strong>{statusAddon?.is_active ? 'Pasif' : 'Aktif'}</strong> olarak değiştirmek istediğinize emin misiniz?
+                            Bu eklentinin durumunu <strong>{statusAddon?.isActive ? 'Pasif' : 'Aktif'}</strong> olarak değiştirmek istediğinize emin misiniz?
                         </div>
                         <div className="flex justify-end space-x-3">
                             <Dialog.Close asChild>
                                 <button
                                     type="button"
-                                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                    className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                                 >
                                     İptal
                                 </button>
@@ -383,7 +525,7 @@ const AddOns: React.FC = () => {
                             <button
                                 onClick={confirmStatusChange}
                                 disabled={isSubmitting}
-                                className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex justify-center rounded-xl border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? 'Güncelleniyor...' : 'Onayla'}
                             </button>

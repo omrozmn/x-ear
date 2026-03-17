@@ -11,6 +11,7 @@ import type { AddonReadSlug } from './addonReadSlug';
 import type { AddonReadDescription } from './addonReadDescription';
 import type { AddonReadUnitName } from './addonReadUnitName';
 import type { AddonReadLimitAmount } from './addonReadLimitAmount';
+import type { AddonReadFeatures } from './addonReadFeatures';
 
 /**
  * Schema for reading an addon
@@ -28,7 +29,7 @@ export interface AddonRead {
   slug?: AddonReadSlug;
   /** Addon description */
   description?: AddonReadDescription;
-  /** Addon type */
+  /** Addon type (PER_USER, FLAT_FEE, USAGE_BASED) */
   addonType?: string;
   /** Addon price */
   price: number;
@@ -40,6 +41,8 @@ export interface AddonRead {
   limitAmount?: AddonReadLimitAmount;
   /** Is addon active */
   isActive?: boolean;
+  /** Addon features */
+  features?: AddonReadFeatures;
   /** Number of tenants using this addon */
   tenantCount?: number;
 }

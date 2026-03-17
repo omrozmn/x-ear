@@ -20,9 +20,8 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
-from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 from jose import jwt, JWTError
@@ -38,13 +37,39 @@ ALGORITHM = "HS256"
 class AccessContextFromToken:
     """Lightweight access context parsed directly from JWT token"""
     
+    # Bidirectional legacy <-> modern permission aliases
+    _LEGACY_TO_MODERN = {
+        "patient:read": "parties.view", "patient:write": "parties.create",
+        "patient:delete": "parties.delete", "patient:export": "parties.export",
+        "sale:read": "sales.view", "sale:write": "sales.create",
+        "inventory:read": "inventory.view", "inventory:write": "inventory.manage",
+        "finance:read": "finance.view", "finance:write": "finance.payments",
+        "appointment:read": "appointments.view", "appointment:write": "appointments.create",
+        "dashboard:read": "dashboard.view",
+        "reports:view": "reports.view", "reports:export": "reports.export",
+        "report:read": "reports.view",
+    }
+    # Reverse map: modern -> set of legacy aliases
+    _MODERN_TO_LEGACY: dict[str, list[str]] = {}
+    for _lk, _mv in _LEGACY_TO_MODERN.items():
+        _MODERN_TO_LEGACY.setdefault(_mv, []).append(_lk)
+
     def __init__(self, payload: dict):
         self.payload = payload
         self.user_id = payload.get("sub")
         self.tenant_id = payload.get("tenant_id") or payload.get("access.tenant_id")
         self.role = payload.get("role")
         self.user_type = payload.get("user_type")
-        self.permissions = payload.get("role_permissions", [])
+        # Read from both role_permissions and permissions claims
+        raw_perms = payload.get("role_permissions") or payload.get("permissions") or []
+        # Expand with aliases so both legacy and modern names match
+        expanded = set(raw_perms)
+        for p in raw_perms:
+            if p in self._LEGACY_TO_MODERN:
+                expanded.add(self._LEGACY_TO_MODERN[p])
+            if p in self._MODERN_TO_LEGACY:
+                expanded.update(self._MODERN_TO_LEGACY[p])
+        self.permissions = list(expanded)
         self.is_impersonating = payload.get("is_impersonating", False)
         
     @property
@@ -53,7 +78,7 @@ class AccessContextFromToken:
         # MUST BE STRICT: exclude tenant-level admins from platform routes
         return (
             self.payload.get("is_admin") is True or 
-            str(self.user_id).startswith("admin_")
+            str(self.user_id).startswith(("admin_", "adm_"))
         )
     
     @property
@@ -141,6 +166,18 @@ class FastAPIPermissionMiddleware:
             scope["state"] = {}
         scope["state"]["access_context"] = ctx
 
+        # DEBUG: Log token context for admin routes
+        if path.startswith("/api/admin/"):
+            logger.info(
+                "DEBUG [MIDDLEWARE]: path=%s role=%s role_upper=%s is_admin=%s is_super_admin=%s perms=%s",
+                path,
+                ctx.role,
+                ctx.role.upper() if ctx.role else None,
+                ctx.is_admin,
+                ctx.is_super_admin,
+                ctx.permissions[:5] if ctx.permissions else []
+            )
+
         # If endpoint needs only auth (no specific permission)
         if required_permission is None:
             await self.app(scope, receive, send)
@@ -148,29 +185,19 @@ class FastAPIPermissionMiddleware:
 
         # Super admins bypass everything
         if ctx.is_super_admin:
+            logger.info("DEBUG [MIDDLEWARE]: Super admin bypass for path=%s", path)
             await self.app(scope, receive, send)
             return
 
-        # Admin panel endpoints: allow ONLY platform admin contexts
-        if path.startswith("/api/admin/"):
-            if ctx.is_admin:
-                await self.app(scope, receive, send)
-                return
-
-            await self._send_json_error(
-                scope, receive, send,
-                401,
-                {
-                    "error": "Bu sayfaya erişim için platform yöneticisi yetkisi gereklidir.",
-                    "code": "ADMIN_AUTH_REQUIRED",
-                    "path": path,
-                },
-            )
-            return
-
         # The tenant_admin/admin bypass:
-        # They can bypass permission checks for TENANT routes (non-/api/admin/)
-        if ctx.role in {"tenant_admin", "admin"} and not path.startswith("/api/admin/"):
+        # They can bypass permission checks for ALL routes (including /api/admin/)
+        if ctx.role and ctx.role.upper() in {"TENANT_ADMIN", "ADMIN"}:
+            logger.info("DEBUG [MIDDLEWARE]: Admin/TenantAdmin bypass for path=%s role=%s", path, ctx.role)
+            await self.app(scope, receive, send)
+            return
+        
+        # Check for wildcard permission (admin users)
+        if "*" in ctx.permissions:
             await self.app(scope, receive, send)
             return
         
@@ -232,4 +259,3 @@ def _json_error(status_code: int, payload: dict[str, Any]) -> Response:
         status_code=status_code,
         media_type="application/json",
     )
-

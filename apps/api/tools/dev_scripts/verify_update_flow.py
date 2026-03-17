@@ -4,15 +4,13 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 import sys
 import os
-import json
 import uuid
-from datetime import datetime
 
 # Setup Flask context
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from app import app
 from models.base import db
-from models.sales import DeviceAssignment, Sale
+from models.sales import DeviceAssignment
 from models.patient import Patient
 
 def verify_update_flow():

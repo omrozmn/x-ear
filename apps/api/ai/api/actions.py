@@ -21,19 +21,22 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from pydantic import BaseModel, Field
 
+from sqlalchemy.orm import Session
+
+from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 from ai.config import get_ai_config, AIPhase
+from ai.models.ai_action import AIAction as AIActionModel, ActionStatus
 from ai.agents.action_planner import (
-    ActionPlanner,
     get_action_planner,
     ActionPlannerResult,
     PlannerStatus,
     ActionPlan,
 )
 from ai.agents.executor import (
-    Executor,
     get_executor,
     ExecutionResult,
     ExecutorStatus,
@@ -45,19 +48,13 @@ from ai.services.kill_switch import (
     AICapability,
     KillSwitchActiveError,
 )
-from ai.services.usage_tracker import get_usage_tracker
-from ai.models.ai_usage import UsageType
 from ai.services.approval_gate import (
-    ApprovalGate,
     get_approval_gate,
     ApprovalRequest,
-    ApprovalResult,
-    ApprovalDecision,
 )
 from ai.utils.approval_token import (
     ApprovalToken,
     validate_approval_token,
-    _compute_action_plan_hash,
 )
 from ai.middleware.rate_limiter import check_rate_limit, RateLimitExceededError
 from ai.api.errors import (
@@ -174,40 +171,54 @@ class GetActionResponse(BaseModel):
 
 
 # =============================================================================
-# In-memory storage for actions (in production, use database)
+# DB-backed storage for actions
 # =============================================================================
 
-_actions_store: Dict[str, Dict[str, Any]] = {}
+def _store_action(db: Session, action_id: str, data: Dict[str, Any]) -> None:
+    """Store action data in database."""
+    plan = data.get("plan")
+    action = AIActionModel(
+        id=action_id,
+        request_id=data.get("request_id", action_id),
+        tenant_id=data["tenant_id"],
+        user_id=data["user_id"],
+        action_plan=plan.to_dict() if plan and hasattr(plan, "to_dict") else {},
+        action_plan_hash=plan.plan_hash if plan and hasattr(plan, "plan_hash") else "",
+        tool_schema_versions=plan.tool_schema_versions if plan and hasattr(plan, "tool_schema_versions") else {},
+        risk_level=plan.overall_risk_level.value if plan and hasattr(plan, "overall_risk_level") else "low",
+        status=data.get("status", ActionStatus.DRAFT.value),
+        approval_expires_at=plan.approval_expires_at if plan and hasattr(plan, "approval_expires_at") else None,
+    )
+    db.merge(action)
+    db.commit()
 
 
-def _store_action(action_id: str, data: Dict[str, Any]) -> None:
-    """Store action data."""
-    _actions_store[action_id] = data
-
-
-def _get_action(action_id: str) -> Optional[Dict[str, Any]]:
-    """Get action data."""
-    return _actions_store.get(action_id)
-
-
-def _update_action(action_id: str, updates: Dict[str, Any]) -> None:
-    """Update action data."""
-    if action_id in _actions_store:
-        _actions_store[action_id].update(updates)
-
-
-# =============================================================================
-# Dependencies
-# =============================================================================
-
-async def get_current_user_context() -> Dict[str, Any]:
-    """Get current user context from request."""
-    # TODO: Integrate with actual auth system
+def _get_action(db: Session, action_id: str) -> Optional[Dict[str, Any]]:
+    """Get action data from database."""
+    action = db.query(AIActionModel).filter(AIActionModel.id == action_id).first()
+    if not action:
+        return None
     return {
-        "user_id": "user_placeholder",
-        "tenant_id": "tenant_placeholder",
-        "permissions": {"reports:read", "feature_flags:write"},
+        "plan_db": action,
+        "tenant_id": action.tenant_id,
+        "user_id": action.user_id,
+        "status": action.status,
+        "created_at": action.created_at.isoformat() if action.created_at else "",
+        "approval_status": action.status if action.status in ("approved", "rejected", "pending_approval") else None,
+        "execution_result": action.execution_result,
     }
+
+
+def _update_action(db: Session, action_id: str, updates: Dict[str, Any]) -> None:
+    """Update action data in database."""
+    action = db.query(AIActionModel).filter(AIActionModel.id == action_id).first()
+    if action:
+        for key, value in updates.items():
+            if key == "status" and hasattr(value, "value"):
+                value = value.value
+            if hasattr(action, key):
+                setattr(action, key, value)
+        db.commit()
 
 
 # =============================================================================
@@ -226,30 +237,36 @@ async def get_current_user_context() -> Dict[str, Any]:
     summary="Create an action plan from intent",
     description="""
     Generate an action plan from a classified intent.
-    
+
     The endpoint:
     1. Validates the intent
     2. Maps intent to Tool API operations
     3. Calculates risk levels
     4. Generates approval token if required
-    
+
     High-risk actions require approval before execution.
     """,
 )
 async def create_action(
     request: CreateActionRequest,
-    user_context: Dict[str, Any] = Depends(get_current_user_context),
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
 ) -> CreateActionResponse:
     """Create an action plan from intent."""
     start_time = time.time()
     request_id = f"act_{uuid4().hex[:16]}"
-    
-    tenant_id = user_context.get("tenant_id", "unknown")
-    user_id = user_context.get("user_id", "unknown")
-    user_permissions: Set[str] = set(user_context.get("permissions", []))
+
+    tenant_id = access.tenant_id
+    user_id = access.user_id
+    if not tenant_id or not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required: missing tenant_id or user_id",
+        )
+    user_permissions: Set[str] = access.permissions or set()
     
     logger.info(
-        f"Create action request received",
+        "Create action request received",
         extra={
             "request_id": request_id,
             "tenant_id": tenant_id,
@@ -307,7 +324,7 @@ async def create_action(
             confidence=request.intent.confidence,
             entities=request.intent.entities,
         )
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_error_response(
@@ -396,15 +413,15 @@ async def create_action(
         )
         approval_result = approval_gate.evaluate(approval_request)
         if approval_result.approval_token:
-            approval_token = approval_result.approval_token.encode()
+            approval_token = approval_result.approval_token if isinstance(approval_result.approval_token, str) else approval_result.approval_token.encode()
     
-    # Store action for later retrieval
-    _store_action(plan.plan_id, {
+    # Store action in database
+    _store_action(db, plan.plan_id, {
         "plan": plan,
         "tenant_id": tenant_id,
         "user_id": user_id,
+        "request_id": request_id,
         "status": "pending_approval" if plan.requires_approval else "ready",
-        "created_at": datetime.now(timezone.utc).isoformat(),
     })
     
     # Build step responses
@@ -451,12 +468,15 @@ async def create_action(
 )
 async def get_action(
     action_id: str = Path(..., description="Action identifier"),
-    user_context: Dict[str, Any] = Depends(get_current_user_context),
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
 ) -> GetActionResponse:
     """Get details of an action."""
-    tenant_id = user_context.get("tenant_id", "unknown")
-    
-    action_data = _get_action(action_id)
+    tenant_id = access.tenant_id
+    if not tenant_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
+
+    action_data = _get_action(db, action_id)
     if not action_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -476,30 +496,33 @@ async def get_action(
             ).model_dump(),
         )
     
-    plan: ActionPlan = action_data.get("plan")
+    action_db: AIActionModel = action_data.get("plan_db")
+    plan_dict = action_db.action_plan if action_db else {}
+    steps_data = plan_dict.get("steps", []) if plan_dict else []
+
     step_responses = [
         AiActionStepResponse(
-            step_number=step.step_number,
-            tool_name=step.tool_name,
-            tool_schema_version=step.tool_schema_version,
-            parameters=step.parameters,
-            description=step.description,
-            risk_level=step.risk_level.value,
-            requires_approval=step.requires_approval,
+            step_number=s.get("stepNumber", i + 1),
+            tool_name=s.get("toolName", ""),
+            tool_schema_version=s.get("toolSchemaVersion", ""),
+            parameters=s.get("parameters", {}),
+            description=s.get("description", ""),
+            risk_level=s.get("riskLevel", "low"),
+            requires_approval=s.get("requiresApproval", False),
         )
-        for step in plan.steps
-    ] if plan else []
-    
+        for i, s in enumerate(steps_data)
+    ]
+
     plan_response = AiActionPlanResponse(
-        plan_id=plan.plan_id,
+        plan_id=action_id,
         status=action_data.get("status", "unknown"),
         steps=step_responses,
-        overall_risk_level=plan.overall_risk_level.value,
-        requires_approval=plan.requires_approval,
-        plan_hash=plan.plan_hash,
-        created_at=plan.created_at.isoformat(),
-    ) if plan else None
-    
+        overall_risk_level=action_db.risk_level if action_db else "low",
+        requires_approval=action_db.risk_level in ("high", "critical") if action_db else False,
+        plan_hash=action_db.action_plan_hash if action_db else "",
+        created_at=action_data.get("created_at", ""),
+    ) if action_db else None
+
     return GetActionResponse(
         action_id=action_id,
         status=action_data.get("status", "unknown"),
@@ -523,13 +546,16 @@ async def get_action(
 async def approve_action(
     action_id: str = Path(..., description="Action identifier"),
     request: ApproveActionRequest = ...,
-    user_context: Dict[str, Any] = Depends(get_current_user_context),
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
 ) -> ApproveActionResponse:
     """Approve an action for execution."""
-    tenant_id = user_context.get("tenant_id", "unknown")
-    user_id = user_context.get("user_id", "unknown")
+    tenant_id = access.tenant_id
+    user_id = access.user_id
+    if not tenant_id or not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
     
-    action_data = _get_action(action_id)
+    action_data = _get_action(db, action_id)
     if not action_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -538,7 +564,7 @@ async def approve_action(
                 message=f"Action {action_id} not found",
             ).model_dump(),
         )
-    
+
     # Check tenant access
     if action_data.get("tenant_id") != tenant_id:
         raise HTTPException(
@@ -548,9 +574,9 @@ async def approve_action(
                 message=f"Action {action_id} not found",
             ).model_dump(),
         )
-    
-    plan: ActionPlan = action_data.get("plan")
-    if not plan:
+
+    plan_db: AIActionModel = action_data.get("plan_db")
+    if not plan_db:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_error_response(
@@ -574,7 +600,7 @@ async def approve_action(
     # Validate token against current plan
     validation = validate_approval_token(
         token=token,
-        action_plan=plan.to_dict(),
+        action_plan=plan_db.action_plan,
         consume=True,
         expected_action_id=action_id,
     )
@@ -594,12 +620,11 @@ async def approve_action(
             ).model_dump(),
         )
     
-    # Update action status
-    _update_action(action_id, {
-        "status": "approved",
-        "approval_status": "approved",
+    # Update action status in database
+    _update_action(db, action_id, {
+        "status": ActionStatus.APPROVED.value,
         "approved_by": user_id,
-        "approved_at": datetime.now(timezone.utc).isoformat(),
+        "approved_at": datetime.now(timezone.utc),
     })
     
     return ApproveActionResponse(
@@ -624,16 +649,19 @@ async def approve_action(
 async def execute_action(
     action_id: str = Path(..., description="Action identifier"),
     request: ExecuteActionRequest = ...,
-    user_context: Dict[str, Any] = Depends(get_current_user_context),
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
 ) -> ExecuteActionResponse:
     """Execute an action plan."""
     start_time = time.time()
     request_id = f"exec_{uuid4().hex[:16]}"
+
+    tenant_id = access.tenant_id
+    user_id = access.user_id
+    if not tenant_id or not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
     
-    tenant_id = user_context.get("tenant_id", "unknown")
-    user_id = user_context.get("user_id", "unknown")
-    
-    action_data = _get_action(action_id)
+    action_data = _get_action(db, action_id)
     if not action_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -643,7 +671,7 @@ async def execute_action(
                 request_id=request_id,
             ).model_dump(),
         )
-    
+
     # Check tenant access
     if action_data.get("tenant_id") != tenant_id:
         raise HTTPException(
@@ -654,8 +682,8 @@ async def execute_action(
                 request_id=request_id,
             ).model_dump(),
         )
-    
-    plan: ActionPlan = action_data.get("plan")
+
+    plan: ActionPlan = action_data.get("plan_db")
     if not plan:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -721,8 +749,8 @@ async def execute_action(
             ).model_dump(),
         )
     
-    # Update action status
-    _update_action(action_id, {
+    # Update action status in database
+    _update_action(db, action_id, {
         "status": result.status.value,
         "execution_result": result.to_dict(),
     })

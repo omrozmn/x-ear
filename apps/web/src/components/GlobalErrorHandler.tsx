@@ -1,32 +1,12 @@
-import React, { createContext, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Toast } from './ErrorMessage';
 import { getErrorMessage, isNetworkError, isUnauthorizedError } from '../hooks/useErrorHandler';
-
-interface GlobalErrorContextType {
-  showError: (error: unknown, options?: ErrorOptions) => void;
-  showSuccess: (message: string, options?: Omit<ErrorOptions, 'type'>) => void;
-  showWarning: (message: string, options?: Omit<ErrorOptions, 'type'>) => void;
-  showInfo: (message: string, options?: Omit<ErrorOptions, 'type'>) => void;
-  clearError: (id: string) => void;
-  clearAllErrors: () => void;
-}
-
-interface ErrorOptions {
-  title?: string;
-  type?: 'error' | 'warning' | 'info' | 'success';
-  duration?: number; // Auto-dismiss after duration (ms), 0 = no auto-dismiss
-  persistent?: boolean; // Don't auto-dismiss
-  onRetry?: () => void;
-  retryText?: string;
-}
-
-interface ErrorNotification extends ErrorOptions {
-  id: string;
-  message: string;
-  timestamp: Date;
-}
-
-const GlobalErrorContext = createContext<GlobalErrorContextType | undefined>(undefined);
+import {
+  GlobalErrorContext,
+  type GlobalErrorContextType,
+  type ErrorOptions,
+  type ErrorNotification
+} from '../contexts/GlobalErrorContextType';
 
 export const GlobalErrorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<ErrorNotification[]>([]);
@@ -121,7 +101,7 @@ export const GlobalErrorProvider: React.FC<{ children: React.ReactNode }> = ({ c
   return (
     <GlobalErrorContext.Provider value={contextValue}>
       {children}
-      
+
       {/* Render notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {notifications.map((notification) => (

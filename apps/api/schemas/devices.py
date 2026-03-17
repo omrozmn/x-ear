@@ -2,7 +2,6 @@
 Device Schemas - Pydantic models for Device domain
 """
 from typing import Optional, List
-from datetime import datetime
 from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
@@ -36,9 +35,9 @@ class DeviceBase(AppBaseModel):
     status: str = Field("available", description="Device status")
     
     # Pricing
-    price: float = Field(0.0, description="Sale price")
-    cost: float = Field(0.0, description="Cost price")
-    kdv_rate: float = Field(20.0, alias="kdvRate", description="VAT rate")
+    price: Optional[float] = Field(0.0, description="Sale price")
+    cost: Optional[float] = Field(0.0, description="Cost price")
+    kdv_rate: Optional[float] = Field(20.0, alias="kdvRate", description="VAT rate")
     
     # Features
     features: List[str] = Field(default=[], description="Device features")

@@ -43,18 +43,18 @@ export interface ChatMessageProps {
 const ROLE_STYLES = {
   user: {
     container: 'justify-end',
-    bubble: 'bg-blue-600 text-white rounded-br-sm',
-    label: 'text-right text-gray-500',
+    bubble: 'bg-primary text-primary-foreground rounded-br-sm',
+    label: 'text-right text-muted-foreground',
   },
   assistant: {
     container: 'justify-start',
-    bubble: 'bg-gray-100 text-gray-900 rounded-bl-sm',
-    label: 'text-left text-gray-500',
+    bubble: 'bg-muted text-foreground rounded-bl-sm',
+    label: 'text-left text-muted-foreground',
   },
   system: {
     container: 'justify-center',
-    bubble: 'bg-yellow-50 text-yellow-800 border border-yellow-200 text-center',
-    label: 'text-center text-gray-400',
+    bubble: 'bg-warning/10 text-warning-foreground border border-warning/20 text-center',
+    label: 'text-center text-muted-foreground',
   },
 };
 
@@ -165,14 +165,14 @@ interface IntentIndicatorProps {
 function IntentIndicator({ intentType, confidence }: IntentIndicatorProps): React.ReactElement {
   const confidencePercent = Math.round(confidence * 100);
   const confidenceColor = confidence >= 0.8
-    ? 'text-green-600'
+    ? 'text-success'
     : confidence >= 0.5
       ? 'text-yellow-600'
-      : 'text-red-600';
+      : 'text-destructive';
 
   return (
-    <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-      <span className="bg-gray-200 px-1.5 py-0.5 rounded text-gray-600">
+    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+      <span className="bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
         {intentType}
       </span>
       <span className={confidenceColor}>
@@ -180,6 +180,89 @@ function IntentIndicator({ intentType, confidence }: IntentIndicatorProps): Reac
       </span>
     </div>
   );
+}
+
+// =============================================================================
+// Markdown Rendering
+// =============================================================================
+
+function renderMarkdownContent(content: string): React.ReactNode {
+  // Split into lines for list detection
+  const lines = content.split('\n');
+  const elements: React.ReactNode[] = [];
+  let currentList: { type: 'ul' | 'ol'; items: string[] } | null = null;
+
+  const processInline = (text: string): React.ReactNode[] => {
+    const parts: React.ReactNode[] = [];
+    // Process bold, italic, code inline, and links
+    const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`|(https?:\/\/[^\s]+))/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      if (match[2]) {
+        parts.push(<strong key={match.index} className="font-semibold">{match[2]}</strong>);
+      } else if (match[3]) {
+        parts.push(<em key={match.index}>{match[3]}</em>);
+      } else if (match[4]) {
+        parts.push(<code key={match.index} className="px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 text-[0.85em] font-mono">{match[4]}</code>);
+      } else if (match[5]) {
+        parts.push(<a key={match.index} href={match[5]} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">{match[5]}</a>);
+      }
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+    return parts.length > 0 ? parts : [text];
+  };
+
+  const flushList = () => {
+    if (currentList) {
+      const ListTag = currentList.type === 'ul' ? 'ul' : 'ol';
+      elements.push(
+        <ListTag key={`list-${elements.length}`} className={`${currentList.type === 'ul' ? 'list-disc' : 'list-decimal'} pl-4 my-1 space-y-0.5`}>
+          {currentList.items.map((item, i) => (
+            <li key={i} className="text-sm">{processInline(item)}</li>
+          ))}
+        </ListTag>
+      );
+      currentList = null;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const ulMatch = line.match(/^[-*]\s+(.+)/);
+    const olMatch = line.match(/^\d+\.\s+(.+)/);
+
+    if (ulMatch) {
+      if (!currentList || currentList.type !== 'ul') {
+        flushList();
+        currentList = { type: 'ul', items: [] };
+      }
+      currentList.items.push(ulMatch[1]);
+    } else if (olMatch) {
+      if (!currentList || currentList.type !== 'ol') {
+        flushList();
+        currentList = { type: 'ol', items: [] };
+      }
+      currentList.items.push(olMatch[1]);
+    } else {
+      flushList();
+      if (line.trim() === '') {
+        elements.push(<br key={`br-${i}`} />);
+      } else {
+        elements.push(<p key={`p-${i}`} className="text-sm">{processInline(line)}</p>);
+      }
+    }
+  }
+  flushList();
+
+  return <div className="space-y-1">{elements}</div>;
 }
 
 // =============================================================================
@@ -195,12 +278,12 @@ function IntentIndicator({ intentType, confidence }: IntentIndicatorProps): Reac
  * @example
  * ```tsx
  * <ChatMessage 
- *   message={{
- *     id: '1',
- *     role: 'user',
- *     content: 'Merhaba',
- *     timestamp: new Date(),
- *   }} 
+ * message={{
+ * id: '1',
+ * role: 'user',
+ * content: 'Merhaba',
+ * timestamp: new Date(),
+ * }} 
  * />
  * ```
  */
@@ -219,7 +302,7 @@ export function ChatMessage({ message, className = '' }: ChatMessageProps): Reac
           {role === 'assistant' && <AssistantIcon />}
           {role === 'user' && <UserIcon />}
           <span>{getRoleLabel(role)}</span>
-          <span className="text-gray-400">•</span>
+          <span className="text-muted-foreground">•</span>
           <time dateTime={new Date(timestamp).toISOString()}>
             {formatTimestamp(timestamp)}
           </time>
@@ -230,13 +313,11 @@ export function ChatMessage({ message, className = '' }: ChatMessageProps): Reac
           className={`px-4 py-2 rounded-2xl ${styles.bubble}`}
         >
           {/* Message content */}
-          <p className="whitespace-pre-wrap break-words text-sm">
-            {content}
-          </p>
+          {renderMarkdownContent(content)}
 
           {/* Action Preview */}
           {message.actionPlan && (
-            <div className="mt-2 mb-1 bg-white rounded-lg overflow-hidden border border-gray-200">
+            <div className="mt-2 mb-1 bg-card rounded-2xl overflow-hidden border border-border">
               <AIActionPreview
                 plan={message.actionPlan}
                 className="text-left border-0 shadow-none"

@@ -23,7 +23,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
   party,
   sale,
   // onNoteSave, // Not used - internal simulated save
-  // loading = false  // Using internal isLoading state
+  // loading = false // Using internal isLoading state
 }) => {
   const [noteText, setNoteText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
@@ -131,11 +131,11 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'text-gray-700 bg-gray-100';
-      case 'confirmed': return 'text-blue-700 bg-blue-100';
-      case 'paid': return 'text-green-700 bg-green-100';
-      case 'cancelled': return 'text-red-700 bg-red-100';
-      default: return 'text-gray-700 bg-gray-100';
+      case 'draft': return 'text-foreground bg-muted';
+      case 'confirmed': return 'text-primary bg-primary/10';
+      case 'paid': return 'text-success bg-success/10';
+      case 'cancelled': return 'text-destructive bg-destructive/10';
+      default: return 'text-foreground bg-muted';
     }
   };
 
@@ -163,15 +163,15 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <h3 className="text-lg font-medium text-foreground flex items-center">
             <Edit className="w-5 h-5 mr-2" />
             Satış Notu Düzenle
           </h3>
           <Button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-muted-foreground hover:text-muted-foreground"
           >
             <X className="w-5 h-5" />
           </Button>
@@ -179,16 +179,16 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
         {/* Success Alert */}
         {success && (
-          <Alert className="mb-4 border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <div className="text-green-800">{success}</div>
+          <Alert className="mb-4 border-green-200 bg-success/10">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <div className="text-success">{success}</div>
           </Alert>
         )}
 
         {/* Error Alert */}
         {error && (
-          <Alert className="mb-4 border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
+          <Alert className="mb-4 border-red-200 bg-destructive/10">
+            <AlertCircle className="h-4 w-4 text-destructive" />
             <div className="text-red-800">{error}</div>
           </Alert>
         )}
@@ -197,8 +197,8 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
           <div className="space-y-6">
             {/* Sale Info */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">Müşteri Bilgileri</h4>
+              <div className="bg-muted p-4 rounded-2xl">
+                <h4 className="font-medium text-foreground mb-2">Müşteri Bilgileri</h4>
                 <div className="space-y-1 text-sm">
                   <div><span className="font-medium">Ad Soyad:</span> {party?.firstName || 'Belirtilmemiş'} {party?.lastName || 'Belirtilmemiş'}</div>
                   <div><span className="font-medium">TC No:</span> {party?.tcNumber || 'Belirtilmemiş'}</div>
@@ -206,8 +206,8 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                 </div>
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">Satış Bilgileri</h4>
+              <div className="bg-primary/10 p-4 rounded-2xl">
+                <h4 className="font-medium text-foreground mb-2">Satış Bilgileri</h4>
                 <div className="space-y-1 text-sm">
                   <div><span className="font-medium">Satış ID:</span> {sale.id}</div>
                   <div><span className="font-medium">Tutar:</span> {formatCurrency(sale.totalAmount)}</div>
@@ -224,13 +224,13 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
             {/* Note Editor */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 flex items-center">
+              <h4 className="font-medium text-foreground flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
                 Satış Notu
               </h4>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Not İçeriği
                 </label>
                 <Textarea
@@ -242,11 +242,11 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                 />
 
                 <div className="flex justify-between items-center mt-1">
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     {noteText.length}/1000 karakter
                   </div>
                   {errors.note && (
-                    <div className="flex items-center text-sm text-red-600">
+                    <div className="flex items-center text-sm text-destructive">
                       <AlertCircle className="w-4 h-4 mr-1" />
                       {errors.note}
                     </div>
@@ -255,8 +255,8 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
               </div>
 
               {/* Quick Notes */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h5 className="font-medium text-gray-900 mb-3">Hızlı Notlar</h5>
+              <div className="bg-muted p-4 rounded-2xl">
+                <h5 className="font-medium text-foreground mb-3">Hızlı Notlar</h5>
                 <div className="grid grid-cols-2 gap-2">
                   {quickNotes.map((quickNote) => (
                     <button data-allow-raw="true"
@@ -269,7 +269,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                           : `• ${quickNote}`;
                         handleNoteChange(newNote);
                       }}
-                      className="text-left p-2 text-sm border border-gray-200 rounded hover:bg-gray-100 transition-colors"
+                      className="text-left p-2 text-sm border border-border rounded hover:bg-muted transition-colors"
                     >
                       + {quickNote}
                     </button>
@@ -279,9 +279,9 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
               {/* Note History */}
               {sale.notes && sale.notes !== noteText && (
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <h5 className="font-medium text-gray-900 mb-2">Mevcut Not</h5>
-                  <div className="text-sm text-gray-700 bg-white p-3 rounded border">
+                <div className="bg-warning/10 p-4 rounded-2xl">
+                  <h5 className="font-medium text-foreground mb-2">Mevcut Not</h5>
+                  <div className="text-sm text-foreground bg-card p-3 rounded border">
                     {sale.notes}
                   </div>
                 </div>
@@ -289,7 +289,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
               {/* Change Indicator */}
               {hasChanges && (
-                <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+                <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl">
                   <div className="flex items-center text-orange-800">
                     <Save className="w-4 h-4 mr-2" />
                     <span className="font-medium">Kaydedilmemiş değişiklikler var</span>
@@ -303,9 +303,9 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
             {/* Metadata */}
             {(sale.createdAt || sale.updatedAt) && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h5 className="font-medium text-gray-900 mb-2">Kayıt Bilgileri</h5>
-                <div className="text-sm text-gray-600 space-y-1">
+              <div className="bg-muted p-4 rounded-2xl">
+                <h5 className="font-medium text-foreground mb-2">Kayıt Bilgileri</h5>
+                <div className="text-sm text-muted-foreground space-y-1">
                   {sale.createdAt && (
                     <div>
                       <span className="font-medium">Oluşturulma:</span> {new Date(sale.createdAt).toLocaleString('tr-TR')}
@@ -325,14 +325,14 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="px-4 py-2 text-foreground bg-muted hover:bg-accent rounded-xl"
               disabled={isLoading}
             >
               İptal
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+              className="px-6 py-2 premium-gradient tactile-press text-white rounded-xl flex items-center"
               disabled={isLoading || noteText.trim().length === 0 || noteText.trim() === (sale?.notes || '').trim()}
             >
               {isLoading ? (

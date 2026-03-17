@@ -1,5 +1,4 @@
 import pytest
-import json
 import uuid
 import time
 from jose import jwt
@@ -14,6 +13,7 @@ from core.models.user import User
 ROLE_PERMISSIONS = {
     'admin': ['*'],
     'manager': [
+        # Old-style permissions (used by permission middleware)
         'patient:read', 'patient:write', 'patient:delete', 'patient:export',
         'inventory:read', 'inventory:write',
         'sale:read', 'sale:write',
@@ -26,8 +26,12 @@ ROLE_PERMISSIONS = {
         'cash_records:read', 'cash_records:write',
         'campaign:read', 'campaign:write',
         'ocr:read', 'ocr:write',
+        # New-style permissions (used by access dependency / require_access)
+        'parties.view', 'parties.create', 'parties.edit', 'parties.delete', 'parties.export',
+        'sales.create', 'sales.edit', 'sales.view',
     ],
     'user': [
+        # Old-style permissions (used by permission middleware)
         'patient:read', 'patient:write',
         'inventory:read',
         'sale:read', 'sale:write',
@@ -39,6 +43,9 @@ ROLE_PERMISSIONS = {
         'payments:read',
         'cash_records:read',
         'ocr:read', 'ocr:write',
+        # New-style permissions (used by access dependency / require_access)
+        'parties.view', 'parties.create', 'parties.edit',
+        'sales.create', 'sales.edit', 'sales.view',
     ],
 }
 

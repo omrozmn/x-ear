@@ -48,7 +48,7 @@ export default function DocumentList({ partyId }: Props) {
               <CardContent className="flex items-center justify-between p-4">
                 <div>
                   <div className="font-medium">{d.name || d.filename || 'Document'}</div>
-                  <div className="text-sm text-gray-500">{d.createdAt || d.created_at || ''}</div>
+                  <div className="text-sm text-muted-foreground">{d.createdAt || d.created_at || ''}</div>
                   {d.status === 'queued' && (
                     <Badge variant="warning" className="mt-1">
                       Queued

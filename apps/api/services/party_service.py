@@ -5,7 +5,6 @@ from sqlalchemy import or_
 from fastapi import HTTPException
 
 from core.models.party import Party
-from models.branch import Branch
 from models.enums import PatientStatus as ModelPatientStatus
 from models.medical import PatientNote
 from models.sales import DeviceAssignment, Sale, PaymentRecord
@@ -180,6 +179,24 @@ class PartyService:
             query = query.filter(Party.segment == segment)
         return query.count()
 
+    def search_parties(self, tenant_id: str, query: str, limit: int = 10) -> List[Party]:
+        """Search parties by name or phone for selection purposes"""
+        from sqlalchemy import or_
+        
+        search_query = self.db.query(Party).filter_by(tenant_id=tenant_id)
+        
+        # Fuzzy search on name and phone
+        search_terms = f"%{query}%"
+        search_query = search_query.filter(
+            or_(
+                Party.first_name.ilike(search_terms),
+                Party.last_name.ilike(search_terms),
+                Party.phone.ilike(search_terms)
+            )
+        )
+        
+        return search_query.limit(limit).all()
+
     # --- Role Management (Remediation 5.1) ---
 
     def assign_role(self, party_id: str, role_code: str, tenant_id: str) -> None:
@@ -218,7 +235,6 @@ class PartyService:
 
     def list_roles(self, party_id: str, tenant_id: str) -> List[Dict[str, Any]]:
         """List all roles for a party"""
-        from core.models.party_role import PartyRole
         party = self.get_party(party_id, tenant_id)
         return [
             {'code': r.role_code, 'assignedAt': r.assigned_at} 
@@ -269,12 +285,18 @@ class PartyService:
         
             self.db.commit()
             self.db.refresh(new_party)
+            
             return new_party
         except Exception as e:
             self.db.rollback()
             raise e
 
     def update_party(self, party_id: str, data: Dict[str, Any], tenant_id: str) -> Party:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info('🔍 UPDATE PARTY - party_id: %s, data keys: %s', party_id, list(data.keys()))
+        logger.info('🔍 UPDATE PARTY - tcNumber: %s, tc_number: %s', data.get('tcNumber'), data.get('tc_number'))
+        
         party = self.get_party(party_id, tenant_id)
         
         # Helper map for Party fields - Handle both camelCase (legacy/API) and snake_case (Pydantic model_dump)
@@ -291,12 +313,27 @@ class PartyService:
         if 'tcNumber' in data: party.tc_number = data['tcNumber']
         elif 'tc_number' in data: party.tc_number = data['tc_number']
         
+        logger.info('🔍 UPDATE PARTY - After setting, party.tc_number: %s', party.tc_number)
+        
         if 'birthDate' in data or 'birth_date' in data:
             d = data.get('birthDate') or data.get('birth_date')
-            if isinstance(d, date) and not isinstance(d, datetime):
-                 party.birth_date = datetime.combine(d, time.min)
-            else:
-                party.birth_date = d
+            if d:
+                if isinstance(d, str):
+                    # Parse string to datetime
+                    try:
+                        party.birth_date = datetime.fromisoformat(d.replace('Z', '+00:00'))
+                    except:
+                        # Try other formats
+                        for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'):
+                            try:
+                                party.birth_date = datetime.strptime(d, fmt)
+                                break
+                            except:
+                                pass
+                elif isinstance(d, date) and not isinstance(d, datetime):
+                    party.birth_date = datetime.combine(d, time.min)
+                else:
+                    party.birth_date = d
         
         if 'gender' in data: party.gender = data['gender']
         
@@ -314,7 +351,15 @@ class PartyService:
                  self.assign_role(party.id, 'CUSTOMER', tenant_id)
 
         if 'segment' in data: party.segment = data['segment']
+        
+        # Handle acquisitionType (kazanım türü)
+        if 'acquisitionType' in data:
+            party.acquisition_type = data['acquisitionType']
+        elif 'acquisition_type' in data:
+            party.acquisition_type = data['acquisition_type']
+        
         if 'branchId' in data: party.branch_id = data['branchId']
+        elif 'branch_id' in data: party.branch_id = data['branch_id']
         if 'tags' in data:
             party.tags_json = data['tags']
         elif 'tags_json' in data:
@@ -340,8 +385,8 @@ class PartyService:
         # Update remaining attributes (if any other fields are passed directly)
         skip_fields = [
             'firstName', 'lastName', 'phone', 'email', 'tcNumber', 'birthDate', 
-            'gender', 'status', 'segment', 'branchId', 'tags', 'sgkInfo', 'address',
-            'first_name', 'last_name', 'tc_number', 'birth_date', 'sgk_info', 'branch_id'
+            'gender', 'status', 'segment', 'acquisitionType', 'branchId', 'tags', 'sgkInfo', 'address',
+            'first_name', 'last_name', 'tc_number', 'birth_date', 'acquisition_type', 'sgk_info', 'branch_id'
         ]
         for k, v in data.items():
             # Skip fields already handled or complex objects
@@ -350,6 +395,7 @@ class PartyService:
         
         try:
             self.db.commit()
+            logger.info('🔍 UPDATE PARTY - After commit, party.tc_number: %s', party.tc_number)
             try:
                 self.db.refresh(party)
             except Exception as refresh_error:
@@ -408,7 +454,7 @@ class PartyService:
                     if device:
                         brand = brand or device.brand
                         model = model or device.model
-                        serial = serial or device.serial_number
+                        serial = serial or getattr(device, 'serial_number', None)
                         barcode = barcode or getattr(device, 'barcode', None)
                 
                 # Try to find linked inventory
@@ -417,7 +463,7 @@ class PartyService:
                     if inv:
                         brand = brand or inv.brand
                         model = model or inv.model
-                        serial = serial or inv.serial_number
+                        # InventoryItem doesn't have serial_number, skip it
                         barcode = barcode or inv.barcode
             
             # Merge enriched data with original dict (original dict has priority for existing fields)
@@ -456,6 +502,9 @@ class PartyService:
             final_device['patientPayment'] = float(assignment.net_payable) if assignment.net_payable is not None else 0.0
             final_device['salePrice'] = float(assignment.sale_price) if assignment.sale_price is not None else 0.0
             final_device['listPrice'] = float(assignment.list_price) if assignment.list_price is not None else 0.0
+            
+            # === Boolean field handling: Ensure is_loaner is always boolean ===
+            final_device['isLoaner'] = bool(assignment.is_loaner) if assignment.is_loaner is not None else False
             
             # === Flask parity: Fetch downPayment from PaymentRecord ===
             final_device['downPayment'] = 0.0
@@ -527,7 +576,7 @@ class PartyService:
             )
             self.db.add(activity_log)
             self.db.commit()
-        except Exception as log_error:
+        except Exception:
             # logger.error ... but service typically doesn't log unless injected logger. 
             # We silently fail log creation as per original pattern if not critical, 
             # but ideally should propagate or log.

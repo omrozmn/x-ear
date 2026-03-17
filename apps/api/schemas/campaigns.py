@@ -1,7 +1,7 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from enum import Enum
 from datetime import datetime
-from pydantic import Field, field_validator
+from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
@@ -110,7 +110,7 @@ class SmsLogStatus(str, Enum):
     DELIVERED = 'delivered'
     FAILED = 'failed'
 
-class SmsLogRead(IDMixin, TimestampMixin):
+class SmsLogRead(AppBaseModel, IDMixin, TimestampMixin):
     campaign_id: Optional[str] = Field(None, alias="campaignId")
     party_id: Optional[str] = Field(None, alias="partyId")
     phone_number: str = Field(..., alias="phoneNumber")

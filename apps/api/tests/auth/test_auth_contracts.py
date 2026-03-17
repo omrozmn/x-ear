@@ -10,14 +10,10 @@ from pydantic import ValidationError
 from schemas.auth import (
     LoginRequest,
     LoginResponse,
-    LookupPhoneRequest,
     LookupPhoneResponse,
-    VerifyOtpRequest,
     VerifyOtpResponse,
     ResetPasswordRequest,
-    ResetPasswordResponse,
     RefreshTokenResponse,
-    MessageResponse,
     AuthUserRead,
 )
 from schemas.base import ResponseEnvelope

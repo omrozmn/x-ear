@@ -1,0 +1,1 @@
+project=admin-chromium ts=20260213-001610 out=test-results/full-20260213-001610/admin-chromium json=test-results/full-20260213-001610/admin-chromium-results.json html=playwright-report/full-20260213-001610/admin-chromium log=qa-logs/full-20260213-001610/admin-chromium.log

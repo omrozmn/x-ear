@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Textarea, Select } from '@x-ear/ui-web';
 import type { Party } from '../../../types/party/party-base.types';
 
@@ -30,14 +31,15 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
   requestType = 'İşitme Cihazı Talebi',
   title = 'SGK Onay İşlemi'
 }) => {
+  const { t } = useTranslation('sgk');
   const [approvalType, setApprovalType] = useState<'approve' | 'reject' | 'request_info'>('approve');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const approvalOptions = [
-    { value: 'approve', label: 'Onayla' },
-    { value: 'reject', label: 'Reddet' },
-    { value: 'request_info', label: 'Ek Bilgi Talep Et' }
+    { value: 'approve', label: t('approve', 'Onayla') },
+    { value: 'reject', label: t('reject', 'Reddet') },
+    { value: 'request_info', label: t('requestInfo', 'Ek Bilgi Talep Et') }
   ];
 
   const handleSubmit = async () => {
@@ -72,26 +74,26 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
   const getApprovalTypeColor = (type: string) => {
     switch (type) {
       case 'approve':
-        return 'text-green-600';
+        return 'text-success';
       case 'reject':
-        return 'text-red-600';
+        return 'text-destructive';
       case 'request_info':
         return 'text-yellow-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 
   const getSubmitButtonText = () => {
     switch (approvalType) {
       case 'approve':
-        return 'Onayla';
+        return t('approve', 'Onayla');
       case 'reject':
-        return 'Reddet';
+        return t('reject', 'Reddet');
       case 'request_info':
-        return 'Ek Bilgi Talep Et';
+        return t('requestInfo', 'Ek Bilgi Talep Et');
       default:
-        return 'Gönder';
+        return t('send', 'Gönder');
     }
   };
 
@@ -119,23 +121,23 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
       <div className="space-y-6">
         {/* Hasta ve Talep Bilgileri */}
         {party && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-3">Talep Bilgileri</h4>
+          <div className="bg-muted p-4 rounded-2xl">
+            <h4 className="font-medium text-foreground mb-3">{t('requestInfo', 'Talep Bilgileri')}</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Hasta:</span>
+                <span className="text-muted-foreground">{t('patient', 'Hasta')}:</span>
                 <span className="font-medium">{party.firstName} {party.lastName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">TC Kimlik No:</span>
+                <span className="text-muted-foreground">TC Kimlik No:</span>
                 <span className="font-medium">{party.tcNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Talep Türü:</span>
+                <span className="text-muted-foreground">Talep Türü:</span>
                 <span className="font-medium">{requestType}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Talep ID:</span>
+                <span className="text-muted-foreground">Talep ID:</span>
                 <span className="font-medium">{requestId}</span>
               </div>
             </div>
@@ -154,14 +156,14 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
         </div>
 
         {/* Seçilen Onay Türüne Göre Açıklama */}
-        <div className={`p-3 rounded-lg border-l-4 ${approvalType === 'approve' ? 'bg-green-50 border-green-400' :
-            approvalType === 'reject' ? 'bg-red-50 border-red-400' :
-              'bg-yellow-50 border-yellow-400'
+        <div className={`p-3 rounded-2xl border-l-4 ${approvalType === 'approve' ? 'bg-success/10 border-green-400' :
+            approvalType === 'reject' ? 'bg-destructive/10 border-red-400' :
+              'bg-warning/10 border-yellow-400'
           }`}>
           <p className={`text-sm font-medium ${getApprovalTypeColor(approvalType)}`}>
-            {approvalType === 'approve' && 'Bu talep onaylanacak ve işleme alınacaktır.'}
-            {approvalType === 'reject' && 'Bu talep reddedilecek ve hasta bilgilendirilecektir.'}
-            {approvalType === 'request_info' && 'Hastadan ek bilgi ve belge talep edilecektir.'}
+            {approvalType === 'approve' && t('approvalMessage', 'Bu talep onaylanacak ve işleme alınacaktır.')}
+            {approvalType === 'reject' && t('rejectionMessage', 'Bu talep reddedilecek ve hasta bilgilendirilecektir.')}
+            {approvalType === 'request_info' && t('requestInfoMessage', 'Hastadan ek bilgi ve belge talep edilecektir.')}
           </p>
         </div>
 
@@ -170,15 +172,15 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
           <Textarea
             label="Notlar"
             placeholder={
-              approvalType === 'approve' ? 'Onay notları (isteğe bağlı)...' :
-                approvalType === 'reject' ? 'Red gerekçesi...' :
-                  'Talep edilen ek bilgiler...'
+              approvalType === 'approve' ? t('approvalNotesPlaceholder', 'Onay notları (isteğe bağlı)...') :
+                approvalType === 'reject' ? t('rejectionReasonPlaceholder', 'Red gerekçesi...') :
+                  t('requestedInfoPlaceholder', 'Talep edilen ek bilgiler...')
             }
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
             fullWidth
-            error={approvalType !== 'approve' && !notes ? 'Bu alan zorunludur' : ''}
+            error={approvalType !== 'approve' && !notes ? t('fieldRequired', 'Bu alan zorunludur') : ''}
           />
         </div>
 
@@ -189,7 +191,7 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
             onClick={handleClose}
             disabled={isSubmitting}
           >
-            İptal
+            {t('cancel', 'İptal')}
           </Button>
           <Button
             variant={getSubmitButtonVariant()}

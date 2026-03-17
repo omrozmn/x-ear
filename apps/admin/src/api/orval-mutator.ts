@@ -1,4 +1,8 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, {
+    AxiosHeaders,
+    AxiosRequestConfig,
+    type InternalAxiosRequestConfig,
+} from 'axios';
 
 /**
  * Retry configuration for failed requests
@@ -29,26 +33,103 @@ const axiosInstance = axios.create({
     },
 });
 
+type RequestConfigSummary = Pick<AxiosRequestConfig, 'url' | 'method'>;
+
+interface ResponseEnvelope<T> {
+    data: T;
+    meta?: unknown;
+    pagination?: unknown;
+}
+
+function ensureHeaders(config: InternalAxiosRequestConfig): AxiosHeaders {
+    const headers = AxiosHeaders.from(config.headers ?? {});
+    config.headers = headers;
+    return headers;
+}
+
+function hasResponseEnvelope<T>(value: unknown): value is ResponseEnvelope<T> {
+    return typeof value === 'object' && value !== null && 'data' in value;
+}
+
+function attachResponseMetadata<T>(payload: T, envelope: ResponseEnvelope<T>): T {
+    if ((typeof payload !== 'object' || payload === null) && !Array.isArray(payload)) {
+        return payload;
+    }
+
+    const target = payload as Record<string, unknown>;
+    const metadata = envelope.pagination ?? envelope.meta;
+
+    if (envelope.meta !== undefined && target.meta === undefined) {
+        Object.defineProperty(target, 'meta', {
+            value: envelope.meta,
+            enumerable: true,
+            configurable: true,
+            writable: true,
+        });
+    }
+
+    if (metadata !== undefined && target.pagination === undefined) {
+        Object.defineProperty(target, 'pagination', {
+            value: metadata,
+            enumerable: true,
+            configurable: true,
+            writable: true,
+        });
+    }
+
+    return payload;
+}
+
 // Request interceptor for auth token and idempotency
 axiosInstance.interceptors.request.use(
     (config) => {
+        const headers = ensureHeaders(config);
         const token = typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null;
+
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            headers.set('Authorization', `Bearer ${token}`);
         }
 
         // Add Idempotency-Key for write operations (POST, PUT, PATCH)
         const method = config.method?.toUpperCase() || 'GET';
         if (['POST', 'PUT', 'PATCH'].includes(method)) {
-            const existingKey = config.headers['Idempotency-Key'];
+            // Check if Idempotency-Key already exists
+            const existingKey = headers.get('Idempotency-Key');
+
             if (!existingKey) {
-                config.headers['Idempotency-Key'] = generateIdempotencyKey();
+                const idempotencyKey = generateIdempotencyKey();
+                headers.set('Idempotency-Key', idempotencyKey);
             }
         }
 
         return config;
     },
     (error) => Promise.reject(error)
+);
+
+// Response interceptor for global error handling (specifically 401)
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            // Don't logout on login endpoint 401 (invalid credentials)
+            const isLoginRequest = typeof error.config?.url === 'string'
+                && error.config.url.includes('/auth/login');
+
+            if (!isLoginRequest) {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('admin_refresh_token');
+                    localStorage.removeItem('admin-auth-storage');
+
+                    if (!window.location.pathname.includes('/login')) {
+                        window.location.href = '/login';
+                    }
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
 );
 
 /**
@@ -62,14 +143,21 @@ function calculateBackoffDelay(attempt: number): number {
 /**
  * Check if error is retryable
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
+    if (!axios.isAxiosError(error)) {
+        return false;
+    }
+
     // Check error codes
     if (error.code && RETRY_CONFIG.retryableErrors.includes(error.code)) {
         return true;
     }
 
     // Check HTTP status codes
-    if (error.response?.status && RETRY_CONFIG.retryableStatusCodes.includes(error.response.status)) {
+    if (
+        error.response?.status &&
+        RETRY_CONFIG.retryableStatusCodes.includes(error.response.status)
+    ) {
         return true;
     }
 
@@ -88,19 +176,14 @@ function sleep(ms: number): Promise<void> {
  */
 async function retryRequest<T>(
     requestFn: () => Promise<T>,
-    config: any,
+    config: RequestConfigSummary,
     attempt: number = 1
 ): Promise<T> {
     try {
         return await requestFn();
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Don't retry if we've exceeded max attempts
         if (attempt >= RETRY_CONFIG.maxRetries) {
-            console.error(`Request failed after ${attempt} attempts:`, {
-                url: config.url,
-                method: config.method,
-                error: error.code || error.message
-            });
             throw error;
         }
 
@@ -111,11 +194,6 @@ async function retryRequest<T>(
 
         // Calculate delay and wait
         const delay = calculateBackoffDelay(attempt);
-        console.warn(`Request failed (attempt ${attempt}/${RETRY_CONFIG.maxRetries}), retrying in ${delay}ms:`, {
-            url: config.url,
-            method: config.method,
-            error: error.code || error.message
-        });
 
         await sleep(delay);
 
@@ -142,6 +220,7 @@ async function retryRequest<T>(
  * - Automatic retry with exponential backoff
  * - Retries on network errors and 5xx status codes
  * - Configurable retry attempts and delays
+ * - Unwraps ResponseEnvelope (returns response.data.data instead of response.data)
  */
 export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
     // Add /api prefix if missing (for Vite proxy to work)
@@ -151,7 +230,13 @@ export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
 
     // Wrap in retry logic
     return retryRequest(
-        () => axiosInstance(requestConfig).then(response => response.data),
+        () => axiosInstance(requestConfig).then(response => {
+            // Unwrap ResponseEnvelope: {success: true, data: {...}} -> {...}
+            if (hasResponseEnvelope<T>(response.data)) {
+                return attachResponseMetadata(response.data.data, response.data);
+            }
+            return response.data;
+        }),
         requestConfig
     );
 };

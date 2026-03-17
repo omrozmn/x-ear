@@ -8,17 +8,6 @@
  * SHOULD: Version changes in storage key format increment @vN suffix and include a migration rule
  */
 
-// TODO: Import generated storage keys from OpenAPI when available
-// import {
-//   ALL_GENERATED_STORAGE_KEYS,
-//   STORAGE_KEYS_METADATA,
-//   type GeneratedStorageKey,
-//   type StorageKeyDefinition
-// } from '@/api/generated-storage-keys'
-
-// Re-export generated keys for convenience
-// export * from '@/api/generated-storage-keys'
-
 // Authentication & Session
 export const AUTH_TOKEN = 'x-ear.auth.token@v1'
 export const REFRESH_TOKEN = 'x-ear.auth.refresh@v1'
@@ -148,8 +137,6 @@ export const ALL_STORAGE_KEYS = [
   PARTY_FORM_DRAFT,
   APPOINTMENT_FORM_DRAFT,
   INVOICE_FORM_DRAFT,
-  // TODO: Use generated keys from OpenAPI when available
-  // ...ALL_GENERATED_STORAGE_KEYS,
   API_CACHE_PREFIX,
   QUERY_CACHE_TIMESTAMP,
   DEMO_MODE_ENABLED,

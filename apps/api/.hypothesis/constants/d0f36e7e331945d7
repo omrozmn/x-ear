@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/paytr_service.py
+# hypothesis_version: 6.151.9
+
+[100, '0', '1', '30', 'TL', 'currency', 'debug_on', 'email', 'error', 'hash', 'lang', 'max_installment', 'merchant_fail_url', 'merchant_id', 'merchant_oid', 'merchant_ok_url', 'no_installment', 'payment_amount', 'paytr_token', 'reason', 'status', 'success', 'test_mode', 'timeout_limit', 'token', 'total_amount', 'tr', 'user_address', 'user_basket', 'user_ip', 'user_name', 'user_phone']

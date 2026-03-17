@@ -6,7 +6,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 from app import app
 from models.user import User
 from models.admin_user import AdminUser
-from sqlalchemy import text
 
 def check_admin():
     with app.app_context():

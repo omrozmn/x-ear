@@ -7,14 +7,16 @@ G-03: Auth Boundary Migration
 - NO to_dict() usage - use AuthUserRead.from_user_model() instead
 - All endpoints have explicit response_model for OpenAPI generation
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Body, Header
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException, Body, Header
+from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Union
 from datetime import datetime, timezone, timedelta
 import logging
 import random
 import os
+from uuid import uuid4
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from jose import jwt
 
@@ -28,23 +30,19 @@ from schemas.auth import (
     ResetPasswordRequest,
     SetPasswordRequest,
     SendVerificationOtpRequest,
-    PasswordChangeRequest,
-    # Response schemas
     LoginResponse,
     LookupPhoneResponse,
     VerifyOtpResponse,
     ResetPasswordResponse,
     RefreshTokenResponse,
     MessageResponse,
-    MessageResponse,
     AuthUserRead,
     AuthAdminUserRead,
 )
-from schemas.users import UserRead
 from models.user import User
+from core.models.user import ActivityLog
 from models.admin_user import AdminUser
 
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 from utils.error_messages import get_error_message
 
@@ -60,6 +58,49 @@ ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 # --- Helper Functions ---
+
+def _phone_key_candidates(phone: Optional[str]) -> list[str]:
+    """Build stable OTP lookup keys for phone-based verification."""
+    if not phone:
+        return []
+    raw = str(phone).strip()
+    digits = ''.join(ch for ch in raw if ch.isdigit())
+    candidates: list[str] = []
+    for value in (raw, digits):
+        if value and value not in candidates:
+            candidates.append(value)
+    if digits:
+        if len(digits) == 10 and f"0{digits}" not in candidates:
+            candidates.append(f"0{digits}")
+        if digits.startswith("0") and len(digits) == 11:
+            local = digits[1:]
+            if local not in candidates:
+                candidates.append(local)
+            if f"90{local}" not in candidates:
+                candidates.append(f"90{local}")
+        elif digits.startswith("90") and len(digits) == 12:
+            local = digits[2:]
+            if local not in candidates:
+                candidates.append(local)
+            if f"0{local}" not in candidates:
+                candidates.append(f"0{local}")
+    return candidates
+
+
+def _is_nonprod_otp_env() -> bool:
+    return os.getenv('ENVIRONMENT', 'production').lower() in {'development', 'test', 'testing'}
+
+
+def _generate_otp_code() -> str:
+    if _is_nonprod_otp_env():
+        return '123456'
+    return str(random.randint(100000, 999999))
+
+
+def _should_skip_external_sms() -> bool:
+    if not _is_nonprod_otp_env():
+        return False
+    return os.getenv('ENABLE_REAL_SMS_IN_TESTS', 'false').lower() not in {'1', 'true', 'yes'}
 
 def create_access_token(identity: str, additional_claims: dict = None, expires_delta: timedelta = None) -> str:
     """Create JWT access token"""
@@ -92,16 +133,8 @@ def create_refresh_token(identity: str, additional_claims: dict = None, expires_
 
 def get_otp_store():
     """Get OTP store instance"""
-    try:
-        from app import app
-        otp_store = app.extensions.get('otp_store')
-        if otp_store:
-            return otp_store
-    except Exception:
-        pass
-    
-    from services.otp_store import InMemoryOTPStore
-    return InMemoryOTPStore()
+    from services.otp_store import get_store
+    return get_store()
 
 # --- Routes ---
 
@@ -114,8 +147,8 @@ def lookup_phone(
     try:
         identifier = request_data.identifier
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-lookup-phone"):
             user = db_session.query(User).filter_by(username=identifier).first()
             if not user:
                 user = db_session.query(User).filter_by(email=identifier).first()
@@ -157,8 +190,8 @@ def forgot_password(
     try:
         identifier = request_data.identifier
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-forgot-password"):
             user = db_session.query(User).filter_by(phone=identifier).first()
             if not user:
                 raise HTTPException(
@@ -170,24 +203,27 @@ def forgot_password(
                 )
         
         otp_store = get_otp_store()
-        code = str(random.randint(100000, 999999))
+        code = _generate_otp_code()
         otp_store.set_otp(identifier, code, ttl=300)
-        
-        # Send SMS
-        from services.communication_service import communication_service
-        msg = f"X-EAR sifre sifirlama kodunuz: {code}. Bu kodu kimseyle paylasmayiniz."
-        result = communication_service.send_sms(identifier, msg)
-        
-        if not result.get('success'):
-            logger.error(f"Failed to send SMS: {result}")
-            raise HTTPException(
-                status_code=500,
-                detail=ApiError(
-                    message=result.get('error', 'Failed to send SMS'),
-                    code="SMS_FAILED",
-                    details=result
-                ).model_dump(mode="json")
-            )
+
+        if _should_skip_external_sms():
+            logger.info("Skipping external forgot-password SMS in non-production OTP env")
+        else:
+            # Send SMS
+            from services.communication_service import communication_service
+            msg = f"X-EAR sifre sifirlama kodunuz: {code}. Bu kodu kimseyle paylasmayiniz."
+            result = communication_service.send_sms(identifier, msg)
+
+            if not result.get('success'):
+                logger.error(f"Failed to send SMS: {result}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=ApiError(
+                        message=result.get('error', 'Failed to send SMS'),
+                        code="SMS_FAILED",
+                        details=result
+                    ).model_dump(mode="json")
+                )
         
         return ResponseEnvelope(data=MessageResponse(message="OTP sent to your phone"))
     except HTTPException:
@@ -241,7 +277,17 @@ def verify_otp(
             logger.info(f"Using dev OTP bypass for user_id={user_id}")
             stored = '123456'
         else:
-            stored = otp_store.get_otp(target_id)
+            lookup_keys = [target_id]
+            if identifier:
+                lookup_keys.extend(
+                    [candidate for candidate in _phone_key_candidates(identifier) if candidate not in lookup_keys]
+                )
+            stored = None
+            for lookup_key in lookup_keys:
+                stored = otp_store.get_otp(lookup_key)
+                if stored:
+                    logger.info(f"OTP found with lookup_key={lookup_key}")
+                    break
             
             # If not found with target_id, try with user_id (for phone verification flow)
             if not stored and user_id:
@@ -273,7 +319,12 @@ def verify_otp(
         # If authenticated, mark as verified and return full tokens
         if user_id:
             otp_store.delete_otp(target_id)
-            user = db_session.get(User, user_id)
+            for phone_key in _phone_key_candidates(identifier):
+                otp_store.delete_otp(phone_key)
+
+            from database import unbound_session
+            with unbound_session(reason="auth-verify-otp-user-lookup"):
+                user = db_session.get(User, user_id)
             
             if user:
                 user.is_phone_verified = True
@@ -309,7 +360,7 @@ def verify_otp(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/auth/reset-password", operation_id="createAuthResetPassword", response_model=ResponseEnvelope[ResetPasswordResponse])
-def reset_password(
+async def reset_password(
     request_data: ResetPasswordRequest,
     db_session: Session = Depends(get_db)
 ):
@@ -318,6 +369,35 @@ def reset_password(
         identifier = request_data.identifier
         otp = request_data.otp
         new_password = request_data.new_password
+        captcha_token = request_data.captcha_token
+        
+        # Validate captcha token if provided
+        if captcha_token:
+            from utils.recaptcha import verify_recaptcha_token, is_valid_recaptcha
+            
+            try:
+                verification_result = await verify_recaptcha_token(captcha_token, action='password_reset')
+                
+                if not is_valid_recaptcha(verification_result, expected_action='password_reset'):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=ApiError(
+                            message="Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.",
+                            code="CAPTCHA_INVALID"
+                        ).model_dump(mode="json")
+                    )
+            except Exception as e:
+                logger.error(f"Captcha verification error: {e}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=ApiError(
+                        message="Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.",
+                        code="CAPTCHA_VERIFICATION_FAILED"
+                    ).model_dump(mode="json")
+                )
+        else:
+            # If no captcha token provided, log warning but allow (for backward compatibility during migration)
+            logger.warning(f"Password reset without captcha token for identifier: {identifier}")
         
         otp_store = get_otp_store()
         stored = otp_store.get_otp(identifier)
@@ -340,8 +420,8 @@ def reset_password(
                 ).model_dump(mode="json")
             )
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-reset-password"):
             user = db_session.query(User).filter_by(phone=identifier).first()
             if not user:
                 raise HTTPException(
@@ -360,10 +440,15 @@ def reset_password(
         
         # Log activity
         try:
-            from utils.activity_logging import log_activity
-            log_activity(user.id, user.tenant_id, 'password_reset', 'Password reset via SMS OTP')
+            db_session.add(ActivityLog(
+                user_id=user.id, tenant_id=user.tenant_id,
+                action='password_reset', message='Password reset via SMS OTP',
+                entity_type='user', entity_id=user.id, is_critical=True
+            ))
+            db_session.commit()
         except Exception as e:
             logger.warning(f"Failed to log password reset activity: {e}")
+            db_session.rollback()
         
         return ResponseEnvelope(data=ResetPasswordResponse(success=True, message="Password reset successfully"))
     except HTTPException:
@@ -402,8 +487,8 @@ def login(
         user = None
         is_admin_user = False
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-login"):
             # First, try to find in admin_users table (by email only)
             admin_user = db_session.query(AdminUser).filter_by(email=identifier).first()
             
@@ -424,10 +509,14 @@ def login(
         
         if not user:
             try:
-                from utils.activity_logging import log_login
-                log_login(identifier, None, success=False)
+                db_session.add(ActivityLog(
+                    action='auth.failed_login', message='Başarısız giriş denemesi',
+                    entity_type='user', entity_id=identifier, is_critical=True
+                ))
+                db_session.commit()
             except Exception as e:
                 logger.warning(f"Failed to log failed login: {e}")
+                db_session.rollback()
             
             raise HTTPException(
                 status_code=401,
@@ -446,16 +535,6 @@ def login(
                 ).model_dump(mode="json")
             )
         
-        # Send OTP if phone not verified (only for regular users, not admins)
-        if not is_admin_user and hasattr(user, 'is_phone_verified') and not user.is_phone_verified and user.phone:
-            otp_store = get_otp_store()
-            code = str(random.randint(100000, 999999))
-            otp_store.set_otp(user.id, code, ttl=300)
-            
-            from services.communication_service import communication_service
-            msg = f"X-EAR dogrulama kodunuz: {code}. Bu kodu kimseyle paylasmayiniz."
-            communication_service.send_sms(user.phone, msg)
-        
         # Update last login
         try:
             user.last_login = datetime.now(timezone.utc)
@@ -466,18 +545,23 @@ def login(
         
         # Log successful login (use 'system' tenant for admin users)
         try:
-            from utils.activity_logging import log_login
-            tenant_id = 'system' if is_admin_user else getattr(user, 'tenant_id', None)
-            log_login(user.id, tenant_id, success=True)
+            _login_tenant = 'system' if is_admin_user else getattr(user, 'tenant_id', None)
+            db_session.add(ActivityLog(
+                user_id=user.id, tenant_id=_login_tenant,
+                action='auth.login', message='Sisteme giriş yapıldı',
+                entity_type='user', entity_id=user.id, is_critical=True
+            ))
+            db_session.commit()
         except Exception as e:
             logger.warning(f"Failed to log login activity: {e}")
+            db_session.rollback()
         
         # Get user permissions from role
         role_permissions = []
         user_role = user.role
         
         # Admin users have all permissions
-        if is_admin_user:
+        if is_admin_user or (user_role and user_role.upper() == 'ADMIN'):
             role_permissions = ['*']  # Wildcard for all permissions
         else:
             try:
@@ -494,8 +578,12 @@ def login(
         # Use 'system' tenant for admin users
         tenant_id = 'system' if is_admin_user else getattr(user, 'tenant_id', None)
         
-        # CRITICAL: Admin users need admin_ prefix in token identity for UnifiedAccess middleware
-        token_identity = f'admin_{user.id}' if is_admin_user else user.id
+        # CRITICAL: Admin users need admin_ or adm_ prefix in token identity for UnifiedAccess middleware
+        # If ID already has adm_ prefix, don't add admin_ again
+        if is_admin_user:
+            token_identity = user.id if user.id.startswith('adm_') else f'admin_{user.id}'
+        else:
+            token_identity = user.id
         
         access_token = create_access_token(
             identity=token_identity,
@@ -546,6 +634,15 @@ def refresh_token(
     """Refresh access token using refresh token"""
     try:
         # oauth2_scheme returns the token without "Bearer " prefix
+        if not authorization:
+             raise HTTPException(
+                status_code=401,
+                detail=ApiError(
+                    message="Refresh token required",
+                    code="TOKEN_REQUIRED"
+                ).model_dump(mode="json")
+            )
+
         token = authorization
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
@@ -598,7 +695,10 @@ def refresh_token(
             
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))
         else:
-            user = db_session.get(User, user_id)
+            from database import unbound_session
+
+            with unbound_session(reason="auth-refresh-user-lookup"):
+                user = db_session.get(User, user_id)
             
             if not user:
                 raise HTTPException(
@@ -618,9 +718,16 @@ def refresh_token(
                     ).model_dump(mode="json")
                 )
             
+            # FIXED: logic was using access.tenant_id which AIAuthMiddleware rejected
             access_token = create_access_token(
                 identity=user.id,
-                additional_claims={'access.tenant_id': user.tenant_id, 'role': user.role}
+                additional_claims={
+                    'tenant_id': user.tenant_id,
+                    'role': user.role,
+                    'role_permissions': ['*'] if (user.role and user.role.upper() == 'ADMIN') else [],
+                    'perm_ver': getattr(user, 'permissions_version', 1) or 1,
+                    'is_admin': False,
+                }
             )
             
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))
@@ -632,7 +739,7 @@ def refresh_token(
                 code="TOKEN_EXPIRED"
             ).model_dump(mode="json")
         )
-    except jwt.JWTError as e:
+    except jwt.JWTError:
         raise HTTPException(
             status_code=401,
             detail=ApiError(
@@ -688,8 +795,10 @@ def send_verification_otp(
     try:
         payload = jwt.decode(authorization, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
-        
-        user = db_session.get(User, user_id)
+
+        from database import unbound_session
+        with unbound_session(reason="auth-send-verification-otp-user-lookup"):
+            user = db_session.get(User, user_id)
         if not user:
             raise HTTPException(
                 status_code=401,
@@ -716,24 +825,29 @@ def send_verification_otp(
             )
         
         otp_store = get_otp_store()
-        code = str(random.randint(100000, 999999))
+        code = _generate_otp_code()
         otp_store.set_otp(user.id, code, ttl=300)
-        
-        # Send SMS
-        from services.communication_service import communication_service
-        msg = f"X-EAR dogrulama kodunuz: {code}. Bu kodu kimseyle paylasmayiniz."
-        result = communication_service.send_sms(user.phone, msg)
-        
-        if not result.get('success'):
-            logger.error(f"Failed to send SMS: {result}")
-            raise HTTPException(
-                status_code=500,
-                detail=ApiError(
-                    message=result.get('error', 'Failed to send SMS'),
-                    code="SMS_FAILED",
-                    details=result
-                ).model_dump(mode="json")
-            )
+        for phone_key in _phone_key_candidates(user.phone):
+            otp_store.set_otp(phone_key, code, ttl=300)
+
+        if _should_skip_external_sms():
+            logger.info("Skipping external phone-verification SMS in non-production OTP env")
+        else:
+            # Send SMS
+            from services.communication_service import communication_service
+            msg = f"X-EAR dogrulama kodunuz: {code}. Bu kodu kimseyle paylasmayiniz."
+            result = communication_service.send_sms(user.phone, msg)
+
+            if not result.get('success'):
+                logger.error(f"Failed to send SMS: {result}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=ApiError(
+                        message=result.get('error', 'Failed to send SMS'),
+                        code="SMS_FAILED",
+                        details=result
+                    ).model_dump(mode="json")
+                )
         
         return ResponseEnvelope(data=MessageResponse(message="OTP sent"))
     except jwt.JWTError:
@@ -788,3 +902,157 @@ def toggle_verification(
         db_session.commit()
     return {"success": True}
 
+
+@router.post("/auth/test/prepare-otp-users", include_in_schema=False)
+def prepare_otp_users(db_session: Session = Depends(get_db)):
+    """Create/update deterministic OTP test users for UI and API E2E flows."""
+    now = datetime.now(timezone.utc)
+    tenant_row = db_session.execute(
+        text("SELECT id FROM tenants WHERE slug = :slug LIMIT 1"),
+        {"slug": "otp-test-tenant"},
+    ).first()
+
+    if tenant_row and tenant_row[0]:
+        tenant_id = str(tenant_row[0])
+    else:
+        tenant_id = str(uuid4())
+        db_session.execute(
+            text(
+                """
+                INSERT INTO tenants (
+                    id, name, slug, owner_email, billing_email, tenant_type, status,
+                    company_info, settings, created_at, updated_at
+                ) VALUES (
+                    :id, :name, :slug, :owner_email, :billing_email, :tenant_type, :status,
+                    :company_info, :settings, :created_at, :updated_at
+                )
+                ON CONFLICT(slug) DO UPDATE SET
+                    updated_at = excluded.updated_at
+                """
+            ),
+            {
+                "id": tenant_id,
+                "name": "OTP Test Tenant",
+                "slug": "otp-test-tenant",
+                "owner_email": "otp-test@x-ear.local",
+                "billing_email": "otp-test@x-ear.local",
+                "tenant_type": "B2B",
+                "status": "active",
+                "company_info": "{}",
+                "settings": "{}",
+                "created_at": now,
+                "updated_at": now,
+            },
+        )
+        tenant_row = db_session.execute(
+            text("SELECT id FROM tenants WHERE slug = :slug LIMIT 1"),
+            {"slug": "otp-test-tenant"},
+        ).first()
+        if not tenant_row or not tenant_row[0]:
+            raise HTTPException(status_code=500, detail="OTP test tenant could not be prepared")
+        tenant_id = str(tenant_row[0])
+    scenarios = [
+        {
+            "username": "unverified_phone_user",
+            "email": "unverified@test.com",
+            "phone": "5551234567",
+            "verified": False,
+            "password": "testpass123",
+            "first_name": "Unverified",
+            "last_name": "Phone",
+        },
+        {
+            "username": "no_phone_user",
+            "email": "nophone@test.com",
+            "phone": None,
+            "verified": False,
+            "password": "testpass123",
+            "first_name": "No",
+            "last_name": "Phone",
+        },
+        {
+            "username": "forgot_password_user",
+            "email": "forgot@test.com",
+            "phone": "5559876543",
+            "verified": True,
+            "password": "OldPass123!",
+            "first_name": "Forgot",
+            "last_name": "Password",
+        },
+        {
+            "username": "profile_phone_user",
+            "email": "profile@test.com",
+            "phone": "5558887777",
+            "verified": True,
+            "password": "testpass123",
+            "first_name": "Profile",
+            "last_name": "Phone",
+        },
+    ]
+
+    created_users: list[dict[str, str | None | bool]] = []
+    for scenario in scenarios:
+        probe_user = User()
+        probe_user.username = str(scenario["username"])
+        probe_user.email = str(scenario["email"])
+        probe_user.phone = scenario["phone"]
+        probe_user.first_name = str(scenario["first_name"])
+        probe_user.last_name = str(scenario["last_name"])
+        probe_user.role = 'tenant_admin'
+        probe_user.is_active = True
+        probe_user.is_phone_verified = bool(scenario["verified"])
+        probe_user.tenant_id = tenant_id
+        probe_user.set_password(str(scenario["password"]))
+
+        db_session.execute(
+            text(
+                """
+                INSERT INTO users (
+                    id, username, email, phone, password_hash, first_name, last_name, role,
+                    is_active, is_phone_verified, permissions_version, created_at, updated_at, tenant_id
+                ) VALUES (
+                    :id, :username, :email, :phone, :password_hash, :first_name, :last_name, :role,
+                    :is_active, :is_phone_verified, :permissions_version, :created_at, :updated_at, :tenant_id
+                )
+                ON CONFLICT(username) DO UPDATE SET
+                    email = excluded.email,
+                    phone = excluded.phone,
+                    password_hash = excluded.password_hash,
+                    first_name = excluded.first_name,
+                    last_name = excluded.last_name,
+                    role = excluded.role,
+                    is_active = excluded.is_active,
+                    is_phone_verified = excluded.is_phone_verified,
+                    permissions_version = excluded.permissions_version,
+                    updated_at = excluded.updated_at,
+                    tenant_id = excluded.tenant_id
+                """
+            ),
+            {
+                "id": f"user_{uuid4().hex[:12]}",
+                "username": probe_user.username,
+                "email": probe_user.email,
+                "phone": probe_user.phone,
+                "password_hash": probe_user.password_hash,
+                "first_name": probe_user.first_name,
+                "last_name": probe_user.last_name,
+                "role": probe_user.role,
+                "is_active": probe_user.is_active,
+                "is_phone_verified": probe_user.is_phone_verified,
+                "permissions_version": 1,
+                "created_at": now,
+                "updated_at": now,
+                "tenant_id": tenant_id,
+            },
+        )
+
+        created_users.append(
+            {
+                "username": probe_user.username,
+                "phone": probe_user.phone,
+                "verified": probe_user.is_phone_verified,
+            }
+        )
+
+    db_session.commit()
+    return {"success": True, "users": created_users}

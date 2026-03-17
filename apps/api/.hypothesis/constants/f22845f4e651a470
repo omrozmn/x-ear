@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/efatura_outbox.py
+# hypothesis_version: 6.151.9
+
+['createdAt', 'efatura_outbox', 'ettn', 'fileName', 'id', 'invoiceId', 'pending', 'replacementId', 'status', 'uuid']

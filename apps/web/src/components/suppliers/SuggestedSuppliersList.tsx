@@ -1,13 +1,23 @@
-import React from 'react';
-import { DataTable, Badge, Button, Modal } from '@x-ear/ui-web';
-import { Building2, CheckCircle, XCircle, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { Building2, CheckCircle, XCircle, Info, ChevronDown, ChevronUp, FileText, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
+import { apiClient } from '@/api/orval-mutator';
 import {
     SuggestedSupplier,
+    SuggestedInvoice,
     useAcceptSuggestedSupplier,
     useRejectSuggestedSupplier,
-    useSupplierInvoices,
-    PurchaseInvoice
 } from '../../hooks/useSupplierInvoices';
+
+async function fetchInvoiceDocument(invoiceId: number | string, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {
+    const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}&render_mode=${renderMode}`, {
+        responseType: 'arraybuffer',
+    });
+    const contentType = (resp.headers?.['content-type'] as string) || (format === 'pdf' ? 'application/pdf' : 'text/html');
+    return { data: resp.data, contentType };
+}
 
 interface SuggestedSuppliersListProps {
     suppliers: SuggestedSupplier[];
@@ -15,321 +25,237 @@ interface SuggestedSuppliersListProps {
     onSupplierAccepted?: () => void;
 }
 
-// Helper component to display invoices for a suggested supplier
-function InvoiceListSection({ supplierId }: { supplierId: number }) {
-    const { data, isLoading, error } = useSupplierInvoices({
-        supplierId: String(supplierId),
-        page: 1,
-        perPage: 10,
-        type: 'all',
-    });
-
-    if (isLoading) {
-        return <p className="text-sm text-gray-600">Faturalar yükleniyor...</p>;
-    }
-    if (error) {
-        return <p className="text-sm text-red-600">Faturalar yüklenirken bir hata oluştu.</p>;
-    }
-    const invoices = data?.invoices || [];
-    if (invoices.length === 0) {
-        return <p className="text-sm text-gray-500">Bu tedarikçi için fatura bulunamadı.</p>;
-    }
+// PDF viewer modal overlay
+function PdfViewerModal({ blobUrl, title, onClose }: { blobUrl: string; title: string; onClose: () => void }) {
     return (
-        <div className="col-span-2">
-            <h4 className="text-lg font-medium mb-2">Fatura Listesi</h4>
-            <div className="border rounded-md overflow-hidden">
-                <table className="min-w-full table-auto">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            <th className="px-4 py-2 text-left text-sm font-medium">Fatura No</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium">Tarih</th>
-                            <th className="px-4 py-2 text-right text-sm font-medium">Tutar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {invoices.map((inv: PurchaseInvoice) => (
-                            <tr key={inv.id} className="border-t">
-                                <td className="px-4 py-2 text-sm">{inv.invoiceNumber}</td>
-                                <td className="px-4 py-2 text-sm">{new Date(inv.date).toLocaleDateString('tr-TR')}</td>
-                                <td className="px-4 py-2 text-sm text-right">
-                                    {new Intl.NumberFormat('tr-TR', {
-                                        style: 'currency',
-                                        currency: 'TRY'
-                                    }).format(inv.totalAmount)}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+            <div className="bg-card rounded-xl shadow-2xl flex flex-col w-[90vw] h-[85vh] max-w-5xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-4 py-3 border-b bg-muted">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-4 h-4 text-primary shrink-0" />
+                        <span className="text-sm font-medium text-foreground truncate">{title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={blobUrl.split('#')[0]}
+                            download={`${title}.pdf`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                        >
+                            İndir
+                        </a>
+                        <button data-allow-raw="true" onClick={onClose} className="p-1 rounded hover:bg-accent transition-colors ml-1">
+                            <X className="w-5 h-5 text-muted-foreground" />
+                        </button>
+                    </div>
+                </div>
+                <iframe
+                    src={blobUrl}
+                    className="flex-1 w-full border-0"
+                    title={title}
+                />
             </div>
         </div>
     );
 }
 
 export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepted }: SuggestedSuppliersListProps) {
-    console.log('🔍 SuggestedSuppliersList render:', {
-        suppliersCount: suppliers?.length,
-        isLoading,
-        suppliers: suppliers
-    });
+    const [expandedRow, setExpandedRow] = useState<number | null>(null);
+    const [pdfModal, setPdfModal] = useState<{ blobUrl: string; title: string } | null>(null);
+    const [invoiceLoading, setInvoiceLoading] = useState<string | null>(null);
 
-    const [selectedSupplier, setSelectedSupplier] = React.useState<SuggestedSupplier | null>(null);
     const acceptMutation = useAcceptSuggestedSupplier();
     const rejectMutation = useRejectSuggestedSupplier();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const handleAccept = async (supplier: SuggestedSupplier) => {
         try {
-            await acceptMutation.mutateAsync(supplier.id ?? 0);
-            setSelectedSupplier(null);
+            await acceptMutation.mutateAsync(supplier);
+            toast.success(`"${supplier.companyName}" tedarikçilerinize eklendi`);
             onSupplierAccepted?.();
-        } catch (error) {
-            console.error('Failed to accept supplier:', error);
+        } catch {
+            toast.error('Tedarikçi eklenirken bir hata oluştu');
         }
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const handleReject = async (supplierId: number | undefined) => {
-        if (!supplierId) return;
+    const handleReject = async (supplier: SuggestedSupplier) => {
         try {
-            await rejectMutation.mutateAsync(supplierId);
-        } catch (error) {
-            console.error('Failed to reject supplier:', error);
+            await rejectMutation.mutateAsync(supplier.companyName);
+            toast.success(`"${supplier.companyName}" öneriler listesinden kaldırıldı`);
+        } catch {
+            toast.error('Reddetme işlemi başarısız');
         }
     };
 
-     
-    const columns = React.useMemo(
-        () => {
-            const safeAcceptMutation = acceptMutation || { isPending: false };
-            const safeRejectMutation = rejectMutation || { isPending: false };
+    const handleViewInvoice = async (inv: SuggestedInvoice) => {
+        if (!inv.invoiceId) { toast.error('Fatura ID bulunamadı'); return; }
+        const key = String(inv.invoiceId);
+        setInvoiceLoading(key);
+        const toastId = toast.loading('Fatura yükleniyor...');
+        try {
+            const { data: buf, contentType } = await fetchInvoiceDocument(inv.invoiceId, 'pdf', 'local');
+            const isPdf = contentType.includes('application/pdf');
+            const mimeType = isPdf ? 'application/pdf' : 'text/html';
+            const blob = new Blob([buf], { type: mimeType });
+            const baseUrl = URL.createObjectURL(blob);
+            const url = isPdf ? baseUrl + '#pagemode=none&toolbar=1' : baseUrl;
+            if (pdfModal?.blobUrl) URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]);
+            setPdfModal({ blobUrl: url, title: `${inv.invoiceNumber || inv.invoiceId}` });
+            toast.dismiss(toastId);
+        } catch {
+            toast.error('Fatura yüklenemedi', { id: toastId });
+        } finally {
+            setInvoiceLoading(null);
+        }
+    };
 
-            return [
-                {
-                    key: 'companyName',
-                    id: 'companyName',
-                    header: 'Firma Adı',
-                    accessorKey: 'companyName',
-                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
-                        <div className="flex items-center gap-2">
-                            <div className="flex-shrink-0">
-                                <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
-                                    <Building2 className="h-5 w-5 text-blue-600" />
-                                </div>
-                            </div>
-                            <div>
-                                <div className="font-medium text-gray-900">{row.original?.companyName || 'N/A'}</div>
-                                <div className="text-sm text-gray-500">{row.original?.city || 'Bilinmiyor'}</div>
-                            </div>
-                        </div>
-                    ),
-                },
-                {
-                    key: 'taxNumber',
-                    id: 'taxNumber',
-                    header: 'Vergi No',
-                    accessorKey: 'taxNumber',
-                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
-                        <div>
-                            <div className="text-sm font-medium text-gray-900">{row.original?.taxNumber || 'N/A'}</div>
-                            {row.original?.taxOffice && (
-                                <div className="text-xs text-gray-500">{row.original.taxOffice}</div>
-                            )}
-                        </div>
-                    ),
-                },
-                {
-                    key: 'invoiceCount',
-                    id: 'invoiceCount',
-                    header: 'Fatura Sayısı',
-                    accessorKey: 'invoiceCount',
-                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
-                        <div className="text-center">
-                            <Badge variant="default">{row.original?.invoiceCount || 0} fatura</Badge>
-                        </div>
-                    ),
-                },
-                {
-                    key: 'totalAmount',
-                    id: 'totalAmount',
-                    header: 'Toplam Tutar',
-                    accessorKey: 'totalAmount',
-                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
-                        <div className="text-right font-medium">
-                            {new Intl.NumberFormat('tr-TR', {
-                                style: 'currency',
-                                currency: 'TRY',
-                            }).format(row.original?.totalAmount || 0)}
-                        </div>
-                    ),
-                },
-                {
-                    key: 'invoiceDates',
-                    id: 'invoiceDates',
-                    header: 'İlk / Son Fatura',
-                    accessorKey: 'lastInvoiceDate',
-                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
-                        <div className="text-sm text-gray-600">
-                            {row.original?.firstInvoiceDate && (
-                                <div>{new Date(row.original.firstInvoiceDate).toLocaleDateString('tr-TR')}</div>
-                            )}
-                            {row.original?.lastInvoiceDate && (
-                                <div className="text-xs text-gray-500">
-                                    Son: {new Date(row.original.lastInvoiceDate).toLocaleDateString('tr-TR')}
-                                </div>
-                            )}
-                        </div>
-                    ),
-                },
-                {
-                    key: 'actions',
-                    id: 'actions',
-                    header: 'Aksiyonlar',
-                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
-                        <div className="flex items-center gap-2">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setSelectedSupplier(row.original)}
-                            >
-                                <Eye className="h-4 w-4 mr-1" />
-                                Detay
-                            </Button>
-                            <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                                onClick={() => handleAccept(row.original)}
-                                disabled={safeAcceptMutation.isPending}
-                            >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Ekle
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-red-600 hover:bg-red-50"
-                                onClick={() => handleReject(row.original?.id)}
-                                disabled={safeRejectMutation.isPending}
-                            >
-                                <XCircle className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ),
-                },
-            ];
-        },
-         
-        [acceptMutation, rejectMutation, setSelectedSupplier, handleAccept, handleReject]
-    );
+    const fmt = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(n);
+    const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('tr-TR') : '-';
 
     const safeSuppliers = Array.isArray(suppliers) ? suppliers : [];
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-16">
+                <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+                <span className="ml-3 text-sm text-muted-foreground">Önerilen tedarikçiler yükleniyor...</span>
+            </div>
+        );
+    }
+
+    if (!safeSuppliers.length) {
+        return (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Building2 className="w-10 h-10 text-gray-300 mb-3" />
+                <p className="text-sm font-medium text-muted-foreground">Henüz önerilen tedarikçi yok</p>
+                <p className="text-xs text-muted-foreground mt-1">Gelen faturalardan tedarikçiler otomatik eklenir</p>
+            </div>
+        );
+    }
+
+    const invoiceColumns: Column<SuggestedInvoice>[] = [
+        {
+            key: '_invoiceNumber',
+            title: 'Fatura No',
+            render: (_, inv) => <span className="font-mono text-foreground">{inv.invoiceNumber || `#${inv.invoiceId}`}</span>,
+        },
+        {
+            key: '_invoiceDate',
+            title: 'Tarih',
+            render: (_, inv) => <span className="text-muted-foreground">{fmtDate(inv.invoiceDate)}</span>,
+        },
+        {
+            key: '_totalAmount',
+            title: 'Tutar',
+            align: 'right',
+            render: (_, inv) => <span className="font-semibold text-foreground">{fmt(inv.totalAmount || 0)}</span>,
+        },
+        {
+            key: '_view',
+            title: 'Görüntüle',
+            align: 'center',
+            render: (_, inv) => (
+                <button
+                    data-allow-raw="true"
+                    type="button"
+                    onClick={() => handleViewInvoice(inv)}
+                    disabled={invoiceLoading === String(inv.invoiceId)}
+                    title="Faturayı görüntüle"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded text-primary hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                >
+                    {invoiceLoading === String(inv.invoiceId)
+                        ? <span className="block h-3 w-3 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                        : <FileText className="w-3.5 h-3.5" />}
+                </button>
+            ),
+        },
+    ];
+
     return (
         <>
-            <DataTable
-                data={safeSuppliers}
-                columns={columns as unknown as never}
-                loading={isLoading}
-            />
-
-            {selectedSupplier && (
-                <Modal
-                    isOpen={!!selectedSupplier}
-                    onClose={() => setSelectedSupplier(null)}
-                    title="Tedarikçi Detayları"
-                    size="lg"
-                >
-                    <div className="space-y-6">
-                        {/* Header */}
-                        <div className="flex items-start justify-between pb-4 border-b">
-                            <div>
-                                <h3 className="text-xl font-semibold text-gray-900">
-                                    {selectedSupplier.companyName}
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    VKN: {selectedSupplier.taxNumber}
-                                </p>
-                            </div>
-                            <Badge variant="default" className="text-lg px-3 py-1">
-                                {selectedSupplier.invoiceCount} Fatura
-                            </Badge>
-                        </div>
-
-                        {/* Details */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Vergi Dairesi</label>
-                                <p className="mt-1 text-sm text-gray-900">
-                                    {selectedSupplier.taxOffice || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Şehir</label>
-                                <p className="mt-1 text-sm text-gray-900">
-                                    {selectedSupplier.city || '-'}
-                                </p>
-                            </div>
-                            <div className="col-span-2">
-                                <label className="text-sm font-medium text-gray-500">Adres</label>
-                                <p className="mt-1 text-sm text-gray-900">
-                                    {selectedSupplier.address || '-'}
-                                </p>
-                            </div>
-
-                            {/* Invoice List */}
-                            <InvoiceListSection supplierId={selectedSupplier.id ?? 0} />
-
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Toplam Tutar</label>
-                                <p className="mt-1 text-lg font-semibold text-gray-900">
-                                    {new Intl.NumberFormat('tr-TR', {
-                                        style: 'currency',
-                                        currency: 'TRY',
-                                    }).format(selectedSupplier.totalAmount || 0)}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Fatura Dönemi</label>
-                                <p className="mt-1 text-sm text-gray-900">
-                                    {selectedSupplier.firstInvoiceDate &&
-                                        new Date(selectedSupplier.firstInvoiceDate).toLocaleDateString('tr-TR')}
-                                    {' - '}
-                                    {selectedSupplier.lastInvoiceDate &&
-                                        new Date(selectedSupplier.lastInvoiceDate).toLocaleDateString('tr-TR')}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex justify-end gap-3 pt-4 border-t">
-                        <Button
-                            variant="outline"
-                            onClick={() => setSelectedSupplier(null)}
-                        >
-                            İptal
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="text-red-600 hover:bg-red-50"
-                            onClick={() => {
-                                handleReject(selectedSupplier.id);
-                                setSelectedSupplier(null);
-                            }}
-                            disabled={rejectMutation.isPending}
-                        >
-                            Reddet
-                        </Button>
-                        <Button
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => handleAccept(selectedSupplier)}
-                            disabled={acceptMutation.isPending}
-                        >
-                            {acceptMutation.isPending ? 'Ekleniyor...' : 'Tedarikçilerime Ekle'}
-                        </Button>
-                    </div>
-                </Modal>
+            {pdfModal && (
+                <PdfViewerModal
+                    blobUrl={pdfModal.blobUrl}
+                    title={pdfModal.title}
+                    onClose={() => {
+                        URL.revokeObjectURL(pdfModal.blobUrl);
+                        setPdfModal(null);
+                    }}
+                />
             )}
+
+            <div className="space-y-4">
+                {safeSuppliers.map((supplier) => (
+                    <div key={supplier.id} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                    <Building2 className="h-5 w-5 text-primary" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="font-medium text-foreground">{supplier.companyName}</div>
+                                    <div className="text-xs text-muted-foreground">Vergi No: {supplier.taxNumber || '—'}</div>
+                                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                                        <span>Fatura: <span className="font-semibold text-primary">{supplier.invoiceCount ?? 0}</span></span>
+                                        <span>Toplam: <span className="font-semibold text-foreground">{fmt(supplier.totalAmount || 0)}</span></span>
+                                        <span>İlk: {fmtDate(supplier.firstInvoiceDate)}</span>
+                                        <span>Son: {supplier.lastInvoiceDate && supplier.lastInvoiceDate !== supplier.firstInvoiceDate ? fmtDate(supplier.lastInvoiceDate) : fmtDate(supplier.firstInvoiceDate)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                    data-allow-raw="true"
+                                    type="button"
+                                    title="Fatura listesini göster"
+                                    onClick={() => setExpandedRow(expandedRow === supplier.id ? null : supplier.id)}
+                                    className="inline-flex items-center gap-1 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+                                >
+                                    <Info className="w-3.5 h-3.5" />
+                                    Faturalar
+                                    {expandedRow === supplier.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                </button>
+                                <button
+                                    data-allow-raw="true"
+                                    type="button"
+                                    title="Tedarikçi listeme ekle"
+                                    onClick={() => handleAccept(supplier)}
+                                    disabled={acceptMutation.isPending}
+                                    className="inline-flex items-center gap-1 rounded-xl bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-60 transition-colors whitespace-nowrap"
+                                >
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                    Listeme Ekle
+                                </button>
+                                <button
+                                    data-allow-raw="true"
+                                    type="button"
+                                    title="Reddet"
+                                    onClick={() => handleReject(supplier)}
+                                    disabled={rejectMutation.isPending}
+                                    className="inline-flex items-center rounded-xl border border-red-200 px-3 py-2 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-60 transition-colors"
+                                >
+                                    <XCircle className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {expandedRow === supplier.id && (
+                            <div className="mt-4 rounded-xl bg-primary/10/60 p-3">
+                                {!supplier.invoices?.length ? (
+                                    <p className="py-2 text-xs text-muted-foreground">Bu tedarikçi için fatura detayı yok.</p>
+                                ) : (
+                                    <DataTable<SuggestedInvoice>
+                                        data={supplier.invoices}
+                                        columns={invoiceColumns}
+                                        rowKey={(inv) => String(inv.invoiceId)}
+                                        emptyText="Fatura detayı yok"
+                                    />
+                                )}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
         </>
     );
 }
+

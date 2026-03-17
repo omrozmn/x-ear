@@ -8,14 +8,12 @@ import os
 from decimal import Decimal
 import random
 import json
-from datetime import datetime
 
 # Add the backend directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the Flask app instance directly
 import app
-from models.inventory import InventoryItem
 from models.base import db
 
 def create_sample_inventory_data():
@@ -23,14 +21,14 @@ def create_sample_inventory_data():
     
     # Sample data for different categories
     hearing_aids = [
-        {"name": "Phonak Audéo Paradise P90", "brand": "Phonak", "category": "İşitme Cihazı"},
-        {"name": "Oticon More 1", "brand": "Oticon", "category": "İşitme Cihazı"},
-        {"name": "Widex Moment 440", "brand": "Widex", "category": "İşitme Cihazı"},
-        {"name": "Signia Pure Charge&Go X", "brand": "Signia", "category": "İşitme Cihazı"},
-        {"name": "ReSound ONE 9", "brand": "ReSound", "category": "İşitme Cihazı"},
-        {"name": "Starkey Livio Edge AI", "brand": "Starkey", "category": "İşitme Cihazı"},
-        {"name": "Bernafon Alpha 9", "brand": "Bernafon", "category": "İşitme Cihazı"},
-        {"name": "Unitron Moxi Blue", "brand": "Unitron", "category": "İşitme Cihazı"},
+        {"name": "Phonak Audéo Paradise P90", "brand": "Phonak", "category": "hearing_aid"},
+        {"name": "Oticon More 1", "brand": "Oticon", "category": "hearing_aid"},
+        {"name": "Widex Moment 440", "brand": "Widex", "category": "hearing_aid"},
+        {"name": "Signia Pure Charge&Go X", "brand": "Signia", "category": "hearing_aid"},
+        {"name": "ReSound ONE 9", "brand": "ReSound", "category": "hearing_aid"},
+        {"name": "Starkey Livio Edge AI", "brand": "Starkey", "category": "hearing_aid"},
+        {"name": "Bernafon Alpha 9", "brand": "Bernafon", "category": "hearing_aid"},
+        {"name": "Unitron Moxi Blue", "brand": "Unitron", "category": "hearing_aid"},
     ]
     
     batteries = [
@@ -71,7 +69,7 @@ def create_sample_inventory_data():
         
         # Add variations for some products
         if len(extended_products) < 50:
-            if product["category"] == "İşitme Cihazı":
+            if product["category"] == "hearing_aid":
                 # Add left/right variations
                 left_variant = product.copy()
                 left_variant["name"] = f"{product['name']} (Sol)"
@@ -96,7 +94,7 @@ def create_sample_inventory_data():
     
     for i, product_data in enumerate(products_to_add, 1):
         # Generate realistic inventory data
-        is_hearing_aid = product_data["category"] == "İşitme Cihazı"
+        is_hearing_aid = product_data["category"] == "hearing_aid"
         
         # Set inventory levels based on product type
         if is_hearing_aid:

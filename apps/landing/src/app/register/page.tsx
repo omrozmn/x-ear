@@ -1,12 +1,16 @@
 "use client";
 
-import Link from "next/link";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Scene } from "@/components/canvas/Scene";
+import { TextReveal } from "@/components/ui/TextReveal";
+import { HyperGlassCard } from "@/components/ui/HyperGlassCard";
+import { Phone, AlertCircle, CheckCircle, ArrowLeft, User, Menu, Tag, Check, X, ChevronRight } from "lucide-react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import AppHeader from "../AppHeader";
-import { Phone, AlertCircle, CheckCircle, ArrowLeft, User, Menu, Tag, Check, X } from "lucide-react";
-import { useState, useEffect, Suspense } from "react";
 // Use relative path or alias if configured
 import { apiClient } from "../../lib/api-client";
+import { motion, AnimatePresence } from "framer-motion";
 
 function RegisterContent() {
     const router = useRouter();
@@ -22,6 +26,8 @@ function RegisterContent() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
     // Initial check for 'ref' param
     useEffect(() => {
         const refParam = searchParams.get('ref') || searchParams.get('referralCode');
@@ -31,6 +37,8 @@ function RegisterContent() {
         }
     }, [searchParams]);
 
+    const normalizePhone = (p: string) => p.replace(/[^\d+]/g, "");
+
     const validateReferralCode = async (code: string) => {
         if (!code) {
             setReferralStatus("idle");
@@ -39,9 +47,10 @@ function RegisterContent() {
         }
         setReferralStatus("loading");
         try {
-            const res = await apiClient.get(`/api/affiliate/lookup?code=${code}`);
-            if (res.data.success) {
-                setReferralName(res.data.name);
+            const res = await apiClient.get(`/api/affiliates/lookup?code=${code}`);
+            const resData = res.data?.data || res.data;
+            if (resData?.email || resData?.code || resData?.id) {
+                setReferralName(resData.email || resData.name || code);
                 setReferralStatus("valid");
             } else {
                 setReferralName(null);
@@ -49,7 +58,7 @@ function RegisterContent() {
             }
         } catch (e) {
             setReferralName(null);
-            setReferralStatus("invalid"); // Treat 404/500 as invalid for UI
+            setReferralStatus("invalid");
         }
     };
 
@@ -58,290 +67,314 @@ function RegisterContent() {
         setLoading(true);
         setError(null);
         try {
-            await apiClient.post('/api/register-phone', { phone });
+            await apiClient.post('/api/register-phone', { phone: normalizePhone(phone) });
             setStep("otp");
+            // Scroll to top so OTP input is visible on mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data?.message || "Bir hata oluştu.");
+            const errMsg = err.response?.data?.error?.message || err.response?.data?.message || err.response?.data?.detail || "Bir hata oluştu.";
+            setError(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
         } finally {
             setLoading(false);
         }
     };
 
-    const handleOtpSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleOtpSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         setLoading(true);
         setError(null);
         const otpString = otp.join("");
         try {
             const response = await apiClient.post('/api/verify-registration-otp', {
-                phone,
+                phone: normalizePhone(phone),
                 otp: otpString,
                 first_name: firstName,
                 last_name: lastName,
                 referral_code: referralStatus === "valid" ? referralCode : undefined
             });
 
-            // Success
-            const { access_token } = response.data;
-            if (access_token) {
-                // Store token in localStorage
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('auth_token', access_token);
+            // ResponseEnvelope format: { success, data: { accessToken, ... }, error, ... }
+            const resBody = response.data;
+            if (resBody.success) {
+                const token = resBody?.data?.accessToken || resBody?.data?.access_token || resBody?.accessToken || resBody?.access_token;
+                if (token) {
+                    localStorage.setItem('auth_token', token);
                 }
-
-                // Redirect to Checkout
-                router.push('/checkout');
+                const redirectPath = searchParams.get('redirect');
+                if (redirectPath) {
+                    router.push(redirectPath);
+                } else {
+                    router.push('/checkout');
+                }
+            } else {
+                setError(resBody?.error?.message || resBody.message || "Kod doğrulanamadı");
             }
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data?.message || "Doğrulama başarısız.");
+            const errMsg = err.response?.data?.error?.message || err.response?.data?.message || err.response?.data?.detail || "Doğrulama başarısız.";
+            setError(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
         } finally {
             setLoading(false);
         }
     };
 
     const handleOtpChange = (index: number, value: string) => {
-        if (value.length > 1) return;
+        // Handle paste
+        if (value.length > 1) {
+            const pastedData = value.substring(0, 6).split("");
+            const newOtp = [...otp];
+            pastedData.forEach((char, i) => {
+                if (index + i < 6) newOtp[index + i] = char;
+            });
+            setOtp(newOtp);
+            const nextIdx = Math.min(index + pastedData.length, 5);
+            otpRefs.current[nextIdx]?.focus();
+            return;
+        }
+
         const newOtp = [...otp];
         newOtp[index] = value;
         setOtp(newOtp);
         if (value && index < 5) {
-            const nextInput = document.getElementById(`otp-${index + 1}`);
-            if (nextInput) nextInput.focus();
+            otpRefs.current[index + 1]?.focus();
         }
     };
 
     const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
         if (e.key === "Backspace" && !otp[index] && index > 0) {
-            const prevInput = document.getElementById(`otp-${index - 1}`);
-            if (prevInput) prevInput.focus();
+            otpRefs.current[index - 1]?.focus();
         }
     };
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-gray-300 font-sans selection:bg-indigo-500 selection:text-white relative overflow-hidden">
+        <div className="min-h-screen bg-background text-foreground selection:bg-accent-blue/30 relative flex flex-col">
+            <Header />
             <div className="fixed inset-0 z-0">
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(at_50%_50%,hsla(250,90%,15%,0.3)_0px,transparent_50%)]"></div>
-                <div className="absolute top-[-20%] right-[-20%] w-[800px] h-[800px] rounded-full bg-indigo-600/10 blur-3xl"></div>
-                <div className="absolute bottom-[-20%] left-[-20%] w-[800px] h-[800px] rounded-full bg-purple-600/10 blur-3xl"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-10"></div>
+                <Scene />
             </div>
 
-            <AppHeader />
+            <main className="flex-grow flex items-center justify-center relative z-10 p-4 pt-32 pb-24">
+                <div className="w-full max-w-xl">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={step}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.4 }}
+                        >
+                            <HyperGlassCard className="p-8 md:p-12">
+                                {error && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-sm"
+                                    >
+                                        <AlertCircle className="w-5 h-5 shrink-0" />
+                                        {error}
+                                    </motion.div>
+                                )}
 
-            <main className="min-h-screen flex items-center justify-center relative z-10 p-4 pt-20">
-                <div className="w-full max-w-md">
-                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200 text-sm">
-                                <AlertCircle className="w-4 h-4" />
-                                {error}
-                            </div>
-                        )}
+                                {step === "phone" ? (
+                                    <div id="phone-step">
+                                        <div className="mb-10">
+                                            <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-glow mb-4">
+                                                <TextReveal>Serüvene Katılın</TextReveal>
+                                            </h1>
+                                            <p className="text-foreground/60 text-lg">
+                                                İşitme merkezinizin geleceğini bugün inşa etmeye başlayın.
+                                            </p>
+                                        </div>
 
-                        {step === "phone" ? (
-                            <div id="phone-step">
-                                <div className="text-center mb-8">
-                                    <h1 className="text-3xl font-bold text-white mb-2">Hesap Oluştur</h1>
-                                    <p className="text-gray-400">Devam etmek için bilgilerinizi girin.</p>
-                                </div>
+                                        <form onSubmit={handlePhoneSubmit} className="space-y-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold uppercase tracking-widest text-foreground/40 ml-1">Adınız</label>
+                                                    <div className="relative group">
+                                                        <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-foreground/30 group-focus-within:text-accent-blue transition-colors">
+                                                            <User className="w-5 h-5" />
+                                                        </span>
+                                                        <input
+                                                            type="text"
+                                                            required
+                                                            value={firstName}
+                                                            onChange={(e) => setFirstName(e.target.value)}
+                                                            autoComplete="given-name"
+                                                            className="w-full pl-12 pr-4 py-4 bg-foreground/[0.03] border border-foreground/10 rounded-2xl text-foreground placeholder-foreground/20 focus:outline-none focus:ring-2 focus:ring-accent-blue/50 focus:border-accent-blue transition-all font-medium"
+                                                            placeholder="Can"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold uppercase tracking-widest text-foreground/40 ml-1">Soyadınız</label>
+                                                    <div className="relative group">
+                                                        <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-foreground/30 group-focus-within:text-accent-purple transition-colors">
+                                                            <User className="w-5 h-5" />
+                                                        </span>
+                                                        <input
+                                                            type="text"
+                                                            required
+                                                            value={lastName}
+                                                            onChange={(e) => setLastName(e.target.value)}
+                                                            autoComplete="family-name"
+                                                            className="w-full pl-12 pr-4 py-4 bg-foreground/[0.03] border border-foreground/10 rounded-2xl text-foreground placeholder-foreground/20 focus:outline-none focus:ring-2 focus:ring-accent-purple/50 focus:border-accent-purple transition-all font-medium"
+                                                            placeholder="Yılmaz"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                <form onSubmit={handlePhoneSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Ad</label>
-                                            <div className="relative">
-                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                                    <User className="w-5 h-5 text-gray-500" />
-                                                </span>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={firstName}
-                                                    onChange={(e) => setFirstName(e.target.value)}
-                                                    className="w-full pl-10 pr-4 py-3 bg-[#101010] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
-                                                    placeholder="Adınız"
-                                                />
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold uppercase tracking-widest text-foreground/40 ml-1">İletişim Numarası</label>
+                                                <div className="relative group">
+                                                    <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-foreground/30 group-focus-within:text-accent-blue transition-colors">
+                                                        <Phone className="w-5 h-5" />
+                                                    </span>
+                                                    <input
+                                                        type="tel"
+                                                        required
+                                                        value={phone}
+                                                        onChange={(e) => setPhone(e.target.value)}
+                                                        autoComplete="tel"
+                                                        className="w-full pl-12 pr-4 py-4 bg-foreground/[0.03] border border-foreground/10 rounded-2xl text-foreground placeholder-foreground/20 focus:outline-none focus:ring-2 focus:ring-accent-blue/50 focus:border-accent-blue transition-all font-medium tracking-wide text-lg"
+                                                        placeholder="5XX XXX XX XX"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold uppercase tracking-widest text-foreground/40 ml-1">Referans <span className="text-[10px] opacity-40">(İsteğe bağlı)</span></label>
+                                                <div className="relative group">
+                                                    <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-foreground/30 group-focus-within:text-accent-purple transition-colors">
+                                                        <Tag className="w-5 h-5" />
+                                                    </span>
+                                                    <input
+                                                        type="text"
+                                                        value={referralCode}
+                                                        onChange={(e) => {
+                                                            setReferralCode(e.target.value);
+                                                            if (e.target.value.length === 0) {
+                                                                setReferralStatus("idle");
+                                                                setReferralName(null);
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => validateReferralCode(e.target.value)}
+                                                        className={`w-full pl-12 pr-12 py-4 bg-foreground/[0.03] border rounded-2xl text-foreground placeholder-foreground/20 focus:outline-none focus:ring-2 transition-all font-medium ${referralStatus === "valid" ? "border-emerald-500/50 focus:ring-emerald-500/20" :
+                                                            referralStatus === "invalid" ? "border-red-500/50 focus:ring-red-500/20" :
+                                                                "border-foreground/10 focus:ring-accent-purple/50 focus:border-accent-purple"
+                                                            }`}
+                                                        placeholder="Hediye çeki veya referans kodu"
+                                                    />
+                                                    {referralStatus === "loading" && (
+                                                        <div className="absolute inset-y-0 right-4 flex items-center">
+                                                            <div className="w-5 h-5 border-2 border-accent-purple/30 border-t-accent-purple rounded-full animate-spin"></div>
+                                                        </div>
+                                                    )}
+                                                    {referralStatus === "valid" && (
+                                                        <div className="absolute inset-y-0 right-4 flex items-center text-emerald-500">
+                                                            <Check className="w-6 h-6" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {referralStatus === "valid" && referralName && (
+                                                    <p className="mt-2 text-sm text-emerald-500/80 font-medium flex items-center gap-1 px-1">
+                                                        <CheckCircle className="w-4 h-4" />
+                                                        {referralName} ile özel avantaj kazandınız
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="w-full flex justify-center items-center gap-2 py-4 px-6 rounded-2xl bg-foreground text-background font-bold text-lg hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl shadow-foreground/10 group mt-4"
+                                            >
+                                                {loading ? "Hazırlanıyor..." : "Ücretsiz Başlat"}
+                                                {!loading && <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                                            </button>
+                                        </form>
+
+                                        <p className="mt-8 text-center text-foreground/40 text-sm">
+                                            Zaten hesabınız var mı?{" "}
+                                            <a href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080'}/login`} className="font-bold text-foreground hover:text-accent-blue transition-colors">
+                                                Hemen Giriş Yapın
+                                            </a>
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div id="otp-step">
+                                        <div className="mb-10 relative">
+                                            <button
+                                                onClick={() => setStep("phone")}
+                                                className="absolute -top-1 -left-1 p-2 text-foreground/40 hover:text-foreground transition-colors hover:bg-foreground/5 rounded-full"
+                                            >
+                                                <ArrowLeft className="w-6 h-6" />
+                                            </button>
+                                            <div className="pl-10">
+                                                <h1 className="text-4xl font-display font-bold tracking-tight text-glow mb-2">
+                                                    Doğrulama
+                                                </h1>
+                                                <p className="text-foreground/60">
+                                                    <span className="font-bold text-foreground">{phone}</span> hattınıza gelen kodu girin.
+                                                </p>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Soyad</label>
-                                            <div className="relative">
-                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                                    <User className="w-5 h-5 text-gray-500" />
-                                                </span>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={lastName}
-                                                    onChange={(e) => setLastName(e.target.value)}
-                                                    className="w-full pl-10 pr-4 py-3 bg-[#101010] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
-                                                    placeholder="Soyadınız"
-                                                />
+
+                                        <form onSubmit={handleOtpSubmit} className="space-y-8">
+                                            <div className="flex justify-between gap-3">
+                                                {otp.map((digit, index) => (
+                                                    <input
+                                                        key={index}
+                                                        ref={(el) => { otpRefs.current[index] = el; }}
+                                                        id={`otp-${index}`}
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        autoComplete="one-time-code"
+                                                        maxLength={1}
+                                                        value={digit}
+                                                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                                        className="w-12 h-14 md:w-14 md:h-16 bg-foreground/5 border border-white/10 rounded-2xl text-center text-2xl font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent-blue/50 transition-all font-bold placeholder-foreground/20"
+                                                        placeholder="0"
+                                                        disabled={loading}
+                                                    />
+                                                ))}
                                             </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={loading || otp.join("").length < 6}
+                                                className="w-full py-5 bg-foreground text-background font-bold rounded-2xl text-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-20 shadow-2xl"
+                                            >
+                                                {loading ? "Doğrulanıyor..." : "Doğrula ve Bitir"}
+                                            </button>
+                                        </form>
+                                        <div className="mt-8 text-center">
+                                            <button
+                                                onClick={() => apiClient.post('/api/register-phone', { phone: normalizePhone(phone) })}
+                                                className="text-sm font-bold text-foreground/40 hover:text-accent-blue transition-colors"
+                                            >
+                                                Kodu Almadınız mı? Yeniden Gönder
+                                            </button>
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Telefon Numarası</label>
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                                <Phone className="w-5 h-5 text-gray-500" />
-                                            </span>
-                                            <input
-                                                type="tel"
-                                                required
-                                                value={phone}
-                                                onChange={(e) => setPhone(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-3 bg-[#101010] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium tracking-wide"
-                                                placeholder="5XX XXX XX XX"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Referral Code */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">
-                                            Referans Kodu <span className="text-gray-600 text-xs font-normal">(İsteğe bağlı)</span>
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                                <Tag className="w-5 h-5 text-gray-500" />
-                                            </span>
-                                            <input
-                                                type="text"
-                                                value={referralCode}
-                                                onChange={(e) => {
-                                                    setReferralCode(e.target.value);
-                                                    if (e.target.value.length === 0) {
-                                                        setReferralStatus("idle");
-                                                        setReferralName(null);
-                                                    }
-                                                }}
-                                                onBlur={(e) => validateReferralCode(e.target.value)}
-                                                className={`w-full pl-10 pr-10 py-3 bg-[#101010] border rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 transition-all font-medium ${referralStatus === "valid"
-                                                        ? "border-green-500/50 focus:ring-green-500/20"
-                                                        : referralStatus === "invalid"
-                                                            ? "border-red-500/50 focus:ring-red-500/20"
-                                                            : "border-gray-700 focus:ring-indigo-500"
-                                                    }`}
-                                                placeholder="Varsa referans kodunuz"
-                                            />
-                                            {referralStatus === "loading" && (
-                                                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                                                    <div className="w-4 h-4 border-2 border-gray-500 border-t-white rounded-full animate-spin"></div>
-                                                </div>
-                                            )}
-                                            {referralStatus === "valid" && (
-                                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-green-500">
-                                                    <Check className="w-5 h-5" />
-                                                </div>
-                                            )}
-                                            {referralStatus === "invalid" && (
-                                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-red-500">
-                                                    <X className="w-5 h-5" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        {referralStatus === "valid" && referralName && (
-                                            <p className="mt-1 text-sm text-green-400 flex items-center gap-1">
-                                                <CheckCircle className="w-3 h-3" />
-                                                {referralName} ile kayıt oluyorsunuz
-                                            </p>
-                                        )}
-                                        {referralStatus === "invalid" && referralCode.length > 0 && (
-                                            <p className="mt-1 text-sm text-red-400">
-                                                Geçersiz referans kodu.
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Turnstile Placeholder */}
-                                    <div className="flex justify-center pt-2">
-                                        <div className="w-full h-12 bg-gray-800/30 rounded flex items-center justify-center text-gray-600 text-xs border border-gray-800 border-dashed">
-                                            Turnstile CAPTCHA (Auto)
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <button
-                                            type="submit"
-                                            disabled={loading}
-                                            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all shadow-indigo-500/20"
-                                        >
-                                            {loading ? "Gönderiliyor..." : "Hesap Oluştur"}
-                                        </button>
-                                    </div>
-                                </form>
-                                <p className="mt-6 text-center text-sm text-gray-400">
-                                    Zaten bir hesabın var mı?{" "}
-                                    <a href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080'}/login`} className="font-medium text-indigo-400 hover:text-indigo-300">
-                                        Giriş Yap
-                                    </a>
-                                </p>
-                            </div>
-                        ) : (
-                            <div id="otp-step">
-                                <div className="text-center mb-8 relative">
-                                    <button
-                                        onClick={() => setStep("phone")}
-                                        className="absolute top-0 left-0 text-gray-400 hover:text-white"
-                                    >
-                                        <ArrowLeft className="w-6 h-6" />
-                                    </button>
-                                    <h1 className="text-3xl font-bold text-white mb-2">Kodu Doğrula</h1>
-                                    <p className="text-gray-400">
-                                        <span className="font-medium text-white">{phone}</span> numarasına gönderilen 6 haneli kodu girin.
-                                    </p>
-                                </div>
-
-                                <form onSubmit={handleOtpSubmit} className="space-y-6">
-                                    <div className="flex justify-between gap-2">
-                                        {otp.map((digit, index) => (
-                                            <input
-                                                key={index}
-                                                id={`otp-${index}`}
-                                                type="text"
-                                                maxLength={1}
-                                                value={digit}
-                                                onChange={(e) => handleOtpChange(index, e.target.value)}
-                                                onKeyDown={(e) => handleKeyDown(index, e)}
-                                                className="w-12 h-14 bg-[#101010] border border-gray-700 rounded-lg text-center text-2xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                                            />
-                                        ))}
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-indigo-600/20"
-                                    >
-                                        {loading ? "Doğrulanıyor..." : "Doğrula ve Kaydol"}
-                                    </button>
-                                </form>
-                                <div className="mt-6 text-center">
-                                    <button
-                                        onClick={() => {
-                                            apiClient.post('/api/register-phone', { phone });
-                                        }}
-                                        className="text-sm text-indigo-400 hover:text-indigo-300"
-                                    >
-                                        Kodu almadın mı? Tekrar gönder
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                                )}
+                            </HyperGlassCard>
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 }
 
 export default function Register() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center text-white">Yükleniyor...</div>}>
+        <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="w-12 h-12 border-4 border-foreground/10 border-t-foreground rounded-full animate-spin" />
+        </div>}>
             <RegisterContent />
         </Suspense>
     );

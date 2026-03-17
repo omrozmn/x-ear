@@ -52,7 +52,7 @@ with app.app_context():
     # Check if tenant already has a subscription
     existing_sub = Subscription.query.filter_by(tenant_id=tenant.id).first()
     if existing_sub:
-        print(f"Tenant already has a subscription. Updating it...")
+        print("Tenant already has a subscription. Updating it...")
         existing_sub.plan_id = plan.id
         existing_sub.status = 'active'
         existing_sub.current_period_start = datetime.utcnow()

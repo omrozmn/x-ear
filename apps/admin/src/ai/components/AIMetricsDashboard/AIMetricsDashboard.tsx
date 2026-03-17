@@ -34,8 +34,6 @@ import {
   ChevronDown,
   ChevronUp,
   Gauge,
-  Percent,
-  Users,
   FileCheck,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -150,7 +148,7 @@ function TimeWindowSelector({ value, onChange, disabled }: TimeWindowSelectorPro
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         disabled={disabled}
-        className="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white
+        className="text-sm border border-gray-300 rounded-xl px-3 py-1.5 bg-white
           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
           disabled:opacity-50 disabled:cursor-not-allowed"
       >
@@ -179,7 +177,7 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, subtitle, icon, colorClass = 'text-gray-900', trend, trendValue }: MetricCardProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-sm transition-shadow">
+    <div className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-sm transition-shadow">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-500">{title}</p>
@@ -188,7 +186,7 @@ function MetricCard({ title, value, subtitle, icon, colorClass = 'text-gray-900'
             <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
           )}
         </div>
-        <div className="p-2 bg-gray-50 rounded-lg">
+        <div className="p-2 bg-gray-50 rounded-2xl">
           {icon}
         </div>
       </div>
@@ -216,7 +214,7 @@ interface LatencyMetricsSectionProps {
 function LatencyMetricsSection({ latency, isLoading }: LatencyMetricsSectionProps) {
   if (isLoading || !latency) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
           <Gauge className="h-5 w-5 mr-2 text-gray-500" />
           Latency Metrikleri
@@ -231,7 +229,7 @@ function LatencyMetricsSection({ latency, isLoading }: LatencyMetricsSectionProp
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
           <Gauge className="h-5 w-5 mr-2 text-gray-500" />
@@ -243,7 +241,7 @@ function LatencyMetricsSection({ latency, isLoading }: LatencyMetricsSectionProp
       </div>
       
       <div className="grid grid-cols-3 gap-4">
-        <div className="text-center p-4 bg-gray-50 rounded-lg">
+        <div className="text-center p-4 bg-gray-50 rounded-2xl">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">P50</p>
           <p className={`text-2xl font-bold mt-1 ${getLatencyColor(latency.p50)}`}>
             {formatMs(latency.p50)}
@@ -251,7 +249,7 @@ function LatencyMetricsSection({ latency, isLoading }: LatencyMetricsSectionProp
           <p className="text-xs text-gray-400 mt-1">Medyan</p>
         </div>
         
-        <div className="text-center p-4 bg-gray-50 rounded-lg">
+        <div className="text-center p-4 bg-gray-50 rounded-2xl">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">P95</p>
           <p className={`text-2xl font-bold mt-1 ${getLatencyColor(latency.p95)}`}>
             {formatMs(latency.p95)}
@@ -259,7 +257,7 @@ function LatencyMetricsSection({ latency, isLoading }: LatencyMetricsSectionProp
           <p className="text-xs text-gray-400 mt-1">95. yüzdelik</p>
         </div>
         
-        <div className="text-center p-4 bg-gray-50 rounded-lg">
+        <div className="text-center p-4 bg-gray-50 rounded-2xl">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">P99</p>
           <p className={`text-2xl font-bold mt-1 ${getLatencyColor(latency.p99)}`}>
             {formatMs(latency.p99)}
@@ -293,7 +291,7 @@ interface ErrorRatesSectionProps {
 function ErrorRatesSection({ errors, isLoading }: ErrorRatesSectionProps) {
   if (isLoading || !errors) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
           <AlertTriangle className="h-5 w-5 mr-2 text-gray-500" />
           Hata Oranları
@@ -310,7 +308,7 @@ function ErrorRatesSection({ errors, isLoading }: ErrorRatesSectionProps) {
   const successRate = 1 - errors.error_rate - errors.timeout_rate;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
           <AlertTriangle className="h-5 w-5 mr-2 text-gray-500" />
@@ -322,7 +320,7 @@ function ErrorRatesSection({ errors, isLoading }: ErrorRatesSectionProps) {
       </div>
       
       <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="p-4 bg-gray-50 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Başarı Oranı</span>
             <CheckCircle size={16} className="text-green-500" />
@@ -332,7 +330,7 @@ function ErrorRatesSection({ errors, isLoading }: ErrorRatesSectionProps) {
           </p>
         </div>
         
-        <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="p-4 bg-gray-50 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Hata Oranı</span>
             <XCircle size={16} className="text-red-500" />
@@ -343,7 +341,7 @@ function ErrorRatesSection({ errors, isLoading }: ErrorRatesSectionProps) {
           <p className="text-xs text-gray-400 mt-1">{errors.error_count} hata</p>
         </div>
         
-        <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="p-4 bg-gray-50 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Timeout Oranı</span>
             <Timer size={16} className="text-orange-500" />
@@ -354,7 +352,7 @@ function ErrorRatesSection({ errors, isLoading }: ErrorRatesSectionProps) {
           <p className="text-xs text-gray-400 mt-1">{errors.timeout_count} timeout</p>
         </div>
         
-        <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="p-4 bg-gray-50 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Toplam İstek</span>
             <Activity size={16} className="text-blue-500" />
@@ -379,7 +377,7 @@ interface ApprovalMetricsSectionProps {
 function ApprovalMetricsSection({ approvals, isLoading }: ApprovalMetricsSectionProps) {
   if (isLoading || !approvals) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
           <FileCheck className="h-5 w-5 mr-2 text-gray-500" />
           Onay Metrikleri
@@ -396,7 +394,7 @@ function ApprovalMetricsSection({ approvals, isLoading }: ApprovalMetricsSection
   const totalProcessed = approvals.approved_count + approvals.rejected_count + approvals.expired_count;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
           <FileCheck className="h-5 w-5 mr-2 text-gray-500" />
@@ -410,7 +408,7 @@ function ApprovalMetricsSection({ approvals, isLoading }: ApprovalMetricsSection
       </div>
       
       <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+        <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
           <div className="flex items-center justify-between">
             <span className="text-sm text-green-700">Onaylanan</span>
             <CheckCircle size={16} className="text-green-500" />
@@ -420,7 +418,7 @@ function ApprovalMetricsSection({ approvals, isLoading }: ApprovalMetricsSection
           </p>
         </div>
         
-        <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+        <div className="p-4 bg-red-50 rounded-2xl border border-red-100">
           <div className="flex items-center justify-between">
             <span className="text-sm text-red-700">Reddedilen</span>
             <XCircle size={16} className="text-red-500" />
@@ -433,7 +431,7 @@ function ApprovalMetricsSection({ approvals, isLoading }: ApprovalMetricsSection
           </p>
         </div>
         
-        <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="p-4 bg-gray-50 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Süresi Dolan</span>
             <Timer size={16} className="text-gray-400" />
@@ -443,7 +441,7 @@ function ApprovalMetricsSection({ approvals, isLoading }: ApprovalMetricsSection
           </p>
         </div>
         
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+        <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
           <div className="flex items-center justify-between">
             <span className="text-sm text-blue-700">Ort. Onay Süresi</span>
             <Clock size={16} className="text-blue-500" />
@@ -493,7 +491,7 @@ function AlertItem({ alert, onAcknowledge, isAcknowledging }: AlertItemProps) {
   };
 
   return (
-    <div className={`p-4 rounded-lg border ${config.borderColor} ${config.bgColor}`}>
+    <div className={`p-4 rounded-2xl border ${config.borderColor} ${config.bgColor}`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center space-x-2">
@@ -562,7 +560,7 @@ function AlertItem({ alert, onAcknowledge, isAcknowledging }: AlertItemProps) {
                 onClick={() => setShowNotes(true)}
                 disabled={isAcknowledging}
                 className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 
-                  bg-white border border-gray-300 rounded-md hover:bg-gray-50 
+                  bg-white border border-gray-300 rounded-xl hover:bg-gray-50 
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <BellOff size={12} className="mr-1" />
@@ -605,7 +603,7 @@ function AlertListSection({ alerts, activeCount, isLoading, onAcknowledge, isAck
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
           <Bell className="h-5 w-5 mr-2 text-gray-500" />
           Alertler
@@ -620,7 +618,7 @@ function AlertListSection({ alerts, activeCount, isLoading, onAcknowledge, isAck
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <div 
         className="px-6 py-4 border-b border-gray-200 bg-gray-50 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -730,7 +728,7 @@ export function AIMetricsDashboard({
   // Error state
   if (isError) {
     return (
-      <div className={`bg-white rounded-lg border border-red-200 p-6 ${className}`}>
+      <div className={`bg-white rounded-2xl border border-red-200 p-6 ${className}`}>
         <div className="text-center py-8">
           <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-red-400" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Metrikler Yüklenemedi</h3>
@@ -738,7 +736,7 @@ export function AIMetricsDashboard({
           <button
             onClick={handleRefresh}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white 
-              bg-primary-600 rounded-md hover:bg-primary-700"
+              bg-primary-600 rounded-xl hover:bg-primary-700"
           >
             <RefreshCw size={16} className="mr-2" />
             Tekrar Dene
@@ -754,10 +752,10 @@ export function AIMetricsDashboard({
       <KillSwitchRecommendation />
       
       {/* Header */}
-      <div className="bg-white rounded-lg border border-gray-200 px-6 py-4">
+      <div className="bg-white rounded-2xl border border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary-100 rounded-lg">
+            <div className="p-2 bg-primary-100 rounded-2xl">
               <Activity className="h-6 w-6 text-primary-600" />
             </div>
             <div>
@@ -777,7 +775,7 @@ export function AIMetricsDashboard({
               onClick={handleRefresh}
               disabled={isMetricsLoading}
               className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 
-                bg-white border border-gray-300 rounded-md hover:bg-gray-50 
+                bg-white border border-gray-300 rounded-xl hover:bg-gray-50 
                 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={16} className={`mr-2 ${isMetricsLoading ? 'animate-spin' : ''}`} />

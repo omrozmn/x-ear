@@ -9,12 +9,11 @@ import logging
 
 from sqlalchemy.orm import Session
 
+from core.dependencies import get_current_admin_user
 from database import get_db
+from core.database import unbound_session
 from schemas.base import ResponseEnvelope
 from schemas.roles import RoleCreate, RoleUpdate, RolePermissionsUpdate, RoleRead, RoleListResponse, RoleResponse, PermissionRead, PermissionGroup, PermissionListResponse
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["AdminRoles"])
@@ -38,28 +37,41 @@ PERMISSION_CATEGORIES = {
 class UserRolesUpdate(BaseModel):
     role_ids: List[str]
 
+
+def serialize_permission(permission) -> PermissionRead:
+    """Map admin permission rows to the frontend-compatible schema."""
+    code = getattr(permission, "code", None) or getattr(permission, "name", None) or ""
+    label = getattr(permission, "label", None)
+    description = getattr(permission, "description", None) or label
+
+    return PermissionRead(
+        id=getattr(permission, "id", code),
+        name=code,
+        description=description,
+        created_at=getattr(permission, "created_at", None),
+        updated_at=getattr(permission, "updated_at", None),
+    )
+
 # --- Routes ---
 
 @router.get("/roles", response_model=ResponseEnvelope[RoleListResponse], operation_id="listAdminRoles")
 def get_admin_roles(
     include_permissions: bool = False,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get all admin roles"""
     try:
-        if not access.is_super_admin and (not access.user or access.user.role not in ['admin', 'super_admin']):
-            raise HTTPException(status_code=403, detail="Admin access required")
-        
-        from models.admin_permission import AdminRoleModel
-        
-        roles = db.query(AdminRoleModel).order_by(AdminRoleModel.name).all()
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminRoleModel
+            
+            roles = db.query(AdminRoleModel).order_by(AdminRoleModel.name).all()
         
         roles_data = []
         for r in roles:
             perms = []
             if include_permissions:
-                perms = [PermissionRead.model_validate(p) for p in r.permissions.all()]
+                perms = [serialize_permission(p) for p in r.permissions.all()]
             
             roles_data.append(RoleRead(
                 id=r.id,
@@ -82,21 +94,19 @@ def get_admin_roles(
 @router.get("/roles/{role_id}", response_model=ResponseEnvelope[RoleResponse], operation_id="getAdminRole")
 def get_admin_role(
     role_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get single role detail"""
     try:
-        if not access.is_super_admin and (not access.user or access.user.role not in ['admin', 'super_admin']):
-            raise HTTPException(status_code=403, detail="Admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminRoleModel
         
-        from models.admin_permission import AdminRoleModel
-        
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -118,22 +128,21 @@ def get_admin_role(
 @router.post("/roles", response_model=ResponseEnvelope[RoleResponse], operation_id="createAdminRoles", status_code=201)
 def create_admin_role(
     request_data: RoleCreate,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Create new role"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel, AdminPermissionModel
         
-        from models.admin_permission import AdminRoleModel, AdminPermissionModel
+            name = request_data.name.strip()
+            if not name:
+                raise HTTPException(status_code=400, detail="Rol adı zorunludur")
         
-        name = request_data.name.strip()
-        if not name:
-            raise HTTPException(status_code=400, detail="Rol adı zorunludur")
-        
-        # Check if exists
-        existing = db.query(AdminRoleModel).filter_by(name=name).first()
+            # Check if exists
+            existing = db.query(AdminRoleModel).filter_by(name=name).first()
         if existing:
             raise HTTPException(status_code=400, detail="Bu isimde bir rol zaten var")
         
@@ -153,9 +162,9 @@ def create_admin_role(
         db.add(role)
         db.commit()
         
-        logger.info(f"Admin role created: {role.name} by user {access.principal_id}")
+        logger.info(f"Admin role created: {role.name} by user {admin_user.id}")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -179,17 +188,16 @@ def create_admin_role(
 def update_admin_role(
     role_id: str,
     request_data: RoleUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Update role"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel
         
-        from models.admin_permission import AdminRoleModel
-        
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -211,7 +219,7 @@ def update_admin_role(
         
         logger.info(f"Admin role updated: {role.name}")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -234,17 +242,16 @@ def update_admin_role(
 @router.delete("/roles/{role_id}", operation_id="deleteAdminRole")
 def delete_admin_role(
     role_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Delete role"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel
         
-        from models.admin_permission import AdminRoleModel
-        
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -277,21 +284,19 @@ def delete_admin_role(
 @router.get("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleResponse], operation_id="listAdminRolePermissions")
 def get_admin_role_permissions(
     role_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get role permissions"""
     try:
-        if not access.is_super_admin and (not access.user or access.user.role not in ['admin', 'super_admin']):
-            raise HTTPException(status_code=403, detail="Admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminRoleModel
         
-        from models.admin_permission import AdminRoleModel
-        
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -314,17 +319,16 @@ def get_admin_role_permissions(
 def update_admin_role_permissions(
     role_id: str,
     request_data: RolePermissionsUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Update role permissions"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel, AdminPermissionModel
         
-        from models.admin_permission import AdminRoleModel, AdminPermissionModel
-        
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -369,17 +373,15 @@ def update_admin_role_permissions(
 @router.get("/permissions", response_model=ResponseEnvelope[PermissionListResponse], operation_id="listAdminPermissions")
 def get_admin_permissions(
     category: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get all permissions"""
     try:
-        if not access.is_super_admin and (not access.user or access.user.role not in ['admin', 'super_admin']):
-            raise HTTPException(status_code=403, detail="Admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminPermissionModel
         
-        from models.admin_permission import AdminPermissionModel
-        
-        query = db.query(AdminPermissionModel)
+            query = db.query(AdminPermissionModel)
         if category:
             query = query.filter_by(category=category)
         
@@ -395,7 +397,7 @@ def get_admin_permissions(
                 cat = perm.code.split('.')[0]
             cat = cat or 'other'
             
-            p_read = PermissionRead.model_validate(perm)
+            p_read = serialize_permission(perm)
             
             if cat in PERMISSION_CATEGORIES:
                 if cat not in grouped:
@@ -423,7 +425,7 @@ def get_admin_permissions(
 
         return ResponseEnvelope(data=PermissionListResponse(
             data=groups_data,
-            all=[PermissionRead.model_validate(p) for p in permissions],
+            all=[serialize_permission(p) for p in permissions],
             total=len(permissions)
         ))
         
@@ -435,17 +437,15 @@ def get_admin_permissions(
 
 @router.get("/admin-users", operation_id="listAdminAdminUsers")
 def get_admin_users_with_roles(
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get admin users with roles"""
     try:
-        if not access.is_super_admin and (not access.user or access.user.role not in ['admin', 'super_admin']):
-            raise HTTPException(status_code=403, detail="Admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_user import AdminUser
         
-        from models.admin_user import AdminUser
-        
-        users = db.query(AdminUser).filter_by(is_active=True).order_by(AdminUser.email).all()
+            users = db.query(AdminUser).filter_by(is_active=True).order_by(AdminUser.email).all()
         
         return ResponseEnvelope(data={
             'users': [
@@ -464,17 +464,15 @@ def get_admin_users_with_roles(
 @router.get("/admin-users/{user_id}", operation_id="getAdminAdminUser")
 def get_admin_user_detail(
     user_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get admin user detail"""
     try:
-        if not access.is_super_admin and (not access.user or access.user.role not in ['admin', 'super_admin']):
-            raise HTTPException(status_code=403, detail="Admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_user import AdminUser
         
-        from models.admin_user import AdminUser
-        
-        user = db.get(AdminUser, user_id)
+            user = db.get(AdminUser, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
         
@@ -492,18 +490,17 @@ def get_admin_user_detail(
 def update_admin_user_roles(
     user_id: str,
     request_data: UserRolesUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Update user roles"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_user import AdminUser
+            from models.admin_permission import AdminRoleModel
         
-        from models.admin_user import AdminUser
-        from models.admin_permission import AdminRoleModel
-        
-        user = db.get(AdminUser, user_id)
+            user = db.get(AdminUser, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
         
@@ -544,18 +541,21 @@ def update_admin_user_roles(
 
 @router.get("/my-permissions", operation_id="listAdminMyPermissions")
 def get_my_admin_permissions(
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get current admin user's permissions"""
     try:
-        from models.admin_user import AdminUser
-        from models.admin_permission import AdminPermissionModel
-        from models.user import User
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_user import AdminUser
+            from models.admin_permission import AdminPermissionModel
+            from models.user import User
         
-        user_id = access.principal_id
+            user_id = admin_user.id if admin_user else None
+            if not user_id:
+                raise HTTPException(status_code=401, detail="Unauthorized")
         
-        user = db.get(AdminUser, user_id)
+            user = db.get(AdminUser, user_id)
         
         # If not found in AdminUser, check standard User table
         if not user:

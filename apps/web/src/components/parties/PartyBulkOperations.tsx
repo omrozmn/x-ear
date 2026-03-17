@@ -78,10 +78,10 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
 
   // CSV Import State - removed unused variables
   // const [csvImport, setCsvImport] = useState<CSVImportData>({
-  //   file: null,
-  //   mapping: {},
-  //   preview: [],
-  //   errors: []
+  // file: null,
+  // mapping: {},
+  // preview: [],
+  // errors: []
   // });
 
   // Bulk Actions State
@@ -257,11 +257,11 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
   return (
     <>
       {/* Bulk Operations Bar */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Users className="w-5 h-5 text-blue-600" />
+              <Users className="w-5 h-5 text-primary" />
               <span className="font-medium text-blue-900">
                 {selectedParties.length} hasta seçildi
               </span>
@@ -311,9 +311,9 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
         size="md"
       >
         <div className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-2">Dışa Aktarılacak Veriler</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+          <div className="bg-muted p-4 rounded-2xl">
+            <h4 className="font-medium text-foreground mb-2">Dışa Aktarılacak Veriler</h4>
+            <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
               {Object.values(CSV_FIELD_MAPPING).map(field => (
                 <div key={field} className="flex items-center space-x-2">
                   <FileText className="w-3 h-3" />
@@ -344,6 +344,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
         onClose={importModal.closeModal}
         entityFields={Object.entries(CSV_FIELD_MAPPING).map(([k, v]) => ({ key: k, label: v }))}
         zodSchema={partySchema}
+        uploadEndpoint="/api/parties/bulk-upload"
         onComplete={(res) => {
           if (res.errors && res.errors.length > 0) {
             warning(`${res.created + res.updated} satır işlendi, ${res.errors.length} hata bulundu`);
@@ -364,7 +365,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               İşlem Türü
             </label>
             <Select
@@ -378,7 +379,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Yeni Etiket Ekle
             </label>
             <div className="flex space-x-2">
@@ -406,14 +407,14 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
 
           {bulkTagData.tags.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Seçili Etiketler
               </label>
               <div className="flex flex-wrap gap-2">
                 {bulkTagData.tags.map((tag, index) => (
                   <div
                     key={index}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 cursor-pointer hover:bg-gray-200"
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted text-foreground cursor-pointer hover:bg-accent"
                     onClick={() => setBulkTagData(prev => ({
                       ...prev,
                       tags: prev.tags.filter((_, i) => i !== index)
@@ -451,7 +452,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               SMS Mesajı
             </label>
             <Textarea
@@ -460,12 +461,12 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
               placeholder="SMS mesajınızı yazın..."
               rows={4}
             />
-            <div className="text-sm text-gray-500 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               {bulkSmsData.message.length}/160 karakter
             </div>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="bg-warning/10 border border-yellow-200 rounded-2xl p-3">
             <div className="flex items-start space-x-2">
               <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div className="text-sm text-yellow-800">
@@ -499,9 +500,9 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
         size="md"
       >
         <div className="space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-destructive/10 border border-red-200 rounded-2xl p-4">
             <div className="flex items-start space-x-3">
-              <AlertCircle className="w-6 h-6 text-red-600 mt-0.5" />
+              <AlertCircle className="w-6 h-6 text-destructive mt-0.5" />
               <div>
                 <h4 className="font-medium text-red-900">Dikkat!</h4>
                 <p className="text-sm text-red-800 mt-1">
@@ -513,15 +514,15 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
           </div>
 
           <div className="space-y-2">
-            <h5 className="font-medium text-gray-900">Silinecek Hastalar:</h5>
+            <h5 className="font-medium text-foreground">Silinecek Hastalar:</h5>
             <div className="max-h-32 overflow-y-auto space-y-1">
               {selectedParties.slice(0, 10).map(party => (
-                <div key={party.id} className="text-sm text-gray-600">
+                <div key={party.id} className="text-sm text-muted-foreground">
                   • {`${party.firstName || ''} ${party.lastName || ''}`.trim() || 'İsimsiz Hasta'} ({party.phone})
                 </div>
               ))}
               {selectedParties.length > 10 && (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-muted-foreground">
                   ... ve {selectedParties.length - 10} hasta daha
                 </div>
               )}

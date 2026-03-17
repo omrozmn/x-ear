@@ -24,7 +24,7 @@ Properties:
 import os
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from hypothesis import given, strategies as st, settings, HealthCheck, assume
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

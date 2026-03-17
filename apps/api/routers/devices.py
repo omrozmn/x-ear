@@ -4,19 +4,19 @@ Device CRUD, categories, brands, stock management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List, Union
-from datetime import datetime
-from pydantic import BaseModel, Field
+from datetime import datetime, timezone
 import logging
 import random
+import json
+import uuid
 
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
-from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from schemas.base import ResponseEnvelope, ApiError
 from schemas.devices import (
     DeviceRead, DeviceCreate, DeviceUpdate, 
-    StockUpdateRequest, BrandCreate, TrialPeriod, Warranty,
-    DeviceLowStockResponse
+    StockUpdateRequest, BrandCreate, DeviceLowStockResponse
 )
 from schemas.auth import PasswordChangeRequest
 from schemas.notifications import NotificationUpdate
@@ -34,37 +34,14 @@ from core.models.device import Device
 from core.models.enums import ProductCode, AppErrorCode
 from models.tenant import Tenant
 from constants import CANONICAL_CATEGORY_HEARING_AID
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
-
+from models.user import ActivityLog
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Devices"])
+from middleware.require_module import require_module
 
-def ensure_hearing_product(db_session: Session, tenant_id: str):
-    """Ensure tenant is using a hearing product"""
-    if not tenant_id:
-        return # Admin or system context
-        
-    tenant = db_session.get(Tenant, tenant_id)
-    if not tenant:
-        return # Should be handled by other logic if tenant missing
-        
-    if not ProductCode.is_xear(tenant.product_code or ProductCode.XEAR_HEARING):
-         # Allow all XEar for now? Or strictly Hearing?
-         # User requirement: != XEAR_HEARING -> 403
-         pass
-
-    if tenant.product_code and tenant.product_code != ProductCode.XEAR_HEARING.value:
-         raise HTTPException(
-            status_code=403,
-            detail={
-                "error_code": AppErrorCode.PRODUCT_NOT_ALLOWED,
-                "message": "Feature not available for this product",
-                "product_code": tenant.product_code,
-                "required_product": ProductCode.XEAR_HEARING,
-            }
-        )
+router = APIRouter(tags=["Devices"], dependencies=[Depends(require_module("devices"))])
 
 
 @router.get(
@@ -125,16 +102,13 @@ def get_devices(
     search: Optional[str] = None,
     brand: Optional[str] = None,
     inventory_only: bool = Query(False, alias="inventory_only"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get devices with filtering"""
     try:
-        if access.tenant_id:
-            ensure_hearing_product(db_session, access.tenant_id)
-            
         query = db_session.query(Device)
         
         # Tenant scope
@@ -200,8 +174,9 @@ def create_device(
 ):
     """Create a new device"""
     try:
-        if access.tenant_id:
-            ensure_hearing_product(db_session, access.tenant_id)
+        from core.tenant_utils import get_effective_tenant_id
+        
+        tenant_id = get_effective_tenant_id(access)
 
         data = device_in.model_dump(by_alias=False)
         logger.info(f"CREATE_DEVICE REQUEST: {data}")
@@ -246,7 +221,7 @@ def create_device(
         
         device = Device()
         device.id = device_id
-        device.tenant_id = access.tenant_id
+        device.tenant_id = tenant_id
         device.party_id = data['party_id']
         device.inventory_id = inventory_id
         
@@ -298,6 +273,19 @@ def create_device(
             device.warranty_terms = warranty.get('terms')
         
         db_session.add(device)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            user_id=access.user_id,
+            action='device_created',
+            entity_type='device',
+            entity_id=device_id,
+            details=json.dumps({"title": "Cihaz eklendi"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         logger.info(f"Device created: {device.id}")
@@ -573,6 +561,18 @@ def update_device(
                 device.warranty_end_date = datetime.fromisoformat(warranty['end_date'])
             device.warranty_terms = warranty.get('terms')
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=device.tenant_id,
+            user_id=access.user_id,
+            action='device_updated',
+            entity_type='device',
+            entity_id=device_id,
+            details=json.dumps({"title": "Cihaz güncellendi"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=DeviceRead.model_validate(device))
     except HTTPException:
@@ -598,6 +598,19 @@ def delete_device(
                     detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
                 )
             db_session.delete(device)
+
+            activity = ActivityLog(
+                id=str(uuid.uuid4()),
+                tenant_id=device.tenant_id,
+                user_id=access.user_id,
+                action='device_deleted',
+                entity_type='device',
+                entity_id=device_id,
+                details=json.dumps({"title": "Cihaz silindi"}),
+                created_at=datetime.now(timezone.utc),
+            )
+            db_session.add(activity)
+
             db_session.commit()
             return ResponseEnvelope(message="Device deleted successfully")
         
@@ -624,6 +637,19 @@ def delete_device(
                     loaner_inv.update_inventory(1)
             
             db_session.delete(assignment)
+
+            activity = ActivityLog(
+                id=str(uuid.uuid4()),
+                tenant_id=assignment.tenant_id,
+                user_id=access.user_id,
+                action='device_deleted',
+                entity_type='device',
+                entity_id=device_id,
+                details=json.dumps({"title": "Cihaz silindi"}),
+                created_at=datetime.now(timezone.utc),
+            )
+            db_session.add(activity)
+
             db_session.commit()
             return ResponseEnvelope(message="Device assignment deleted and stock restored")
         
@@ -653,6 +679,19 @@ def update_device_stock(
             device.notes = (device.notes or '') + f"\n[stock-update] {stock_update.operation} x{stock_update.quantity}: {stock_update.notes}"
         
         db_session.add(device)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=device.tenant_id,
+            user_id=access.user_id,
+            action='device_stock_updated',
+            entity_type='device',
+            entity_id=device_id,
+            details=json.dumps({"title": "Stok güncellendi"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         return ResponseEnvelope(message="Stock update applied")

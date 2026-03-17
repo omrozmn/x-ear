@@ -4,7 +4,7 @@ Auth Schemas - Pydantic models for Authentication domain
 G-03: Auth Boundary Migration - Type-safe auth response schemas
 All auth endpoints MUST use these schemas for serialization (by_alias=True)
 """
-from typing import Optional, List, Union
+from typing import Optional, Union
 from datetime import datetime
 from pydantic import Field, EmailStr
 from .base import AppBaseModel
@@ -45,6 +45,7 @@ class ResetPasswordRequest(AppBaseModel):
     identifier: str = Field(..., description="Phone number")
     otp: str = Field(..., description="OTP code")
     new_password: str = Field(..., alias="newPassword", min_length=6, description="New password")
+    captcha_token: Optional[str] = Field(None, alias="captchaToken", description="reCAPTCHA token for bot protection")
 
 
 class SetPasswordRequest(AppBaseModel):

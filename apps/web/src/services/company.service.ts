@@ -23,6 +23,8 @@ export interface CompanyInfo {
   accountHolder?: string;
   sgkMukellefKodu?: string;
   sgkMukellefAdi?: string;
+  companyType?: 'hearing_center' | 'pharmacy' | 'hospital' | 'optical' | 'medical' | 'other';
+  defaultExemptionCode?: string;
   tradeRegistryNo?: string;
   mersisNo?: string;
 }
@@ -55,11 +57,13 @@ export const companyService = {
    * Update company information
    */
   updateCompanyInfo: async (data: Partial<CompanyInfo>): Promise<TenantCompanyResponse> => {
+    console.log('🔄 [companyService] Updating company info:', data);
     const response = await customInstance<{ success: boolean; data: TenantCompanyResponse }>({
       url: '/api/tenant/company',
       method: 'PUT',
       data,
     });
+    console.log('✅ [companyService] Update response:', response);
     return response.data;
   },
 
@@ -102,6 +106,21 @@ export const companyService = {
       url: `/api/tenant/company/upload/${type}`,
       method: 'DELETE',
     });
+  },
+
+  /**
+   * Fetch company asset through authenticated request and return a temporary object URL.
+   */
+  getAssetObjectUrl: async (path: string | undefined): Promise<string | undefined> => {
+    if (!path) return undefined;
+
+    const response = await customInstance<Blob>({
+      url: path,
+      method: 'GET',
+      responseType: 'blob',
+    });
+
+    return URL.createObjectURL(response);
   },
 
   /**

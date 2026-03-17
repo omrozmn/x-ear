@@ -15,7 +15,7 @@ test.describe('Parties CRUD Operations', () => {
         await expect(heading).toBeVisible({ timeout: 10000 });
 
         // Verify "Yeni Hasta" or add button exists
-        const addButton = tenantPage.getByRole('button', { name: /Yeni|Hasta|Müşteri|Ekle|Add/i }).first();
+        const addButton = tenantPage.getByRole('button', { name: 'Yeni Hasta' }).first();
         await expect(addButton).toBeVisible({ timeout: 5000 });
     });
 
@@ -23,8 +23,8 @@ test.describe('Parties CRUD Operations', () => {
         await tenantPage.goto('/parties');
         await tenantPage.waitForLoadState('networkidle');
 
-        // Click Add/New button
-        const addButton = tenantPage.getByRole('button', { name: /Yeni|Hasta|Ekle/i }).first();
+        // Click Add/New button "Yeni Hasta"
+        const addButton = tenantPage.getByRole('button', { name: 'Yeni Hasta' }).first();
         await addButton.click();
 
         // Wait for modal or form
@@ -36,24 +36,24 @@ test.describe('Parties CRUD Operations', () => {
         const lastName = 'AutoCRUD';
         const phone = `+9055500${timestamp.toString().slice(-5)}`;
 
-        // Fill required fields - look for common input patterns
-        const firstNameInput = tenantPage.getByLabel(/Ad|First Name/i).first();
+        // Fill required fields - Ad, Soyad, Telefon
+        const firstNameInput = tenantPage.getByLabel('Ad', { exact: true }).first();
         if (await firstNameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
             await firstNameInput.fill(firstName);
         }
 
-        const lastNameInput = tenantPage.getByLabel(/Soyad|Last Name/i).first();
+        const lastNameInput = tenantPage.getByLabel('Soyad', { exact: true }).first();
         if (await lastNameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
             await lastNameInput.fill(lastName);
         }
 
-        const phoneInput = tenantPage.getByLabel(/Telefon|Phone/i).first();
+        const phoneInput = tenantPage.getByLabel('Telefon', { exact: true }).first();
         if (await phoneInput.isVisible({ timeout: 3000 }).catch(() => false)) {
             await phoneInput.fill(phone);
         }
 
-        // Click Save/Submit button
-        const saveButton = tenantPage.getByRole('button', { name: /Kaydet|Save|Ekle|Oluştur|Create/i }).first();
+        // Click Save/Submit button "Kaydet"
+        const saveButton = tenantPage.getByRole('button', { name: 'Kaydet' }).first();
         if (await saveButton.isVisible({ timeout: 3000 }).catch(() => false)) {
             await saveButton.click();
 
