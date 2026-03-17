@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO: Enable when e-commerce backend endpoints are in OpenAPI spec
 import React, { useState } from 'react';
 import { Check, X, Loader2, Sparkles } from 'lucide-react';
 import { Button, Modal, useToastHelpers } from '@x-ear/ui-web';
