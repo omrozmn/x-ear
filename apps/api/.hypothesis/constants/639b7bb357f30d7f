@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/conftest.py
+# hypothesis_version: 6.151.6
+
+['APP_ENV', 'DATABASE_URL', 'JWT_SECRET_KEY', 'SMTP_ENCRYPTION_KEY', 'TESTING', 'sqlite:///:memory:', 'test-secret', 'testing', 'true']

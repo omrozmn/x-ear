@@ -659,12 +659,13 @@ class TestAuditServiceUnit:
         context = AuditContext(
             tenant_id="tenant_123",
             user_id="user_456",
+            request_id="aireq_test_count_001",
         )
         model_context = ModelContext(
             model_id="qwen2.5-7b-instruct",
             model_version="v1.0.0",
         )
-        
+
         # Log different event types
         service.log_request(context=context, model_context=model_context)
         service.log_request(context=context, model_context=model_context)

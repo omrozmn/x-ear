@@ -19,25 +19,27 @@ def generate_test_token(user_id, role, tenant_id, secret='test-secret'):
 
 @pytest.fixture
 def branch_test_data(db_session):
-    # Create tenant
-    slug = f"test-tenant-{uuid.uuid4().hex[:8]}"
+    # Create tenant with unique identifiers
+    uid = uuid.uuid4().hex[:8]
+    slug = f"test-tenant-{uid}"
     tenant = Tenant(
-        id=f"tenant-{uuid.uuid4().hex[:8]}",
-        name="Test Tenant", 
+        id=f"tenant-{uid}",
+        name="Test Tenant",
         slug=slug,
-        owner_email="admin@test.com",
-        billing_email="admin@test.com",
+        owner_email=f"admin-{uid}@test.com",
+        billing_email=f"billing-{uid}@test.com",
         is_active=True,
         max_branches=10
     )
     db_session.add(tenant)
     db_session.commit()
 
-    # Create tenant admin
+    # Create tenant admin with unique username/email
+    ta_uid = uuid.uuid4().hex[:8]
     tenant_admin = User(
-        id=f"user-{uuid.uuid4().hex[:8]}",
-        email="admin@test.com",
-        username="admin",
+        id=f"user-{ta_uid}",
+        email=f"admin-{ta_uid}@test.com",
+        username=f"admin-{ta_uid}",
         role="tenant_admin",
         tenant_id=tenant.id,
         is_active=True
@@ -51,11 +53,12 @@ def branch_test_data(db_session):
     db_session.add(branch)
     db_session.commit()
 
-    # Create branch admin
+    # Create branch admin with unique username/email
+    ba_uid = uuid.uuid4().hex[:8]
     branch_admin = User(
-        id=f"user-{uuid.uuid4().hex[:8]}",
-        email="branch_admin@test.com",
-        username="branch_admin",
+        id=f"user-{ba_uid}",
+        email=f"branch_admin-{ba_uid}@test.com",
+        username=f"branch_admin-{ba_uid}",
         role="admin",
         tenant_id=tenant.id,
         is_active=True

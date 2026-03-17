@@ -93,12 +93,13 @@ def upgrade() -> None:
                existing_type=sa.VARCHAR(length=100),
                type_=sa.String(length=128),
                existing_nullable=True)
-        batch_op.create_index(batch_op.f('ix_ai_requests_legal_hold'), ['legal_hold'], unique=False)
-        batch_op.create_index('ix_ai_requests_legal_hold_created', ['legal_hold', 'created_at'], unique=False)
-        batch_op.create_index(batch_op.f('ix_ai_requests_prompt_hash'), ['prompt_hash'], unique=False)
-        batch_op.create_index('ix_ai_requests_status_created', ['status', 'created_at'], unique=False)
-        batch_op.create_index('ix_ai_requests_tenant_created', ['tenant_id', 'created_at'], unique=False)
-        batch_op.create_index('ix_ai_requests_user_created', ['user_id', 'created_at'], unique=False)
+    # Create indexes idempotently (may already exist from initial schema)
+    op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_legal_hold ON ai_requests (legal_hold)')
+    op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_legal_hold_created ON ai_requests (legal_hold, created_at)')
+    op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_prompt_hash ON ai_requests (prompt_hash)')
+    op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_status_created ON ai_requests (status, created_at)')
+    op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_tenant_created ON ai_requests (tenant_id, created_at)')
+    op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_user_created ON ai_requests (user_id, created_at)')
 
     # Wrap bulk_import_batches
     with op.batch_alter_table('bulk_import_batches', schema=None) as batch_op:

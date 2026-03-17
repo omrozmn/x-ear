@@ -70,6 +70,9 @@ function HomeContent() {
           </div>
         </section>
 
+        {/* Sector Selector — top of page for immediate context */}
+        <SectorCards />
+
         {/* Pain Points */}
         <PainPoints />
 
@@ -107,9 +110,6 @@ function HomeContent() {
 
         {/* ROI Calculator */}
         <InteractiveRoi />
-
-        {/* Sector Selector */}
-        <SectorCards />
 
       </main>
       <Footer />

@@ -30,9 +30,11 @@ from core.models.email import SMTPEmailLog
 # Fixtures
 
 @pytest.fixture(autouse=True)
-def _mock_bounce_blacklist():
-    """Mock bounce blacklist to return False for all tests in this module."""
-    with patch('services.bounce_handler_service.BounceHandlerService.is_blacklisted', return_value=False):
+def _mock_email_guards():
+    """Mock bounce blacklist, unsubscribe, and rate limit for all tests."""
+    with patch('services.bounce_handler_service.BounceHandlerService.is_blacklisted', return_value=False), \
+         patch('services.unsubscribe_service.UnsubscribeService.is_unsubscribed', return_value=False), \
+         patch('services.rate_limit_service.RateLimitService.check_rate_limit', return_value=(True, "", None)):
         yield
 
 

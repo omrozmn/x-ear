@@ -132,14 +132,19 @@ export function SectorCards() {
             : "One platform, different sectors. Select your sector, content adapts to you."}
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {SECTORS.map((s) => {
             const isActive = activeSector === s.id;
             const Icon = s.icon;
             return (
               <motion.button
                 key={s.id}
-                onClick={() => setSector(s.id)}
+                onClick={() => {
+                  if (activeSector !== s.id) {
+                    setSector(s.id);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 className={`relative rounded-2xl border-2 bg-gradient-to-br ${s.color} backdrop-blur-sm p-5 transition-all text-left cursor-pointer ${

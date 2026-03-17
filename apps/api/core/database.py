@@ -5,6 +5,7 @@ No Flask dependency - works with FastAPI
 import os
 from pathlib import Path
 from sqlalchemy import create_engine, event
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base, Session
 from contextvars import ContextVar
 from typing import Optional
@@ -31,11 +32,15 @@ except Exception:
 
 # Handle SQLite for development
 if DATABASE_URL.startswith('sqlite'):
-    engine = create_engine(
-        DATABASE_URL,
+    _engine_kwargs = dict(
         connect_args={"check_same_thread": False},
-        echo=False
+        echo=False,
     )
+    # In-memory SQLite needs StaticPool so that all connections share the
+    # same database; otherwise each connection gets its own empty DB.
+    if ":memory:" in DATABASE_URL:
+        _engine_kwargs["poolclass"] = StaticPool
+    engine = create_engine(DATABASE_URL, **_engine_kwargs)
 else:
     # PostgreSQL with increased connection pool for testing
     engine = create_engine(

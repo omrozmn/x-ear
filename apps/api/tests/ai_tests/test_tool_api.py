@@ -718,22 +718,25 @@ class TestAllowlistIntegration:
             assert "schemaVersion" in tool
             assert tool["schemaVersion"]  # Not empty
     
-    def test_allowlist_tools_executable_in_simulate_mode(self):
+    def test_allowlist_tools_executable_in_simulate_mode(self, db_session):
         """All allowlist tools can be executed in simulate mode."""
         from ai.tools import allowlist  # noqa: F401
-        
+
         registry = get_tool_registry()
         tools = registry.list_tools()
-        
+
+        # Use tenant IDs from the test DB (created by _ensure_test_users autouse fixture)
+        tid = "test-tenant"
+
         # Test each tool with minimal valid parameters
         test_params = {
-            "feature_flag_toggle": {"flag_name": "test", "enabled": True, "tenant_id": "t1"},
-            "tenant_config_update": {"config_key": "key", "config_value": "val", "tenant_id": "t1"},
-            "generateReport": {"report_type": "sales", "date_from": "2024-01-01", "date_to": "2024-01-31", "tenant_id": "t1"},
-            "tenant_info_get": {"tenant_id": "t1"},
-            "feature_flags_list": {"tenant_id": "t1"},
-            "tenant_plan_upgrade": {"tenant_id": "t1", "new_plan": "professional"},
-            "notification_send": {"tenant_id": "t1", "user_ids": ["u1"], "message": "test"},
+            "feature_flag_toggle": {"flag_name": "test", "enabled": True, "tenant_id": tid},
+            "tenant_config_update": {"config_key": "key", "config_value": "val", "tenant_id": tid},
+            "generateReport": {"report_type": "sales", "date_from": "2024-01-01", "date_to": "2024-01-31", "tenant_id": tid},
+            "tenant_info_get": {"tenant_id": tid},
+            "feature_flags_list": {"tenant_id": tid},
+            "tenant_plan_upgrade": {"tenant_id": tid, "new_plan": "professional"},
+            "notification_send": {"tenant_id": tid, "user_ids": ["u1"], "message": "test"},
         }
         
         for tool in tools:

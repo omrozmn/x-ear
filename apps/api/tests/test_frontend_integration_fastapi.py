@@ -4,9 +4,16 @@ import pytest
 # Setup Test User in a cleaner way or use conftest ones
 # This file seems to be a standalone integration test, but lets try to make it work with existing fixtures
 
-@pytest.mark.skip(reason="Endpoint /api/patients/bulk_upload not implemented; use /api/parties/bulk-upload")
 def test_p1_bulk_upload_patients(client, auth_headers):
-    pass
+    """POST /api/parties/bulk-upload is available"""
+    import io
+    csv_content = "firstName,lastName,phone\nBulk,Test,+905001112233"
+    response = client.post(
+        '/api/parties/bulk-upload',
+        files={"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")},
+        headers=auth_headers
+    )
+    assert response.status_code in [200, 201, 422], f"Unexpected: {response.status_code} - {response.text}"
 
 def test_p1_invoice_templates(client, auth_headers):
     response = client.get('/api/invoices/templates', headers=auth_headers)
@@ -15,9 +22,16 @@ def test_p1_invoice_templates(client, auth_headers):
     assert data['success'] is True
     assert isinstance(data['data'], list)
 
-@pytest.mark.skip(reason="Endpoint /api/invoices/bulk_upload not implemented")
 def test_p1_invoice_bulk_upload(client, auth_headers):
-    pass
+    """POST /api/invoices/bulk-upload is available"""
+    import io
+    csv_content = "invoiceNumber,total,status\nINV-001,100.0,draft"
+    response = client.post(
+        '/api/invoices/bulk-upload',
+        files={"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")},
+        headers=auth_headers
+    )
+    assert response.status_code in [200, 201, 422], f"Unexpected: {response.status_code} - {response.text}"
 
 def test_p1_print_queue_ops(client, auth_headers):
     # 0. Create patient and invoice first

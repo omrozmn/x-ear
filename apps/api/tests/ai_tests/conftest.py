@@ -19,6 +19,16 @@ os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
 os.environ.setdefault("SECRET_KEY", "test-secret")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
+# Point to local Ollama with available model
+os.environ.setdefault("AI_MODEL_BASE_URL", "http://localhost:11434")
+os.environ.setdefault("AI_MODEL_ID", "glm-4.7-flash:latest")
+os.environ.setdefault("AI_FAST_MODEL_ID", "glm-4.7-flash:latest")
+os.environ.setdefault("AI_MODEL_PROVIDER", "local")
+os.environ.setdefault("AI_MODEL_NAME", "glm-4.7-flash:latest")
+os.environ.setdefault("AI_OLLAMA_URL", "http://localhost:11434")
+os.environ.setdefault("AI_MODEL_TIMEOUT_SECONDS", "120")
+os.environ.setdefault("AI_FAST_MODEL_TIMEOUT_SECONDS", "60")
+
 import pytest
 from fastapi import Request
 from sqlalchemy.orm import Session
@@ -63,8 +73,21 @@ def _reset_conversation_memory():
         _orig = None
 
     cm._memory = None
+
+    # Reset model client singletons so they pick up test env vars
+    import ai.runtime.model_client as mc
+    mc._smart_client = None
+    mc._fast_client = None
+
+    # Reset AIConfig singleton
+    from ai.config import AIConfig
+    AIConfig.reset()
+
     yield
     cm._memory = None
+    mc._smart_client = None
+    mc._fast_client = None
+    AIConfig.reset()
 
     # Restore
     if old_val is None:

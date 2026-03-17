@@ -298,6 +298,193 @@ def create_party_hearing_test(
     )
 
 
+class HearingTestUpdate(BaseModel):
+    testDate: Optional[str] = None
+    testType: Optional[str] = None
+    conductedBy: Optional[str] = None
+    results: Optional[dict] = None
+    notes: Optional[str] = None
+
+
+@router.put(
+    "/parties/{party_id}/hearing-tests/{test_id}",
+    operation_id="updatePartyHearingTest",
+    response_model=ResponseEnvelope,
+)
+def update_party_hearing_test(
+    party_id: str,
+    test_id: str,
+    body: HearingTestUpdate,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
+):
+    """Update a hearing test."""
+    from core.models.medical import HearingTest
+    import json as json_mod
+
+    test = (
+        db.query(HearingTest)
+        .filter(
+            HearingTest.id == test_id,
+            HearingTest.party_id == party_id,
+            HearingTest.tenant_id == access.tenant_id,
+        )
+        .first()
+    )
+    if not test:
+        raise HTTPException(status_code=404, detail="Hearing test not found")
+
+    if body.testDate is not None:
+        try:
+            test.test_date = datetime.fromisoformat(body.testDate.replace("Z", "+00:00"))
+        except ValueError:
+            pass
+    if body.testType is not None:
+        test.test_type = body.testType
+    if body.conductedBy is not None:
+        test.conducted_by = body.conductedBy
+    if body.results is not None:
+        test.results = json_mod.dumps(body.results)
+    if body.notes is not None:
+        test.notes = body.notes
+
+    db.commit()
+    db.refresh(test)
+
+    result_data = {}
+    if test.results:
+        try:
+            result_data = json_mod.loads(test.results) if isinstance(test.results, str) else test.results
+        except (json_mod.JSONDecodeError, TypeError):
+            result_data = {}
+
+    return ResponseEnvelope(
+        data={
+            "id": test.id,
+            "partyId": test.party_id,
+            "testDate": test.test_date.isoformat() if test.test_date else None,
+            "testType": test.test_type,
+            "conductedBy": test.conducted_by,
+            "results": result_data,
+            "notes": test.notes,
+        },
+    )
+
+
+@router.delete(
+    "/parties/{party_id}/hearing-tests/{test_id}",
+    operation_id="deletePartyHearingTest",
+    response_model=ResponseEnvelope,
+)
+def delete_party_hearing_test(
+    party_id: str,
+    test_id: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
+):
+    """Delete a hearing test."""
+    from core.models.medical import HearingTest
+
+    test = (
+        db.query(HearingTest)
+        .filter(
+            HearingTest.id == test_id,
+            HearingTest.party_id == party_id,
+            HearingTest.tenant_id == access.tenant_id,
+        )
+        .first()
+    )
+    if not test:
+        raise HTTPException(status_code=404, detail="Hearing test not found")
+
+    db.delete(test)
+    db.commit()
+
+    return ResponseEnvelope(data={"deleted": True, "id": test_id})
+
+
+# --- E-Receipt CRUD ---
+
+@router.get(
+    "/parties/{party_id}/ereceipts",
+    operation_id="listPartyEReceipts",
+    response_model=ResponseEnvelope,
+)
+def list_party_ereceipts(
+    party_id: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
+):
+    """Get all e-receipts for a party."""
+    from core.models.medical import EReceipt
+
+    receipts = (
+        db.query(EReceipt)
+        .filter(
+            EReceipt.party_id == party_id,
+            EReceipt.tenant_id == access.tenant_id,
+        )
+        .order_by(EReceipt.receipt_date.desc())
+        .all()
+    )
+
+    return ResponseEnvelope(
+        data=[r.to_dict() for r in receipts],
+        meta={"total": len(receipts), "partyId": party_id},
+    )
+
+
+@router.post(
+    "/parties/{party_id}/ereceipts",
+    operation_id="createPartyEReceipt",
+    status_code=201,
+    response_model=ResponseEnvelope,
+)
+def create_party_ereceipt(
+    party_id: str,
+    body: EReceiptCreate,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
+):
+    """Create a new e-receipt for a party."""
+    from core.models.medical import EReceipt
+    from core.models.party import Party
+    import json as json_mod
+    import uuid as uuid_mod
+
+    party = (
+        db.query(Party)
+        .filter(Party.id == party_id, Party.tenant_id == access.tenant_id)
+        .first()
+    )
+    if not party:
+        raise HTTPException(status_code=404, detail="Party not found")
+
+    receipt_date = datetime.now(timezone.utc)
+    if body.date:
+        try:
+            receipt_date = datetime.fromisoformat(body.date.replace("Z", "+00:00"))
+        except ValueError:
+            pass
+
+    receipt_number = body.number or f"ER-{uuid_mod.uuid4().hex[:8].upper()}"
+
+    ereceipt = EReceipt(
+        party_id=party_id,
+        tenant_id=access.tenant_id,
+        receipt_number=receipt_number,
+        receipt_date=receipt_date,
+        doctor_name=body.doctorName,
+        materials=json_mod.dumps(body.materials) if body.materials else None,
+        status=body.status,
+    )
+    db.add(ereceipt)
+    db.commit()
+    db.refresh(ereceipt)
+
+    return ResponseEnvelope(data=ereceipt.to_dict())
+
+
 # --- Device Recommendation Engine ---
 
 HEARING_LOSS_LEVELS = [

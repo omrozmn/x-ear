@@ -68,6 +68,15 @@ def smtp_config(db_session, test_tenant):
 
 # Unit Tests for Helper Functions
 
+@pytest.fixture(autouse=True)
+def _skip_warmup():
+    """Force post-warmup phase so quota tests use the 100/hour limit."""
+    from services.rate_limit_service import WarmupPhase
+    with patch('services.rate_limit_service.RateLimitService.get_current_warmup_phase',
+               return_value=WarmupPhase.POST_WARMUP):
+        yield
+
+
 def test_check_quota_within_limit(db_session, test_tenant):
     """Test quota check when within limit (< 100 emails per hour).
     

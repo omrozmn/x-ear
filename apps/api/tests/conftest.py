@@ -82,33 +82,24 @@ def db_engine():
 
 @pytest.fixture(scope="function")
 def db_session(db_engine):
-    """Create isolated database session per test.
+    """Create a clean database session per test.
 
-    Uses a nested transaction (SAVEPOINT) so that fixture code can call
-    flush()/commit() without breaking the outer rollback.
+    SQLite in-memory does not properly roll back SAVEPOINTs, so instead
+    we let each test commit freely and clean up all rows afterwards.
     """
-    connection = db_engine.connect()
-    transaction = connection.begin()
-
-    # Use SessionLocal to ensure event listeners (like tenant isolation) are active
-    session = SessionLocal(bind=connection, expire_on_commit=False)
-
-    # Start a nested transaction (SAVEPOINT) so that commits inside
-    # fixtures/tests don't end the outer transaction.
-    nested = session.begin_nested()
-
-    # Whenever the nested transaction ends (via commit), start a new one
-    # so subsequent commits also work within the same outer transaction.
-    @event.listens_for(session, "after_transaction_end")
-    def restart_savepoint(sess, trans):
-        if trans.nested and not trans._parent.nested:
-            sess.begin_nested()
+    session = SessionLocal(bind=db_engine, expire_on_commit=False)
 
     yield session
 
+    session.rollback()  # discard any pending state
+    # Delete all rows from every table (reverse dependency order)
+    for table in reversed(Base.metadata.sorted_tables):
+        try:
+            session.execute(table.delete())
+        except Exception:
+            pass
+    session.commit()
     session.close()
-    transaction.rollback()
-    connection.close()
 
 @pytest.fixture(scope="function")
 def client(db_session):
@@ -192,6 +183,30 @@ def auth_headers(test_admin_user):
         'Authorization': f'Bearer {token}',
         'Idempotency-Key': idempotency_key
     }
+
+@pytest.fixture(scope="function")
+def auth_headers_tenant_admin(test_admin_user):
+    """Generate auth headers for tenant_admin role (alias used by several tests)."""
+    import uuid
+    import time
+
+    payload = {
+        'sub': test_admin_user.id,
+        'role': 'tenant_admin',
+        'tenant_id': test_admin_user.tenant_id,
+        'user_type': 'tenant',
+        'role_permissions': ['*'],
+        'perm_ver': 1,
+        'exp': datetime.utcnow() + timedelta(hours=1)
+    }
+    token = jwt.encode(payload, 'test-secret', algorithm='HS256')
+    idempotency_key = f"{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+
+    return {
+        'Authorization': f'Bearer {token}',
+        'Idempotency-Key': idempotency_key
+    }
+
 
 @pytest.fixture(scope="function")
 def test_db(db_session):

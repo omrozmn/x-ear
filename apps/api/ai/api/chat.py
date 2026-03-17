@@ -14,6 +14,7 @@ Requirements:
 
 import logging
 import time
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional, List
 from uuid import uuid4
 
@@ -47,7 +48,9 @@ from ai.api.errors import (
 )
 from ai.agents.action_planner import (
     get_action_planner,
-    PlannerStatus
+    PlannerStatus,
+    ActionPlan,
+    RiskLevel,
 )
 from ai.schemas.llm_outputs import IntentType
 from ai.capability_registry import (
@@ -587,6 +590,24 @@ async def chat(
             permissions = access.permissions
             
             # Check for timeout on pending plan (Requirement 4.5)
+            pending_plan = None
+            if pending_plan_id and conversation_history:
+                # Reconstruct minimal plan object for expiry check
+                last_turn = conversation_history[-1]
+                turn_ts = getattr(last_turn, 'timestamp', None) or datetime.now(timezone.utc)
+                pending_plan = ActionPlan(
+                    plan_id=pending_plan_id,
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    intent=result.intent,
+                    steps=[],
+                    overall_risk_level=RiskLevel.LOW,
+                    requires_approval=False,
+                    plan_hash="",
+                    tool_schema_versions={},
+                    created_at=turn_ts,
+                    expires_at=turn_ts + timedelta(minutes=5),
+                )
             if pending_plan:
                 if planner.is_expired(pending_plan):
                     # Plan has expired
