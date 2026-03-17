@@ -29,6 +29,13 @@ from core.models.email import SMTPEmailLog
 
 # Fixtures
 
+@pytest.fixture(autouse=True)
+def _mock_bounce_blacklist():
+    """Mock bounce blacklist to return False for all tests in this module."""
+    with patch('services.bounce_handler_service.BounceHandlerService.is_blacklisted', return_value=False):
+        yield
+
+
 @pytest.fixture
 def mock_db():
     """Mock database session."""
@@ -89,7 +96,8 @@ def test_queue_email_creates_log_entry(mock_db, mock_smtp_config_service, mock_t
     mock_db.add = Mock()
     mock_db.flush = Mock()
     
-    with patch('services.unsubscribe_service.UnsubscribeService.is_unsubscribed', return_value=False), \
+    with patch('services.bounce_handler_service.BounceHandlerService.is_blacklisted', return_value=False), \
+         patch('services.unsubscribe_service.UnsubscribeService.is_unsubscribed', return_value=False), \
          patch('services.rate_limit_service.RateLimitService.check_rate_limit', return_value=(True, "", None)), \
          patch.object(email_service_module, 'SMTPEmailLog', return_value=mock_log):
         # Act

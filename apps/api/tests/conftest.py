@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
+from sqlalchemy import event
 from datetime import datetime, timedelta
 
 # Add the api directory to the path IMMEDIATELY
@@ -56,24 +57,55 @@ except (ImportError, AttributeError):
 
 @pytest.fixture(scope="session")
 def db_engine():
-    """Create test database engine (in-memory DB via DATABASE_URL env override)"""
+    """Create test database engine (in-memory DB via DATABASE_URL env override).
+
+    Import ALL models before create_all so every column is registered with
+    Base.metadata.  Some modules register their tables early during
+    ``from main import app``; if the email models aren't imported yet at that
+    point, the new columns (is_promotional, unsubscribe_token) are missing.
+    drop_all + create_all on in-memory SQLite is cheap and guarantees a
+    fresh, complete schema.
+    """
+    # Force-import models that may have been missed during app import
+    import core.models  # noqa: F401  – registers all models with Base
+    try:
+        import core.models.email  # noqa: F401
+    except ImportError:
+        pass
+
+    # Drop any tables that were created during ``from main import app`` with
+    # an incomplete schema, then re-create everything from scratch.
+    assert "memory" in str(engine.url), "Safety: only drop_all on in-memory DB"
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield engine
-    # NOTE: Do NOT call drop_all here. If DATABASE_URL override fails to
-    # take effect (import order race), drop_all would wipe the production DB.
-    # In-memory DBs are discarded automatically when the connection closes.
 
 @pytest.fixture(scope="function")
 def db_session(db_engine):
-    """Create isolated database session per test"""
+    """Create isolated database session per test.
+
+    Uses a nested transaction (SAVEPOINT) so that fixture code can call
+    flush()/commit() without breaking the outer rollback.
+    """
     connection = db_engine.connect()
     transaction = connection.begin()
-    
+
     # Use SessionLocal to ensure event listeners (like tenant isolation) are active
     session = SessionLocal(bind=connection, expire_on_commit=False)
-    
+
+    # Start a nested transaction (SAVEPOINT) so that commits inside
+    # fixtures/tests don't end the outer transaction.
+    nested = session.begin_nested()
+
+    # Whenever the nested transaction ends (via commit), start a new one
+    # so subsequent commits also work within the same outer transaction.
+    @event.listens_for(session, "after_transaction_end")
+    def restart_savepoint(sess, trans):
+        if trans.nested and not trans._parent.nested:
+            sess.begin_nested()
+
     yield session
-    
+
     session.close()
     transaction.rollback()
     connection.close()

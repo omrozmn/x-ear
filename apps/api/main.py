@@ -10,12 +10,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # Load environment from .env FIRST (so JWT_SECRET_KEY etc. are available for middleware)
-try:
-    from dotenv import load_dotenv
-    load_dotenv(override=True)  # Override to ensure .env values are used
-except Exception:
-    # Optional dependency / best-effort load; env vars can still be provided by the process manager.
-    pass
+# Skip in test mode to avoid overwriting test-specific env vars (e.g., DATABASE_URL)
+if os.environ.get('TESTING') != 'true':
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(override=True)  # Override to ensure .env values are used
+    except Exception:
+        # Optional dependency / best-effort load; env vars can still be provided by the process manager.
+        pass
 
 from fastapi_app.middleware import envelope_error, request_id_middleware
 

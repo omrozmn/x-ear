@@ -42,6 +42,40 @@ from ai.models import AIRequest, AIAction, AIAuditLog, AIUsage
 # =============================================================================
 
 @pytest.fixture(autouse=True)
+def _reset_conversation_memory():
+    """Reset the global conversation memory singleton between tests.
+
+    The singleton retains state across tests, causing assertions on
+    history length to fail.  Also force in-memory backend (no Redis).
+    """
+    import ai.services.conversation_memory as cm
+
+    # Force in-memory backend
+    old_val = os.environ.get("AI_MEMORY_BACKEND")
+    os.environ["AI_MEMORY_BACKEND"] = "memory"
+    try:
+        from ai.config import get_ai_config
+        cfg = get_ai_config()
+        _orig = getattr(cfg, "memory_backend", None)
+        cfg.memory_backend = "memory"
+    except Exception:
+        cfg = None
+        _orig = None
+
+    cm._memory = None
+    yield
+    cm._memory = None
+
+    # Restore
+    if old_val is None:
+        os.environ.pop("AI_MEMORY_BACKEND", None)
+    else:
+        os.environ["AI_MEMORY_BACKEND"] = old_val
+    if cfg is not None and _orig is not None:
+        cfg.memory_backend = _orig
+
+
+@pytest.fixture(autouse=True)
 def _ensure_test_users(db_session):
     """Create test users and tenants needed by AI integration tests.
 
