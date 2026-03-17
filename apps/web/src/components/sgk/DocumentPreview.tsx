@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Input } from '@x-ear/ui-web';
 import { 
   FileText, 
@@ -72,6 +73,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   onChangeDocumentType,
   onSave,
 }) => {
+  const { t } = useTranslation('sgk');
   const [imageZoom, setImageZoom] = useState(1);
   const [imageRotation, setImageRotation] = useState(0);
   const [showFullOCR, setShowFullOCR] = useState(false);

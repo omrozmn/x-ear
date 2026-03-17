@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Input, Modal, Tabs, TabsList, TabsTrigger, TabsContent, Badge, useToastHelpers } from '@x-ear/ui-web';
 import { useNavigate } from '@tanstack/react-router';
 import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier, type SupplierFormData } from '../hooks/useSuppliers';
@@ -22,7 +23,7 @@ import supplierSchema from '../components/importer/schemas/suppliers';
 
 
 export function DesktopSuppliersPage() {
-
+  const { t } = useTranslation('suppliers');
 
   const navigate = useNavigate();
 
@@ -221,23 +222,23 @@ export function DesktopSuppliersPage() {
       <div className="max-w-full mx-auto space-y-6">
         {/* Header */}
         <DesktopPageHeader
-          title="Tedarikçiler"
-          description="Tedarikçi kayıtlarını yönetin ve takip edin"
+          title={t('pageTitle', 'Tedarikçiler')}
+          description={t('pageDescription', 'Tedarikçi kayıtlarını yönetin ve takip edin')}
           icon={<Users className="h-6 w-6" />}
           eyebrow={{ tr: 'Tedarikçi Masası', en: 'Vendor Desk' }}
           actions={(
             <>
               <Button variant="outline" onClick={handleRefresh} className="bg-white/80 dark:bg-white/10">
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Yenile
+                {t('refresh', 'Yenile')}
               </Button>
               <Button variant="outline" onClick={() => setShowImporter(true)} className="bg-white/80 dark:bg-white/10">
                 <Upload className="h-4 w-4 mr-2" />
-                Toplu Yükle
+                {t('bulkUpload', 'Toplu Yükle')}
               </Button>
               <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white shadow-sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Yeni Tedarikçi
+                {t('newSupplier', 'Yeni Tedarikçi')}
               </Button>
             </>
           )}
@@ -248,7 +249,7 @@ export function DesktopSuppliersPage() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-border transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Toplam Tedarikçi</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.total', 'Toplam Tedarikçi')}</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
               </div>
               <div className="bg-primary/10 p-3 rounded-2xl">
@@ -259,7 +260,7 @@ export function DesktopSuppliersPage() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-border transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Aktif Tedarikçiler</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.active', 'Aktif Tedarikçiler')}</p>
                 <p className="text-3xl font-bold text-success">{stats.active}</p>
               </div>
               <div className="bg-success/10 p-3 rounded-2xl">
@@ -270,7 +271,7 @@ export function DesktopSuppliersPage() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-border transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Pasif Tedarikçiler</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.inactive', 'Pasif Tedarikçiler')}</p>
                 <p className="text-3xl font-bold text-muted-foreground">{stats.inactive}</p>
               </div>
               <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-2xl">
@@ -287,7 +288,7 @@ export function DesktopSuppliersPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Şirket adı, yetkili kişi, telefon veya email ile ara..."
+                  placeholder={t('searchPlaceholder', 'Şirket adı, yetkili kişi, telefon veya email ile ara...')}
                   value={searchValue}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="pl-10 w-full"
@@ -300,7 +301,7 @@ export function DesktopSuppliersPage() {
               className={showFilters ? "bg-gray-900 text-white" : ""}
             >
               <Filter className="h-4 w-4 mr-2" />
-              Filtreler
+              {t('filters', 'Filtreler')}
             </Button>
           </div>
 
@@ -320,9 +321,9 @@ export function DesktopSuppliersPage() {
         <Tabs defaultValue="all" className="space-y-6">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-border">
             <TabsList>
-              <TabsTrigger value="all">Tedarikçiler</TabsTrigger>
+              <TabsTrigger value="all">{t('tabs.suppliers', 'Tedarikçiler')}</TabsTrigger>
               <TabsTrigger value="suggested">
-                Önerilen Tedarikçiler
+                {t('tabs.suggested', 'Önerilen Tedarikçiler')}
                 {suggestedSuppliers.length > 0 && (
                   <Badge variant="default" className="ml-2">
                     {suggestedSuppliers.length}
@@ -340,7 +341,7 @@ export function DesktopSuppliersPage() {
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
                       <RefreshCw className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground font-medium">Tedarikçiler yükleniyor...</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('loading', 'Tedarikçiler yükleniyor...')}</p>
                     </div>
                   </div>
                 ) : error ? (
@@ -349,9 +350,9 @@ export function DesktopSuppliersPage() {
                       <div className="bg-destructive/10 p-3 rounded-full w-fit mx-auto mb-3">
                         <Flame className="h-6 w-6 text-destructive" />
                       </div>
-                      <p className="text-sm text-destructive font-medium mb-2">Veriler yüklenirken bir hata oluştu</p>
+                      <p className="text-sm text-destructive font-medium mb-2">{t('loadError', 'Veriler yüklenirken bir hata oluştu')}</p>
                       <Button variant="outline" size="sm" onClick={handleRefresh}>
-                        Tekrar Dene
+                        {t('retry', 'Tekrar Dene')}
                       </Button>
                     </div>
                   </div>
@@ -361,11 +362,11 @@ export function DesktopSuppliersPage() {
                       <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-full w-fit mx-auto mb-3">
                         <Users className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Tedarikçi Bulunamadı</h3>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('noSuppliersFound', 'Tedarikçi Bulunamadı')}</h3>
                       <p className="text-sm text-muted-foreground mt-1 mb-4">Arama kriterlerinize uygun kayıt bulunmuyor.</p>
                       <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white">
                         <Plus className="h-4 w-4 mr-2" />
-                        Yeni Tedarikçi Ekle
+                        {t('addNewSupplier', 'Yeni Tedarikçi Ekle')}
                       </Button>
                     </div>
                   </div>
@@ -460,7 +461,7 @@ export function DesktopSuppliersPage() {
         <Modal
           isOpen={!!supplierToDelete}
           onClose={() => setSupplierToDelete(null)}
-          title="Tedarikçiyi Sil"
+          title={t('deleteSupplier', 'Tedarikçiyi Sil')}
           size="md"
         >
           <div className="space-y-4">

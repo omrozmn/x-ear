@@ -204,7 +204,7 @@ export function SalesPage() {
     await refetch();
   }, [refetch]);
 
-  const salesExportHeaders = useMemo(() => ['Hasta Adı', 'Hasta ID', 'Ürün', 'Marka', 'Model', 'Tutar', 'Tarih', 'Durum', 'Seri No'], []);
+  const salesExportHeaders = useMemo(() => [t('columns.patientName', 'Hasta Adı'), t('columns.patientId', 'Hasta ID'), t('columns.product', 'Ürün'), t('columns.brand', 'Marka'), t('columns.model', 'Model'), t('columns.amount', 'Tutar'), t('columns.date', 'Tarih'), t('columns.status', 'Durum'), t('columns.serialNumber', 'Seri No')], [t]);
 
   const getSalesExportRows = useCallback(() => {
     const items = selectedIds.size > 0 ? sortedSales.filter((sale) => selectedIds.has(sale.id)) : sortedSales;
@@ -300,7 +300,7 @@ export function SalesPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-muted-foreground">Satışlar yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">{t('loading', 'Satışlar yükleniyor...')}</span>
       </div>
     );
   }
@@ -308,8 +308,8 @@ export function SalesPage() {
   return (
     <div className="p-6 space-y-6">
       <DesktopPageHeader
-        title="Satışlar"
-        description="Tüm hastaların satış kayıtlarını görüntüleyin ve yönetin"
+        title={t('pageTitle', 'Satışlar')}
+        description={t('pageDescription', 'Tüm hastaların satış kayıtlarını görüntüleyin ve yönetin')}
         icon={<ShoppingCart className="h-6 w-6" />}
         eyebrow={{ tr: 'Gelir', en: 'Revenue' }}
         actions={(
@@ -323,13 +323,13 @@ export function SalesPage() {
             </PermissionGate>
             <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
               <RefreshCw size={18} />
-              Yenile
+              {t('refresh', 'Yenile')}
             </Button>
             <div className="ml-auto">
               <PermissionGate permission="sales.create">
                 <Button className="flex items-center gap-2" onClick={() => setShowNewSaleModal(true)}>
                   <Plus size={18} />
-                  Yeni Satış
+                  {t('newSale', 'Yeni Satış')}
                 </Button>
               </PermissionGate>
             </div>
@@ -341,7 +341,7 @@ export function SalesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Satış</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('stats.totalSales', 'Toplam Satış')}</p>
               <p className="text-lg md:text-2xl font-bold text-primary mt-1">{protectedCurrency(totalAmount)}</p>
             </div>
             <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">

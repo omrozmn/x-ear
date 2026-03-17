@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FileText, Scissors, Zap, CheckCircle } from 'lucide-react';
 
 interface DocumentProcessingStepProps {
@@ -10,6 +11,7 @@ const DocumentProcessingStep: React.FC<DocumentProcessingStepProps> = ({
   processingProgress,
   imageCount,
 }) => {
+  const { t: _t } = useTranslation('sgk');
   const statusText =
     processingProgress < 40
       ? 'Görüntüler sıkıştırılıyor ve kenarlar tespit ediliyor...'

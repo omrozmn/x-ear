@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button } from '@x-ear/ui-web';
 import { Settings, PenSquare } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
@@ -28,6 +29,7 @@ export function PartyTagUpdateModal({
   onUpdate,
   isLoading = false
 }: PartyTagUpdateModalProps) {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const navigate = useNavigate();
   const [status, setStatus] = useState<PartyStatus>('ACTIVE');
   const [segment, setSegment] = useState<PartySegment>('NEW');

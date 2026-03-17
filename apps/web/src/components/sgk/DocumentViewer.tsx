@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button } from '@x-ear/ui-web';
 import { 
   ZoomIn, 
@@ -26,6 +27,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   onClose,
   onDownload
 }) => {
+  const { t: _t } = useTranslation('sgk');
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Clock, User, Edit, Trash2, Phone } from 'lucide-react';
@@ -74,6 +75,7 @@ export function AppointmentCard({
   onCall,
   className = '',
 }: AppointmentCardProps) {
+  const { t } = useTranslation('appointments_extra');
   const statusVariant = statusVariants[appointment.status as keyof typeof statusVariants] || 'default';
   const typeVariant = typeVariants[appointment.type as keyof typeof typeVariants] || 'default';
 
@@ -106,7 +108,7 @@ export function AppointmentCard({
           <HStack spacing="xs" className="items-center">
             <div className="flex-1 min-w-0">
               <Text className="text-sm font-medium truncate">
-                {appointment.partyName || 'Hasta bilgisi yok'}
+                {appointment.partyName || t('noPatientInfo', 'Hasta bilgisi yok')}
               </Text>
               <Text className="text-xs text-muted-foreground">
                 {appointment.time}
@@ -186,7 +188,7 @@ export function AppointmentCard({
                   className="flex-1"
                 >
                   <Phone className="w-3 h-3 mr-1" />
-                  Ara
+                  {t('call', 'Ara')}
                 </Button>
               )}
 
@@ -201,7 +203,7 @@ export function AppointmentCard({
                   className="flex-1"
                 >
                   <Edit className="w-3 h-3 mr-1" />
-                  Düzenle
+                  {t('edit', 'Düzenle')}
                 </Button>
               )}
 
@@ -216,7 +218,7 @@ export function AppointmentCard({
                   className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="w-3 h-3 mr-1" />
-                  Sil
+                  {t('delete', 'Sil')}
                 </Button>
               )}
             </HStack>

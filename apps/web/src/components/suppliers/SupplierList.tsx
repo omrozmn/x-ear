@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge, DataTable, Column, TableAction } from '@x-ear/ui-web';
 import {
   Building2,
@@ -44,13 +45,14 @@ export function SupplierList({
   // sortOrder, // Props defined in interface but not used in component
   pagination
 }: SupplierListProps) {
+  const { t } = useTranslation('suppliers');
 
 
 
   const columns: Column<SupplierExtended>[] = useMemo(() => [
     {
       key: 'companyName',
-      title: 'Şirket Adı',
+      title: t('columns.companyName', 'Şirket Adı'),
       sortable: true,
       render: (_, supplier) => (
         <div
@@ -65,7 +67,7 @@ export function SupplierList({
           </div>
           <div className="ml-4">
             <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-              {supplier.companyName || supplier.name || 'İsimsiz'}
+              {supplier.companyName || supplier.name || t('unnamed', 'İsimsiz')}
             </div>
             {supplier.companyCode && (
               <div className="text-sm text-muted-foreground">
@@ -78,7 +80,7 @@ export function SupplierList({
     },
     {
       key: 'contact',
-      title: 'İletişim',
+      title: t('columns.contact', 'İletişim'),
       render: (_, supplier) => (
         <div className="space-y-1">
           {supplier.contactPerson && (
@@ -104,7 +106,7 @@ export function SupplierList({
     },
     {
       key: 'location',
-      title: 'Konum',
+      title: t('columns.location', 'Konum'),
       render: (_, supplier) => (
         <>
           {supplier.city && (
@@ -121,7 +123,7 @@ export function SupplierList({
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('columns.status', 'Durum'),
       render: (_, supplier) => (
         supplier.isActive ?
           <Badge variant="success" size="sm">Aktif</Badge> :
@@ -134,7 +136,7 @@ export function SupplierList({
     const list: TableAction<SupplierExtended>[] = [
       {
         key: 'view',
-        label: 'Görüntüle',
+        label: t('view', 'Görüntüle'),
         icon: <Eye className="h-4 w-4" />,
         onClick: (supplier) => onSupplierClick?.(supplier),
         variant: 'secondary'
@@ -144,7 +146,7 @@ export function SupplierList({
     if (onEditSupplier) {
       list.push({
         key: 'edit',
-        label: 'Düzenle',
+        label: t('edit', 'Düzenle'),
         icon: <Edit className="h-4 w-4" />,
         onClick: (supplier) => onEditSupplier(supplier),
         variant: 'secondary'
@@ -154,7 +156,7 @@ export function SupplierList({
     if (onDeleteSupplier) {
       list.push({
         key: 'delete',
-        label: 'Sil',
+        label: t('delete', 'Sil'),
         icon: <Trash2 className="h-4 w-4" />,
         onClick: (supplier) => onDeleteSupplier(supplier),
         variant: 'danger'

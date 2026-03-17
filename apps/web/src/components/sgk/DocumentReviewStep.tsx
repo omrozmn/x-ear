@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@x-ear/ui-web';
 import { FileText, Eye, Scissors } from 'lucide-react';
 import { type ProcessedDocument } from '../../hooks/useDocumentProcessing';
@@ -18,6 +19,7 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
   onOpenPartySearch,
   onOpenDocumentTypeSelector,
 }) => {
+  const { t: _t } = useTranslation('sgk');
   const selectedDoc = documents.find((d) => d.id === selectedDocumentId);
   const errorCount = documents.filter((d) => d.finalFileName?.startsWith('error_')).length;
   const successCount = documents.length - errorCount;

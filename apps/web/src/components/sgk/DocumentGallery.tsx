@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Grid, List, Download, Trash2, Eye, Filter, RotateCcw, Clock, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { Button, Input, Select, Checkbox, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
@@ -24,6 +25,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
   onRefresh,
   loading = false
 }) => {
+  const { t } = useTranslation('sgk');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<SGKDocumentType | 'all'>('all');

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar, Plus, Edit, X, Check, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button, Badge, Input, Textarea, Select, DatePicker } from '@x-ear/ui-web';
 import { Party } from '../../types/party';
@@ -22,6 +23,7 @@ interface PartyAppointmentsTabProps {
 }
 
 export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ party }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [appointments, setAppointments] = useState<AppointmentRead[]>([]);
   const [loading, setLoading] = useState(false);

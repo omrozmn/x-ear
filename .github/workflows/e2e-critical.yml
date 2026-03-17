@@ -44,35 +44,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: x-ear/package-lock.json
-      
+          cache: 'pnpm'
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       - name: Install frontend dependencies
-        working-directory: x-ear
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       
       - name: Install backend dependencies
-        working-directory: x-ear/apps/api
+        working-directory: apps/api
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       
       - name: Install Playwright Browsers
-        working-directory: x-ear
+        working-directory: .
         run: npx playwright install --with-deps chromium
       
       - name: Setup test database
-        working-directory: x-ear/apps/api
+        working-directory: apps/api
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
           REDIS_URL: redis://localhost:6379
@@ -81,7 +84,7 @@ jobs:
           python scripts/seed_comprehensive_data.py
       
       - name: Start backend server
-        working-directory: x-ear/apps/api
+        working-directory: apps/api
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
           REDIS_URL: redis://localhost:6379
@@ -93,7 +96,7 @@ jobs:
           echo $! > backend.pid
       
       - name: Start frontend server
-        working-directory: x-ear/apps/web
+        working-directory: apps/web
         env:
           VITE_API_BASE_URL: http://localhost:5003
         run: |
@@ -106,7 +109,7 @@ jobs:
           npx wait-on http://localhost:8080 --timeout 120000
       
       - name: Run Critical tests (web + admin)
-        working-directory: x-ear
+        working-directory: .
         env:
           BASE_URL: http://localhost:8080
           TEST_USER_EMAIL: test@example.com
@@ -131,7 +134,7 @@ jobs:
       
       - name: Cleanup
         if: always()
-        working-directory: x-ear
+        working-directory: .
         run: |
           if [ -f apps/api/backend.pid ]; then
             kill $(cat apps/api/backend.pid) || true

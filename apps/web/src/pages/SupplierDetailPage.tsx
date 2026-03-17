@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Loading, DataTable, Input } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
@@ -45,6 +46,7 @@ function parseBrandModel(productName: string): { brand: string; model: string } 
 }
 
 export function SupplierDetailPage() {
+  const { t } = useTranslation('suppliers');
   const { supplierId } = useParams({ strict: false }) as { supplierId: string };
   const navigate = useNavigate();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -161,8 +163,8 @@ export function SupplierDetailPage() {
   if (error || !supplier) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <h2 className="text-xl font-semibold text-foreground mb-2">Tedarikçi bulunamadı</h2>
-        <Button onClick={handleBack}>Geri Dön</Button>
+        <h2 className="text-xl font-semibold text-foreground mb-2">{t('notFound', 'Tedarikçi bulunamadı')}</h2>
+        <Button onClick={handleBack}>{t('goBack', 'Geri Dön')}</Button>
       </div>
     );
   }
@@ -177,18 +179,18 @@ export function SupplierDetailPage() {
         <DesktopPageHeader
           leading={<HeaderBackButton label="Tedarikçilere Dön" onClick={handleBack} />}
           title={supplierData.companyName || supplierData.name}
-          description="Tedarikçi kaydının detaylarını yönetin"
+          description={t('detailDescription', 'Tedarikçi kaydının detaylarını yönetin')}
           icon={<Building2 className="h-6 w-6" />}
           eyebrow={{ tr: 'Tedarikçi Kartı', en: 'Supplier Profile' }}
           actions={(
             <>
               <Button variant="outline" onClick={handleEdit}>
                 <Edit className="h-4 w-4 mr-2" />
-                Düzenle
+                {t('edit', 'Düzenle')}
               </Button>
               <Button variant="danger" onClick={handleDelete}>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Sil
+                {t('delete', 'Sil')}
               </Button>
             </>
           )}
@@ -211,7 +213,7 @@ export function SupplierDetailPage() {
         {/* Left Column - Info */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">İletişim Bilgileri</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t('contactInfo', 'İletişim Bilgileri')}</h3>
             <div className="space-y-4">
               {supplierData.contactPerson && (
                 <div className="flex items-center text-muted-foreground">
@@ -271,7 +273,7 @@ export function SupplierDetailPage() {
           </div>
 
           <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Finansal Bilgiler</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t('financialInfo', 'Finansal Bilgiler')}</h3>
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Vergi No</span>

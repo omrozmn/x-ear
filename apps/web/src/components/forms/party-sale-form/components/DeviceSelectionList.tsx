@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Input, Select } from '@x-ear/ui-web';
 import { DollarSign, Plus, X } from 'lucide-react';
 
@@ -32,6 +33,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
   onRemoveDevice,
   errors
 }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   return (
     <div>
       <div className="flex items-center justify-between mb-3">

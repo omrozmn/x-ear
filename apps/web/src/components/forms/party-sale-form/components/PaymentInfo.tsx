@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, Input, Label, Textarea, Button, DatePicker } from '@x-ear/ui-web';
 import { CreditCard, DollarSign, FileText, Percent, Package } from 'lucide-react';
 
@@ -48,6 +49,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
   productSerialNumber = '',
   onProductSerialNumberChange
 }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   // Kullanılmayan import kaldırıldı
   // const formatCurrency = (amount: number) => {
   // return new Intl.NumberFormat('tr-TR', {

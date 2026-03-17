@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Modal } from '@x-ear/ui-web';
 import { Party } from '../../types/party';
 import {
@@ -68,6 +69,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
   onAddNote,
   isLoading,
 }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDeleteClick = () => {

@@ -15,6 +15,7 @@ import { apiClient } from '@/api/orval-mutator';
 import { useDebounce } from '@/hooks/useDebounce';
 import { listOutgoingInvoices } from '@/api/client/invoices.client';
 import type { OutgoingInvoiceResponse } from '@/api/generated/schemas';
+import { useTranslation } from 'react-i18next';
 
 async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {
     const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}&render_mode=${renderMode}`, {
@@ -25,6 +26,7 @@ async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 
 }
 
 export const MobileInvoicesPage: React.FC = () => {
+    const { t } = useTranslation('invoices');
     const navigate = useNavigate();
     const [invoices, setInvoices] = useState<OutgoingInvoiceResponse[]>([]);
     const [totalCount, setTotalCount] = useState(0);
@@ -140,11 +142,11 @@ export const MobileInvoicesPage: React.FC = () => {
 
     const getStatusLabel = (status: string) => {
         const map: Record<string, string> = {
-            paid: 'Ödendi',
-            overdue: 'Gecikmiş',
-            sent: 'Gönderildi',
-            draft: 'Taslak',
-            cancelled: 'İptal'
+            paid: t('status.paid'),
+            overdue: t('status.overdue'),
+            sent: t('status.sent'),
+            draft: t('status.draft'),
+            cancelled: t('status.cancelled')
         };
         return map[status?.toLowerCase()] || status;
     };
@@ -155,7 +157,7 @@ export const MobileInvoicesPage: React.FC = () => {
             return;
         }
 
-        const toastId = toast.loading('Fatura yükleniyor...');
+        const toastId = toast.loading(t('common.loading_invoice'));
         try {
             const { data, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
             const isPdf = contentType.includes('application/pdf');
@@ -168,7 +170,7 @@ export const MobileInvoicesPage: React.FC = () => {
             const fileName = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
             setPdfModal({ open: true, blobUrl: url, title: `${invoice.invoiceNumber} — ${`${invoice.partyFirstName || ''} ${invoice.partyLastName || ''}`.trim()}`, fileName });
         } catch {
-            toast.error('Fatura önizlemesi açılamadı', { id: toastId });
+            toast.error(t('outgoing.messages.preview_failed'), { id: toastId });
         }
     }, [navigate, pdfModal]);
 
@@ -179,15 +181,15 @@ export const MobileInvoicesPage: React.FC = () => {
             const isPdf = contentType.includes('application/pdf');
             const blob = new Blob([data], { type: isPdf ? 'application/pdf' : 'text/html' });
             invoiceService.downloadPdfBlob(blob, `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`);
-            toast.success('PDF indirildi');
+            toast.success(t('outgoing.messages.pdf_downloaded'));
         } catch {
-            toast.error('PDF indirilemedi');
+            toast.error(t('outgoing.messages.pdf_download_failed'));
         }
     }, []);
 
     const handleBulkExportCsv = useCallback(() => {
         const selected = filteredInvoices.filter((invoice) => selectedIds.has(String(invoice.invoiceId)));
-        const headers = ['Fatura No', 'Alıcı', 'Durum', 'Tarih', 'Tutar'];
+        const headers = [t('outgoing.export_headers.invoice_no'), t('outgoing.columns.party'), t('outgoing.columns.status'), t('outgoing.export_headers.date'), t('outgoing.export_headers.amount')];
         const rows = selected.map((invoice) => [
             invoice.invoiceNumber || '',
             `${invoice.partyFirstName || ''} ${invoice.partyLastName || ''}`.trim(),
@@ -204,25 +206,25 @@ export const MobileInvoicesPage: React.FC = () => {
         link.download = `giden_faturalar_${new Date().toISOString().slice(0, 10)}.csv`;
         link.click();
         URL.revokeObjectURL(url);
-        toast.success('CSV dışa aktarıldı');
+        toast.success(t('outgoing.messages.csv_exported'));
     }, [filteredInvoices, selectedIds]);
 
     const handleBulkDeleteDrafts = useCallback(async () => {
         const selectedDrafts = filteredInvoices.filter((invoice) => selectedIds.has(String(invoice.invoiceId)) && (invoice.status || '').toLowerCase() === 'draft');
 
         if (selectedDrafts.length === 0) {
-            toast.error('Sadece taslak faturalar silinebilir');
+            toast.error(t('outgoing.messages.only_drafts_deletable'));
             return;
         }
 
         try {
             await Promise.all(selectedDrafts.map((invoice) => apiClient.delete(`/api/invoices/draft/${invoice.invoiceId}`)));
-            toast.success(`${selectedDrafts.length} taslak silindi`);
+            toast.success(t('outgoing.messages.drafts_deleted', { count: selectedDrafts.length }));
             setSelectedIds(new Set());
             setIsSelectionMode(false);
             await loadInvoices();
         } catch {
-            toast.error('Taslaklar silinemedi');
+            toast.error(t('outgoing.messages.drafts_delete_failed'));
         }
     }, [filteredInvoices, selectedIds, loadInvoices]);
 
@@ -233,13 +235,13 @@ export const MobileInvoicesPage: React.FC = () => {
         <MobileLayout>
             <>
                 <MobileHeader
-                    title={isSelectionMode ? `${selectedIds.size} Seçilen` : 'Giden Faturalar'}
+                    title={isSelectionMode ? t('common.n_invoices_selected', { count: selectedIds.size }) : t('outgoing.title')}
                     showBack={false}
                     actions={
                         isSelectionMode ? (
                             <div className="flex items-center gap-1">
                                 <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-primary font-medium">
-                                    {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+                                    {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? t('common.select_none') : t('common.select_all')}
                                 </Button>
                                 <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-muted-foreground">
                                     <X className="h-5 w-5" />
@@ -257,7 +259,7 @@ export const MobileInvoicesPage: React.FC = () => {
                             <Card className="p-3 md:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs md:text-sm text-muted-foreground">Toplam Fatura</p>
+                                        <p className="text-xs md:text-sm text-muted-foreground">{t('common.total_invoices')}</p>
                                         <p className="text-lg md:text-2xl font-bold text-primary mt-1">{totalCount}</p>
                                     </div>
                                     <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
@@ -269,7 +271,7 @@ export const MobileInvoicesPage: React.FC = () => {
                             <Card className="p-3 md:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs md:text-sm text-muted-foreground">Taslak</p>
+                                        <p className="text-xs md:text-sm text-muted-foreground">{t('outgoing.stats.draft')}</p>
                                         <p className="text-lg md:text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{draftCount}</p>
                                     </div>
                                     <div className="p-2 md:p-3 bg-amber-100 dark:bg-amber-900/20 rounded-2xl">
@@ -281,7 +283,7 @@ export const MobileInvoicesPage: React.FC = () => {
                             <Card className="p-3 md:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs md:text-sm text-muted-foreground">Gönderilen</p>
+                                        <p className="text-xs md:text-sm text-muted-foreground">{t('outgoing.stats.sent_amount')}</p>
                                         <p className="text-lg md:text-2xl font-bold text-success mt-1">{formatCurrency(totalAmount, 'TRY')}</p>
                                     </div>
                                     <div className="p-2 md:p-3 bg-success/10 rounded-2xl">
@@ -294,7 +296,7 @@ export const MobileInvoicesPage: React.FC = () => {
                         <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
                             <CreditCard className="text-primary flex-shrink-0" size={20} />
                             <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
-                                Bu sayfada GİB üzerinden gönderilmiş e-fatura ve e-irsaliyeleriniz listelenir.
+                                {t('outgoing.info_banner_mobile')}
                             </p>
                         </div>
 
@@ -305,7 +307,7 @@ export const MobileInvoicesPage: React.FC = () => {
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                                         <Input
                                             type="text"
-                                            placeholder="Alıcı adı veya fatura no ara..."
+                                            placeholder={t('outgoing.search_placeholder')}
                                             value={searchValue}
                                             onChange={(e) => setSearchValue(e.target.value)}
                                             className="w-full pl-10 pr-4"
@@ -314,18 +316,18 @@ export const MobileInvoicesPage: React.FC = () => {
                                     </div>
                                     <Button variant="outline" onClick={() => setShowMobileFilters((v) => !v)} className="shrink-0 flex items-center gap-2">
                                         <Filter size={18} />
-                                        Filtreler
+                                        {t('common.filters')}
                                     </Button>
                                     <Button variant="outline" onClick={() => { if (isSelectionMode) { handleCancelSelection(); } else { setIsSelectionMode(true); triggerSelection(); } }} className="shrink-0 flex items-center gap-2">
                                         <CheckSquare size={18} />
-                                        {isSelectionMode ? 'Kapat' : 'Seç'}
+                                        {isSelectionMode ? t('common.close') : t('common.select')}
                                     </Button>
                                 </div>
                                 {showMobileFilters && (
                                     <div className="grid grid-cols-1 gap-3">
                                         <div className="flex gap-2 justify-end">
-                                            <Button variant="outline" onClick={() => { setSearchValue(''); setShowMobileFilters(false); }}>Temizle</Button>
-                                            <Button onClick={handleRefresh} className="flex items-center gap-2"><RefreshCw size={18} />Ara</Button>
+                                            <Button variant="outline" onClick={() => { setSearchValue(''); setShowMobileFilters(false); }}>{t('common.clear')}</Button>
+                                            <Button onClick={handleRefresh} className="flex items-center gap-2"><RefreshCw size={18} />{t('common.search')}</Button>
                                         </div>
                                     </div>
                                 )}
@@ -356,9 +358,9 @@ export const MobileInvoicesPage: React.FC = () => {
                                 <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
                                     <FileText className="h-8 w-8 text-gray-300" />
                                 </div>
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Fatura Bulunamadı</h3>
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('outgoing.messages.invoice_not_found')}</h3>
                                 <p className="text-muted-foreground text-sm mt-1">
-                                    Kriterlere uygun fatura yok.
+                                    {t('outgoing.messages.no_matching_invoices')}
                                 </p>
                             </div>
                         )}
@@ -378,8 +380,8 @@ export const MobileInvoicesPage: React.FC = () => {
                         <div className="rounded-2xl border border-border bg-white/95 shadow-2xl backdrop-blur dark:bg-gray-800/95">
                             <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
                                 <div>
-                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedIds.size} fatura seçildi</p>
-                                    <p className="text-xs text-muted-foreground">Toplu işlem seçerek devam edebilirsin</p>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{t('common.n_invoices_selected', { count: selectedIds.size })}</p>
+                                    <p className="text-xs text-muted-foreground">{t('common.bulk_action_hint')}</p>
                                 </div>
                                 <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-9 rounded-xl px-3 text-muted-foreground hover:bg-muted dark:hover:bg-gray-700">
                                     <X className="w-4 h-4" />
@@ -387,10 +389,10 @@ export const MobileInvoicesPage: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-2 p-3">
                                 <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-3 py-3 text-sm font-semibold text-primary hover:bg-primary/10 dark:hover:bg-blue-900/30 h-auto">
-                                    <Download className="w-4 h-4" /> CSV Aktar
+                                    <Download className="w-4 h-4" /> {t('outgoing.actions.csv_export')}
                                 </Button>
                                 <Button variant="ghost" onClick={handleBulkDeleteDrafts} className="flex items-center justify-center gap-2 rounded-xl bg-destructive/10 px-3 py-3 text-sm font-semibold text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/30 h-auto">
-                                    <Trash2 className="w-4 h-4" /> Taslak Sil
+                                    <Trash2 className="w-4 h-4" /> {t('outgoing.actions.delete_drafts')}
                                 </Button>
                             </div>
                         </div>
@@ -425,7 +427,7 @@ export const MobileInvoicesPage: React.FC = () => {
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white premium-gradient tactile-press rounded-xl"
                             >
                                 <Download size={15} />
-                                İndir
+                                {t('common.download')}
                             </a>
                             <Button
                                 variant="ghost"
@@ -440,7 +442,7 @@ export const MobileInvoicesPage: React.FC = () => {
                         <iframe
                             src={pdfModal.blobUrl}
                             className="w-full h-full border-0"
-                            title="Fatura PDF"
+                            title={t('common.invoice_pdf_title')}
                         />
                     </div>
                 </div>
@@ -476,7 +478,8 @@ function OutgoingInvoiceMobileCard({ invoice, onView, onDownload, getStatusColor
         return () => document.removeEventListener('mousedown', handler);
     }, [menuOpen]);
 
-    const partyName = `${invoice.partyFirstName || ''} ${invoice.partyLastName || ''}`.trim() || 'Alıcı bilgisi yok';
+    const { t } = useTranslation('invoices');
+    const partyName = `${invoice.partyFirstName || ''} ${invoice.partyLastName || ''}`.trim() || t('common.no_recipient_info');
 
     return (
         <div className={cn('bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all', isSelected ? 'border-blue-500 bg-primary/10/50 dark:border-blue-500' : 'border-border')}>
@@ -521,10 +524,10 @@ function OutgoingInvoiceMobileCard({ invoice, onView, onDownload, getStatusColor
                             {menuOpen && (
                                 <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-xl">
                                     <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                                        <Eye className="w-4 h-4" /> Görüntüle
+                                        <Eye className="w-4 h-4" /> {t('outgoing.actions.view')}
                                     </Button>
                                     <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                                        <Download className="w-4 h-4" /> PDF İndir
+                                        <Download className="w-4 h-4" /> {t('outgoing.actions.download_pdf')}
                                     </Button>
                                 </div>
                             )}

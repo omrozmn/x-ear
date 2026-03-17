@@ -17,6 +17,7 @@ import { useListBranches } from '../../api/generated/branches/branches';
 import { BranchRead, PartyRead, PartyCreate, PartyStatus } from '@/api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
 import { getPartySegments, getAcquisitionTypes, loadPartySegmentsFromAPI } from '../../utils/party-segments';
+import { useTranslation } from 'react-i18next';
 
 interface PartyFormData {
   firstName?: string;
@@ -60,6 +61,7 @@ export function PartyFormModal({
   title,
   className = ''
 }: PartyFormModalProps): React.ReactElement | null {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   // Fetch branches
   const { data: branchesData } = useListBranches();
   const branches = unwrapArray<BranchRead>(branchesData);

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button, Input, Textarea } from '@x-ear/ui-web'
 import {
   Tag,
@@ -76,6 +77,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
   loading = false,
   disabled = false
 }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common'])
   const [showActionModal, setShowActionModal] = useState(false)
   const [currentAction, setCurrentAction] = useState<BulkAction | null>(null)
   const [inputValue, setInputValue] = useState('')

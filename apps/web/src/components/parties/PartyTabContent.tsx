@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Party } from '../../types/party/party-base.types';
 import type { SaleRead } from '@/api/generated';
 import { PartyTab } from './PartyTabs';
@@ -45,6 +46,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   showNoteModal,
   onCloseNoteModal
 }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const { hasPermission, isSuperAdmin } = usePermissions();
   const { isModuleEnabled } = useSector();
 

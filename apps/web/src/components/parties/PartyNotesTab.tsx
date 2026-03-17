@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import {
@@ -22,6 +23,7 @@ interface PartyNotesTabProps {
 }
 
 export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const [notes, setNotes] = useState<PartyNote[]>(party.notes || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingNote, setEditingNote] = useState<PartyNote | null>(null);

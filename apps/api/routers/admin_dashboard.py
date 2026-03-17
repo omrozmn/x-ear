@@ -193,7 +193,7 @@ def get_dashboard_metrics(
             thirty_days_ago = datetime.utcnow() - timedelta(days=30)
             active_users = db_session.query(User).filter(
                 User.is_active == True,
-                User.last_login_at >= thirty_days_ago
+                User.last_login >= thirty_days_ago
             ).count()
         except Exception:
             # last_login_at may not exist, fallback to total

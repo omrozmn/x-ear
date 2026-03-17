@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToastHelpers, Button, Input, Select, Textarea, Label, DatePicker } from '@x-ear/ui-web';
 import { PartyApiService } from '../../../services/party/party-api.service';
 import { listInventory } from '@/api/client/inventory.client';
@@ -225,6 +226,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   partyId,
   onSaleComplete
 }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const partyApiService = useMemo(() => new PartyApiService(), []);
   const { success, error, warning } = useToastHelpers();
 

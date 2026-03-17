@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Modal, DatePicker } from '@x-ear/ui-web';
 import { Calendar, Clock, User, FileText, MapPin } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
@@ -36,6 +37,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
   onSave,
   isLoading = false
 }) => {
+  const { t } = useTranslation('appointments_extra');
   const [formData, setFormData] = useState<Partial<Appointment>>({
     partyId,
     appointmentDate: '',
@@ -173,7 +175,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={appointment ? 'Randevuyu Düzenle' : 'Yeni Randevu Oluştur'}
+      title={appointment ? t('editAppointment', 'Randevuyu Düzenle') : t('createNewAppointment', 'Yeni Randevu Oluştur')}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Tarih ve Saat */}
@@ -372,14 +374,14 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
             onClick={onClose}
             disabled={isLoading}
           >
-            İptal
+            {t('cancel', 'İptal')}
           </Button>
           <Button
             type="submit"
             disabled={isLoading}
             className="min-w-[120px]"
           >
-            {isLoading ? 'Kaydediliyor...' : (appointment ? 'Güncelle' : 'Randevu Oluştur')}
+            {isLoading ? t('saving', 'Kaydediliyor...') : (appointment ? t('update', 'Güncelle') : t('createAppointment', 'Randevu Oluştur'))}
           </Button>
         </div>
       </form>

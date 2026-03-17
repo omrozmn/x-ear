@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { format, startOfWeek, endOfWeek, isSameDay, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Card, Text, Badge, Input } from '@x-ear/ui-web';
@@ -34,6 +35,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
   // onDateClick, // Currently unused
   // isCompactView = false, // Currently unused
 }) => {
+  const { t } = useTranslation('appointments_extra');
   const [showAll, setShowAll] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');

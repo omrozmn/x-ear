@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
 import { CheckCircle, XCircle, FileText, User, Search } from 'lucide-react';
 import DocumentPreview, { type ProcessingResult } from './DocumentPreview';
@@ -16,6 +17,7 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
   results,
   onRetry,
 }) => {
+  const { t: _t } = useTranslation('sgk');
   const [selectedResult, setSelectedResult] = useState<ProcessingResult | null>(null);
   const [showPartySearch, setShowPartySearch] = useState(false);
   const [showDocumentTypeSelector, setShowDocumentTypeSelector] = useState(false);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Button,
   Input,
@@ -35,6 +36,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   onAppointmentSave,
   loading = false
 }) => {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const [formData, setFormData] = useState({
     date: '',
     note: '',

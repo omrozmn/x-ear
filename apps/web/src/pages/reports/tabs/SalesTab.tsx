@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     AlertTriangle,
     RefreshCw,
@@ -20,6 +21,7 @@ interface SalesTabProps {
 }
 
 export function SalesTab({ filters }: SalesTabProps) {
+    const { t } = useTranslation('sales');
     const { hasPermission } = usePermissions();
     const canViewFinancials = hasPermission('sensitive.reports.sales.financials.view');
     const reportParams = {
@@ -43,7 +45,7 @@ export function SalesTab({ filters }: SalesTabProps) {
     };
 
     const formatProtectedCurrency = (amount: number) => (
-        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+        canViewFinancials ? formatCurrency(amount) : t('hiddenForRole', 'Bu rol icin gizli')
     );
 
     type SaleRow = { brand: string; sales: number; revenue: number };
@@ -60,11 +62,11 @@ export function SalesTab({ filters }: SalesTabProps) {
     }, [financial]);
 
     const salesColumns: Column<SaleRow>[] = [
-        { key: 'brand', title: 'Marka', sortable: true },
-        { key: 'sales', title: 'Satış Adedi', sortable: true, align: 'right' },
+        { key: 'brand', title: t('columns.brand', 'Marka'), sortable: true },
+        { key: 'sales', title: t('columns.salesCount', 'Satış Adedi'), sortable: true, align: 'right' },
         {
             key: 'revenue',
-            title: 'Gelir',
+            title: t('columns.revenue', 'Gelir'),
             sortable: true,
             align: 'right',
             render: (value: number) => (
@@ -85,9 +87,9 @@ export function SalesTab({ filters }: SalesTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">{t('loadError', 'Veriler yüklenirken hata oluştu')}</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
-                    Tekrar Dene
+                    {t('retry', 'Tekrar Dene')}
                 </Button>
             </div>
         );
@@ -96,13 +98,13 @@ export function SalesTab({ filters }: SalesTabProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Satış Performansı Analizi</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('salesPerformance', 'Satış Performansı Analizi')}</h3>
                 <TabExportButton filename="satis-raporu" rows={salesRows} />
             </div>
 
             {/* Revenue Trend */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
-                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Gelir Trendi</h4>
+                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('monthlyRevenueTrend', 'Aylık Gelir Trendi')}</h4>
                 {Object.keys(revenueTrend).length > 0 ? (
                     <div className="grid grid-cols-6 gap-4">
                         {Object.entries(revenueTrend).map(([month, amount]) => (
@@ -125,7 +127,7 @@ export function SalesTab({ filters }: SalesTabProps) {
 
             {/* Product Sales */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
-                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Marka Bazlı Satışlar</h4>
+                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('brandSales', 'Marka Bazlı Satışlar')}</h4>
                 <DataTable<SaleRow>
                     data={salesRows}
                     columns={salesColumns}

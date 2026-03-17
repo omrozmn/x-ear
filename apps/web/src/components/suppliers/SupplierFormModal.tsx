@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Input, Autocomplete, type AutocompleteOption } from '@x-ear/ui-web';
 import { Building2, User, MapPin, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -42,6 +43,7 @@ export function SupplierFormModal({
   supplier,
   isLoading = false
 }: SupplierFormModalProps) {
+  const { t } = useTranslation('suppliers');
   const [formData, setFormData] = useState({
     companyName: '',
     companyCode: '',
@@ -206,7 +208,7 @@ export function SupplierFormModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={supplier ? 'Tedarikçiyi Düzenle' : 'Yeni Tedarikçi'}
+      title={supplier ? t('editSupplier', 'Tedarikçiyi Düzenle') : t('newSupplier', 'Yeni Tedarikçi')}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -502,14 +504,14 @@ export function SupplierFormModal({
             onClick={onClose}
             disabled={isLoading}
           >
-            İptal
+            {t('cancel', 'İptal')}
           </Button>
           <Button
             type="submit"
             disabled={isLoading}
             className="premium-gradient tactile-press text-white"
           >
-            {isLoading ? 'Kaydediliyor...' : supplier ? 'Güncelle' : 'Kaydet'}
+            {isLoading ? t('saving', 'Kaydediliyor...') : supplier ? t('update', 'Güncelle') : t('save', 'Kaydet')}
           </Button>
         </div>
       </form>

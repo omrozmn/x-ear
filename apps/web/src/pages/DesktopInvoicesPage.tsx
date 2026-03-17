@@ -13,6 +13,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
 import { PermissionGate } from '@/components/PermissionGate';
+import { useTranslation } from 'react-i18next';
 interface InvoiceLog {
   id?: string;
   status?: string;
@@ -59,6 +60,7 @@ async function postInvoiceAction(invoiceId: string | number, action: 'accept' | 
 export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   className = ''
 }) => {
+  const { t } = useTranslation('invoices');
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -170,31 +172,31 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     if (edoc) {
       if (edoc === 'approved') {
         style = 'bg-success/10 text-success';
-        label = 'Onaylandı';
+        label = t('status.approved');
         icon = <CheckCircle className="w-3 h-3 mr-1" />;
       } else if (edoc === 'delivered') {
         style = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400';
-        label = 'GİB\'e İletildi';
+        label = t('status.delivered_to_gib');
         icon = <Send className="w-3 h-3 mr-1" />;
       } else if (edoc === 'waiting') {
         style = 'bg-primary/10 text-blue-800 dark:text-blue-400';
-        label = 'Onay Bekleniyor';
+        label = t('status.waiting_approval');
         icon = <Clock className="w-3 h-3 mr-1" />;
       } else if (edoc === 'queued' || edoc === 'processing' || edoc === 'packaging') {
         style = 'bg-warning/10 text-yellow-800 dark:text-yellow-400';
-        label = edoc === 'queued' ? 'Kuyrukta' : edoc === 'packaging' ? 'Zarflanıyor' : 'İşleniyor';
+        label = edoc === 'queued' ? t('status.queued') : edoc === 'packaging' ? t('status.packaging') : t('status.processing');
         icon = <Clock className="w-3 h-3 mr-1" />;
       } else if (edoc === 'rejected') {
         style = 'bg-destructive/10 text-red-800 dark:text-red-400';
-        label = 'Reddedildi';
+        label = t('status.rejected');
         icon = <XCircle className="w-3 h-3 mr-1" />;
       } else if (edoc === 'returned') {
         style = 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
-        label = 'İade Edildi';
+        label = t('status.returned');
         icon = <AlertCircle className="w-3 h-3 mr-1" />;
       } else if (edoc === 'draft') {
         style = 'bg-muted text-foreground';
-        label = 'Taslak';
+        label = t('status.draft');
         icon = <Clock className="w-3 h-3 mr-1" />;
       } else {
         style = 'bg-warning/10 text-yellow-800 dark:text-yellow-400';
@@ -203,42 +205,42 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       }
     } else if (s === 'SENT' || s === 'DELIVERED') {
       style = 'bg-success/10 text-success';
-      label = s === 'DELIVERED' ? 'İletildi' : 'Gönderildi';
+      label = s === 'DELIVERED' ? t('status.delivered') : t('status.sent');
       icon = <Send className="w-3 h-3 mr-1" />;
     } else if (s === 'PAID') {
       style = 'bg-primary/10 text-blue-800 dark:text-blue-400';
-      label = 'Ödendi';
+      label = t('status.paid');
       icon = <CreditCard className="w-3 h-3 mr-1" />;
     } else if (s === 'PROCESSED') {
       style = 'bg-success/10 text-success';
-      label = 'İşlendi';
+      label = t('status.processed');
       icon = <CheckCircle className="w-3 h-3 mr-1" />;
     } else if (s === 'CANCELLED' || s === 'CANCELED') {
       style = 'bg-destructive/10 text-red-800 dark:text-red-400';
-      label = 'İptal Edildi';
+      label = t('status.cancelled');
       icon = <Ban className="w-3 h-3 mr-1" />;
     } else if (s === 'REJECTED') {
       style = 'bg-destructive/10 text-red-800 dark:text-red-400';
-      label = 'Reddedildi';
+      label = t('status.rejected');
       icon = <XCircle className="w-3 h-3 mr-1" />;
     } else if (s === 'OVERDUE') {
       style = 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
-      label = 'Vadesi Geçti';
+      label = t('status.overdue');
       icon = <AlertCircle className="w-3 h-3 mr-1" />;
     } else if (s === 'DRAFT') {
       style = 'bg-muted text-foreground';
-      label = 'Taslak';
+      label = t('status.draft');
       icon = <Clock className="w-3 h-3 mr-1" />;
     } else {
       style = 'bg-warning/10 text-yellow-800 dark:text-yellow-400';
-      label = status || 'Bilinmiyor';
+      label = status || t('common.unknown');
       icon = <Clock className="w-3 h-3 mr-1" />;
     }
     return (
       <span
         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${style} ${invoice ? 'cursor-pointer hover:opacity-80' : ''}`}
         onClick={invoice ? (e) => { e.stopPropagation(); setStatusModal(invoice); } : undefined}
-        title={invoice ? 'Durum detayı için tıklayın' : undefined}
+        title={invoice ? t('status.click_for_details') : undefined}
       >
         {icon}{label}
       </span>
@@ -247,7 +249,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
 
   const handleViewPdf = async (invoice: OutgoingInvoiceResponse) => {
     setActiveMenu(null);
-    const toastId = toast.loading('Fatura yükleniyor...');
+    const toastId = toast.loading(t('common.loading_invoice'));
     try {
       const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
       const isPdf = contentType.includes('application/pdf');
@@ -260,13 +262,13 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       const fileName = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
       setPdfModal({ open: true, blobUrl: url, title: `${invoice.invoiceNumber} — ${invoice.partyFirstName} ${invoice.partyLastName}`, fileName });
     } catch {
-      toast.error('Fatura yüklenemedi', { id: toastId });
+      toast.error(t('common.invoice_load_failed'), { id: toastId });
     }
   };
 
   const handleDownloadPdf = async (invoice: OutgoingInvoiceResponse) => {
     setActiveMenu(null);
-    const toastId = toast.loading('İndiriliyor...');
+    const toastId = toast.loading(t('outgoing.messages.downloading'));
     try {
       const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
       const isPdf = contentType.includes('application/pdf');
@@ -277,7 +279,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       a.download = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success(isPdf ? 'PDF indirildi' : 'Fatura indirildi', { id: toastId });
+      toast.success(isPdf ? t('outgoing.messages.pdf_downloaded') : t('outgoing.messages.invoice_downloaded'), { id: toastId });
     } catch {
       // Fallback to XML download
       try {
@@ -289,9 +291,9 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         a.download = `${invoice.invoiceNumber || invoice.invoiceId}.xml`;
         a.click();
         URL.revokeObjectURL(url);
-        toast.success('Fatura XML olarak indirildi (PDF mevcut değil)', { id: toastId });
+        toast.success(t('outgoing.messages.xml_downloaded'), { id: toastId });
       } catch {
-        toast.error('Belge indirilemedi', { id: toastId });
+        toast.error(t('outgoing.messages.document_download_failed'), { id: toastId });
       }
     }
   };
@@ -304,9 +306,9 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     try {
       const res = await apiClient.get(`/api/invoices/${statusModal.invoiceId}/status`);
       setProviderStatus((res.data?.data ?? null) as ProviderStatusData | null);
-      toast.success('Canli durum yenilendi');
+      toast.success(t('outgoing.messages.provider_status_refreshed'));
     } catch {
-      toast.error('Canli durum alinamadi');
+      toast.error(t('outgoing.messages.provider_status_failed'));
     } finally {
       setProviderStatusLoading(false);
     }
@@ -317,7 +319,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     setActionLoading(`retry-${statusModal.invoiceId}`);
     try {
       await apiClient.post(`/api/invoices/${statusModal.invoiceId}/retry-send`);
-      toast.success('Belge yeniden gonderim kuyruguna alindi');
+      toast.success(t('outgoing.messages.retry_queued'));
       await Promise.allSettled([
         apiClient.get(`/api/invoices/${statusModal.invoiceId}/logs`).then((res) => {
           const data = res.data?.data ?? [];
@@ -329,7 +331,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       ]);
       refetch();
     } catch {
-      toast.error('Tekrar gonderme basarisiz');
+      toast.error(t('outgoing.messages.retry_failed'));
     } finally {
       setActionLoading(null);
     }
@@ -337,15 +339,15 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
 
   const handleOpenRemoteHtml = async (invoice: OutgoingInvoiceResponse) => {
     setActiveMenu(null);
-    const toastId = toast.loading('HTML gorunumu hazirlaniyor...');
+    const toastId = toast.loading(t('outgoing.messages.html_preparing'));
     try {
       const { data: buf } = await fetchInvoiceDocument(invoice.invoiceId, 'html', 'remote');
       const blob = new Blob([buf], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank', 'noopener,noreferrer');
-      toast.success('HTML gorunumu acildi', { id: toastId });
+      toast.success(t('outgoing.messages.html_opened'), { id: toastId });
     } catch {
-      toast.error('HTML gorunumu acilamadi', { id: toastId });
+      toast.error(t('outgoing.messages.html_failed'), { id: toastId });
     }
   };
 
@@ -355,14 +357,14 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     try {
       if ((invoice.status || '').toUpperCase() === 'DRAFT') {
         await apiClient.delete(`/api/invoices/draft/${invoice.invoiceId}`);
-        toast.success('Taslak silindi');
+        toast.success(t('outgoing.messages.draft_deleted'));
       } else {
         await postInvoiceAction(invoice.invoiceId, 'cancel', { reason: 'İptal edildi' });
-        toast.success('Fatura iptal edildi');
+        toast.success(t('outgoing.messages.invoice_cancelled'));
       }
       refetch();
     } catch {
-      toast.error((invoice.status || '').toUpperCase() === 'DRAFT' ? 'Taslak silinemedi' : 'İptal işlemi başarısız');
+      toast.error((invoice.status || '').toUpperCase() === 'DRAFT' ? t('outgoing.messages.draft_delete_failed') : t('outgoing.messages.cancel_failed'));
     } finally {
       setActionLoading(null);
     }
@@ -371,13 +373,13 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   // Copy invoice content as a new draft via API — add to table directly
   const handleCopy = async (invoice: OutgoingInvoiceResponse) => {
     setActiveMenu(null);
-    const toastId = toast.loading('Fatura kopyalanıyor...');
+    const toastId = toast.loading(t('outgoing.messages.copying'));
     try {
       await apiClient.post(`/api/invoices/${invoice.invoiceId}/copy`);
-      toast.success('Fatura taslak olarak kopyalandı', { id: toastId });
+      toast.success(t('outgoing.messages.copy_success'), { id: toastId });
       refetch();
     } catch {
-      toast.error('Kopyalama başarısız', { id: toastId });
+      toast.error(t('outgoing.messages.copy_failed'), { id: toastId });
     }
   };
 
@@ -388,10 +390,10 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     try {
       await apiClient.post(`/api/invoices/${invoice.invoiceId}/copy`);
       await postInvoiceAction(invoice.invoiceId, 'cancel', { reason: 'Kopyalanarak iptal edildi' });
-      toast.success('Fatura kopyalandı ve orijinali iptal edildi');
+      toast.success(t('outgoing.messages.copy_cancel_success'));
       refetch();
     } catch {
-      toast.error('İşlem başarısız');
+      toast.error(t('outgoing.messages.operation_failed'));
     } finally {
       setActionLoading(null);
     }
@@ -406,14 +408,14 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   };
   const handleBulkCancel = async () => {
     const count = selectedIds.size;
-    const toastId = toast.loading(`${count} fatura iptal ediliyor...`);
+    const toastId = toast.loading(t('outgoing.messages.bulk_cancel_loading', { count }));
     try {
       await Promise.all(Array.from(selectedIds).map(id => postInvoiceAction(id, 'cancel', { reason: 'Toplu iptal' })));
-      toast.success(`${count} fatura iptal edildi`, { id: toastId });
+      toast.success(t('outgoing.messages.bulk_cancel_success', { count }), { id: toastId });
       setSelectedIds(new Set()); refetch();
-    } catch { toast.error('Toplu iptal işlemi başarısız', { id: toastId }); }
+    } catch { toast.error(t('outgoing.messages.bulk_cancel_failed'), { id: toastId }); }
   };
-  const outgoingExportHeaders = useMemo(() => ['Fatura No', 'Alıcı', 'Tutar', 'Tarih', 'Durum'], []);
+  const outgoingExportHeaders = useMemo(() => [t('outgoing.export_headers.invoice_no'), t('outgoing.export_headers.recipient'), t('outgoing.export_headers.amount'), t('outgoing.export_headers.date'), t('outgoing.export_headers.status')], [t]);
 
   const getOutgoingExportRows = useCallback(() => {
     const selected = selectedIds.size > 0
@@ -429,7 +431,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-muted-foreground">Giden faturalar yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">{ t('outgoing.loading') }</span>
       </div>
     );
   }
@@ -437,7 +439,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const outgoingInvoiceColumns: Column<OutgoingInvoiceResponse>[] = [
     {
       key: 'invoiceNumber',
-      title: 'Fatura No',
+      title: t('outgoing.columns.invoice_number'),
       sortable: true,
       render: (_, invoice) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</span>
@@ -445,7 +447,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     },
     {
       key: 'party',
-      title: 'Alıcı',
+      title: t('outgoing.columns.party'),
       sortable: true,
       render: (_, invoice) => (
         <div>
@@ -456,7 +458,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     },
     {
       key: 'totalAmount',
-      title: 'Tutar',
+      title: t('outgoing.columns.amount'),
       sortable: true,
       render: (_, invoice) => (
         <span className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -466,7 +468,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     },
     {
       key: 'invoiceDate',
-      title: 'Tarih',
+      title: t('outgoing.columns.date'),
       sortable: true,
       render: (_, invoice) => (
         <span className="text-sm text-muted-foreground">{formatDate(invoice.invoiceDate)}</span>
@@ -474,13 +476,13 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('outgoing.columns.status'),
       sortable: true,
       render: (_, invoice) => getStatusBadge(invoice.status, invoice),
     },
     {
       key: '_actions',
-      title: 'İşlemler',
+      title: t('outgoing.columns.actions'),
       render: (_, invoice) => (
         <div className="relative" ref={activeMenu === invoice.invoiceId ? menuRef : null}>
           <Button
@@ -496,7 +498,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               {(invoice.status || '').toUpperCase() === 'DRAFT' ? (
                 <>
                   <Button variant="ghost" fullWidth onClick={() => { setActiveMenu(null); navigate({ to: '/invoices/new', search: { draftId: Number(invoice.invoiceId) } as { type?: string; draftId?: number } }); }} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <FileText className="w-4 h-4" /> Taslağı Düzenle
+                    <FileText className="w-4 h-4" /> {t('outgoing.actions.edit_draft')}
                   </Button>
                   <div className="border-t border-border" />
                   <Button
@@ -507,22 +509,22 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                     className="flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
                   >
                     <XCircle className="w-4 h-4" />
-                    {actionLoading === `cancel-${invoice.invoiceId}` ? 'İşleniyor...' : 'Taslağı Sil'}
+                    {actionLoading === `cancel-${invoice.invoiceId}` ? t('common.processing') : t('outgoing.actions.delete_draft')}
                   </Button>
                 </>
               ) : (
                 <>
                   <Button variant="ghost" fullWidth onClick={() => handleViewPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Eye className="w-4 h-4" /> Fatura Görüntüle
+                    <Eye className="w-4 h-4" /> {t('outgoing.actions.view_invoice')}
                   </Button>
                   <Button variant="ghost" fullWidth onClick={() => handleDownloadPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Download className="w-4 h-4" /> PDF İndir
+                    <Download className="w-4 h-4" /> {t('outgoing.actions.download_pdf')}
                   </Button>
                   <Button variant="ghost" fullWidth onClick={() => handleOpenRemoteHtml(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <FileText className="w-4 h-4" /> HTML Aç
+                    <FileText className="w-4 h-4" /> {t('outgoing.actions.open_html')}
                   </Button>
                   <Button variant="ghost" fullWidth onClick={() => handleCopy(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Copy className="w-4 h-4" /> Faturayı Kopyala (Taslak)
+                    <Copy className="w-4 h-4" /> {t('outgoing.actions.copy_invoice')}
                   </Button>
                   <div className="border-t border-border" />
                   <Button
@@ -533,7 +535,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                     className="flex items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 disabled:opacity-50 justify-start h-auto"
                   >
                     <Copy className="w-4 h-4" />
-                    {actionLoading?.startsWith(`cancel-`) ? 'İşleniyor...' : 'Kopyala ve İptal Et'}
+                    {actionLoading?.startsWith(`cancel-`) ? t('common.processing') : t('outgoing.actions.copy_and_cancel')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -543,7 +545,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                     className="flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
                   >
                     <XCircle className="w-4 h-4" />
-                    {actionLoading === `cancel-${invoice.invoiceId}` ? 'İşleniyor...' : 'İptal Et'}
+                    {actionLoading === `cancel-${invoice.invoiceId}` ? t('common.processing') : t('outgoing.actions.cancel')}
                   </Button>
                 </>
               )}
@@ -558,31 +560,31 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     <div className={`p-6 space-y-6 ${className}`}>
       {/* Header */}
       <DesktopPageHeader
-        title="Giden Faturalar"
-        description="GİB üzerinden gönderilen faturalar"
+        title={t('outgoing.title')}
+        description={t('outgoing.description')}
         icon={<FileText className="h-6 w-6" />}
-        eyebrow={{ tr: 'E-Faturalama', en: 'E-Invoicing' }}
+        eyebrow={{ tr: t('outgoing.eyebrow'), en: 'E-Invoicing' }}
         actions={(
           <>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
               <Download size={16} />
-              <span className="hidden sm:inline">Yenile</span>
+              <span className="hidden sm:inline">{ t('common.refresh') }</span>
             </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { type: 'proforma' } as { type?: string; draftId?: number } })}>
               <FileText size={16} />
-              <span className="hidden sm:inline">Proforma</span>
+              <span className="hidden sm:inline">{ t('common.proforma') }</span>
             </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices', search: { tab: 'proformas' } as { tab?: string } })}>
               <Receipt size={16} />
-              <span className="hidden sm:inline">Proformalar</span>
+              <span className="hidden sm:inline">{ t('common.proformas') }</span>
             </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { documentKind: 'despatch' } as { type?: string; draftId?: number; documentKind?: 'invoice' | 'despatch' } })}>
               <Send size={16} />
-              <span className="hidden sm:inline">Yeni E-İrsaliye</span>
+              <span className="hidden sm:inline">{ t('common.new_e_despatch') }</span>
             </Button>
             <Button className="flex items-center gap-2 premium-gradient tactile-press text-white" onClick={() => navigate({ to: '/invoices/new' })}>
               <Plus size={16} />
-              <span className="hidden sm:inline">Yeni Fatura</span>
+              <span className="hidden sm:inline">{ t('outgoing.actions.new_invoice') }</span>
             </Button>
           </>
         )}
@@ -593,7 +595,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Fatura</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{ t('common.total_invoices') }</p>
               <p className="text-lg md:text-2xl font-bold text-primary mt-1">{totalCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
@@ -605,7 +607,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Tutar</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{ t('common.total_amount') }</p>
               <p className="text-lg md:text-2xl font-bold text-success mt-1">
                 {formatCurrency(totalAmount, 'TRY')}
               </p>
@@ -619,7 +621,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Ödenen Tutar</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{ t('common.paid_amount') }</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
                 {formatCurrency(paidAmount, 'TRY')}
               </p>
@@ -659,7 +661,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               type="text"
-              placeholder="Alıcı adı veya fatura no ara..."
+              placeholder={t('outgoing.search_placeholder')}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); }}
               className="w-full pl-10 pr-4"
@@ -668,13 +670,13 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           </div>
           <div className="flex gap-2 items-end">
             <DatePicker
-              placeholder="Başlangıç"
+              placeholder={t('outgoing.filters.start_date')}
               value={dateFrom}
               onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
               className="w-[140px]"
             />
             <DatePicker
-              placeholder="Bitiş"
+              placeholder={t('outgoing.filters.end_date')}
               value={dateTo}
               onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
               className="w-[140px]"
@@ -684,10 +686,10 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
               className="px-4 py-2"
               options={[
-                { value: 'all', label: 'Tüm Durumlar' },
-                { value: 'SENT', label: 'Gönderildi' },
-                { value: 'PAID', label: 'Ödendi' },
-                { value: 'draft', label: 'Taslak' }
+                { value: 'all', label: t('outgoing.filters.all_statuses') },
+                { value: 'SENT', label: t('outgoing.filters.sent') },
+                { value: 'PAID', label: t('outgoing.filters.paid') },
+                { value: 'draft', label: t('outgoing.filters.draft') }
               ]}
             />
             <Button onClick={() => refetch()} className="flex items-center gap-2">
@@ -703,10 +705,10 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         {isMobileSelectionMode ? (
           <>
             <Button variant="ghost" size="sm" onClick={() => { setIsMobileSelectionMode(false); setSelectedIds(new Set()); }} className="text-muted-foreground">
-              <X className="w-4 h-4 mr-1" /> Kapat
+              <X className="w-4 h-4 mr-1" /> {t('common.close')}
             </Button>
             <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-primary font-medium">
-              {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+              {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? t('common.select_none') : t('common.select_all')}
             </Button>
           </>
         ) : (
@@ -714,7 +716,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         )}
         {!isMobileSelectionMode && (
           <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(true)} className="text-primary font-medium ml-auto">
-            <CheckSquare className="w-4 h-4 mr-1" /> Seç
+            <CheckSquare className="w-4 h-4 mr-1" /> {t('common.select')}
           </Button>
         )}
       </div>
@@ -725,8 +727,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
               <FileText className="h-8 w-8 text-gray-300" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Giden fatura bulunamadı</h3>
-            <p className="text-muted-foreground text-sm mt-1">Kriterlere uygun giden fatura yok.</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{ t('outgoing.not_found') }</h3>
+            <p className="text-muted-foreground text-sm mt-1">{ t('outgoing.not_found_description') }</p>
           </div>
         ) : filteredInvoices.map((invoice: OutgoingInvoiceResponse) => (
           <InvoiceMobileCard
@@ -787,10 +789,10 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
         <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-border rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap">
-          <span className="text-sm font-medium text-foreground">{selectedIds.size} fatura seçildi</span>
+          <span className="text-sm font-medium text-foreground">{t('common.n_invoices_selected', { count: selectedIds.size })}</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={handleBulkCancel} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
-            <Ban className="w-4 h-4" /> Toplu İptal
+            <Ban className="w-4 h-4" /> {t('outgoing.actions.bulk_cancel')}
           </Button>
           <PermissionGate permission="invoices.documents.download.view">
             <ExportDropdown
@@ -798,7 +800,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               getRows={getOutgoingExportRows}
               filename="giden_faturalar"
               variant="ghost"
-              label="Dışa Aktar"
+              label={t('outgoing.actions.export')}
               compact
               iconClassName="text-success"
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/10 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto"
@@ -806,7 +808,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           </PermissionGate>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
-            <X className="w-4 h-4" /> Seçimi Kaldır
+            <X className="w-4 h-4" /> {t('common.remove_selection')}
           </Button>
         </div>
       )}
@@ -844,7 +846,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               </div>
             </div>
             <div className="flex-1 overflow-hidden">
-              <iframe src={pdfModal.blobUrl} className="w-full h-full border-0" title="Fatura PDF" />
+              <iframe src={pdfModal.blobUrl} className="w-full h-full border-0" title={t('common.invoice_pdf_title')} />
             </div>
           </div>
         </div>
@@ -861,7 +863,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Fatura Durumu</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{ t('status_modal.title') }</h2>
               <Button
                 variant="ghost"
                 onClick={() => setStatusModal(null)}
@@ -873,12 +875,12 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               {/* Invoice Details */}
               <div className="grid grid-cols-2 gap-4">
-                <div><p className="text-xs text-muted-foreground">Fatura No</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.invoiceNumber}</p></div>
-                <div><p className="text-xs text-muted-foreground">Alıcı</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.partyFirstName} {statusModal.partyLastName}</p></div>
-                <div><p className="text-xs text-muted-foreground">Tarih</p><p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(statusModal.invoiceDate)}</p></div>
-                <div><p className="text-xs text-muted-foreground">Tutar</p><p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(statusModal.totalAmount), 'TRY')}</p></div>
+                <div><p className="text-xs text-muted-foreground">{ t('status_modal.invoice_no') }</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.invoiceNumber}</p></div>
+                <div><p className="text-xs text-muted-foreground">{ t('status_modal.recipient') }</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.partyFirstName} {statusModal.partyLastName}</p></div>
+                <div><p className="text-xs text-muted-foreground">{ t('status_modal.date') }</p><p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(statusModal.invoiceDate)}</p></div>
+                <div><p className="text-xs text-muted-foreground">{ t('status_modal.amount') }</p><p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(statusModal.totalAmount), 'TRY')}</p></div>
                 <div className="col-span-2">
-                  <p className="text-xs text-muted-foreground mb-1">Mevcut Durum</p>
+                  <p className="text-xs text-muted-foreground mb-1">{ t('status_modal.current_status') }</p>
                   {getStatusBadge(statusModal.status)}
                 </div>
               </div>
@@ -887,15 +889,15 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 text-muted-foreground" />
-                    GİB Durumu
+                    {t('status_modal.gib_status')}
                   </h3>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" onClick={handleRefreshProviderStatus} disabled={providerStatusLoading} className="text-xs">
-                      {providerStatusLoading ? 'Yenileniyor...' : 'Canli Durum'}
+                      {providerStatusLoading ? t('status_modal.refreshing') : t('status_modal.live_status_btn')}
                     </Button>
                     {providerStatus?.retryable && (
                       <Button onClick={handleRetryProviderSend} disabled={actionLoading === `retry-${statusModal.invoiceId}`} className="text-xs">
-                        {actionLoading === `retry-${statusModal.invoiceId}` ? 'Gonderiliyor...' : 'Tekrar Gonder'}
+                        {actionLoading === `retry-${statusModal.invoiceId}` ? t('status_modal.sending') : t('status_modal.retry_send')}
                       </Button>
                     )}
                   </div>
@@ -903,29 +905,29 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                 {providerStatusLoading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
-                    Durum sorgulaniyor...
+                    { t('status_modal.querying') }
                   </div>
                 ) : providerStatus ? (
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <p className="text-xs text-muted-foreground">Canli Durum</p>
+                      <p className="text-xs text-muted-foreground">{ t('status_modal.live_status') }</p>
                       <p className="font-medium text-gray-900 dark:text-white">{providerStatus.currentStatus}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Durum Kodu</p>
+                      <p className="text-xs text-muted-foreground">{ t('status_modal.status_code') }</p>
                       <p className="font-medium text-gray-900 dark:text-white">{providerStatus.providerStatusCode || '-'}</p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">Provider Mesaji</p>
+                      <p className="text-xs text-muted-foreground">{ t('status_modal.provider_message') }</p>
                       <p className="font-medium text-gray-900 dark:text-white break-words">{providerStatus.providerMessage || '—'}</p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">Zarf UUID</p>
+                      <p className="text-xs text-muted-foreground">{ t('status_modal.envelope_uuid') }</p>
                       <p className="font-mono text-xs text-foreground break-all">{providerStatus.envelopeId}</p>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Canli provider durumu alinamadi.</p>
+                  <p className="text-sm text-muted-foreground">{ t('status_modal.provider_status_unavailable') }</p>
                 )}
               </div>
 
@@ -933,7 +935,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-muted-foreground" />
-                  İşlem Geçmişi
+                  {t('status_modal.history_title')}
                 </h3>
                 {logsLoading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -941,7 +943,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                     Yükleniyor...
                   </div>
                 ) : statusLogs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">İşlem geçmişi bulunamadı.</p>
+                  <p className="text-sm text-muted-foreground">{ t('status_modal.history_empty') }</p>
                 ) : (
                   <div className="relative pl-4">
                     <div className="absolute left-2 top-0 bottom-0 w-px bg-accent" />
@@ -949,7 +951,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                       {statusLogs.map((log, idx) => (
                         <div key={log.id ?? idx} className="relative pl-4">
                           <div className="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-white dark:ring-gray-800" />
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white">{log.description || log.status || 'Adım'}</p>
+                          <p className="text-xs font-semibold text-gray-900 dark:text-white">{log.description || log.status || t('status_modal.step')}</p>
                           {(log.createDate || log.createTime) && (
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {log.createDate ? `${log.createDate} ` : ''}{log.createTime ? log.createTime.split('.')[0] : ''}
@@ -963,7 +965,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               </div>
             </div>
             <div className="flex justify-end p-6 border-t border-border flex-shrink-0">
-              <Button variant="outline" onClick={() => setStatusModal(null)}>Kapat</Button>
+              <Button variant="outline" onClick={() => setStatusModal(null)}>{ t('common.close') }</Button>
             </div>
           </div>
         </div>
@@ -989,6 +991,7 @@ interface InvoiceMobileCardProps {
 }
 
 function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCancel, onCancel, getStatusBadge, renderDocumentBadges, actionLoading, isSelectionMode, isSelected, onToggleSelect }: InvoiceMobileCardProps) {
+  const { t } = useTranslation('invoices');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -1043,20 +1046,20 @@ function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCance
               {menuOpen && (
                 <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-xl" onClick={(e) => e.stopPropagation()}>
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Eye className="w-4 h-4" /> Görüntüle
+                    <Eye className="w-4 h-4" /> {t('outgoing.actions.view')}
                   </Button>
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Download className="w-4 h-4" /> PDF İndir
+                    <Download className="w-4 h-4" /> {t('outgoing.actions.download_pdf')}
                   </Button>
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onCopy(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Copy className="w-4 h-4" /> Kopyala (Taslak)
+                    <Copy className="w-4 h-4" /> {t('outgoing.actions.copy_draft')}
                   </Button>
                   <div className="border-t border-border" />
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onCopyAndCancel(); }} disabled={!!actionLoading} className="flex items-center gap-2 px-4 py-3 text-sm text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 disabled:opacity-50 justify-start h-auto">
-                    <Copy className="w-4 h-4" /> Kopyala ve İptal Et
+                    <Copy className="w-4 h-4" /> {t('outgoing.actions.copy_and_cancel')}
                   </Button>
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onCancel(); }} disabled={actionLoading === `cancel-${invoice.invoiceId}`} className="flex items-center gap-2 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto">
-                    <XCircle className="w-4 h-4" /> İptal Et
+                    <XCircle className="w-4 h-4" /> {t('outgoing.actions.cancel')}
                   </Button>
                 </div>
               )}
@@ -1066,13 +1069,13 @@ function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCance
         <div className="border-t border-border pt-3">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-xs text-muted-foreground">Tarih</p>
+              <p className="text-xs text-muted-foreground">{ t('status_modal.date') }</p>
               <p className="text-sm font-medium text-foreground">
                 {formatDate(invoice.invoiceDate)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Tutar</p>
+              <p className="text-xs text-muted-foreground">{ t('status_modal.amount') }</p>
               <p className="text-lg font-bold text-gray-900 dark:text-white">
                 {formatCurrency(Number(invoice.totalAmount), 'TRY')}
               </p>
@@ -1080,7 +1083,7 @@ function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCance
           </div>
           {(invoice.status || '').toUpperCase() === 'DRAFT' && (
             <div className="mt-3 inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
-              Taslak: dokununca düzenleme açılır
+              {t('outgoing.draft_hint')}
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -91,6 +92,7 @@ export function AppointmentQuickModal({
   isLoading = false,
   error = null,
 }: AppointmentQuickModalProps) {
+  const { t } = useTranslation('appointments_extra');
   const {
     control,
     handleSubmit,
@@ -138,7 +140,7 @@ export function AppointmentQuickModal({
       <div className="p-6">
         <div className="mb-6">
           <Text className="text-xl font-semibold">
-            Hızlı Randevu
+            {t('quickAppointment', 'Hızlı Randevu')}
           </Text>
           <Text className="text-sm text-muted-foreground mt-1">
             {format(selectedDate, 'dd MMMM yyyy, EEEE', { locale: tr })}
@@ -155,14 +157,14 @@ export function AppointmentQuickModal({
           <VStack spacing="md">
             {/* Party Name */}
             <FormControl className="w-full">
-              <FormLabel>Hasta Adı *</FormLabel>
+              <FormLabel>{t('patientName', 'Hasta Adı')} *</FormLabel>
               <Controller
                 name="partyName"
                 control={control}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    placeholder="Hasta adını girin"
+                    placeholder={t('enterPatientName', 'Hasta adını girin')}
                     error={errors.partyName?.message}
                     autoFocus
                   />
@@ -173,7 +175,7 @@ export function AppointmentQuickModal({
             {/* Time and Type */}
             <HStack spacing="md" className="w-full">
               <FormControl className="flex-1">
-                <FormLabel>Saat *</FormLabel>
+                <FormLabel>{t('time', 'Saat')} *</FormLabel>
                 <Controller
                   name="time"
                   control={control}
@@ -189,7 +191,7 @@ export function AppointmentQuickModal({
               </FormControl>
 
               <FormControl className="flex-1">
-                <FormLabel>Tür *</FormLabel>
+                <FormLabel>{t('type', 'Tür')} *</FormLabel>
                 <Controller
                   name="type"
                   control={control}
@@ -207,7 +209,7 @@ export function AppointmentQuickModal({
 
             {/* Duration */}
             <FormControl className="w-full">
-              <FormLabel>Süre</FormLabel>
+              <FormLabel>{t('duration', 'Süre')}</FormLabel>
               <Controller
                 name="duration"
                 control={control}
@@ -231,14 +233,14 @@ export function AppointmentQuickModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              İptal
+              {t('cancel', 'İptal')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || isLoading}
               loading={isSubmitting || isLoading}
             >
-              Kaydet
+              {t('save', 'Kaydet')}
             </Button>
           </div>
         </form>

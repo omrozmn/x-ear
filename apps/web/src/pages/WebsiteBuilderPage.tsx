@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Bot, Paintbrush2, Globe2, LayoutTemplate, MessageCircle, Package, Plus, Settings, Sparkles, Store, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useBreakpoints } from '@/hooks/useMediaQuery';
@@ -168,6 +169,7 @@ function TabButton({
 }
 
 const WebsiteBuilderPage: React.FC = () => {
+    const { t } = useTranslation('website');
     const { isMobile } = useBreakpoints();
     const [entryMode, setEntryMode] = useState<'template' | 'ai'>('ai');
     const [activeTab, setActiveTab] = useState<TabKey>('content');
