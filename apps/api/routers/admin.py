@@ -186,7 +186,7 @@ def create_admin_user(
 
 @router.get("/users", operation_id="listAdminUsers")
 def list_admin_users(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     tenant_id: Optional[str] = None,
     search: Optional[str] = None,
@@ -227,7 +227,7 @@ def list_admin_users(
 
 @router.get("/users/all", operation_id="listAdminUserAll")
 def list_all_tenant_users(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     role: Optional[str] = None,
@@ -287,10 +287,15 @@ def get_admin_user(
     access: UnifiedAccess = Depends(require_admin())
 ):
     """Get user details (admin operation)"""
-    user = db_session.get(User, user_id)
+    if not user_id or len(user_id) > 200 or not user_id.isprintable():
+        raise HTTPException(status_code=400, detail={"message": "Invalid user ID", "code": "INVALID_ID"})
+    try:
+        user = db_session.get(User, user_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail={"message": "User not found", "code": "NOT_FOUND"})
     if not user:
         raise HTTPException(status_code=404, detail={"message": "User not found", "code": "NOT_FOUND"})
-    
+
     return ResponseEnvelope(data=UserRead.model_validate(user).model_dump(by_alias=True))
 
 @router.put("/users/all/{user_id}", operation_id="updateAdminUserAll")
@@ -343,11 +348,16 @@ def get_admin_party(
     from schemas.parties import PartyRead
     from core.database import unbound_session
     
+    if not party_id or len(party_id) > 200 or not party_id.isprintable():
+        raise HTTPException(status_code=400, detail={"message": "Invalid party ID", "code": "INVALID_ID"})
     with unbound_session(reason="admin-get-party"):
-        party = db_session.get(Party, party_id)
+        try:
+            party = db_session.get(Party, party_id)
+        except Exception:
+            raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         if not party:
             raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
-        
+
         return ResponseEnvelope(data=PartyRead.model_validate(party).model_dump(by_alias=True))
 
 
@@ -596,8 +606,13 @@ def get_admin_sale(
     from core.database import unbound_session
     from routers.sales import _build_full_sale_data
     
+    if not sale_id or len(sale_id) > 200 or not sale_id.isprintable():
+        raise HTTPException(status_code=400, detail={"message": "Invalid sale ID", "code": "INVALID_ID"})
     with unbound_session(reason="admin-get-sale"):
-        sale = db_session.get(Sale, sale_id)
+        try:
+            sale = db_session.get(Sale, sale_id)
+        except Exception:
+            raise HTTPException(status_code=404, detail={"message": "Sale not found", "code": "NOT_FOUND"})
         if not sale:
             raise HTTPException(status_code=404, detail={"message": "Sale not found", "code": "NOT_FOUND"})
         

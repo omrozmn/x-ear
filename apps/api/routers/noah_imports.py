@@ -206,6 +206,13 @@ def enroll_agent(
     db: Session = Depends(get_db),
 ):
     """Agent enrollment — validates token, activates device, returns device token."""
+    # Validate required fields are non-empty
+    if not body.enrollment_token or not body.enrollment_token.strip():
+        raise HTTPException(status_code=400, detail="Enrollment token is required")
+    if not body.device_fingerprint or not body.device_fingerprint.strip():
+        raise HTTPException(status_code=400, detail="Device fingerprint is required")
+    if not body.device_name or not body.device_name.strip():
+        raise HTTPException(status_code=400, detail="Device name is required")
     try:
         device, device_token = NoahImportService.enroll_device(
             db,

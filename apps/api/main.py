@@ -255,6 +255,84 @@ app.add_middleware(
     expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
+# ============================================================================
+# Input Sanitization Middleware (Schemathesis / Fuzz-protection)
+# ============================================================================
+# Converts literal "null" query params to omit them, clamps pagination params,
+# and validates path parameters against non-printable/control characters.
+# This prevents 500 errors from fuzzed inputs reaching DB/date parsers.
+import re as _re
+from urllib.parse import urlencode as _urlencode, parse_qs as _parse_qs
+
+_PAGINATION_KEYS = frozenset(("page", "per_page", "limit", "offset", "skip", "perPage"))
+_PATH_UNSAFE_RE = _re.compile(r'[\x00-\x1f\x7f-\x9f]')  # Control characters
+
+
+@app.middleware("http")
+async def sanitize_input_middleware(request: Request, call_next):
+    """Sanitize query and path parameters to prevent crashes from fuzzed input."""
+    try:
+        # --- 1. Check path parameters for control/non-printable characters ---
+        path = request.scope.get("path", "")
+        if _PATH_UNSAFE_RE.search(path):
+            return DefaultJSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": {"code": "INVALID_PATH", "message": "Path contains invalid characters"},
+                },
+            )
+
+        # --- 2. Sanitize query string ---
+        query_string = request.scope.get("query_string", b"")
+        if query_string:
+            try:
+                qs_decoded = query_string.decode("utf-8", errors="replace")
+            except Exception:
+                qs_decoded = ""
+
+            if qs_decoded:
+                params = _parse_qs(qs_decoded, keep_blank_values=True)
+                modified = False
+
+                for key, values in list(params.items()):
+                    new_values = []
+                    for v in values:
+                        # Convert literal "null" / "Null" / "NULL" to omission
+                        if v.lower() == "null":
+                            modified = True
+                            continue  # Skip null values entirely
+
+                        # Clamp pagination params to reasonable values
+                        if key in _PAGINATION_KEYS:
+                            try:
+                                num = int(v)
+                                if num > 10000:
+                                    v = "10000"
+                                    modified = True
+                                elif num < 0:
+                                    v = "1"
+                                    modified = True
+                            except (ValueError, OverflowError):
+                                v = "1"
+                                modified = True
+
+                        new_values.append(v)
+                    params[key] = new_values
+
+                if modified:
+                    # Remove keys that ended up with empty value lists
+                    params = {k: v for k, v in params.items() if v}
+                    new_qs = _urlencode(params, doseq=True)
+                    request.scope["query_string"] = new_qs.encode("utf-8")
+
+    except Exception as sanitize_err:
+        # Never let the sanitizer itself cause a 500
+        logger.warning(f"Input sanitization error (non-fatal): {sanitize_err}")
+
+    response = await call_next(request)
+    return response
+
 # Request timeout middleware - prevents workers from being held indefinitely
 import asyncio as _asyncio
 

@@ -206,7 +206,7 @@ def create_payment_record(
 
 @router.get("/payment-records", operation_id="listPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def list_payment_records(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=100),
     sale_id: Optional[str] = Query(None, alias="saleId"),
     access: UnifiedAccess = Depends(require_access("finance.view")),
@@ -251,7 +251,7 @@ def list_payment_records(
 @router.get("/parties/{party_id}/payment-records", operation_id="listPartyPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def get_party_payment_records(
     party_id: str,
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)

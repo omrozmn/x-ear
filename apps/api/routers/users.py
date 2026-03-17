@@ -72,7 +72,7 @@ class PasswordChange(BaseModel):
 
 @router.get("/users", operation_id="listUsers", response_model=ResponseEnvelope[List[UserRead]])
 def list_users(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access("users.view")),
     db_session: Session = Depends(get_db)

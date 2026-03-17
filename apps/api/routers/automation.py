@@ -91,7 +91,7 @@ async def get_automation_logs(
     service: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())

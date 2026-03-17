@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from core.models import Base, User, Party, InventoryItem, Branch, SystemSetting
+from core.models.tenant import Tenant
 from passlib.context import CryptContext
 
 # Password hashing
@@ -49,6 +50,28 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def hash_password(password: str) -> str:
     """Hash a password for storing."""
     return pwd_context.hash(password)
+
+def create_tenant(db):
+    """Create test tenant."""
+    print("\n🏢 Creating tenant...")
+    existing = db.query(Tenant).filter(Tenant.id == "tenant_001").first()
+    if existing:
+        print("  ⏭️  Tenant tenant_001 already exists, skipping...")
+        return existing
+    tenant = Tenant(
+        id="tenant_001",
+        name="Test Clinic",
+        slug="test-clinic",
+        owner_email="admin@xear.com",
+        billing_email="billing@xear.com",
+        is_active=True,
+        created_at=datetime.utcnow(),
+    )
+    db.add(tenant)
+    db.commit()
+    print("  ✅ Created tenant: tenant_001")
+    return tenant
+
 
 def create_users(db):
     """Create test user accounts with different roles."""
@@ -627,6 +650,7 @@ def main():
         print("✅ Database tables created")
         
         # Seed data
+        create_tenant(db)
         users = create_users(db)
         parties = create_parties(db)
         devices = create_devices(db)

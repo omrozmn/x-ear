@@ -52,7 +52,7 @@ def list_public_packages(
 
 @router.get("/admin/sms/packages", operation_id="listAdminSmPackages", response_model=ResponseEnvelope[List[DetailedSmsPackageRead]])
 def list_admin_packages(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
     admin_user=Depends(get_current_admin_user),

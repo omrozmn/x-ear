@@ -121,7 +121,7 @@ class SupplierUpdate(BaseModel):
 
 @router.get("/suppliers", operation_id="listSuppliers", response_model=ResponseEnvelope[List[SupplierRead]])
 def get_suppliers(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=200),
     search: Optional[str] = None,
     is_active: Optional[bool] = None,

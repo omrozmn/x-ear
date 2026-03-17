@@ -26,7 +26,7 @@ class CampaignDetailResponse(ResponseEnvelope):
 
 @router.get("", response_model=CampaignListResponse, operation_id="adminGetCampaigns")
 async def get_campaigns(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     status: Optional[str] = None,

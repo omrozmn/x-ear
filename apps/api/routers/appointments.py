@@ -38,7 +38,18 @@ router = APIRouter(tags=["Appointments"])
 
 def get_appointment_or_404(db_session: Session, appointment_id: str, access: UnifiedAccess) -> Appointment:
     """Get appointment or raise 404"""
-    appointment = db_session.get(Appointment, appointment_id)
+    if not appointment_id or len(appointment_id) > 200 or not appointment_id.isprintable():
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="Invalid appointment ID", code="INVALID_ID").model_dump(mode="json")
+        )
+    try:
+        appointment = db_session.get(Appointment, appointment_id)
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Appointment not found", code="APPOINTMENT_NOT_FOUND").model_dump(mode="json")
+        )
     if not appointment:
         raise HTTPException(
             status_code=404,
@@ -57,6 +68,22 @@ def parse_date(date_str: str) -> datetime:
         date_str = date_str.split('T')[0]
     return datetime.strptime(date_str, '%Y-%m-%d')
 
+
+def _safe_parse_datetime(value: Optional[str]) -> Optional[datetime]:
+    """Safely parse a date/datetime string, returning None on failure."""
+    if not value or not isinstance(value, str):
+        return None
+    value = value.strip()
+    if not value or value.lower() == "null":
+        return None
+    try:
+        if 'T' in value:
+            return datetime.fromisoformat(value)
+        else:
+            return datetime.strptime(value, '%Y-%m-%d')
+    except (ValueError, TypeError):
+        return None
+
 # --- Routes ---
 
 @router.get("/appointments", operation_id="listAppointments", response_model=ResponseEnvelope[List[AppointmentRead]])
@@ -65,7 +92,7 @@ def get_appointments(
     end_date: Optional[str] = None,
     party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=1000),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -79,21 +106,21 @@ def get_appointments(
             query = query.filter_by(tenant_id=access.tenant_id)
         
         # Date filters
-        if start_date:
-            start_dt = datetime.fromisoformat(start_date) if 'T' in start_date else datetime.strptime(start_date, '%Y-%m-%d')
+        start_dt = _safe_parse_datetime(start_date)
+        if start_dt:
             query = query.filter(Appointment.date >= start_dt)
-        
-        if end_date:
-            if 'T' in end_date:
-                end_dt = datetime.fromisoformat(end_date)
-            else:
-                end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
+
+        end_dt = _safe_parse_datetime(end_date)
+        if end_dt:
+            # If only date (no time component), extend to end of day
+            if end_date and 'T' not in end_date:
+                end_dt = end_dt + timedelta(days=1) - timedelta(microseconds=1)
             query = query.filter(Appointment.date <= end_dt)
-        
+
         # Other filters
         if party_id:
             query = query.filter_by(party_id=party_id)
-        
+
         if status:
             try:
                 status_enum = AppointmentStatus.from_legacy(status) if isinstance(status, str) else status
@@ -307,7 +334,7 @@ def get_availability(
 
 @router.get("/appointments/list", operation_id="listAppointmentList", response_model=ResponseEnvelope[List[AppointmentRead]])
 def list_appointments(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,
@@ -329,15 +356,14 @@ def list_appointments(
         if status:
             query = query.filter_by(status=status)
         
-        if start_date:
-            start_dt = datetime.fromisoformat(start_date) if 'T' in start_date else datetime.strptime(start_date, '%Y-%m-%d')
+        start_dt = _safe_parse_datetime(start_date)
+        if start_dt:
             query = query.filter(Appointment.date >= start_dt)
-        
-        if end_date:
-            if 'T' in end_date:
-                end_dt = datetime.fromisoformat(end_date)
-            else:
-                end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
+
+        end_dt = _safe_parse_datetime(end_date)
+        if end_dt:
+            if end_date and 'T' not in end_date:
+                end_dt = end_dt + timedelta(days=1) - timedelta(microseconds=1)
             query = query.filter(Appointment.date <= end_dt)
         
         total = query.count()

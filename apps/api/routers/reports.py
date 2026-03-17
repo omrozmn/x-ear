@@ -114,13 +114,18 @@ def tenant_filter(query, model, access: UnifiedAccess):
     return query
 
 def parse_report_date(raw_value: Optional[str], end_of_day: bool = False) -> Optional[datetime]:
-    if not raw_value:
+    if not raw_value or not isinstance(raw_value, str):
         return None
-
-    parsed = datetime.fromisoformat(raw_value.replace('Z', '+00:00'))
-    if end_of_day and len(raw_value) <= 10:
-        parsed = parsed.replace(hour=23, minute=59, second=59, microsecond=999999)
-    return parsed
+    raw_value = raw_value.strip()
+    if not raw_value or raw_value.lower() == "null":
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw_value.replace('Z', '+00:00'))
+        if end_of_day and len(raw_value) <= 10:
+            parsed = parsed.replace(hour=23, minute=59, second=59, microsecond=999999)
+        return parsed
+    except (ValueError, TypeError):
+        return None
 
 def resolve_report_window(
     days: int,
@@ -654,7 +659,7 @@ def report_revenue(
 
 @router.get("/reports/appointments", operation_id="listReportAppointments")
 def report_appointments(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access("reports.overview.view")),
     db_session: Session = Depends(get_db)
@@ -821,7 +826,7 @@ def report_promissory_notes(
 
 @router.get("/reports/promissory-notes/by-patient", operation_id="listReportPromissoryNoteByPatient", response_model=ResponseEnvelope[List[PromissoryNotePatientItem]])
 def report_promissory_notes_by_patient(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=100),
     status: Optional[str] = Query(None),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
@@ -938,7 +943,7 @@ def report_promissory_notes_by_patient(
 
 @router.get("/reports/promissory-notes/list", operation_id="listReportPromissoryNoteList", response_model=ResponseEnvelope[List[PromissoryNoteListItem]])
 def report_promissory_notes_list(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     status: Optional[str] = Query(None),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
@@ -1030,7 +1035,7 @@ def report_promissory_notes_list(
 
 @router.get("/reports/remaining-payments", operation_id="listReportRemainingPayments", response_model=ResponseEnvelope[List[RemainingPaymentItem]])
 def report_remaining_payments(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=100),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     min_amount: float = Query(0, ge=0, alias="min_amount"),
@@ -1223,7 +1228,7 @@ def report_cashflow_summary(
 
 @router.get("/reports/pos-movements", operation_id="listReportPosMovements", response_model=ResponseEnvelope[List[PosMovementItem]])
 def report_pos_movements(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     days: int = Query(30, ge=1, le=365),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
@@ -1353,7 +1358,7 @@ def report_pos_movements(
 
 @router.get("/reports/report-tracking", operation_id="listReportTracking", response_model=ResponseEnvelope[List[ReportTrackingItem]])
 def report_tracking(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     report_status: Optional[str] = Query(None, alias="report_status"),

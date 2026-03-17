@@ -29,7 +29,7 @@ class AddonDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminAddons", response_model=AddonListResponse)
 def list_addons(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(20, ge=1, le=100),
     type: Optional[str] = Query(None),
     is_active: Optional[str] = Query(None),

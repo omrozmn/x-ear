@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
@@ -339,11 +339,20 @@ export function AutomationShowcase() {
   const items = automations.filter((a) => (a.utsOnly ? showUts : true));
 
   const [active, setActive] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
-  // auto-cycle
+  // Scroll-driven index (consistent with other sticky sections)
   useEffect(() => {
-    const id = setInterval(() => setActive((p) => (p + 1) % items.length), CYCLE_MS);
-    return () => clearInterval(id);
+    const handleScroll = () => {
+      const el = sectionRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const progress = -rect.top / (el.offsetHeight - window.innerHeight);
+      const clamped = Math.max(0, Math.min(1, progress));
+      setActive(Math.min(items.length - 1, Math.floor(clamped * items.length)));
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [items.length]);
 
   const pick = useCallback(
@@ -355,8 +364,9 @@ export function AutomationShowcase() {
   const Demo = current.demo;
 
   return (
-    <section className="relative py-24 px-4 overflow-hidden">
-      <div className="max-w-6xl mx-auto space-y-12">
+    <section ref={sectionRef} className="relative" style={{ height: `${items.length * 100}vh` }}>
+      <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden">
+        <div className="max-w-6xl mx-auto w-full space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
           <TextReveal className="text-3xl md:text-4xl font-bold tracking-tight text-foreground justify-center">
@@ -458,6 +468,7 @@ export function AutomationShowcase() {
             </HyperGlassCard>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

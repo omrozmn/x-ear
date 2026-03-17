@@ -23,7 +23,7 @@ class AppointmentListResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminAppointments", response_model=AppointmentListResponse)
 async def get_all_appointments(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     tenant_id: Optional[str] = None,

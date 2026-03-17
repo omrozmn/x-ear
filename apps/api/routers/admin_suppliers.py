@@ -44,7 +44,7 @@ class SupplierDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminSuppliers", response_model=SupplierListResponse)
 async def get_suppliers(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     status: Optional[str] = None,

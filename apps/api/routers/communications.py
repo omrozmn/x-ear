@@ -25,16 +25,29 @@ router = APIRouter(prefix="/api/communications", tags=["Communications"])
 
 
 # ============================================================================
-# Endpoints
+# Helpers
 # ============================================================================
 
 def now_utc():
     return datetime.now(timezone.utc)
 
 
+def _safe_parse_date(value: Optional[str]) -> Optional[datetime]:
+    """Safely parse an ISO date string, returning None on any failure."""
+    if not value or not isinstance(value, str):
+        return None
+    value = value.strip()
+    if not value or value.lower() == "null":
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except (ValueError, TypeError):
+        return None
+
+
 @router.get("/messages", operation_id="listCommunicationMessages")
 async def list_messages(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     type: Optional[str] = None,
     status: Optional[str] = None,
@@ -61,10 +74,12 @@ async def list_messages(
                 sms_query = sms_query.filter(SMSLog.party_id == party_id)
             if campaign_id:
                 sms_query = sms_query.filter(SMSLog.campaign_id == campaign_id)
-            if date_from:
-                sms_query = sms_query.filter(SMSLog.created_at >= datetime.fromisoformat(date_from))
-            if date_to:
-                sms_query = sms_query.filter(SMSLog.created_at <= datetime.fromisoformat(date_to))
+            parsed_from = _safe_parse_date(date_from)
+            if parsed_from:
+                sms_query = sms_query.filter(SMSLog.created_at >= parsed_from)
+            parsed_to = _safe_parse_date(date_to)
+            if parsed_to:
+                sms_query = sms_query.filter(SMSLog.created_at <= parsed_to)
             if search:
                 sms_query = sms_query.filter(or_(
                     SMSLog.message.ilike(f"%{search}%"),
@@ -87,10 +102,12 @@ async def list_messages(
                 email_query = email_query.filter(EmailLog.party_id == party_id)
             if campaign_id:
                 email_query = email_query.filter(EmailLog.campaign_id == campaign_id)
-            if date_from:
-                email_query = email_query.filter(EmailLog.created_at >= datetime.fromisoformat(date_from))
-            if date_to:
-                email_query = email_query.filter(EmailLog.created_at <= datetime.fromisoformat(date_to))
+            parsed_from = _safe_parse_date(date_from)
+            if parsed_from:
+                email_query = email_query.filter(EmailLog.created_at >= parsed_from)
+            parsed_to = _safe_parse_date(date_to)
+            if parsed_to:
+                email_query = email_query.filter(EmailLog.created_at <= parsed_to)
             if search:
                 email_query = email_query.filter(or_(
                     EmailLog.subject.ilike(f"%{search}%"),
@@ -112,10 +129,12 @@ async def list_messages(
                 whatsapp_query = whatsapp_query.filter(WhatsAppMessage.status == status)
             if party_id:
                 whatsapp_query = whatsapp_query.filter(WhatsAppMessage.party_id == party_id)
-            if date_from:
-                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.created_at >= datetime.fromisoformat(date_from))
-            if date_to:
-                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.created_at <= datetime.fromisoformat(date_to))
+            parsed_from = _safe_parse_date(date_from)
+            if parsed_from:
+                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.created_at >= parsed_from)
+            parsed_to = _safe_parse_date(date_to)
+            if parsed_to:
+                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.created_at <= parsed_to)
             if search:
                 whatsapp_query = whatsapp_query.filter(or_(
                     WhatsAppMessage.message_text.ilike(f"%{search}%"),
@@ -243,7 +262,7 @@ async def send_email(
 
 @router.get("/templates", response_model=ResponseEnvelope[List[CommunicationTemplateRead]], operation_id="listCommunicationTemplates")
 async def list_templates(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     type: Optional[str] = None,
     category: Optional[str] = None,
@@ -321,7 +340,12 @@ async def create_template(
 @router.get("/templates/{template_id}", response_model=ResponseEnvelope[CommunicationTemplateRead], operation_id="getCommunicationTemplate")
 async def get_template(template_id: str, db: Session = Depends(get_db), access: UnifiedAccess = Depends(require_access())):
     """Get a specific template"""
-    template = db.get(CommunicationTemplate, template_id)
+    if not template_id or len(template_id) > 200 or not template_id.isprintable():
+        raise HTTPException(status_code=400, detail="Invalid template ID")
+    try:
+        template = db.get(CommunicationTemplate, template_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Template not found")
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     # Use Pydantic schema for type-safe serialization (NO to_dict())
@@ -393,7 +417,7 @@ async def delete_template(template_id: str, db: Session = Depends(get_db), acces
 
 @router.get("/history", response_model=ResponseEnvelope[List[CommunicationHistoryRead]], operation_id="listCommunicationHistory")
 async def list_communication_history(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     party_id: Optional[str] = None,
     type: Optional[str] = None,
@@ -419,10 +443,12 @@ async def list_communication_history(
             query = query.filter(CommunicationHistory.direction == direction)
         if status:
             query = query.filter(CommunicationHistory.status == status)
-        if date_from:
-            query = query.filter(CommunicationHistory.created_at >= datetime.fromisoformat(date_from))
-        if date_to:
-            query = query.filter(CommunicationHistory.created_at <= datetime.fromisoformat(date_to))
+        parsed_from = _safe_parse_date(date_from)
+        if parsed_from:
+            query = query.filter(CommunicationHistory.created_at >= parsed_from)
+        parsed_to = _safe_parse_date(date_to)
+        if parsed_to:
+            query = query.filter(CommunicationHistory.created_at <= parsed_to)
         if search:
             query = query.filter(or_(
                 CommunicationHistory.subject.ilike(f"%{search}%"),

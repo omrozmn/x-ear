@@ -462,7 +462,7 @@ def _mask_sale_financials(data: dict, access: UnifiedAccess) -> dict:
 
 @router.get("/sales", operation_id="listSales", response_model=ResponseEnvelope[List[SaleRead]])
 def get_sales(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
     include_details: bool = Query(True, description="Include full sale details (devices, payments, invoice)"),

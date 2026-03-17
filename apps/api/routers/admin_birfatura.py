@@ -58,7 +58,7 @@ async def get_stats(
 
 @router.get("/invoices", operation_id="listAdminBirfaturaInvoices", response_model=ResponseEnvelope[BirFaturaInvoicesResponse])
 async def get_invoices(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(20, ge=1, le=100),
     status: Optional[str] = None,
     direction: str = Query("outgoing", pattern="^(outgoing|incoming)$"),
@@ -99,7 +99,7 @@ async def get_invoices(
 
 @router.get("/logs", operation_id="listAdminBirfaturaLogs", response_model=ResponseEnvelope[BirFaturaLogsResponse])
 async def get_logs(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("birfatura.read", admin_only=True))

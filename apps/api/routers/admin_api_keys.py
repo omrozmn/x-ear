@@ -35,7 +35,7 @@ async def init_db(
 
 @router.get("", operation_id="listAdminApiKeys", response_model=ApiKeyListResponse)
 async def get_api_keys(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     tenant_id: Optional[str] = None,
     db: Session = Depends(get_db),

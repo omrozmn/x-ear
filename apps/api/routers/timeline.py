@@ -26,7 +26,7 @@ router = APIRouter(tags=["Timeline"])
 
 @router.get("/timeline", operation_id="listTimeline", response_model=ResponseEnvelope[TimelineListResponse])
 def get_timeline(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)

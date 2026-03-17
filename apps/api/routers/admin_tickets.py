@@ -90,7 +90,7 @@ def _build_notification_ticket_rows(
 
 @router.get("", operation_id="listAdminTickets", response_model=ResponseEnvelope[dict])
 async def get_admin_tickets(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     status: Optional[str] = None,
     priority: Optional[str] = None,
@@ -252,12 +252,14 @@ async def update_admin_ticket(
     access: UnifiedAccess = Depends(require_access("tickets.manage", admin_only=True))
 ):
     """Update a ticket"""
+    if not ticket_id or len(ticket_id) > 200 or not ticket_id.isprintable():
+        raise HTTPException(status_code=400, detail="Invalid ticket ID")
     try:
         with unbound_session(reason="admin-cross-tenant"):
             ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
         if not ticket:
             raise HTTPException(status_code=404, detail="Ticket not found")
-        
+
         # Update fields
         if data.title is not None:
             ticket.title = data.title
@@ -313,12 +315,14 @@ async def create_ticket_response(
     access: UnifiedAccess = Depends(require_access("tickets.manage", admin_only=True))
 ):
     """Add a response to a ticket"""
+    if not ticket_id or len(ticket_id) > 200 or not ticket_id.isprintable():
+        raise HTTPException(status_code=400, detail="Invalid ticket ID")
     try:
         with unbound_session(reason="admin-cross-tenant"):
             ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
         if not ticket:
             raise HTTPException(status_code=404, detail="Ticket not found")
-        
+
         # Create response
         response = TicketResponse(
             ticket_id=ticket_id,

@@ -25,7 +25,7 @@ class InvoiceDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminInvoices", response_model=InvoiceListResponse)
 async def get_admin_invoices(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     tenant_id: Optional[str] = None,
     status: Optional[str] = None,
@@ -112,12 +112,15 @@ async def get_admin_invoice(
     access: UnifiedAccess = Depends(require_admin())
 ):
     """Get single invoice"""
+    # Validate invoice_id is a printable, reasonable-length string
+    if not invoice_id or len(invoice_id) > 200 or not invoice_id.isprintable():
+        raise HTTPException(status_code=400, detail="Invalid invoice ID")
     try:
         with unbound_session(reason="admin-cross-tenant"):
             invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
-        
+
         inv_dict = InvoiceRead.model_validate(invoice).model_dump(by_alias=True)
         tenant = db.get(Tenant, invoice.tenant_id)
         if tenant:
@@ -126,7 +129,8 @@ async def get_admin_invoice(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logger.error(f"Get invoice error: {e}")
+        raise HTTPException(status_code=404, detail="Invoice not found")
 
 @router.post("/{invoice_id}/payment", operation_id="createAdminInvoicePayment", response_model=InvoiceDetailResponse)
 async def record_payment(
@@ -135,12 +139,14 @@ async def record_payment(
     access: UnifiedAccess = Depends(require_admin())
 ):
     """Record payment for invoice"""
+    if not invoice_id or len(invoice_id) > 200 or not invoice_id.isprintable():
+        raise HTTPException(status_code=400, detail="Invalid invoice ID")
     try:
         with unbound_session(reason="admin-cross-tenant"):
             invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
-        
+
         invoice.status = "paid"
         db.commit()
         return ResponseEnvelope(data={"invoice": InvoiceRead.model_validate(invoice).model_dump(by_alias=True)})
@@ -148,7 +154,7 @@ async def record_payment(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=404, detail="Invoice not found")
 
 @router.get("/{invoice_id}/pdf", operation_id="listAdminInvoicePdf", response_model=ResponseEnvelope)
 async def get_invoice_pdf(
@@ -157,16 +163,18 @@ async def get_invoice_pdf(
     access: UnifiedAccess = Depends(require_admin())
 ):
     """Get invoice PDF link"""
+    if not invoice_id or len(invoice_id) > 200 or not invoice_id.isprintable():
+        raise HTTPException(status_code=400, detail="Invalid invoice ID")
     try:
         with unbound_session(reason="admin-cross-tenant"):
             invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
-        
+
         if invoice.gib_pdf_link:
             return {"success": True, "data": {"url": invoice.gib_pdf_link}}
         raise HTTPException(status_code=404, detail="PDF not available")
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=404, detail="Invoice not found")

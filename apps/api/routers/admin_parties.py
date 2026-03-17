@@ -30,7 +30,7 @@ class PartyDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminParties", response_model=PartyListResponse)
 async def get_all_parties(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     db: Session = Depends(get_db),

@@ -102,7 +102,7 @@ def get_devices(
     search: Optional[str] = None,
     brand: Optional[str] = None,
     inventory_only: bool = Query(False, alias="inventory_only"),
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)

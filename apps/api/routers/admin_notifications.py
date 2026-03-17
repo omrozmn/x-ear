@@ -67,7 +67,7 @@ async def init_db(
 
 @router.get("", operation_id="listAdminNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 async def get_notifications(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(10, ge=1, le=100),
     user_id: Optional[str] = None,
     type_filter: Optional[str] = Query(None, alias="type"),
@@ -180,7 +180,7 @@ async def send_notification(
 
 @router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=ResponseEnvelope[List[EmailTemplateRead]])
 async def get_templates(
-    page: int = Query(1, ge=1, le=1000000),
+    page: int = Query(1, ge=1, le=10000),
     limit: int = Query(20, ge=1, le=100),
     category: Optional[str] = Query(None, description="Filter by template category"),
     channel: Optional[str] = Query(None, description="Filter by channel (push, email)"),
