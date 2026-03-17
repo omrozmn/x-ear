@@ -794,7 +794,7 @@ function InvoiceSidebar({
               <div>
                 <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-3">
                   <p className="text-xs text-blue-800 leading-relaxed">
-                    <span className="font-semibold">{t('new_invoice.sections.withholding_title')}/span>
+                    <span className="font-semibold">{t('new_invoice.sections.withholding_title')}</span>
                     <br />
                     {t('new_invoice.sections.withholding_info')}
                   </p>
@@ -843,7 +843,7 @@ function InvoiceSidebar({
       {activeLineEditor && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{activeLineEditor?.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor?.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{(activeLineEditor?.index ?? 0) + 1}</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{activeLineEditor?.type === 'withholding' ? t('new_invoice.sections.line_editor_withholding') : activeLineEditor?.type === 'special' ? t('new_invoice.sections.line_editor_special') : t('new_invoice.sections.line_editor_medical')} #{(activeLineEditor?.index ?? 0) + 1}</h3>
             <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-muted-foreground">{ t('common.close') }</button>
           </div>
           <div>

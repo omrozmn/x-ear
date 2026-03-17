@@ -42,17 +42,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup Node.js
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'pnpm'
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: pnpm-lock.yaml
       
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -98,7 +98,7 @@ jobs:
         env:
           VITE_API_BASE_URL: http://localhost:5003
         run: |
-          npm run dev &
+          pnpm run dev &
           echo $! > web.pid
       
       - name: Start admin panel
@@ -106,7 +106,7 @@ jobs:
         env:
           VITE_API_BASE_URL: http://localhost:5003
         run: |
-          npm run dev &
+          pnpm run dev &
           echo $! > admin.pid
       
       - name: Wait for services
@@ -116,10 +116,10 @@ jobs:
           npx wait-on http://localhost:8082 -t 60000
       
       - name: Run typecheck
-        run: npm run typecheck
+        run: pnpm run typecheck
       
       - name: Run lint
-        run: npm run lint
+        run: pnpm run lint
       
       - name: Run P0 critical flow tests
         env:

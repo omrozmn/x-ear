@@ -100,7 +100,7 @@ jobs:
         env:
           VITE_API_BASE_URL: http://localhost:5003
         run: |
-          npm run dev &
+          pnpm run dev &
           echo $! > frontend.pid
       
       - name: Wait for services
