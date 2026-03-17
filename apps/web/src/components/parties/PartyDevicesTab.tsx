@@ -744,16 +744,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
           setShowReplacementModal(false);
           setReplacingDevice(null);
         }}
-        onReplacementCreate={async (replacement) => {
-          if (replacingDevice?.id) {
-            await handleReplaceDevice(
-              replacingDevice.id,
-              replacement.replacementReason,
-              replacement.notes,
-              replacement.newInventoryId,
-              replacement.newDeviceInfo
-            );
-          }
+        onReplacementCreate={async () => {
+          // The modal already created the replacement record on the server.
+          // Just refresh the device list so any status changes are reflected.
+          await syncDevicesAfterMutation('device:updated');
           setShowReplacementModal(false);
           setReplacingDevice(null);
         }}

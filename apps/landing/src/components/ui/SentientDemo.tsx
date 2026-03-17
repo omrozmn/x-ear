@@ -173,7 +173,7 @@ export function SentientDemo() {
 
     return (
         <section ref={sectionRef} className="relative" id="demo" style={{ height: `${scenarios.length * 100}vh` }}>
-            <div className="sticky top-0 h-screen flex flex-col items-center justify-center px-4 py-6 md:py-12 pointer-events-none overflow-hidden">
+            <div className="sticky top-0 h-screen flex flex-col items-center justify-center px-4 py-6 md:py-12 pointer-events-none overflow-hidden bg-background">
                 <div className="w-full max-w-6xl pointer-events-auto flex flex-col h-full max-h-screen">
 
                     {/* Header */}

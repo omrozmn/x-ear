@@ -65,7 +65,7 @@ export function FeatureCards() {
             id="features"
             style={{ height: `${features.length * 100}vh` }}
         >
-            <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 py-16">
+            <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 py-16 bg-background">
                 <div className="max-w-4xl mx-auto w-full pointer-events-auto">
                     <div className="mb-16 text-center flex flex-col items-center focus-in">
                         <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-medium text-foreground mb-6 flex flex-col items-center gap-2">

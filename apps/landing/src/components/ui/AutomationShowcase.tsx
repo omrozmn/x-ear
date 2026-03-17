@@ -365,7 +365,7 @@ export function AutomationShowcase() {
 
   return (
     <section ref={sectionRef} className="relative" style={{ height: `${items.length * 100}vh` }}>
-      <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden">
+      <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden bg-background">
         <div className="max-w-6xl mx-auto w-full space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
@@ -467,6 +467,13 @@ export function AutomationShowcase() {
               </AnimatePresence>
             </HyperGlassCard>
           </div>
+        </div>
+
+        {/* Scroll dots */}
+        <div className="flex justify-center gap-2 mt-6">
+          {items.map((_, idx) => (
+            <div key={idx} className={`h-1 rounded-full transition-all duration-500 ${active === idx ? "w-8 bg-cyan-400" : "w-2 bg-foreground/15"}`} />
+          ))}
         </div>
       </div>
       </div>

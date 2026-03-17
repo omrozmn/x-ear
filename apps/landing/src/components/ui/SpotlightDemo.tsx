@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HyperGlassCard } from "./HyperGlassCard";
 import { TextReveal } from "./TextReveal";
@@ -208,9 +208,25 @@ export function SpotlightDemo() {
   const [typed, setTyped] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [visibleResults, setVisibleResults] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   const currentQuery = queries[queryIndex % queries.length];
   const fullText = currentQuery.text[locale];
+
+  // Scroll-driven query switching
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = sectionRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const progress = -rect.top / (el.offsetHeight - window.innerHeight);
+      const clamped = Math.max(0, Math.min(1, progress));
+      const newIdx = Math.min(queries.length - 1, Math.floor(clamped * queries.length));
+      if (newIdx !== queryIndex) setQueryIndex(newIdx);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [queries.length, queryIndex]);
 
   const cycle = useCallback(() => {
     setTyped("");
@@ -218,21 +234,10 @@ export function SpotlightDemo() {
     setVisibleResults(0);
   }, []);
 
-  // Master cycle timer
+  // Reset animation on query change
   useEffect(() => {
     cycle();
-    const totalResults = currentQuery.results.length;
-    const typingDuration = fullText.length * 50;
-    const resultsStagger = totalResults * 100;
-    const holdTime = 1500;
-    const totalCycle = typingDuration + 200 + resultsStagger + holdTime;
-
-    const timer = setTimeout(() => {
-      setQueryIndex((i) => (i + 1) % queries.length);
-    }, totalCycle);
-
-    return () => clearTimeout(timer);
-  }, [queryIndex, queries.length, fullText.length, currentQuery.results.length, cycle]);
+  }, [queryIndex, cycle]);
 
   // Typewriter effect
   useEffect(() => {
@@ -253,7 +258,8 @@ export function SpotlightDemo() {
   }, [showResults, visibleResults, currentQuery.results.length]);
 
   return (
-    <section className="relative py-24 md:py-32 px-4 overflow-hidden" id="spotlight">
+    <section ref={sectionRef} className="relative" id="spotlight" style={{ height: `${queries.length * 100}vh` }}>
+      <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 overflow-hidden bg-background">
       {/* Background blur ring */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[500px] h-[500px] rounded-full bg-accent-blue/5 blur-[120px]" />
@@ -351,6 +357,14 @@ export function SpotlightDemo() {
             ? "Uygulamada her yerden \u2318K ile erisebilirsiniz"
             : "Access from anywhere in the app with \u2318K"}
         </p>
+
+        {/* Scroll dots */}
+        <div className="flex justify-center gap-2 mt-6">
+          {queries.map((_: unknown, idx: number) => (
+            <div key={idx} className={`h-1 rounded-full transition-all duration-500 ${queryIndex === idx ? "w-8 bg-accent-blue" : "w-2 bg-foreground/15"}`} />
+          ))}
+        </div>
+      </div>
       </div>
     </section>
   );

@@ -73,43 +73,54 @@ function HomeContent() {
         {/* Sector Selector — top of page for immediate context */}
         <SectorCards />
 
-        {/* Pain Points */}
-        <PainPoints />
+        {/* Sticky-stacked sections — each slides over the previous */}
+        <div className="relative">
+          <div className="relative" style={{ zIndex: 10 }}>
+            <PainPoints />
+          </div>
 
-        <SectionConnector />
+          <SectionConnector />
 
-        {/* AI Assistant Demo */}
-        <SentientDemo />
+          <div className="relative" style={{ zIndex: 20 }}>
+            <SentientDemo />
+          </div>
 
-        <SectionConnector flip />
+          <SectionConnector flip />
 
-        {/* Feature Showcase — App Window Animations */}
-        <FeatureShowcase />
+          <div className="relative" style={{ zIndex: 30 }}>
+            <FeatureShowcase />
+          </div>
 
-        <SectionConnector />
+          <SectionConnector />
 
-        {/* Spotlight ⌘K Search */}
-        <SpotlightDemo />
+          <div className="relative" style={{ zIndex: 40 }}>
+            <SpotlightDemo />
+          </div>
 
-        <SectionConnector flip />
+          <SectionConnector flip />
 
-        {/* Smart Automation */}
-        <AutomationShowcase />
+          <div className="relative" style={{ zIndex: 50 }}>
+            <AutomationShowcase />
+          </div>
 
-        <SectionConnector />
+          <SectionConnector />
 
-        {/* Integration Orbit */}
-        <IntegrationOrbit />
+          <div className="relative" style={{ zIndex: 55 }}>
+            <IntegrationOrbit />
+          </div>
 
-        <SectionConnector flip />
+          <SectionConnector flip />
 
-        {/* Ecosystem Feature Cards */}
-        <FeatureCards />
+          <div className="relative" style={{ zIndex: 60 }}>
+            <FeatureCards />
+          </div>
 
-        <SectionConnector />
+          <SectionConnector />
 
-        {/* ROI Calculator */}
-        <InteractiveRoi />
+          <div className="relative" style={{ zIndex: 70 }}>
+            <InteractiveRoi />
+          </div>
+        </div>
 
       </main>
       <Footer />

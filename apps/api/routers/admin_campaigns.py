@@ -123,12 +123,14 @@ async def get_campaign(
     access: UnifiedAccess = Depends(require_access("campaigns.read", admin_only=True))
 ):
     """Get single campaign"""
+    if not campaign_id or len(campaign_id) > 200 or not campaign_id.isprintable():
+        raise HTTPException(status_code=400, detail="Invalid campaign ID")
     try:
         with unbound_session(reason="admin-cross-tenant"):
             campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
         if not campaign:
             raise HTTPException(status_code=404, detail="Campaign not found")
-        
+
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {"success": True, "data": {"campaign": CampaignRead.model_validate(campaign).model_dump(by_alias=True)}}
     except HTTPException:

@@ -167,9 +167,11 @@ class PartyService:
             )
             
         query = query.order_by(Party.created_at.desc())
-        
-        # Stream results in chunks
-        # Implementation note: SQLite cursors might load all, but SQLAlchemy yield_per can help
+
+        # Stream results in chunks with a hard limit to prevent memory issues
+        MAX_EXPORT_ROWS = 50000
+        for party in query.limit(MAX_EXPORT_ROWS).yield_per(500):
+            yield party
 
     def count_parties(self, tenant_id: str, status: str = None, segment: str = None) -> int:
         query = self.db.query(Party).filter_by(tenant_id=tenant_id)

@@ -286,7 +286,10 @@ def get_availability(
             target_date = date_module.today()
             date_str = target_date.isoformat()
         else:
-            target_date = datetime.fromisoformat(date).date()
+            parsed = _safe_parse_datetime(date)
+            if not parsed:
+                raise HTTPException(status_code=400, detail="Invalid date format")
+            target_date = parsed.date()
             date_str = date
         
         query = db_session.query(Appointment).filter(

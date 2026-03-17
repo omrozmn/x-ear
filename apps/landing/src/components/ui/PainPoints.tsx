@@ -57,11 +57,11 @@ export function PainPoints() {
     return (
         <section
             ref={sectionRef}
-            className="relative bg-background z-10 pointer-events-auto"
+            className="relative z-10 pointer-events-auto"
             id="sgk"
             style={{ height: `${points.length * 100}vh` }}
         >
-            <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 py-16">
+            <div className="sticky top-0 min-h-screen flex items-center justify-center px-4 py-16 bg-background">
                 <div className="max-w-4xl mx-auto w-full">
                     <div className="mb-16 text-center flex flex-col items-center">
                         <motion.div

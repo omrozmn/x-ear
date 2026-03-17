@@ -75,7 +75,7 @@ def _mask_party_list_response(patients: list[Party], access: UnifiedAccess) -> l
 @router.get("/parties", operation_id="listParties", response_model=ResponseEnvelope[List[PartyRead]])
 def list_parties(
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(20, ge=1, le=1000),
     search: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
     city: Optional[str] = None,
@@ -231,7 +231,7 @@ def export_parties(
     def iter_csv():
         output = io.StringIO()
         writer = csv.writer(output)
-        
+
         # Header
         writer.writerow(['id','tcNumber','firstName','lastName','phone','email','birthDate','gender','status','segment','tags','createdAt'])
         output.seek(0)
@@ -239,14 +239,18 @@ def export_parties(
         output.seek(0)
         output.truncate(0)
 
-        # Iterate via Service
-        iterator = service.iter_parties(
-            tenant_id=access.tenant_id,
-            search=q,
-            status=status,
-            segment=segment,
-            branch_ids=branch_ids
-        )
+        # Iterate via Service (with hard limit for safety)
+        try:
+            iterator = service.iter_parties(
+                tenant_id=access.tenant_id,
+                search=q,
+                status=status,
+                segment=segment,
+                branch_ids=branch_ids
+            )
+        except Exception as e:
+            logger.error(f"Export iteration error: {e}")
+            return
 
         for p in iterator:
             tags_str = json.dumps(p.tags_json) if p.tags_json else "[]"
