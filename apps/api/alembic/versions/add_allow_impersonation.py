@@ -19,13 +19,18 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add allow_impersonation column (default False)
-    op.add_column('users', sa.Column(
-        'allow_impersonation', sa.Boolean(),
-        nullable=False, server_default='0'
-    ))
-    # Enable for all existing users during development
-    op.execute("UPDATE users SET allow_impersonation = 1")
+    # Add allow_impersonation column if not already present (initial schema may include it)
+    from sqlalchemy import inspect as sa_inspect
+    conn = op.get_bind()
+    inspector = sa_inspect(conn)
+    columns = [c['name'] for c in inspector.get_columns('users')]
+    if 'allow_impersonation' not in columns:
+        op.add_column('users', sa.Column(
+            'allow_impersonation', sa.Boolean(),
+            nullable=False, server_default='0'
+        ))
+    # Enable for all existing users during development (use TRUE for PostgreSQL compat)
+    op.execute("UPDATE users SET allow_impersonation = TRUE")
 
 
 def downgrade() -> None:
