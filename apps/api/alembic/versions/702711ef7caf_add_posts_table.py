@@ -101,43 +101,49 @@ def upgrade() -> None:
     op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_tenant_created ON ai_requests (tenant_id, created_at)')
     op.execute('CREATE INDEX IF NOT EXISTS ix_ai_requests_user_created ON ai_requests (user_id, created_at)')
 
-    # Wrap bulk_import_batches
-    with op.batch_alter_table('bulk_import_batches', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.VARCHAR(length=36),
-               type_=sa.String(length=50),
-               existing_nullable=False)
-    op.execute("""
-        DO $$ BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bulk_import_batches_tenant') THEN
-                ALTER TABLE bulk_import_batches ADD CONSTRAINT fk_bulk_import_batches_tenant
-                    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
-            END IF;
-        END $$;
-    """)
+    # bulk_import tables may not exist on fresh DBs
+    from sqlalchemy import inspect as sa_inspect
+    conn = op.get_bind()
+    inspector = sa_inspect(conn)
+    existing_tables = inspector.get_table_names()
 
-    # Wrap bulk_import_records
-    with op.batch_alter_table('bulk_import_records', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.VARCHAR(length=36),
-               type_=sa.String(length=50),
-               existing_nullable=False)
-        batch_op.alter_column('batch_id',
-               existing_type=sa.VARCHAR(length=36),
-               type_=sa.String(length=50),
-               existing_nullable=False)
-        batch_op.alter_column('entity_id',
-               existing_type=sa.VARCHAR(length=36),
-               type_=sa.String(length=100),
-               existing_nullable=False)
-    op.execute("""
-        DO $$ BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bulk_import_records_tenant') THEN
-                ALTER TABLE bulk_import_records ADD CONSTRAINT fk_bulk_import_records_tenant
-                    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
-            END IF;
-        END $$;
-    """)
+    if 'bulk_import_batches' in existing_tables:
+        with op.batch_alter_table('bulk_import_batches', schema=None) as batch_op:
+            batch_op.alter_column('id',
+                   existing_type=sa.VARCHAR(length=36),
+                   type_=sa.String(length=50),
+                   existing_nullable=False)
+        op.execute("""
+            DO $$ BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bulk_import_batches_tenant') THEN
+                    ALTER TABLE bulk_import_batches ADD CONSTRAINT fk_bulk_import_batches_tenant
+                        FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
+                END IF;
+            END $$;
+        """)
+
+    if 'bulk_import_records' in existing_tables:
+        with op.batch_alter_table('bulk_import_records', schema=None) as batch_op:
+            batch_op.alter_column('id',
+                   existing_type=sa.VARCHAR(length=36),
+                   type_=sa.String(length=50),
+                   existing_nullable=False)
+            batch_op.alter_column('batch_id',
+                   existing_type=sa.VARCHAR(length=36),
+                   type_=sa.String(length=50),
+                   existing_nullable=False)
+            batch_op.alter_column('entity_id',
+                   existing_type=sa.VARCHAR(length=36),
+                   type_=sa.String(length=100),
+                   existing_nullable=False)
+        op.execute("""
+            DO $$ BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bulk_import_records_tenant') THEN
+                    ALTER TABLE bulk_import_records ADD CONSTRAINT fk_bulk_import_records_tenant
+                        FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
+                END IF;
+            END $$;
+        """)
 
     # Drop columns idempotently (may not exist on fresh DBs from initial schema)
     for col in ['model', 'barcode', 'brand']:
@@ -153,14 +159,15 @@ def upgrade() -> None:
             END IF;
         END $$;
     """)
-    op.execute('CREATE INDEX IF NOT EXISTS ix_purchases_purchase_date ON purchases (purchase_date)')
-
-    # Foreign keys idempotently
+    # purchases table may not exist on fresh DBs
     op.execute("""
         DO $$ BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_purchases_tenant') THEN
-                ALTER TABLE purchases ADD CONSTRAINT fk_purchases_tenant
-                    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
+            IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='purchases') THEN
+                EXECUTE 'CREATE INDEX IF NOT EXISTS ix_purchases_purchase_date ON purchases (purchase_date)';
+                IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_purchases_tenant') THEN
+                    ALTER TABLE purchases ADD CONSTRAINT fk_purchases_tenant
+                        FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
+                END IF;
             END IF;
         END $$;
     """)

@@ -7,7 +7,7 @@ G-03: Auth Boundary Migration
 - NO to_dict() usage - use AuthUserRead.from_user_model() instead
 - All endpoints have explicit response_model for OpenAPI generation
 """
-from fastapi import APIRouter, Depends, HTTPException, Body, Header
+from fastapi import APIRouter, Depends, HTTPException, Body, Header, Response, Request
 from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Union
 from datetime import datetime, timezone, timedelta
@@ -135,6 +135,35 @@ def create_refresh_token(identity: str, additional_claims: dict = None, expires_
         **(additional_claims or {})
     }
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+_IS_PROD = os.getenv('ENVIRONMENT', 'development').lower() in ('production', 'prod', 'staging')
+
+def _set_auth_cookies(response: Response, access_token: str, refresh_token: str):
+    """Set httpOnly cookies for both tokens."""
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=_IS_PROD,
+        samesite="lax",
+        max_age=8 * 3600,  # 8 hours
+        path="/api",
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=_IS_PROD,
+        samesite="lax",
+        max_age=30 * 24 * 3600,  # 30 days
+        path="/api/auth/refresh",
+    )
+
+def _clear_auth_cookies(response: Response):
+    """Clear auth cookies on logout."""
+    response.delete_cookie("access_token", path="/api")
+    response.delete_cookie("refresh_token", path="/api/auth/refresh")
+
 
 def get_otp_store():
     """Get OTP store instance"""
@@ -467,6 +496,7 @@ async def reset_password(
 @rate_limit(window_seconds=900, max_calls=10, key_prefix="login")
 def login(
     request_data: LoginRequest,
+    response: Response = None,
     db_session: Session = Depends(get_db)
 ):
     """Login with username/email/phone and password"""
@@ -626,7 +656,11 @@ def login(
             user=user_data,
             requires_phone_verification=False if is_admin_user else not getattr(user, 'is_phone_verified', True)
         )
-        
+
+        # Set httpOnly cookies (frontend can use cookies OR JSON tokens)
+        if response is not None:
+            _set_auth_cookies(response, access_token, refresh_token)
+
         return ResponseEnvelope(data=response_data)
     except HTTPException:
         raise
@@ -636,12 +670,16 @@ def login(
 
 @router.post("/auth/refresh", operation_id="createAuthRefresh", response_model=ResponseEnvelope[RefreshTokenResponse])
 def refresh_token(
+    request: Request = None,
+    response: Response = None,
     authorization: str = Depends(oauth2_scheme),
     db_session: Session = Depends(get_db)
 ):
     """Refresh access token using refresh token"""
     try:
-        # oauth2_scheme returns the token without "Bearer " prefix
+        # Try cookie first, then Authorization header
+        if not authorization and request:
+            authorization = request.cookies.get("refresh_token")
         if not authorization:
              raise HTTPException(
                 status_code=401,
@@ -701,13 +739,15 @@ def refresh_token(
                 }
             )
             
+            if response is not None:
+                response.set_cookie(key="access_token", value=access_token, httponly=True, secure=_IS_PROD, samesite="lax", max_age=8*3600, path="/api")
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))
         else:
             from database import unbound_session
 
             with unbound_session(reason="auth-refresh-user-lookup"):
                 user = db_session.get(User, user_id)
-            
+
             if not user:
                 raise HTTPException(
                     status_code=404,
@@ -716,7 +756,7 @@ def refresh_token(
                         code="USER_NOT_FOUND"
                     ).model_dump(mode="json")
                 )
-            
+
             if not user.is_active:
                 raise HTTPException(
                     status_code=401,
@@ -725,8 +765,7 @@ def refresh_token(
                         code="ACCOUNT_INACTIVE"
                     ).model_dump(mode="json")
                 )
-            
-            # FIXED: logic was using access.tenant_id which AIAuthMiddleware rejected
+
             access_token = create_access_token(
                 identity=user.id,
                 additional_claims={
@@ -737,7 +776,9 @@ def refresh_token(
                     'is_admin': False,
                 }
             )
-            
+
+            if response is not None:
+                response.set_cookie(key="access_token", value=access_token, httponly=True, secure=_IS_PROD, samesite="lax", max_age=8*3600, path="/api")
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))
     except jwt.ExpiredSignatureError:
         raise HTTPException(

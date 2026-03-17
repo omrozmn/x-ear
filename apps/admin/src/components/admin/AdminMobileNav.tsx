@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
-  Home, Building2, Users, User, Calendar, Box, Megaphone,
-  ShoppingBag, Bell, CreditCard,
-  Bot, BarChart3, Activity, FileText, X, ToggleRight, Settings,
+  Home, Building2, User, Box, Megaphone,
+  ShoppingBag, Bell, CreditCard, Zap,
+  Bot, BarChart3, FileText, X, ToggleRight, Settings,
   ChevronDown, ChevronRight, ScanLine
 } from 'lucide-react';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
@@ -25,15 +25,8 @@ const navigationGroups: NavGroup[] = [
     name: 'Ana Menü',
     items: [
       { name: 'Dashboard', href: '/', icon: Home },
-      { name: 'Raporlar', href: '/analytics', icon: BarChart3 },
-    ],
-  },
-  {
-    name: 'Yönetim',
-    items: [
       { name: 'Aboneler & Kullanıcılar', href: '/tenants', icon: Building2 },
-      { name: 'Hastalar', href: '/patients', icon: User },
-      { name: 'Randevular', href: '/appointments', icon: Calendar },
+      { name: 'Hastalar & Randevular', href: '/patients', icon: User },
     ],
   },
   {
@@ -46,21 +39,21 @@ const navigationGroups: NavGroup[] = [
     ],
   },
   {
-    name: 'Sistem',
+    name: 'Finans & Planlar',
     items: [
-      { name: 'Bildirimler', href: '/notifications', icon: Bell },
       { name: 'Planlar & Eklentiler', href: '/plans', icon: CreditCard },
-      { name: 'Affiliateler', href: '/affiliates', icon: Users },
       { name: 'Faturalar & Ödemeler', href: '/billing', icon: CreditCard },
-      { name: 'Özellik & Yerelleştirme', href: '/features', icon: ToggleRight },
+      { name: 'Bildirimler', href: '/notifications', icon: Bell },
     ],
   },
   {
-    name: 'AI & Gelişmiş',
+    name: 'Sistem',
     items: [
-      { name: 'AI Yönetimi', href: '/ai', icon: Bot },
+      { name: 'Raporlar & Loglar', href: '/analytics', icon: BarChart3 },
       { name: 'İçerik Yönetimi', href: '/blog', icon: FileText },
-      { name: 'Sistem Logları', href: '/activity-logs', icon: Activity },
+      { name: 'AI Yönetimi', href: '/ai', icon: Bot },
+      { name: 'Özellik & Yerelleştirme', href: '/features', icon: ToggleRight },
+      { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },
     ],
   },
 ];

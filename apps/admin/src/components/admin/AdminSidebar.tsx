@@ -8,40 +8,32 @@ import {
     BarChart3,
     ShoppingBag,
     Bell,
-    Key,
     Zap,
     Megaphone,
     Bot,
     ToggleRight,
-    Activity,
     ScanLine,
     FileText,
     User,
-    Calendar,
     Box,
-    Users,
 } from 'lucide-react'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
-    { name: 'Raporlar', href: '/analytics', icon: BarChart3 },
     { name: 'Aboneler & Kullanıcılar', href: '/tenants', icon: Building2 },
-    { name: 'Hastalar', href: '/patients', icon: User },
-    { name: 'Randevular', href: '/appointments', icon: Calendar },
+    { name: 'Hastalar & Randevular', href: '/patients', icon: User },
     { name: 'Envanter & Operasyon', href: '/inventory', icon: Box },
     { name: 'Kampanyalar', href: '/campaigns', icon: Megaphone },
     { name: 'Pazaryerleri', href: '/marketplaces', icon: ShoppingBag },
     { name: 'Bildirimler', href: '/notifications', icon: Bell },
     { name: 'Planlar & Eklentiler', href: '/plans', icon: CreditCard },
-    { name: 'Affiliateler', href: '/affiliates', icon: Users },
+    { name: 'Faturalar & Ödemeler', href: '/billing', icon: CreditCard },
+    { name: 'Raporlar & Loglar', href: '/analytics', icon: BarChart3 },
     { name: 'İçerik Yönetimi', href: '/blog', icon: FileText },
     { name: 'AI Yönetimi', href: '/ai', icon: Bot },
-    { name: 'Faturalar & Ödemeler', href: '/billing', icon: CreditCard },
     { name: 'Barkod & Yazdırma', href: '/barcodes', icon: ScanLine },
     { name: 'Özellik & Yerelleştirme', href: '/features', icon: ToggleRight },
-    { name: 'Sistem Logları', href: '/activity-logs', icon: Activity },
-    { name: 'API Anahtarları', href: '/api-keys', icon: Key },
     { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
     { name: 'Ayarlar', href: '/settings', icon: Settings },
@@ -51,7 +43,6 @@ export function AdminSidebar() {
     const location = useLocation()
     const { isDesktop } = useAdminResponsive()
 
-    // Only render on desktop
     if (!isDesktop) {
         return null
     }
@@ -88,7 +79,6 @@ export function AdminSidebar() {
                     })}
                 </nav>
             </div>
-
         </div>
     )
 }

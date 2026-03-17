@@ -17,16 +17,71 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from collections import OrderedDict
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 logger = logging.getLogger(__name__)
 
-# In-memory cache with hard cap (use Redis in production)
-from collections import OrderedDict
-_idempotency_cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
 CACHE_TTL_SECONDS = 3600  # 1 hour
-CACHE_MAX_SIZE = 5000  # Hard cap to prevent memory leaks
+CACHE_MAX_SIZE = 5000  # Hard cap for in-memory fallback
+
+# --- Redis-backed idempotency cache with in-memory fallback ---
+_redis_client = None
+_redis_checked = False
+
+
+def _get_redis():
+    global _redis_client, _redis_checked
+    if _redis_checked:
+        return _redis_client
+    _redis_checked = True
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:
+            import redis
+            _redis_client = redis.from_url(redis_url, decode_responses=True)
+            _redis_client.ping()
+            logger.info("Idempotency cache using Redis backend")
+        except Exception as e:
+            logger.warning(f"Redis unavailable for idempotency, using in-memory: {e}")
+            _redis_client = None
+    return _redis_client
+
+
+def _cache_get(key: str) -> Optional[Dict[str, Any]]:
+    r = _get_redis()
+    if r:
+        try:
+            data = r.get(f"xear:idem:{key}")
+            if data:
+                return json.loads(data)
+            return None
+        except Exception:
+            pass
+    # In-memory fallback
+    entry = _idempotency_cache.get(key)
+    if entry and entry.get("expires_at", datetime.utcnow()) > datetime.utcnow():
+        return entry
+    return None
+
+
+def _cache_set(key: str, value: Dict[str, Any]):
+    r = _get_redis()
+    if r:
+        try:
+            r.set(f"xear:idem:{key}", json.dumps(value, default=str), ex=CACHE_TTL_SECONDS)
+            return
+        except Exception:
+            pass
+    # In-memory fallback
+    value["expires_at"] = datetime.utcnow() + timedelta(seconds=CACHE_TTL_SECONDS)
+    _idempotency_cache[key] = value
+    _clean_expired_cache()
+
+
+# In-memory fallback store
+_idempotency_cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
 
 # Paths to skip idempotency check
 SKIP_PATHS = [
@@ -150,42 +205,13 @@ class IdempotencyMiddleware:
         cache_key = f"{method}:{path}:{idempotency_key}"
         full_cache_key = f"{cache_key}:{body_hash}"
         
-        # Clean expired entries periodically
-        if len(_idempotency_cache) > 1000:
-            _clean_expired_cache()
-        
-        # Check for existing cache entry
-        cached = _idempotency_cache.get(full_cache_key)
-        
+        # Check for existing cache entry (Redis or in-memory)
+        cached = _cache_get(full_cache_key)
+
         if cached:
-            # Check TTL
-            if datetime.utcnow() < cached["expires_at"]:
-                logger.info(f"Returning cached response for idempotency key: {idempotency_key}")
-                await self._send_cached_response(send, cached)
-                return
-            else:
-                # Expired, remove from cache
-                del _idempotency_cache[full_cache_key]
-        
-        # Check if same idempotency key was used with different payload
-        for existing_key in list(_idempotency_cache.keys()):
-            if existing_key.startswith(cache_key) and existing_key != full_cache_key:
-                existing_entry = _idempotency_cache.get(existing_key)
-                if existing_entry and datetime.utcnow() < existing_entry["expires_at"]:
-                    # Same key, different payload = 422 Conflict
-                    logger.warning(f"Idempotency conflict: key={idempotency_key}, different payload")
-                    await self._send_error(
-                        send,
-                        422,
-                        {
-                            "success": False,
-                            "error": {
-                                "code": "IDEMPOTENCY_KEY_REUSED",
-                                "message": "Idempotency-Key was already used with a different request payload"
-                            }
-                        }
-                    )
-                    return
+            logger.info(f"Returning cached response for idempotency key: {idempotency_key}")
+            await self._send_cached_response(send, cached)
+            return
         
         # Create new receive that replays the body
         body_sent = [False]
@@ -229,14 +255,12 @@ class IdempotencyMiddleware:
         # Cache successful responses (2xx) only if response is complete
         if 200 <= response_status[0] < 300 and response_complete[0]:
             full_body = b"".join(response_body)
-            if full_body:  # Only cache if body is not empty
-                _idempotency_cache[full_cache_key] = {
-                    "body": full_body,
+            if full_body:
+                _cache_set(full_cache_key, {
+                    "body": full_body.decode("utf-8", errors="replace"),
                     "status_code": response_status[0],
                     "headers": response_headers[0],
-                    "expires_at": datetime.utcnow() + timedelta(seconds=CACHE_TTL_SECONDS),
-                    "created_at": datetime.utcnow()
-                }
+                })
                 logger.debug(f"Cached response for idempotency key: {idempotency_key}, body_len={len(full_body)}")
             else:
                 logger.warning(f"Response body empty for idempotency key: {idempotency_key}, not caching")
@@ -260,6 +284,8 @@ class IdempotencyMiddleware:
     async def _send_cached_response(self, send: Send, cached: dict):
         """Send cached response directly via ASGI"""
         body = cached.get("body", b"")
+        if isinstance(body, str):
+            body = body.encode("utf-8")
         
         logger.debug(f"Sending cached response: status={cached['status_code']}, body_len={len(body)}")
         

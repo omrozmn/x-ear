@@ -87,14 +87,25 @@ class AccessContextFromToken:
 
 
 def parse_token_from_request(scope: Scope) -> Optional[AccessContextFromToken]:
-    """Parse JWT token from Authorization header in ASGI scope"""
+    """Parse JWT token from Authorization header or httpOnly cookie in ASGI scope"""
     headers = dict(scope.get("headers", []))
     auth_header = headers.get(b"authorization", b"").decode("utf-8")
-    
-    if not auth_header or not auth_header.startswith("Bearer "):
+
+    token = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+    else:
+        # Fallback: read access_token from cookies
+        cookie_header = headers.get(b"cookie", b"").decode("utf-8")
+        if cookie_header:
+            for part in cookie_header.split(";"):
+                part = part.strip()
+                if part.startswith("access_token="):
+                    token = part[len("access_token="):]
+                    break
+
+    if not token:
         return None
-    
-    token = auth_header[7:]  # Remove "Bearer " prefix
     
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
