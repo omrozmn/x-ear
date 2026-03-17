@@ -385,7 +385,9 @@ export function ComposerOverlay() {
                                                 {
                                                     {
                                                         patient: <User size={18} />,
+                                                        device: <Box size={18} />,
                                                         invoice: <FileText size={18} />,
+                                                        user: <User size={18} />,
                                                         supplier: <Store size={18} />,
                                                         appointment: <Calendar size={18} />,
                                                         sale: <ShoppingCart size={18} />,
