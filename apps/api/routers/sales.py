@@ -43,7 +43,7 @@ def get_sale_or_404(db: Session, sale_id: str, access: UnifiedAccess) -> Sale:
             status_code=404,
             detail=ApiError(message="Sale not found", code="SALE_NOT_FOUND").model_dump(mode="json"),
         )
-    if access.tenant_id and sale.tenant_id != access.tenant_id:
+    if access.tenant_id and access.tenant_id != 'system' and not access.is_super_admin and sale.tenant_id != access.tenant_id:
         logger.warning(f"🚫 [GET_SALE_OR_404] Tenant mismatch: sale.tenant_id={sale.tenant_id} != access.tenant_id={access.tenant_id}")
         raise HTTPException(
             status_code=404,
@@ -1759,9 +1759,11 @@ def recalc_sales(
     
     # Filter sales
     query = db.query(Sale)
-    if access.tenant_id:
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass  # No tenant filter for super admin
+    elif access.tenant_id:
         query = query.filter(Sale.tenant_id == access.tenant_id)
-        
+
     if payload.sale_id:
         query = query.filter(Sale.id == payload.sale_id)
         

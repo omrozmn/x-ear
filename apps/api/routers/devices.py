@@ -78,6 +78,12 @@ def _openapi_schema_registry():
 
 # --- Helper Functions ---
 
+def _should_filter_tenant(access: UnifiedAccess) -> bool:
+    """Return True if queries should be filtered by tenant_id (False for super_admin with system tenant)."""
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        return False
+    return bool(access.tenant_id)
+
 def get_device_or_404(db_session: Session, device_id: str, access: UnifiedAccess) -> Device:
     """Get device or raise 404"""
     device = db_session.get(Device, device_id)
@@ -86,7 +92,7 @@ def get_device_or_404(db_session: Session, device_id: str, access: UnifiedAccess
             status_code=404,
             detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
         )
-    if access.tenant_id and device.tenant_id != access.tenant_id:
+    if access.tenant_id and access.tenant_id != 'system' and not access.is_super_admin and device.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
@@ -111,8 +117,10 @@ def get_devices(
     try:
         query = db_session.query(Device)
         
-        # Tenant scope
-        if access.tenant_id:
+        # Tenant scope - Super admins (tenant_id='system') see ALL tenants
+        if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+            pass  # No tenant filter for super admin
+        elif access.tenant_id:
             query = query.filter_by(tenant_id=access.tenant_id)
         
         # Inventory only filter
@@ -338,15 +346,15 @@ def get_device_categories(
             Device.category.isnot(None),
             Device.category != ''
         )
-        if access.tenant_id:
+        if _should_filter_tenant(access):
             query = query.filter(Device.tenant_id == access.tenant_id)
-        
+
         categories = query.all()
         category_list = [cat[0].value if hasattr(cat[0], 'value') else str(cat[0]) for cat in categories if cat[0]]
         
         if not category_list:
             type_query = db_session.query(Device.device_type).distinct().filter(Device.device_type.isnot(None))
-            if access.tenant_id:
+            if _should_filter_tenant(access):
                 type_query = type_query.filter(Device.tenant_id == access.tenant_id)
             types = type_query.all()
             type_list = [t[0] for t in types if t[0]]
@@ -389,9 +397,9 @@ def get_device_brands(
             Device.brand.isnot(None),
             Device.brand != ''
         )
-        if access.tenant_id:
+        if _should_filter_tenant(access):
             device_query = device_query.filter(Device.tenant_id == access.tenant_id)
-        
+
         for brand in device_query.all():
             if brand[0]:
                 brands_set.add(brand[0])
@@ -401,7 +409,7 @@ def get_device_brands(
             InventoryItem.brand.isnot(None),
             InventoryItem.brand != ''
         )
-        if access.tenant_id:
+        if _should_filter_tenant(access):
             inv_query = inv_query.filter(InventoryItem.tenant_id == access.tenant_id)
         
         for brand in inv_query.all():
@@ -431,7 +439,7 @@ def create_device_brand(
         
         # Check if exists
         query = db_session.query(Device.brand).filter(Device.brand == brand_name)
-        if access.tenant_id:
+        if _should_filter_tenant(access):
             query = query.filter(Device.tenant_id == access.tenant_id)
         
         if query.first():
@@ -480,7 +488,7 @@ def get_low_stock_devices(
     """Get devices with low stock levels"""
     try:
         query = db_session.query(Device).filter(Device.status == 'IN_STOCK')
-        if access.tenant_id:
+        if _should_filter_tenant(access):
             query = query.filter_by(tenant_id=access.tenant_id)
         
         devices = query.limit(10).all()
@@ -592,7 +600,7 @@ def delete_device(
     try:
         device = db_session.get(Device, device_id)
         if device:
-            if access.tenant_id and device.tenant_id != access.tenant_id:
+            if _should_filter_tenant(access) and device.tenant_id != access.tenant_id:
                 raise HTTPException(
                     status_code=404,
                     detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
@@ -619,7 +627,7 @@ def delete_device(
         assignment = db_session.get(DeviceAssignment, device_id)
         
         if assignment:
-            if access.tenant_id and assignment.tenant_id != access.tenant_id:
+            if _should_filter_tenant(access) and assignment.tenant_id != access.tenant_id:
                 raise HTTPException(
                     status_code=404,
                     detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")

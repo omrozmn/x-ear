@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Megaphone, Send } from 'lucide-react';
+import { Megaphone, Send, Mail } from 'lucide-react';
 import TenantCampaignsTab from './campaigns/TenantCampaignsTab';
 import AdminSmsTab from './campaigns/AdminSmsTab';
+import AdminEmailTab from './campaigns/AdminEmailTab';
 
-type TabId = 'tenant' | 'admin';
+type TabId = 'tenant' | 'admin-sms' | 'admin-email';
 
 interface Tab {
     id: TabId;
@@ -13,7 +14,8 @@ interface Tab {
 
 const TABS: Tab[] = [
     { id: 'tenant', label: 'Abone Kampanyaları', icon: <Megaphone className="w-5 h-5" /> },
-    { id: 'admin', label: 'Admin SMS Kampanyası', icon: <Send className="w-5 h-5" /> },
+    { id: 'admin-sms', label: 'SMS', icon: <Send className="w-5 h-5" /> },
+    { id: 'admin-email', label: 'E-posta', icon: <Mail className="w-5 h-5" /> },
 ];
 
 export default function AdminCampaignsPage() {
@@ -27,9 +29,9 @@ export default function AdminCampaignsPage() {
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SMS Kampanyaları</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kampanyalar</h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Abone kampanyalarını izleyin veya tenant'lara SMS gönderin
+                        Abone kampanyalarını izleyin, SMS veya E-posta gönderin
                     </p>
                 </div>
             </div>
@@ -60,7 +62,8 @@ export default function AdminCampaignsPage() {
             {/* Tab Content */}
             <div className="mt-6">
                 {activeTab === 'tenant' && <TenantCampaignsTab />}
-                {activeTab === 'admin' && <AdminSmsTab creditBalance={creditBalance} creditLoading={creditLoading} />}
+                {activeTab === 'admin-sms' && <AdminSmsTab creditBalance={creditBalance} creditLoading={creditLoading} />}
+                {activeTab === 'admin-email' && <AdminEmailTab />}
             </div>
         </div>
     );

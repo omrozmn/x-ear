@@ -71,6 +71,126 @@ interface ActivityLogFilterOptionsResponse {
 
 type TopAction = { action?: string };
 
+/** Turkish human-readable mapping for activity log action codes */
+const ACTION_LABEL_TR: Record<string, string> = {
+  // Auth
+  'auth.login': 'Sisteme giris yapildi',
+  'auth.logout': 'Sistemden cikis yapildi',
+  'auth.failed_login': 'Basarisiz giris denemesi',
+  'auth.register': 'Yeni hesap olusturuldu',
+  'auth.password_change': 'Sifre degistirildi',
+  'auth.password_reset': 'Sifre sifirlandi',
+  'auth.otp_verify': 'OTP dogrulandi',
+  'auth.otp_send': 'OTP gonderildi',
+  'auth.impersonate': 'Kullanici taklit edildi',
+  'password_reset': 'Sifre sifirlandi',
+
+  // Party / Customer
+  'party.create': 'Musteri/Hasta olusturuldu',
+  'party.update': 'Musteri/Hasta guncellendi',
+  'party.delete': 'Musteri/Hasta silindi',
+  'party.view': 'Musteri/Hasta goruntulendi',
+
+  // Sale
+  'sale.create': 'Satis olusturuldu',
+  'sale.update': 'Satis guncellendi',
+  'sale.delete': 'Satis silindi',
+  'sale.view': 'Satis goruntulendi',
+  'sale.approve': 'Satis onaylandi',
+
+  // Invoice
+  'invoice.create': 'Fatura olusturuldu',
+  'invoice.update': 'Fatura guncellendi',
+  'invoice.delete': 'Fatura silindi',
+  'invoice.send': 'Fatura gonderildi',
+
+  // Inventory / Product
+  'inventory.create': 'Urun olusturuldu',
+  'inventory.update': 'Urun guncellendi',
+  'inventory.delete': 'Urun silindi',
+  'product.create': 'Urun olusturuldu',
+  'product.update': 'Urun guncellendi',
+  'product.delete': 'Urun silindi',
+  'stock.update': 'Stok guncellendi',
+
+  // Document
+  'document_upload': 'Dokuman yuklendi',
+  'document.upload': 'Dokuman yuklendi',
+  'document.delete': 'Dokuman silindi',
+  'document.view': 'Dokuman goruntulendi',
+
+  // Appointment
+  'appointment.create': 'Randevu olusturuldu',
+  'appointment.update': 'Randevu guncellendi',
+  'appointment.delete': 'Randevu silindi',
+  'appointment.cancel': 'Randevu iptal edildi',
+
+  // Settings
+  'settings.update': 'Ayarlar guncellendi',
+  'tenant.update': 'Isletme bilgileri guncellendi',
+  'tenant.create': 'Yeni isletme olusturuldu',
+
+  // User
+  'user.create': 'Kullanici olusturuldu',
+  'user.update': 'Kullanici guncellendi',
+  'user.delete': 'Kullanici silindi',
+  'user.invite': 'Kullanici davet edildi',
+
+  // Role
+  'role.create': 'Rol olusturuldu',
+  'role.update': 'Rol guncellendi',
+  'role.delete': 'Rol silindi',
+  'role.assign': 'Rol atandi',
+
+  // SMS / Campaigns
+  'sms.send': 'SMS gonderildi',
+  'sms.bulk_send': 'Toplu SMS gonderildi',
+  'campaign.create': 'Kampanya olusturuldu',
+  'campaign.send': 'Kampanya gonderildi',
+
+  // Payment
+  'payment.create': 'Odeme olusturuldu',
+  'payment.update': 'Odeme guncellendi',
+  'payment.refund': 'Odeme iade edildi',
+
+  // Barcode
+  'barcode.generate': 'Barkod uretildi',
+  'barcode.validate': 'Barkod dogrulandi',
+
+  // AI
+  'ai.query': 'AI sorgusu yapildi',
+  'ai.approve': 'AI islemi onaylandi',
+  'ai.reject': 'AI islemi reddedildi',
+  'ai.kill_switch': 'AI kill switch tetiklendi',
+
+  // SGK
+  'sgk.submit': 'SGK basvurusu yapildi',
+  'sgk.download': 'SGK dosyasi indirildi',
+
+  // Ticket
+  'ticket.create': 'Destek talebi olusturuldu',
+  'ticket.update': 'Destek talebi guncellendi',
+  'ticket.close': 'Destek talebi kapatildi',
+
+  // Subscription
+  'subscription.create': 'Abonelik olusturuldu',
+  'subscription.update': 'Abonelik guncellendi',
+  'subscription.cancel': 'Abonelik iptal edildi',
+
+  // Export / Report
+  'export.create': 'Rapor disari aktarildi',
+  'report.view': 'Rapor goruntulendi',
+};
+
+/**
+ * Returns the Turkish human-readable label for a given action code.
+ * Falls back to the raw action string if no mapping exists.
+ */
+function getActionLabelTR(action: string | undefined | null): string {
+  if (!action) return '-';
+  return ACTION_LABEL_TR[action] ?? action;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -145,7 +265,7 @@ function extractFilterOptions(value: unknown): ActivityLogFilterOptions {
 
 function getTopActionLabel(stats: ActivityLogStats): string {
   const topAction = stats.topActions?.[0] as TopAction | undefined;
-  return topAction?.action ?? '-';
+  return getActionLabelTR(topAction?.action);
 }
 
 function formatDateTime(value?: string | null): string {
@@ -163,7 +283,9 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
           </div>
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400">Aksiyon</label>
-            <p className="font-medium text-gray-900 dark:text-white">{log.action}</p>
+            <p className="font-medium text-gray-900 dark:text-white" title={log.action ?? undefined}>
+              {getActionLabelTR(log.action)}
+            </p>
           </div>
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400">Kullanıcı</label>
@@ -302,8 +424,11 @@ export default function ActivityLogPage() {
       header: 'Aksiyon',
       sortable: true,
       render: (log: ActivityLogItem) => (
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-          {log.action}
+        <span
+          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+          title={log.action ?? undefined}
+        >
+          {getActionLabelTR(log.action)}
         </span>
       ),
     },
@@ -429,7 +554,7 @@ export default function ActivityLogPage() {
             >
               <option value="">Tümü</option>
               {options.actions?.map((action) => (
-                <option key={action} value={action}>{action}</option>
+                <option key={action} value={action}>{getActionLabelTR(action)}</option>
               ))}
             </select>
           </div>

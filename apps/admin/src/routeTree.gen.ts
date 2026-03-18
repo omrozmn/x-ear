@@ -35,6 +35,7 @@ import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
+import { Route as BlogAutomationRouteImport } from './routes/blog-automation'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as BarcodesRouteImport } from './routes/barcodes'
@@ -186,6 +187,11 @@ const CampaignsRoute = CampaignsRouteImport.update({
   path: '/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogAutomationRoute = BlogAutomationRouteImport.update({
+  id: '/blog-automation',
+  path: '/blog-automation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogRoute = BlogRouteImport.update({
   id: '/blog',
   path: '/blog',
@@ -300,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
+  '/blog-automation': typeof BlogAutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
@@ -348,6 +355,7 @@ export interface FileRoutesByTo {
   '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
+  '/blog-automation': typeof BlogAutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
@@ -397,6 +405,7 @@ export interface FileRoutesById {
   '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
+  '/blog-automation': typeof BlogAutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
@@ -447,6 +456,7 @@ export interface FileRouteTypes {
     | '/barcodes'
     | '/billing'
     | '/blog'
+    | '/blog-automation'
     | '/campaigns'
     | '/countries'
     | '/dashboard'
@@ -495,6 +505,7 @@ export interface FileRouteTypes {
     | '/barcodes'
     | '/billing'
     | '/blog'
+    | '/blog-automation'
     | '/campaigns'
     | '/countries'
     | '/dashboard'
@@ -543,6 +554,7 @@ export interface FileRouteTypes {
     | '/barcodes'
     | '/billing'
     | '/blog'
+    | '/blog-automation'
     | '/campaigns'
     | '/countries'
     | '/dashboard'
@@ -592,6 +604,7 @@ export interface RootRouteChildren {
   BarcodesRoute: typeof BarcodesRoute
   BillingRoute: typeof BillingRoute
   BlogRoute: typeof BlogRoute
+  BlogAutomationRoute: typeof BlogAutomationRoute
   CampaignsRoute: typeof CampaignsRoute
   CountriesRoute: typeof CountriesRoute
   DashboardRoute: typeof DashboardRoute
@@ -819,6 +832,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog-automation': {
+      id: '/blog-automation'
+      path: '/blog-automation'
+      fullPath: '/blog-automation'
+      preLoaderRoute: typeof BlogAutomationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/billing': {
       id: '/billing'
       path: '/billing'
@@ -979,6 +999,7 @@ const rootRouteChildren: RootRouteChildren = {
   BarcodesRoute: BarcodesRoute,
   BillingRoute: BillingRoute,
   BlogRoute: BlogRoute,
+  BlogAutomationRoute: BlogAutomationRoute,
   CampaignsRoute: CampaignsRoute,
   CountriesRoute: CountriesRoute,
   DashboardRoute: DashboardRoute,

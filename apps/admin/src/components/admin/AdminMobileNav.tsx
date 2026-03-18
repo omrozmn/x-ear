@@ -4,7 +4,7 @@ import {
   Home, Building2, User, Box, Megaphone,
   ShoppingBag, Bell, CreditCard, Zap,
   Bot, BarChart3, FileText, X, ToggleRight, Settings,
-  ChevronDown, ChevronRight, ScanLine
+  ChevronDown, ChevronRight, ScanLine, Newspaper
 } from 'lucide-react';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 
@@ -51,6 +51,7 @@ const navigationGroups: NavGroup[] = [
     items: [
       { name: 'Raporlar & Loglar', href: '/analytics', icon: BarChart3 },
       { name: 'İçerik Yönetimi', href: '/blog', icon: FileText },
+      { name: 'Blog Otomasyonu', href: '/blog-automation', icon: Newspaper },
       { name: 'AI Yönetimi', href: '/ai', icon: Bot },
       { name: 'Özellik & Yerelleştirme', href: '/features', icon: ToggleRight },
       { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },

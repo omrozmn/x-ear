@@ -16,6 +16,7 @@ import {
     FileText,
     User,
     Box,
+    Newspaper,
 } from 'lucide-react'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
@@ -31,6 +32,7 @@ const navigation = [
     { name: 'Faturalar & Ödemeler', href: '/billing', icon: CreditCard },
     { name: 'Raporlar & Loglar', href: '/analytics', icon: BarChart3 },
     { name: 'İçerik Yönetimi', href: '/blog', icon: FileText },
+    { name: 'Blog Otomasyonu', href: '/blog-automation', icon: Newspaper },
     { name: 'AI Yönetimi', href: '/ai', icon: Bot },
     { name: 'Barkod & Yazdırma', href: '/barcodes', icon: ScanLine },
     { name: 'Özellik & Yerelleştirme', href: '/features', icon: ToggleRight },

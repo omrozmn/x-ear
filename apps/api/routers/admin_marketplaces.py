@@ -59,7 +59,10 @@ async def get_integrations(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(MarketplaceIntegration)
-            if access.tenant_id:
+            # Super admins (tenant_id='system') should see ALL tenants
+            if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+                pass
+            elif access.tenant_id:
                 query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
             integrations = query.all()
         # Use Pydantic schema for type-safe serialization (NO to_dict())

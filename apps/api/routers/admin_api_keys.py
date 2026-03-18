@@ -45,7 +45,11 @@ async def get_api_keys(
     try:
         query = db.query(ApiKey)
         
-        if access.tenant_id:
+        # Super admins (tenant_id='system') should see ALL tenants
+        if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+            if tenant_id:
+                query = query.filter(ApiKey.tenant_id == tenant_id)
+        elif access.tenant_id:
             query = query.filter(ApiKey.tenant_id == access.tenant_id)
         
         total = query.count()

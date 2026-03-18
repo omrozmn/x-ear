@@ -93,9 +93,12 @@ jobs:
           ENVIRONMENT: test
           SMTP_ENCRYPTION_KEY: 1RRDcoqlZU8KwHa_Y0ylelmteMsSM6Wgl07RJsGL2-k=
         run: |
-          python main.py &
+          python main.py > /tmp/backend.log 2>&1 &
           echo $! > backend.pid
-      
+          sleep 5
+          echo "=== Backend startup log ==="
+          cat /tmp/backend.log || true
+
       - name: Start frontend server
         working-directory: apps/web
         env:
