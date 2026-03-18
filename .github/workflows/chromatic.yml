@@ -34,7 +34,6 @@ jobs:
         working-directory: apps/web
 
       - name: Publish to Chromatic
-        if: ${{ secrets.CHROMATIC_PROJECT_TOKEN != '' }}
         uses: chromaui/action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

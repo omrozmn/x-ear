@@ -55,7 +55,7 @@ def get_appointment_or_404(db_session: Session, appointment_id: str, access: Uni
             status_code=404,
             detail=ApiError(message="Appointment not found", code="APPOINTMENT_NOT_FOUND").model_dump(mode="json")
         )
-    if access.tenant_id and appointment.tenant_id != access.tenant_id:
+    if access.tenant_id and access.tenant_id != 'system' and not access.is_super_admin and appointment.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Appointment not found", code="APPOINTMENT_NOT_FOUND").model_dump(mode="json")
@@ -100,11 +100,13 @@ def get_appointments(
     """Get appointments with filtering and pagination"""
     try:
         query = db_session.query(Appointment)
-        
-        # Tenant scope
-        if access.tenant_id:
+
+        # Tenant scope - Super admins (tenant_id='system') see ALL tenants
+        if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+            pass  # No tenant filter for super admin cross-tenant view
+        elif access.tenant_id:
             query = query.filter_by(tenant_id=access.tenant_id)
-        
+
         # Date filters
         start_dt = _safe_parse_datetime(start_date)
         if start_dt:
@@ -127,13 +129,13 @@ def get_appointments(
                 query = query.filter_by(status=status_enum)
             except (ValueError, AttributeError):
                 pass
-        
+
         query = query.order_by(Appointment.date)
-        
+
         # Pagination
         total = query.count()
         appointments = query.options(joinedload(Appointment.party)).offset((page - 1) * per_page).limit(per_page).all()
-        
+
         # Transform map to include party_name if missing
         results = []
         for apt in appointments:
@@ -141,7 +143,7 @@ def get_appointments(
             if apt.party:
                 appt_data.party_name = f"{apt.party.first_name} {apt.party.last_name}"
             results.append(appt_data)
-        
+
         return ResponseEnvelope(
             data=results,
             meta={
@@ -176,9 +178,11 @@ def create_appointment(
         appointment.clinician_id = data.get('clinician_id')
         appointment.branch_id = data.get('branch_id')
         
-        # Handle access.tenant_id
-        if access.tenant_id:
+        # Handle access.tenant_id - skip 'system' for super_admin
+        if access.tenant_id and access.tenant_id != 'system':
             appointment.tenant_id = access.tenant_id
+        elif access.effective_tenant_id and access.effective_tenant_id != 'system':
+            appointment.tenant_id = access.effective_tenant_id
         else:
             party = db_session.get(Party, data['party_id'])
             if party and party.tenant_id:
@@ -296,8 +300,10 @@ def get_availability(
             func.date(Appointment.date) == target_date,
             Appointment.status.in_(['scheduled', 'confirmed'])
         )
-        
-        if access.tenant_id:
+
+        if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+            pass
+        elif access.tenant_id:
             query = query.filter_by(tenant_id=access.tenant_id)
         
         appointments = query.all()
@@ -349,10 +355,13 @@ def list_appointments(
     """List appointments with filters"""
     try:
         query = db_session.query(Appointment)
-        
-        if access.tenant_id:
+
+        # Super admins (tenant_id='system') see ALL tenants
+        if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+            pass  # No tenant filter for super admin cross-tenant view
+        elif access.tenant_id:
             query = query.filter_by(tenant_id=access.tenant_id)
-        
+
         if party_id:
             query = query.filter_by(party_id=party_id)
         

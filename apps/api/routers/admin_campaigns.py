@@ -95,7 +95,10 @@ async def create_campaign(
 
         scheduled_at = None
         if data.scheduled_at:
-            scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+            if isinstance(data.scheduled_at, str):
+                scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+            else:
+                scheduled_at = data.scheduled_at
         
         new_campaign = Campaign(
             tenant_id=resolved_tenant_id,
@@ -105,7 +108,7 @@ async def create_campaign(
             message_template=data.message_template,
             subject=data.subject,
             scheduled_at=scheduled_at,
-            status=data.status,
+            status=getattr(data, 'status', None) or 'draft',
             target_segment=data.target_segment
         )
         

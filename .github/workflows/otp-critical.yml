@@ -126,10 +126,10 @@ jobs:
       - name: Wait for services
         working-directory: .
         run: |
-          npx wait-on http://127.0.0.1:5003/health --timeout 120000
-          npx wait-on http://127.0.0.1:8080 --timeout 120000
-          npx wait-on http://127.0.0.1:8082 --timeout 120000
-          npx wait-on http://127.0.0.1:3000 --timeout 120000
+          npx wait-on http://127.0.0.1:5003/health --timeout 300000
+          npx wait-on http://127.0.0.1:8080 --timeout 300000
+          npx wait-on http://127.0.0.1:8082 --timeout 300000
+          npx wait-on http://127.0.0.1:3000 --timeout 300000
 
       - name: Run OTP critical suite
         working-directory: .

@@ -111,16 +111,22 @@ def get_inventory_stats(
 ):
     """Get inventory stats"""
     query = db.query(InventoryItem)
-    if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
-    
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass
+    elif access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
+
     total = query.count()
     low = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).count()
     out = query.filter(InventoryItem.available_inventory == 0).count()
-    
+
     # Value
     # Note: query already filtered by tenant
     val_query = db.query(func.sum(InventoryItem.price * InventoryItem.available_inventory))
-    if access.tenant_id: val_query = val_query.filter(InventoryItem.tenant_id == access.tenant_id)
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass
+    elif access.tenant_id:
+        val_query = val_query.filter(InventoryItem.tenant_id == access.tenant_id)
     
     total_value = val_query.scalar() or 0
     
@@ -153,9 +159,11 @@ def advanced_search(
     """Advanced product search"""
     # ... logic port ...
     query = db.query(InventoryItem)
-    if access.tenant_id:
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass
+    elif access.tenant_id:
         query = query.filter_by(tenant_id=access.tenant_id)
-        
+
     # Branch filtering
     if access.is_tenant_admin and access.user.role == 'admin':
         user_branch_ids = [b.id for b in getattr(access.user, 'branches', [])]
@@ -253,7 +261,10 @@ def get_low_stock(
 ):
     """Get low stock items"""
     query = db.query(InventoryItem)
-    if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass
+    elif access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
     items = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).all()
     return ResponseEnvelope(data=[mask_inventory_item(item, access) for item in items])
 
@@ -367,7 +378,9 @@ def get_inventory_categories(
 ):
     """Get unique inventory categories"""
     query = db.query(InventoryItem.category).filter(InventoryItem.category.isnot(None))
-    if access.tenant_id:
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass
+    elif access.tenant_id:
         query = query.filter_by(tenant_id=access.tenant_id)
     categories = [c[0] for c in query.distinct().all() if c[0]]
     return ResponseEnvelope(data=categories)
@@ -379,7 +392,9 @@ def get_inventory_brands(
 ):
     """Get unique inventory brands"""
     query = db.query(InventoryItem.brand).filter(InventoryItem.brand.isnot(None))
-    if access.tenant_id:
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass
+    elif access.tenant_id:
         query = query.filter_by(tenant_id=access.tenant_id)
     brands = [b[0] for b in query.distinct().all() if b[0]]
     return ResponseEnvelope(data=brands)

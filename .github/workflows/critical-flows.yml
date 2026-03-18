@@ -112,9 +112,9 @@ jobs:
       
       - name: Wait for services
         run: |
-          npx wait-on http://localhost:5003/health -t 60000
-          npx wait-on http://localhost:8080 -t 60000
-          npx wait-on http://localhost:8082 -t 60000
+          npx wait-on http://localhost:5003/health -t 300000
+          npx wait-on http://localhost:8080 -t 300000
+          npx wait-on http://localhost:8082 -t 300000
       
       - name: Run typecheck
         run: pnpm run typecheck
