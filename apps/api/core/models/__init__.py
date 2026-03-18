@@ -90,3 +90,10 @@ from .email_deliverability import EmailBounce, EmailUnsubscribe, DMARCReport, Em
 # Bulk Import
 from .bulk_import import BulkImportBatch, BulkImportRecord
 from .post import Post
+
+# Blog Automation
+from .blog_automation import (
+    BlogAutomation, BlogSource, BlogAutomationRun,
+    BlogContentCandidate, BlogSocialConnection,
+    BlogToneTemplate, BlogSocialDistributionJob,
+)

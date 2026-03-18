@@ -473,9 +473,13 @@ def get_sales(
     """Get all sales with tenant scoping and optional full details."""
     query = db.query(Sale)
     
-    if access.tenant_id:
+    # Super admins (tenant_id='system') should see ALL tenants
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass  # No tenant filter for super admin cross-tenant view
+    elif access.tenant_id:
         query = query.filter(Sale.tenant_id == access.tenant_id)
-        
+
+    if access.tenant_id and access.tenant_id != 'system':
         # Branch scoping for Tenant Users with admin role
         if access.is_tenant_admin and hasattr(access, 'user') and access.user:
             user_role = getattr(access.user, 'role', None)

@@ -81,9 +81,13 @@ async def lifespan(app: FastAPI):
     # Start AI Layer scheduler (data retention cleanup + proactive insights)
     from ai.tasks.scheduled import start_scheduler as start_ai_scheduler, stop_scheduler as stop_ai_scheduler
     start_ai_scheduler()
+    # Start Blog Automation scheduler (hourly content pipeline checks)
+    from services.blog_automation_scheduler import start_scheduler as start_blog_scheduler, stop_scheduler as stop_blog_scheduler
+    start_blog_scheduler(interval_minutes=60)
     yield
     stop_scheduler()
     stop_ai_scheduler()
+    stop_blog_scheduler()
 
 
 # Create FastAPI app - operation_ids are now explicit in each endpoint
@@ -572,9 +576,10 @@ app.include_router(whatsapp.router, prefix="/api")
 from routers.tool_api import email_notifications as tool_api_email
 app.include_router(tool_api_email.router)  # No /api prefix - router already has /tool-api prefix
 
-from routers import commissions, blog, admin_blog
+from routers import commissions, blog, admin_blog, admin_blog_automation
 app.include_router(blog.router, prefix="/api")
 app.include_router(admin_blog.router, prefix="/api")
+app.include_router(admin_blog_automation.router, prefix="/api")
 app.include_router(commissions.router, prefix="/api")
 
 from routers import schema_registry

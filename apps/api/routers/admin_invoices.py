@@ -38,7 +38,11 @@ async def get_admin_invoices(
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Invoice)
             
-            if access.tenant_id:
+            # Super admins (tenant_id='system') should see ALL tenants
+            if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+                if tenant_id:
+                    query = query.filter(Invoice.tenant_id == tenant_id)
+            elif access.tenant_id:
                 query = query.filter(Invoice.tenant_id == access.tenant_id)
             if status:
                 query = query.filter(Invoice.status == status)

@@ -1,5 +1,5 @@
 // Use the actual /features endpoint (not /current which doesn't return features)
-import { useListSubscriptionFeatures as useListSubscriptionFeaturesGenerated } from '@/api/generated/subscriptions/subscriptions';
+import { useListSubscriptionFeatures as useListSubscriptionFeaturesGenerated } from '@/api/generated';
 
 type FeatureFlagsResponse = {
   data?: {

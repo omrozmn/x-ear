@@ -45,7 +45,13 @@ async def get_all_appointments(
                     (Party.phone.ilike(f"%{search}%"))
                 )
             
-            if access.tenant_id:
+            # Super admins (tenant_id='system') should see ALL tenants
+            if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+                # If explicit tenant_id filter param was passed, use it
+                if tenant_id:
+                    query = query.filter(Appointment.tenant_id == tenant_id)
+                # else: no tenant filter → show all
+            elif access.tenant_id:
                 query = query.filter(Appointment.tenant_id == access.tenant_id)
             
             if status:
