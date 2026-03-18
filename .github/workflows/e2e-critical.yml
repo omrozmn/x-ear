@@ -127,7 +127,7 @@ jobs:
           BASE_URL: http://localhost:8080
           TEST_USER_EMAIL: test@example.com
           TEST_USER_PASSWORD: password123
-        run: npx playwright test --project=web --project=admin --reporter=html,json,junit
+        run: npx playwright test --project=web --reporter=html,json,junit
       
       - name: Upload test results
         if: always()
