@@ -4,7 +4,7 @@ Provides cross-tenant admin operations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, Dict, Any
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import logging
@@ -208,10 +208,10 @@ def list_admin_users(
             )
 
         total = query.count()
-        users = query.options(joinedload(User.tenant)).offset((page - 1) * per_page).limit(per_page).all()
-        
+        users = query.offset((page - 1) * per_page).limit(per_page).all()
+
         users_data = [UserRead.model_validate(u).model_dump(by_alias=True) for u in users]
-        
+
         return ResponseEnvelope(data={
             "users": users_data,
             "pagination": {
@@ -257,14 +257,18 @@ def list_all_tenant_users(
                 query = query.filter_by(is_active=False)
 
         total = query.count()
-        users = query.options(joinedload(User.tenant)).order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        users = query.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
-        # Add tenant name to each user (eager-loaded via joinedload)
+        # Add tenant name by looking up tenant separately
         users_data = []
+        tenant_cache = {}
         for u in users:
             user_dict = UserRead.model_validate(u).model_dump(by_alias=True)
-            if u.tenant_id and u.tenant:
-                user_dict['tenantName'] = u.tenant.name
+            if u.tenant_id:
+                if u.tenant_id not in tenant_cache:
+                    t = db_session.get(Tenant, u.tenant_id)
+                    tenant_cache[u.tenant_id] = t.name if t else None
+                user_dict['tenantName'] = tenant_cache.get(u.tenant_id)
             users_data.append(user_dict)
 
         return ResponseEnvelope(data={

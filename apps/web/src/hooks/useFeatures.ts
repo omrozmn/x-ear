@@ -1,6 +1,5 @@
-import { useListSubscriptionCurrent } from '@/api/generated/index';
-// useListSubscriptionFeatures was renamed to useListSubscriptionCurrent
-const useListSubscriptionFeatures = useListSubscriptionCurrent;
+// Use the actual /features endpoint (not /current which doesn't return features)
+import { useListSubscriptionFeatures as useListSubscriptionFeaturesGenerated } from '@/api/generated/subscriptions/subscriptions';
 
 type FeatureFlagsResponse = {
   data?: {
@@ -47,7 +46,7 @@ function buildFeatureMap(raw: Record<string, boolean>): Record<string, boolean> 
 }
 
 export function useFeatures(): UseFeaturesResult {
-  const query = useListSubscriptionFeatures({
+  const query = useListSubscriptionFeaturesGenerated({
     query: {
       staleTime: 5 * 60 * 1000, // 5 min
       retry: 1,

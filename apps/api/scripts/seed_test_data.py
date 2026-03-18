@@ -142,8 +142,7 @@ def seed_test_data():
                     model=aid["model"],
                     category="hearing_aid",
                     barcode=f"HA{aid['brand'][:3].upper()}{aid['model'][:3].upper()}",
-                    list_price=aid["price"],
-                    stock_quantity=10,
+                    price=aid["price"],
                     created_at=datetime.utcnow()
                 )
                 db.add(inventory)

@@ -55,7 +55,7 @@ export function DesktopSettingsPage() {
       case 'sgk':
         return t('sgkSalesSettings', 'SGK & Satış Ayarları');
       case 'subscription':
-        return t('subscription', 'Abonelik');
+        return t('subscriptionTitle', 'Abonelik');
       default:
         return t('settings', 'Ayarlar');
     }

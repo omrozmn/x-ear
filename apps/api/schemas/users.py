@@ -35,7 +35,7 @@ class UserRead(AppBaseModel, IDMixin, TimestampMixin):
     full_name: Optional[str] = Field(None, alias="fullName")
     phone: Optional[str] = None
     role: Optional[str] = None
-    is_phone_verified: bool = Field(False, alias="isPhoneVerified")
+    is_phone_verified: Optional[bool] = Field(False, alias="isPhoneVerified")
     is_active: Optional[bool] = Field(None, alias="isActive")
     last_login: Optional[datetime] = Field(None, alias="lastLogin")
 
@@ -46,7 +46,7 @@ class AdminUserRead(AppBaseModel, IDMixin, TimestampMixin):
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     role: Optional[str] = None
-    is_phone_verified: bool = Field(False, alias="isPhoneVerified")
+    is_phone_verified: Optional[bool] = Field(False, alias="isPhoneVerified")
     is_active: Optional[bool] = Field(None, alias="isActive")
     last_login: Optional[datetime] = Field(None, alias="lastLogin")
 
@@ -71,7 +71,7 @@ class UserUpdate(AppBaseModel):
     last_name: Optional[str] = Field(None, alias="lastName")
     phone: Optional[str] = None
     role: Optional[str] = None
-    is_phone_verified: bool = Field(False, alias="isPhoneVerified")
+    is_phone_verified: Optional[bool] = Field(False, alias="isPhoneVerified")
     is_active: Optional[bool] = Field(None, alias="isActive")
 
 
@@ -105,7 +105,7 @@ class UserMeRead(AppBaseModel, IDMixin, TimestampMixin):
     full_name: Optional[str] = Field(None, alias="fullName")
     phone: Optional[str] = None
     role: Optional[str] = None
-    is_phone_verified: bool = Field(False, alias="isPhoneVerified")
+    is_phone_verified: Optional[bool] = Field(False, alias="isPhoneVerified")
     is_active: Optional[bool] = Field(None, alias="isActive")
     last_login: Optional[datetime] = Field(None, alias="lastLogin")
     permissions: Optional[list] = []

@@ -298,7 +298,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const filterMenuItems = (items: MenuItem[]): MenuItem[] => (
     items.flatMap((item) => {
-      if (item.requiredFeature && enabledFeatures && enabledFeatures[item.requiredFeature] !== true) {
+      // Only hide if feature is explicitly disabled (false), not when features haven't loaded yet
+      if (item.requiredFeature && enabledFeatures && Object.keys(enabledFeatures).length > 0 && enabledFeatures[item.requiredFeature] === false) {
         return [];
       }
 

@@ -506,6 +506,11 @@ def receive_do_orm_execute(execute_state):
         logger.warning("⚠️ [TENANT FILTER] No tenant_id in context for SELECT query - blocking with __NONE__")
         tenant_id = '__NONE__'
 
+    # Super admins (tenant_id='system') should see ALL tenant data
+    if tenant_id == 'system':
+        logger.debug("🔍 [TENANT FILTER] tenant_id='system' (super_admin) — skipping tenant filter")
+        return  # Skip tenant filter entirely for system/admin users
+
     from core.models.mixins import TenantScopedMixin
     
     # Apply filter targeting TenantScopedMixin
