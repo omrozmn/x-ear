@@ -95,7 +95,7 @@ jobs:
           ENABLE_REAL_SMS_IN_TESTS: "false"
           SMTP_ENCRYPTION_KEY: 1RRDcoqlZU8KwHa_Y0ylelmteMsSM6Wgl07RJsGL2-k=
         run: |
-          python -m uvicorn main:app --host 127.0.0.1 --port 5003 > /tmp/xear-api.log 2>&1 &
+          python -m uvicorn main:app --host 127.0.0.1 --port 5003 --no-access-log > /tmp/xear-api.log 2>&1 &
           echo $! > backend.pid
 
       - name: Start web app

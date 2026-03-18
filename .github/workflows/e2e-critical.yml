@@ -93,9 +93,9 @@ jobs:
           ENVIRONMENT: test
           SMTP_ENCRYPTION_KEY: 1RRDcoqlZU8KwHa_Y0ylelmteMsSM6Wgl07RJsGL2-k=
         run: |
-          python main.py > /tmp/backend.log 2>&1 &
+          python -m uvicorn main:app --host 0.0.0.0 --port 5003 --no-access-log > /tmp/backend.log 2>&1 &
           echo $! > backend.pid
-          sleep 15
+          sleep 10
           echo "=== Backend startup log ==="
           cat /tmp/backend.log || true
 
