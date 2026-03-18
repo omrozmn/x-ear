@@ -86,8 +86,18 @@ def db_session(db_engine):
 
     SQLite in-memory does not properly roll back SAVEPOINTs, so instead
     we let each test commit freely and clean up all rows afterwards.
+
+    IMPORTANT: Bypasses tenant filter during setup/teardown so that
+    test fixtures can create data without a tenant context.
     """
+    from core.database import _skip_tenant_filter
+
+    # Bypass tenant filter for test session
+    skip_token = _skip_tenant_filter.set(True)
+
     session = SessionLocal(bind=db_engine, expire_on_commit=False)
+    # Set default test tenant in session.info for tenant-filtered queries
+    session.info['tenant_id'] = 'tenant-1'
 
     yield session
 
@@ -101,25 +111,31 @@ def db_session(db_engine):
     session.commit()
     session.close()
 
+    # Restore tenant filter
+    _skip_tenant_filter.reset(skip_token)
+
 @pytest.fixture(scope="function")
 def client(db_session):
     """FastAPI TestClient - function scoped for proper db_session override"""
-    # Override get_db dependency BEFORE creating TestClient
-    from core.database import get_db
-    
+    from core.database import get_db, set_current_tenant_id
+
     def override_get_db():
+        # Ensure tenant_id is set in session.info for each request
+        if 'tenant_id' not in db_session.info:
+            db_session.info['tenant_id'] = 'tenant-1'
         try:
             yield db_session
         finally:
             pass
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
-    # Create TestClient
+    # Also set ContextVar for middleware that reads it
+    set_current_tenant_id('tenant-1')
+
     test_client = TestClient(app)
-    
+
     yield test_client
-    
+
     # Cleanup
     app.dependency_overrides.clear()
 

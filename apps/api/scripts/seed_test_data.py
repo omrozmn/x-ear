@@ -95,22 +95,8 @@ def seed_test_data():
         else:
             print(f"ℹ️  Test user already exists: {test_user_phone}")
         
-        # Assign TENANT_ADMIN role
-        role = db.query(Role).filter_by(
-            user_id=user.id,
-            role_code="TENANT_ADMIN"
-        ).first()
-        
-        if not role:
-            role = Role(
-                id=str(uuid.uuid4()),
-                user_id=user.id,
-                tenant_id=tenant_id,
-                role_code="TENANT_ADMIN",
-                assigned_at=datetime.utcnow()
-            )
-            db.add(role)
-            print("✅ Assigned TENANT_ADMIN role to test user")
+        # Role assignment handled via user.role field (legacy Role model no longer has user_id)
+        print("ℹ️  Role assignment via user.role field (TENANT_ADMIN)")
         
         # Create sample branches
         branch_names = ["Ana Şube", "Kadıköy Şubesi"]
