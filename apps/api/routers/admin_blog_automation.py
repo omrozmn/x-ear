@@ -136,6 +136,7 @@ def duplicate_automation(
         cta_text=orig.cta_text,
         image_source=orig.image_source,
         image_fallback=orig.image_fallback,
+        image_keywords_override=orig.image_keywords_override,
         auto_share_enabled=orig.auto_share_enabled,
         social_platforms=orig.social_platforms,
         approval_mode=orig.approval_mode,

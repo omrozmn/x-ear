@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/api/orval-mutator';
+import toast from 'react-hot-toast';
 import {
   Plus, Play, Pause, Trash2, Copy, Settings2, RefreshCw,
   Rss, Globe, Share2, Palette, BarChart3, CheckCircle,
@@ -133,16 +134,29 @@ interface BlogAutomationStats {
 
 // ── Sector labels ────────────────────────────────
 
-const SECTOR_MAP: Record<string, { label: string; color: string }> = {
-  hearing: { label: 'İşitme', color: 'blue' },
-  pharmacy: { label: 'Eczane', color: 'green' },
-  hospital: { label: 'Hastane', color: 'red' },
-  hotel: { label: 'Otel', color: 'orange' },
-  medical: { label: 'Medikal', color: 'teal' },
-  optic: { label: 'Optik', color: 'violet' },
-  beauty: { label: 'Güzellik', color: 'pink' },
-  general: { label: 'Genel', color: 'gray' },
+const SECTOR_MAP: Record<string, { label: string; bg: string; text: string; darkBg: string; darkText: string }> = {
+  hearing: { label: 'İşitme', bg: 'bg-blue-100', text: 'text-blue-700', darkBg: 'dark:bg-blue-900/30', darkText: 'dark:text-blue-400' },
+  pharmacy: { label: 'Eczane', bg: 'bg-green-100', text: 'text-green-700', darkBg: 'dark:bg-green-900/30', darkText: 'dark:text-green-400' },
+  hospital: { label: 'Hastane', bg: 'bg-red-100', text: 'text-red-700', darkBg: 'dark:bg-red-900/30', darkText: 'dark:text-red-400' },
+  hotel: { label: 'Otel', bg: 'bg-orange-100', text: 'text-orange-700', darkBg: 'dark:bg-orange-900/30', darkText: 'dark:text-orange-400' },
+  medical: { label: 'Medikal', bg: 'bg-teal-100', text: 'text-teal-700', darkBg: 'dark:bg-teal-900/30', darkText: 'dark:text-teal-400' },
+  optic: { label: 'Optik', bg: 'bg-violet-100', text: 'text-violet-700', darkBg: 'dark:bg-violet-900/30', darkText: 'dark:text-violet-400' },
+  beauty: { label: 'Güzellik', bg: 'bg-pink-100', text: 'text-pink-700', darkBg: 'dark:bg-pink-900/30', darkText: 'dark:text-pink-400' },
+  general: { label: 'Genel', bg: 'bg-gray-100', text: 'text-gray-700', darkBg: 'dark:bg-gray-900/30', darkText: 'dark:text-gray-400' },
 };
+
+function SectorBadge({ sector }: { sector: string }) {
+  const s = SECTOR_MAP[sector] || SECTOR_MAP.general;
+  return (
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${s.bg} ${s.darkBg} ${s.text} ${s.darkText}`}>
+      {s.label}
+    </span>
+  );
+}
+
+function sectorLabel(sector: string): string {
+  return SECTOR_MAP[sector]?.label || sector;
+}
 
 const CONTENT_TYPES = [
   { value: 'trend', label: 'Trendler' },
@@ -254,41 +268,56 @@ const BlogAutomationPage: React.FC = () => {
   const [showDetailPanel, setShowDetailPanel] = useState(false);
 
   const qc = useQueryClient();
-  const { data: automations = [], isLoading } = useAutomations();
+  const { data: automations = [], isLoading, isError: autoError } = useAutomations();
   const { data: stats } = useStats();
   const { data: pending = [] } = usePendingApproval();
   const { data: socialConnections = [] } = useSocialConnections();
   const { data: toneTemplates = [] } = useToneTemplates();
 
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ['blog-automations'] });
+    qc.invalidateQueries({ queryKey: ['blog-automation-stats'] });
+  };
+
   const toggleMutation = useMutation({
     mutationFn: (id: string) => adminApi({ url: `/admin/blog-automation/${id}/toggle`, method: 'POST' }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blog-automations'] }); qc.invalidateQueries({ queryKey: ['blog-automation-stats'] }); },
+    onSuccess: () => { invalidateAll(); toast.success('Otomasyon durumu güncellendi'); },
+    onError: () => toast.error('Durum güncellenemedi'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApi({ url: `/admin/blog-automation/${id}`, method: 'DELETE' }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blog-automations'] }); qc.invalidateQueries({ queryKey: ['blog-automation-stats'] }); },
+    onSuccess: () => { invalidateAll(); toast.success('Otomasyon silindi'); },
+    onError: () => toast.error('Otomasyon silinemedi'),
   });
 
   const duplicateMutation = useMutation({
     mutationFn: (id: string) => adminApi({ url: `/admin/blog-automation/${id}/duplicate`, method: 'POST' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog-automations'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blog-automations'] }); toast.success('Otomasyon kopyalandı'); },
+    onError: () => toast.error('Kopyalama başarısız'),
   });
 
   const triggerRunMutation = useMutation({
     mutationFn: (id: string) => adminApi({ url: `/admin/blog-automation/${id}/run`, method: 'POST' }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blog-automations'] }); qc.invalidateQueries({ queryKey: ['blog-automation-stats'] }); },
+    onSuccess: () => { invalidateAll(); toast.success('Otomasyon çalıştırıldı'); },
+    onError: () => toast.error('Çalıştırma başarısız'),
   });
 
   const approveRejectMutation = useMutation({
     mutationFn: ({ candidateId, action }: { candidateId: string; action: string }) =>
       adminApi({ url: `/admin/blog-automation/candidates/${candidateId}/action`, method: 'POST', data: { action } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blog-pending-approval'] }); qc.invalidateQueries({ queryKey: ['blog-automation-stats'] }); },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['blog-pending-approval'] });
+      qc.invalidateQueries({ queryKey: ['blog-automation-stats'] });
+      toast.success(vars.action === 'approve' ? 'İçerik onaylandı' : 'İçerik reddedildi');
+    },
+    onError: () => toast.error('İşlem başarısız'),
   });
 
   const toggleSocialMutation = useMutation({
     mutationFn: (id: string) => adminApi({ url: `/admin/blog-automation/social-connections/${id}/toggle`, method: 'POST' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog-social-connections'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blog-social-connections'] }); toast.success('Platform durumu güncellendi'); },
+    onError: () => toast.error('Platform güncellenemedi'),
   });
 
   const tabs: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
@@ -345,6 +374,14 @@ const BlogAutomationPage: React.FC = () => {
           })}
         </nav>
       </div>
+
+      {/* Error Banner */}
+      {autoError && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+          <span className="text-sm text-red-700 dark:text-red-300">Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.</span>
+        </div>
+      )}
 
       {/* Tab Content */}
       {activeTab === 'overview' && <OverviewTab stats={stats} automations={automations} pending={pending} />}
@@ -428,12 +465,12 @@ const BlogAutomationPage: React.FC = () => {
 
 function OverviewTab({ stats, automations, pending }: { stats?: BlogAutomationStats; automations: BlogAutomation[]; pending: BlogContentCandidate[] }) {
   const statCards = [
-    { label: 'Aktif Otomasyon', value: stats?.activeAutomations ?? 0, total: stats?.totalAutomations ?? 0, icon: Zap, color: 'indigo' },
-    { label: 'Üretilen Yazı', value: stats?.totalPostsGenerated ?? 0, icon: Globe, color: 'blue' },
-    { label: 'Yayınlanan', value: stats?.totalPostsPublished ?? 0, icon: CheckCircle, color: 'green' },
-    { label: 'Onay Bekleyen', value: stats?.pendingApproval ?? 0, icon: Clock, color: 'yellow' },
-    { label: 'Toplam Kaynak', value: stats?.totalSources ?? 0, icon: Rss, color: 'purple' },
-    { label: 'Sosyal Bağlantı', value: stats?.activeSocialConnections ?? 0, icon: Share2, color: 'pink' },
+    { label: 'Aktif Otomasyon', value: stats?.activeAutomations ?? 0, total: stats?.totalAutomations ?? 0, icon: Zap, iconClass: 'text-indigo-500' },
+    { label: 'Üretilen Yazı', value: stats?.totalPostsGenerated ?? 0, icon: Globe, iconClass: 'text-blue-500' },
+    { label: 'Yayınlanan', value: stats?.totalPostsPublished ?? 0, icon: CheckCircle, iconClass: 'text-green-500' },
+    { label: 'Onay Bekleyen', value: stats?.pendingApproval ?? 0, icon: Clock, iconClass: 'text-yellow-500' },
+    { label: 'Toplam Kaynak', value: stats?.totalSources ?? 0, icon: Rss, iconClass: 'text-purple-500' },
+    { label: 'Sosyal Bağlantı', value: stats?.activeSocialConnections ?? 0, icon: Share2, iconClass: 'text-pink-500' },
   ];
 
   return (
@@ -444,7 +481,7 @@ function OverviewTab({ stats, automations, pending }: { stats?: BlogAutomationSt
           return (
             <div key={card.label} className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-2">
-                <Icon className={`w-5 h-5 text-${card.color}-500`} />
+                <Icon className={`w-5 h-5 ${card.iconClass}`} />
                 <span className="text-xs text-gray-500 dark:text-gray-400">{card.label}</span>
               </div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -466,9 +503,7 @@ function OverviewTab({ stats, automations, pending }: { stats?: BlogAutomationSt
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${a.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
               <span className="text-sm text-gray-900 dark:text-white">{a.name}</span>
-              <span className={`px-1.5 py-0.5 rounded text-xs bg-${SECTOR_MAP[a.sector]?.color || 'gray'}-100 text-${SECTOR_MAP[a.sector]?.color || 'gray'}-700`}>
-                {SECTOR_MAP[a.sector]?.label || a.sector}
-              </span>
+              <SectorBadge sector={a.sector} />
             </div>
             <div className="text-xs text-gray-500">
               {a.lastRunAt ? new Date(a.lastRunAt).toLocaleString('tr-TR') : '-'}
@@ -562,9 +597,7 @@ function AutomationsTab({
                 <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect(a)}>
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{a.name}</h3>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium bg-${SECTOR_MAP[a.sector]?.color || 'gray'}-100 dark:bg-${SECTOR_MAP[a.sector]?.color || 'gray'}-900/30 text-${SECTOR_MAP[a.sector]?.color || 'gray'}-700 dark:text-${SECTOR_MAP[a.sector]?.color || 'gray'}-400`}>
-                      {SECTOR_MAP[a.sector]?.label || a.sector}
-                    </span>
+                    <SectorBadge sector={a.sector} />
                     {a.isActive ? (
                       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Aktif</span>
                     ) : (
@@ -751,16 +784,17 @@ function SocialTab({
 }) {
   const qc = useQueryClient();
   const platforms = [
-    { key: 'linkedin', label: 'LinkedIn', color: 'blue', icon: Linkedin },
-    { key: 'twitter', label: 'X / Twitter', color: 'gray', icon: Twitter },
-    { key: 'facebook', label: 'Facebook', color: 'blue', icon: Facebook },
-    { key: 'instagram', label: 'Instagram', color: 'pink', icon: Instagram },
+    { key: 'linkedin', label: 'LinkedIn', icon: Linkedin, iconBg: 'bg-blue-100 dark:bg-blue-900/30', iconText: 'text-blue-600 dark:text-blue-400' },
+    { key: 'twitter', label: 'X / Twitter', icon: Twitter, iconBg: 'bg-gray-100 dark:bg-gray-800', iconText: 'text-gray-600 dark:text-gray-400' },
+    { key: 'facebook', label: 'Facebook', icon: Facebook, iconBg: 'bg-blue-100 dark:bg-blue-900/30', iconText: 'text-blue-600 dark:text-blue-400' },
+    { key: 'instagram', label: 'Instagram', icon: Instagram, iconBg: 'bg-pink-100 dark:bg-pink-900/30', iconText: 'text-pink-600 dark:text-pink-400' },
   ];
 
   const createMutation = useMutation({
     mutationFn: (platform: string) =>
       adminApi({ url: '/admin/blog-automation/social-connections', method: 'POST', data: { platform, isActive: false } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog-social-connections'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blog-social-connections'] }); toast.success('Platform bağlantısı oluşturuldu'); },
+    onError: () => toast.error('Bağlantı oluşturulamadı'),
   });
 
   return (
@@ -779,8 +813,8 @@ function SocialTab({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${p.color}-100 dark:bg-${p.color}-900/30`}>
-                    <Icon className={`w-5 h-5 text-${p.color}-600 dark:text-${p.color}-400`} />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${p.iconBg}`}>
+                    <Icon className={`w-5 h-5 ${p.iconText}`} />
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{p.label}</h3>
@@ -819,9 +853,10 @@ function SocialTab({
                   ) : (
                     <button
                       onClick={() => createMutation.mutate(p.key)}
-                      className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700"
+                      disabled={createMutation.isPending}
+                      className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 disabled:opacity-50"
                     >
-                      Bağla
+                      {createMutation.isPending ? '...' : 'Bağla'}
                     </button>
                   )}
                 </div>
@@ -872,7 +907,7 @@ function TemplatesTab({ templates, onCreate }: { templates: BlogToneTemplate[]; 
                 <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs">{t.voice}</span>
                 <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs">Resmiyet: {t.formalityLevel}/10</span>
                 <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs">Max {t.maxWordCount} kelime</span>
-                {t.sector && <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs">{SECTOR_MAP[t.sector]?.label || t.sector}</span>}
+                {t.sector && <SectorBadge sector={t.sector} />}
               </div>
             </div>
           ))}
@@ -902,7 +937,7 @@ function AnalyticsTab({ stats, automations }: { stats?: BlogAutomationStats; aut
                 return (
                   <div key={sector}>
                     <div className="flex justify-between text-xs mb-0.5">
-                      <span className="text-gray-700 dark:text-gray-300">{SECTOR_MAP[sector]?.label || sector}</span>
+                      <span className="text-gray-700 dark:text-gray-300">{sectorLabel(sector)}</span>
                       <span className="text-gray-500">{count}</span>
                     </div>
                     <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
@@ -960,7 +995,8 @@ function CreateAutomationModal({
 
   const mutation = useMutation({
     mutationFn: (data: any) => adminApi({ url: '/admin/blog-automation/', method: 'POST', data }),
-    onSuccess: onCreated,
+    onSuccess: () => { toast.success('Otomasyon oluşturuldu'); onCreated(); },
+    onError: () => toast.error('Otomasyon oluşturulamadı'),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1186,9 +1222,7 @@ function AutomationDetailPanel({
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">{automation.name}</h2>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium bg-${SECTOR_MAP[automation.sector]?.color || 'gray'}-100 text-${SECTOR_MAP[automation.sector]?.color || 'gray'}-700`}>
-              {SECTOR_MAP[automation.sector]?.label || automation.sector}
-            </span>
+            <SectorBadge sector={automation.sector} />
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><X className="w-5 h-5 text-gray-400" /></button>
         </div>
@@ -1276,7 +1310,8 @@ function AddSourceModal({
 
   const mutation = useMutation({
     mutationFn: (data: any) => adminApi({ url: '/admin/blog-automation/sources', method: 'POST', data }),
-    onSuccess: onCreated,
+    onSuccess: () => { toast.success('Kaynak eklendi'); onCreated(); },
+    onError: () => toast.error('Kaynak eklenemedi'),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1355,7 +1390,8 @@ function SocialConfigModal({
 
   const mutation = useMutation({
     mutationFn: (data: any) => adminApi({ url: `/admin/blog-automation/social-connections/${connection.id}`, method: 'PUT', data }),
-    onSuccess: onSaved,
+    onSuccess: () => { toast.success('Platform ayarları kaydedildi'); onSaved(); },
+    onError: () => toast.error('Ayarlar kaydedilemedi'),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1433,7 +1469,8 @@ function CreateToneTemplateModal({ onClose, onCreated }: { onClose: () => void; 
 
   const mutation = useMutation({
     mutationFn: (data: any) => adminApi({ url: '/admin/blog-automation/tone-templates', method: 'POST', data }),
-    onSuccess: onCreated,
+    onSuccess: () => { toast.success('Ton şablonu oluşturuldu'); onCreated(); },
+    onError: () => toast.error('Şablon oluşturulamadı'),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

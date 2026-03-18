@@ -202,13 +202,25 @@ async def create_admin_ticket(
 ):
     """Create a new ticket"""
     try:
+        # Resolve tenant_id: use request body first, fallback for super_admin with 'system'
+        tenant_id = data.tenant_id
+        if not tenant_id or tenant_id == 'system':
+            if access.effective_tenant_id and access.effective_tenant_id != 'system':
+                tenant_id = access.effective_tenant_id
+            elif access.tenant_id and access.tenant_id != 'system':
+                tenant_id = access.tenant_id
+            else:
+                # Pick first real tenant from DB
+                first_tenant = db.query(Tenant).first()
+                tenant_id = first_tenant.id if first_tenant else None
+
         # Create ticket
         ticket = Ticket(
             title=data.title,
             description=data.description,
             priority=data.priority,
             category=data.category,
-            tenant_id=data.tenant_id,
+            tenant_id=tenant_id,
             created_by=access.user.id if access.user else None,
             status=TicketStatus.OPEN,
             created_at=datetime.now(timezone.utc),

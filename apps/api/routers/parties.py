@@ -153,9 +153,21 @@ def create_party(
         from core.tenant_utils import get_effective_tenant_id
         from sqlalchemy.exc import IntegrityError
         from models.user import ActivityLog
-        
+        from models.tenant import Tenant
+
         service = PartyService(db)
-        tenant_id = get_effective_tenant_id(access)
+        # Resolve tenant_id: super_admin with 'system' falls back to first real tenant
+        try:
+            tenant_id = get_effective_tenant_id(access)
+        except HTTPException:
+            if access.is_super_admin:
+                first_tenant = db.query(Tenant).first()
+                if first_tenant:
+                    tenant_id = first_tenant.id
+                else:
+                    raise HTTPException(status_code=400, detail="No tenants available")
+            else:
+                raise
 
         # Service handles data normalization and defaults
         # Use by_alias=False to get snake_case keys that Party.from_dict expects

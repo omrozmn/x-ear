@@ -15,7 +15,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import BaseModel, gen_id
-from database import now_utc
 
 
 class BlogAutomation(BaseModel):

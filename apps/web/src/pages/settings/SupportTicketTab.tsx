@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@x-ear/ui-web';
 import { HelpCircle, Send, Loader2, CheckCircle, Plus, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { useCreateAdminTicket, useListAdminTickets } from '@/api/generated/admin-tickets/admin-tickets';
+import { useCreateAdminTicket, useListAdminTickets } from '@/api/generated';
 import type { TicketCreate, TicketCategory, TicketPriority } from '@/api/generated/schemas';
 
 const CATEGORY_LABELS: Record<string, string> = {
