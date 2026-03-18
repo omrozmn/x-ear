@@ -110,7 +110,7 @@ jobs:
       - name: Wait for services
         run: |
           echo "Waiting for backend (pid=$(cat apps/api/backend.pid))..."
-          npx wait-on http://localhost:5003/health --timeout 300000 --httpTimeout 10000 --verbose || {
+          npx wait-on http-get://localhost:5003/health --timeout 300000 --httpTimeout 10000 || {
             echo "=== Backend failed! Full log ==="
             cat /tmp/backend.log || true
             echo "=== Process status ==="
