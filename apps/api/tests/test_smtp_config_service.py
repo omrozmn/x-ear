@@ -36,15 +36,19 @@ from services.encryption_service import EncryptionService
 # Test database setup
 @pytest.fixture(scope="function")
 def test_db():
-    """Create a test database session."""
+    """Create a test database session with tenant filter bypassed."""
+    from core.database import _skip_tenant_filter
+    skip_token = _skip_tenant_filter.set(True)
+
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     TestingSessionLocal = sessionmaker(bind=engine)
     session = TestingSessionLocal()
-    
+
     yield session
-    
+
     session.close()
+    _skip_tenant_filter.reset(skip_token)
 
 
 @pytest.fixture
@@ -57,6 +61,16 @@ def encryption_service():
         with patch.dict(os.environ, {"SMTP_ENCRYPTION_KEY": test_key}):
             service = EncryptionService()
             yield service
+
+
+@pytest.fixture(autouse=True)
+def _mock_spf_validation():
+    """Bypass SPF DNS validation in all SMTP config tests."""
+    with patch(
+        'services.smtp_config_service.SMTPConfigService.validate_spf_for_config',
+        return_value=(True, "SPF record OK (mocked)")
+    ):
+        yield
 
 
 @pytest.fixture

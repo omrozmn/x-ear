@@ -36,6 +36,23 @@ ENDPOINT_PERMISSIONS = {
     ('POST', '/api/verify-registration-otp'): 'public',
     ('GET', '/api/blog/'): 'public',
     ('GET', '/api/blog/<slug>'): 'public',
+    ('GET', '/api/config'): 'public',
+
+    # AFFILIATE PUBLIC ENDPOINTS
+    ('POST', '/api/affiliates/register'): 'public',
+    ('POST', '/api/affiliates/login'): 'public',
+    ('GET', '/api/affiliates/check/<code>'): 'public',
+    ('GET', '/api/affiliates/list'): 'public',
+
+    # NOAH IMPORT PUBLIC ENDPOINTS
+    ('GET', '/api/noah-import/health'): 'public',
+    ('POST', '/api/noah-import/agents/enroll'): 'public',
+    ('POST', '/api/noah-import/agents/heartbeat'): 'public',
+    ('POST', '/api/noah-import/agents/sync'): 'public',
+    ('POST', '/api/noah-import/sessions/<session_id>/upload'): 'public',
+
+    # SUBSCRIPTION PUBLIC ENDPOINTS
+    ('POST', '/api/subscriptions/register-and-subscribe'): 'public',
     
     # =========================================================================
     # AUTH - Kimlik Doğrulama

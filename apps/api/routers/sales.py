@@ -2017,6 +2017,9 @@ def _create_single_device_assignment(
             # Serialized item
             if hasattr(inventory_item, 'remove_serial_number'):
                 inventory_item.remove_serial_number(assigned_serial)
+            # Also decrement available_inventory for serialized items
+            if hasattr(inventory_item, 'update_inventory'):
+                inventory_item.update_inventory(-1, allow_negative=True)
             create_stock_movement(
                 inventory_id=inventory_item.id,
                 movement_type="sale",

@@ -120,9 +120,11 @@ def client(db_session):
     from core.database import get_db, set_current_tenant_id
 
     def override_get_db():
-        # Ensure tenant_id is set in session.info for each request
-        if 'tenant_id' not in db_session.info:
-            db_session.info['tenant_id'] = 'tenant-1'
+        # Don't pre-set session.info['tenant_id'] here.
+        # The tenant filter event listener will pick up the ContextVar
+        # set by access_dependency (which runs after get_db).
+        # The default 'tenant-1' is already set by the db_session fixture
+        # and serves as fallback for tests that don't use JWT auth.
         try:
             yield db_session
         finally:

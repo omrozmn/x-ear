@@ -478,18 +478,27 @@ def receive_do_orm_execute(execute_state):
     if should_skip_tenant_filter() or not execute_state.is_select:
         return
 
-    # PRIORITY 1: Get tenant_id from session.info (set by get_db() dependency)
-    tenant_id = None
-    if hasattr(execute_state.session, 'info'):
+    # PRIORITY 1: ContextVar (set by access_dependency at request time — most up-to-date)
+    tenant_id = get_current_tenant_id()
+    if tenant_id:
+        logger.debug(f"🔍 [TENANT FILTER] Using tenant_id from ContextVar: {tenant_id}")
+
+    # PRIORITY 2: Fallback to thread-local (set by access_dependency)
+    if not tenant_id:
+        try:
+            from middleware.unified_access import _thread_local
+            tl_tid = getattr(_thread_local, 'tenant_id', None)
+            if tl_tid:
+                tenant_id = tl_tid
+                logger.debug(f"🔍 [TENANT FILTER] Using tenant_id from thread-local: {tenant_id}")
+        except ImportError:
+            pass
+
+    # PRIORITY 3: Fallback to session.info (set at session creation — may be stale)
+    if not tenant_id and hasattr(execute_state.session, 'info'):
         tenant_id = execute_state.session.info.get('tenant_id')
         if tenant_id:
             logger.debug(f"🔍 [TENANT FILTER] Using tenant_id from session.info: {tenant_id}")
-    
-    # PRIORITY 2: Fallback to ContextVar (for same-context access)
-    if not tenant_id:
-        tenant_id = get_current_tenant_id()
-        if tenant_id:
-            logger.debug(f"🔍 [TENANT FILTER] Using tenant_id from ContextVar: {tenant_id}")
     
     # DEBUG: Log tenant filter application
     if not tenant_id:

@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from services.commission_service import CommissionService
+from core.database import _skip_tenant_filter
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -17,13 +18,18 @@ def get_test_db():
         db.close()
 
 def test_commission_create_and_update():
-    db = next(get_test_db())
-    # Create
-    commission = CommissionService.create_commission(db, 1, 1, "signup", 100.0)
-    assert commission.amount == 100.0
-    # Update status
-    updated = CommissionService.update_commission_status(db, commission.id, "paid")
-    assert updated.status == "paid"
-    # Audit trail
-    audit = CommissionService.audit_trail(db, commission.id)
-    assert audit.id == commission.id
+    # Bypass tenant filter for this standalone test
+    skip_token = _skip_tenant_filter.set(True)
+    try:
+        db = next(get_test_db())
+        # Create
+        commission = CommissionService.create_commission(db, 1, 1, "signup", 100.0)
+        assert commission.amount == 100.0
+        # Update status
+        updated = CommissionService.update_commission_status(db, commission.id, "paid")
+        assert updated.status == "paid"
+        # Audit trail
+        audit = CommissionService.audit_trail(db, commission.id)
+        assert audit.id == commission.id
+    finally:
+        _skip_tenant_filter.reset(skip_token)

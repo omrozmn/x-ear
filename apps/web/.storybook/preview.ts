@@ -1,7 +1,18 @@
 import type { Preview } from '@storybook/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
 import '../src/styles/index.css'; // Import Tailwind CSS
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false, staleTime: Infinity },
+  },
+});
+
 const preview: Preview = {
+  decorators: [
+    (Story) => React.createElement(QueryClientProvider, { client: queryClient }, React.createElement(Story)),
+  ],
   parameters: {
     controls: {
       matchers: {
