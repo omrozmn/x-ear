@@ -14,8 +14,9 @@ alembic>=1.13.0
 psycopg[binary]
 psycopg2-binary>=2.9.0
 
-# Authentication - PyJWT (no Flask-JWT-Extended)
+# Authentication - PyJWT + python-jose for JWT
 PyJWT>=2.8.0
+python-jose[cryptography]>=3.3.0
 
 # HTTP requests
 requests

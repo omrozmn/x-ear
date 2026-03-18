@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/image_processing.py
+# hypothesis_version: 6.151.6
+
+[404, 500, 501, '/ai-edit', '/ai-generate', '/image-processing', '/remove-bg', '/resize', 'Image Processing', 'PNG', 'Pillow not installed', 'aiEditImage', 'aiGenerateImage', 'inventory.manage', 'key', 'no_bg.png', 'rembg not installed', 'removeBackground', 'resizeImage', 'size', 'url']

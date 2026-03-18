@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_birfatura.py
+# hypothesis_version: 6.151.6
+
+[100, 365, 500, 10000, '/api/admin/birfatura', '/invoices', '/logs', '/stats', '/sync/{tenant_id}', 'Admin BirFatura', 'admin-cross-tenant', 'admin-sync-tenant', 'backfilled', 'birfatura.%', 'birfatura.read', 'duplicates', 'errors', 'incoming', 'invoice.%', 'invoices', 'limit', 'logs', 'outgoing', 'outgoing_backfilled', 'page', 'pagination', 'total', 'totalIncoming', 'totalOutgoing', 'totalPages', 'updated']

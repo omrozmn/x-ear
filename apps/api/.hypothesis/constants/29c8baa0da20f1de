@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/noah_imports.py
+# hypothesis_version: 6.151.6
+
+[100, 400, 401, 403, 404, 500, 503, '/agents', '/agents/enroll', '/agents/heartbeat', '/agents/sync', '/audit-logs', '/duplicates', '/health', '/noah-import', '/sessions', 'Noah Import', 'Oturum bulunamadı', 'Servis aktif', 'X-Device-Token', 'Yetkisiz erişim', 'enrollNoahAgent', 'getNoahImportSession', 'listNoahAgents', 'listNoahAuditLogs', 'listNoahDuplicates', 'noah', 'noah-import', 'noahAgentHeartbeat', 'noahAgentSync', 'noahImportHealth', 'ok', 'resolveNoahDuplicate', 'service', 'sessionId', 'status', 'value']

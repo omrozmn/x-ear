@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_integrations.py
+# hypothesis_version: 6.151.6
+
+[500, '/admin/integrations', '/birfatura/config', '/init-db', '/telegram/config', '/vatan-sms/config', 'Admin Integrations', 'Telegram Bot Token', 'Telegram Chat ID', 'VatanSMS Password', 'VatanSMS Sender ID', 'VatanSMS Username', 'admin-cross-tenant', 'appApiKey', 'appSecretKey', 'app_api_key', 'app_secret_key', 'approvalEmail', 'available', 'birfatura', 'botToken', 'bot_token', 'chatId', 'chat_id', 'emailTemplate', 'false', 'integrationKey', 'integration_key', 'integrations', 'integrations.manage', 'integrations.read', 'isActive', 'is_active', 'notificationEmail', 'notification_email', 'password', 'senderId', 'sender_id', 'system', 'system.manage', 'telegram', 'true', 'username', 'vatan_sms']

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/kuveytturk_checkout.py
+# hypothesis_version: 6.151.6
+
+[0.0, 0.1, 200, 365, 400, 404, 502, "'", ',', '-', '/callback/fail', '/callback/ok', '/initiate', '/payments/kuveytturk', '00', '127.0.0.1', 'API_PUBLIC_URL', 'Bank gateway error', 'Bearer ', 'Invalid amount', 'KuveytTurk POS', 'LANDING_URL', 'Payment failed', 'Plan not found', 'Provision failed', 'SUCCEEDED', 'TRY', 'YEARLY', 'addon_ids', 'amount', 'amount_kurus', 'auth_token', 'authorization', 'billing_interval', 'company_name', 'created_at', 'data', 'email', 'feature_usage', 'html', 'key', 'kuveytturk_3d', 'last_reset', 'limit', 'md', 'merchant_order_id', 'order_id', 'phone', 'plan_id', 'provision_number', 'response_code', 'response_message', 'sector', 'signup_subscription', 'sms_credits', 'sms_package_id', 'sub', 'success', 'tenant_admin', 'total_amount', 'used', 'x-forwarded-for']

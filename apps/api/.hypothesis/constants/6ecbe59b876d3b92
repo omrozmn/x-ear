@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/security.py
+# hypothesis_version: 6.151.6
+
+['ENVIRONMENT', 'HS256', 'JWT_SECRET_KEY', 'development', 'prod', 'production', 'staging']

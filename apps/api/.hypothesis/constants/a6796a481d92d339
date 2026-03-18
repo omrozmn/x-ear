@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/replacements.py
+# hypothesis_version: 6.151.6
+
+[400, 404, 500, 'Replacements', 'count', 'created_at', 'data', 'draft', 'getReplacement', 'gibReference', 'gibStatus', 'id', 'invoiceId', 'notes', 'pending', 'replacement_id', 'sent', 'sentAt', 'status', 'success', 'system', 'type']

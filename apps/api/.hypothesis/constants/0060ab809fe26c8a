@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/database.py
+# hypothesis_version: 6.151.6
+
+[3600, '01', ':memory:', 'DATABASE_URL', 'UnifiedAccess', '__NONE__', 'check_same_thread', 'connect', 'do_orm_execute', 'info', 'instance', 'poolclass', 'skip_filter', 'sqlite', 'tenant_id', 'xear_crm.db']

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/activity_logs.py
+# hypothesis_version: 6.151.6
+
+[100, 500, 10000, 999999, '+00:00', ',', '/activity-logs', '/activity-logs/stats', '/audit', 'ActivityLogs', 'Z', 'action', 'actions', 'activity_logs.view', 'branchId', 'branchName', 'branch_name', 'branches', 'count', 'createdAt', 'critical', 'data', 'data_json', 'details', 'details_json', 'endDate', 'entityId', 'entityType', 'entityTypes', 'id', 'ipAddress', 'isCritical', 'last24Hours', 'limit', 'listActivityLogStats', 'listActivityLogs', 'listAuditAlias', 'message', 'name', 'page', 'pageSize', 'perPage', 'role', 'startDate', 'tenantId', 'topActions', 'total', 'totalPages', 'updatedAt', 'userAgent', 'userEmail', 'userId', 'userName', 'user_email', 'user_first_name', 'user_last_name', 'user_username', 'users']

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/ocr_service.py
+# hypothesis_version: 6.151.6
+
+[1.0, 400, 1200, 4000, '..', '.jpeg', '.jpg', '/usr/bin/python3', 'Empty OCR result', '_easyocr_reader', 'arm', 'classification', 'cls', 'confidence', 'custom_entities', 'darwin', 'en', 'entities', 'machine', 'medical', 'medical_terms', 'ner', 'ocr', 'ocr_resize_', 'paddle_worker.py', 'predict', 'processing_time', 'pt', 'python3', 'text', 'tr', 'tr_core_news_sm', 'utf-8', 'worker stderr: %s', 'xx_ent_wiki_sm', '{}']

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/checkout.py
+# hypothesis_version: 6.151.6
+
+[300, 365, 400, 403, 404, 429, 500, ',', '/api/checkout', '/confirm', '/session', '@', 'Already paid', 'Checkout', 'Payment not found', 'Plan not found', 'TRY', 'admin', 'monthly', 'session_token', 'unknown', 'x-forwarded-for']
