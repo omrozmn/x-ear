@@ -95,6 +95,7 @@ jobs:
           JWT_SECRET: test-secret-key-for-ci
           JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci
           ENVIRONMENT: test
+          SMTP_ENCRYPTION_KEY: 1RRDcoqlZU8KwHa_Y0ylelmteMsSM6Wgl07RJsGL2-k=
         run: |
           python main.py &
           echo $! > backend.pid

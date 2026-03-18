@@ -54,7 +54,7 @@ export type SchemasInvoicesNewInvoiceStatus = string;
 
 export function listIncomingInvoices(params?: Record<string, any>, signal?: AbortSignal) {
   return customInstance<any>({
-    url: `/api/birfatura/invoices/incoming`,
+    url: `/api/invoices/incoming`,
     method: 'GET',
     params,
     signal,
@@ -63,7 +63,7 @@ export function listIncomingInvoices(params?: Record<string, any>, signal?: Abor
 
 export function useListIncomingInvoices(params?: Record<string, any>, options?: { query?: Partial<UseQueryOptions<any>> }) {
   return useQuery({
-    queryKey: ['/api/birfatura/invoices/incoming', params],
+    queryKey: ['/api/invoices/incoming', params],
     queryFn: ({ signal }) => listIncomingInvoices(params, signal),
     ...options?.query,
   });
@@ -71,7 +71,7 @@ export function useListIncomingInvoices(params?: Record<string, any>, options?: 
 
 export function listOutgoingInvoices(params?: Record<string, any>, signal?: AbortSignal) {
   return customInstance<any>({
-    url: `/api/birfatura/invoices/outgoing`,
+    url: `/api/invoices/outgoing`,
     method: 'GET',
     params,
     signal,
@@ -80,7 +80,7 @@ export function listOutgoingInvoices(params?: Record<string, any>, signal?: Abor
 
 export function useListOutgoingInvoices(params?: Record<string, any>, options?: { query?: Partial<UseQueryOptions<any>> }) {
   return useQuery({
-    queryKey: ['/api/birfatura/invoices/outgoing', params],
+    queryKey: ['/api/invoices/outgoing', params],
     queryFn: ({ signal }) => listOutgoingInvoices(params, signal),
     ...options?.query,
   });

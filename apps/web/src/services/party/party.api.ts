@@ -11,7 +11,7 @@ import {
   deletePartyTimeline,
 } from '@/api/client/timeline.client';
 import {
-  listAdminPartySales
+  listPartySales
 } from '@/api/client/parties.client';
 import {
   createSales
@@ -52,7 +52,7 @@ export const partiesApi = {
   deleteNote: (partyId: string, noteId: string) => deletePartyTimeline(partyId, noteId),
 
   // Sales operations
-  getSales: (partyId: string) => listAdminPartySales(partyId),
+  getSales: (partyId: string) => listPartySales(partyId),
   createSale: (data: SaleCreate) => createSales(data),
 
   // SGK operations

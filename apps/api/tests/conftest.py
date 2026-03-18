@@ -140,6 +140,14 @@ def client(db_session):
 
     # Cleanup
     app.dependency_overrides.clear()
+    # Reset ContextVar and thread-local to avoid leaking tenant context
+    set_current_tenant_id(None)
+    try:
+        from middleware.unified_access import _thread_local
+        if hasattr(_thread_local, 'tenant_id'):
+            del _thread_local.tenant_id
+    except (ImportError, AttributeError):
+        pass
 
 @pytest.fixture(scope="function")
 def test_tenant(db_session):

@@ -44,6 +44,7 @@ def get_sale_or_404(db: Session, sale_id: str, access: UnifiedAccess) -> Sale:
             detail=ApiError(message="Sale not found", code="SALE_NOT_FOUND").model_dump(mode="json"),
         )
     if access.tenant_id and sale.tenant_id != access.tenant_id:
+        logger.warning(f"🚫 [GET_SALE_OR_404] Tenant mismatch: sale.tenant_id={sale.tenant_id} != access.tenant_id={access.tenant_id}")
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Sale not found", code="SALE_NOT_FOUND").model_dump(mode="json"),

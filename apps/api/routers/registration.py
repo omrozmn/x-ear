@@ -101,6 +101,8 @@ def register_phone(
         phone = normalize_phone(request_data.phone)
         if not phone:
             raise HTTPException(status_code=400, detail="Phone required")
+        if len(phone) > 20:
+            raise HTTPException(status_code=400, detail="Invalid phone number")
         
         # Generate OTP
         code = _generate_registration_otp()

@@ -89,6 +89,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: test_secret_key_for_ci_e2e_flows
           TENANT_STRICT_MODE: "true"
+          SMTP_ENCRYPTION_KEY: 1RRDcoqlZU8KwHa_Y0ylelmteMsSM6Wgl07RJsGL2-k=
         run: |
           python main.py &
           echo $! > api.pid

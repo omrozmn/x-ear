@@ -36,10 +36,7 @@ from services.encryption_service import EncryptionService
 # Test database setup
 @pytest.fixture(scope="function")
 def test_db():
-    """Create a test database session with tenant filter bypassed."""
-    from core.database import _skip_tenant_filter
-    skip_token = _skip_tenant_filter.set(True)
-
+    """Create a test database session."""
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     TestingSessionLocal = sessionmaker(bind=engine)
@@ -48,7 +45,6 @@ def test_db():
     yield session
 
     session.close()
-    _skip_tenant_filter.reset(skip_token)
 
 
 @pytest.fixture
@@ -71,6 +67,15 @@ def _mock_spf_validation():
         return_value=(True, "SPF record OK (mocked)")
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def _bypass_tenant_filter():
+    """Bypass tenant filter for all SMTP config tests (standalone sessions)."""
+    from core.database import _skip_tenant_filter
+    token = _skip_tenant_filter.set(True)
+    yield
+    _skip_tenant_filter.reset(token)
 
 
 @pytest.fixture
@@ -843,21 +848,21 @@ class TestPropertyMostRecentActiveConfig:
     def _create_test_db_and_service(self):
         """Helper to create a fresh database and service for each test."""
         from cryptography.fernet import Fernet
-        
+
         # Create in-memory database
         engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(engine)
         TestingSessionLocal = sessionmaker(bind=engine)
         session = TestingSessionLocal()
-        
+
         # Create encryption service with valid key
         test_key = Fernet.generate_key().decode()
         with patch.dict(os.environ, {"SMTP_ENCRYPTION_KEY": test_key}):
             encryption_service = EncryptionService()
-        
+
         # Create SMTP config service
         service = SMTPConfigService(session, encryption_service)
-        
+
         return session, service, encryption_service
     
     @given(

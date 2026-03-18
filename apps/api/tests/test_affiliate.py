@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from services.affiliate_service import AffiliateService
+from core.database import _skip_tenant_filter
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -16,6 +17,13 @@ def get_test_db():
         yield db
     finally:
         db.close()
+
+@pytest.fixture(autouse=True)
+def _bypass_tenant_filter():
+    """Bypass tenant filter for standalone-session affiliate tests."""
+    token = _skip_tenant_filter.set(True)
+    yield
+    _skip_tenant_filter.reset(token)
 
 def test_affiliate_register_and_login():
     db = next(get_test_db())

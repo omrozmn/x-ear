@@ -509,10 +509,14 @@ def get_current(
     days_remaining = 0
     if tenant.subscription_end_date:
         now = datetime.now(timezone.utc)
-        if tenant.subscription_end_date < now:
+        end_date = tenant.subscription_end_date
+        # Ensure both datetimes are offset-aware for comparison
+        if end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=timezone.utc)
+        if end_date < now:
             is_expired = True
         else:
-            delta = tenant.subscription_end_date - now
+            delta = end_date - now
             days_remaining = delta.days
     
     return ResponseEnvelope(data=CurrentSubscriptionResponse(

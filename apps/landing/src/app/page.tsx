@@ -10,6 +10,7 @@ import { SpotlightDemo } from "@/components/ui/SpotlightDemo";
 import { IntegrationOrbit } from "@/components/ui/IntegrationOrbit";
 import { AutomationShowcase } from "@/components/ui/AutomationShowcase";
 import { InteractiveRoi } from "@/components/ui/InteractiveRoi";
+import { ContentDiscovery } from "@/components/ui/ContentDiscovery";
 import { SectorCards } from "@/components/ui/SectorCards";
 import { PainPoints } from "@/components/ui/PainPoints";
 import { SectionConnector } from "@/components/ui/SectionConnector";
@@ -119,6 +120,12 @@ function HomeContent() {
 
           <div className="relative" style={{ zIndex: 70 }}>
             <InteractiveRoi />
+          </div>
+
+          <SectionConnector />
+
+          <div className="relative" style={{ zIndex: 80 }}>
+            <ContentDiscovery />
           </div>
         </div>
 

@@ -205,12 +205,29 @@ class IdempotencyMiddleware:
         cache_key = f"{method}:{path}:{idempotency_key}"
         full_cache_key = f"{cache_key}:{body_hash}"
         
-        # Check for existing cache entry (Redis or in-memory)
-        cached = _cache_get(full_cache_key)
-
-        if cached:
+        # Check for body mismatch: same idempotency key but different body
+        # RFC 7232: same key + different body = 422 Unprocessable Entity
+        cached_with_body = _cache_get(full_cache_key)
+        if cached_with_body:
             logger.info(f"Returning cached response for idempotency key: {idempotency_key}")
-            await self._send_cached_response(send, cached)
+            await self._send_cached_response(send, cached_with_body)
+            return
+
+        # Check if the same idempotency key was used with a different body
+        base_cached = _cache_get(cache_key)
+        if base_cached and base_cached.get("body_hash") != body_hash:
+            logger.warning(f"Idempotency key reused with different body: {idempotency_key}")
+            await self._send_error(
+                send,
+                422,
+                {
+                    "success": False,
+                    "error": {
+                        "code": "IDEMPOTENCY_KEY_REUSED",
+                        "message": "This Idempotency-Key was already used with a different request body"
+                    }
+                }
+            )
             return
         
         # Create new receive that replays the body
@@ -256,11 +273,15 @@ class IdempotencyMiddleware:
         if 200 <= response_status[0] < 300 and response_complete[0]:
             full_body = b"".join(response_body)
             if full_body:
-                _cache_set(full_cache_key, {
+                cache_value = {
                     "body": full_body.decode("utf-8", errors="replace"),
                     "status_code": response_status[0],
                     "headers": response_headers[0],
-                })
+                    "body_hash": body_hash,
+                }
+                _cache_set(full_cache_key, cache_value)
+                # Also store under base key (without body hash) for mismatch detection
+                _cache_set(cache_key, cache_value)
                 logger.debug(f"Cached response for idempotency key: {idempotency_key}, body_len={len(full_body)}")
             else:
                 logger.warning(f"Response body empty for idempotency key: {idempotency_key}, not caching")
