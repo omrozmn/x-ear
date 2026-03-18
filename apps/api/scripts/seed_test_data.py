@@ -63,7 +63,6 @@ def seed_test_data():
                 status="active",
                 subscription_start_date=datetime.utcnow(),
                 subscription_end_date=datetime.utcnow() + timedelta(days=365),
-                is_active=True,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
@@ -113,7 +112,6 @@ def seed_test_data():
                     name=branch_name,
                     address=f"{branch_name} Adresi",
                     phone="+902161234567",
-                    is_active=True,
                     created_at=datetime.utcnow()
                 )
                 db.add(branch)
@@ -146,7 +144,6 @@ def seed_test_data():
                     barcode=f"HA{aid['brand'][:3].upper()}{aid['model'][:3].upper()}",
                     list_price=aid["price"],
                     stock_quantity=10,
-                    is_active=True,
                     created_at=datetime.utcnow()
                 )
                 db.add(inventory)
@@ -173,7 +170,6 @@ def seed_test_data():
                     last_name=party_data["lastName"],
                     phone=party_data["phone"],
                     email=f"{party_data['firstName'].lower()}@example.com",
-                    is_active=True,
                     created_at=datetime.utcnow()
                 )
                 db.add(party)

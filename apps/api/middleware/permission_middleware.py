@@ -185,6 +185,12 @@ class FastAPIPermissionMiddleware:
             scope["state"] = {}
         scope["state"]["access_context"] = ctx
 
+        # Set tenant context for database queries (ContextVar must be set
+        # BEFORE FastAPI resolves Depends(get_db) in endpoint signatures)
+        if ctx.tenant_id:
+            from core.database import set_current_tenant_id
+            set_current_tenant_id(ctx.tenant_id)
+
         # DEBUG: Log token context for admin routes
         if path.startswith("/api/admin/"):
             logger.info(

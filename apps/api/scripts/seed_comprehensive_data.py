@@ -64,7 +64,7 @@ def create_tenant(db):
         slug="test-clinic",
         owner_email="admin@xear.com",
         billing_email="billing@xear.com",
-        is_active=True,
+        status="active",
         created_at=datetime.utcnow(),
     )
     db.add(tenant)
@@ -548,7 +548,6 @@ def create_branches(db):
             address=branch_data["address"],
             phone=branch_data["phone"],
             email=branch_data.get("email"),
-            is_active=branch_data["is_active"],
             tenant_id=branch_data["tenant_id"],
             created_at=datetime.utcnow()
         )
