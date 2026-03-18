@@ -109,10 +109,17 @@ jobs:
       
       - name: Wait for services
         run: |
-          npx wait-on http://localhost:5003/health --timeout 300000
+          echo "Waiting for backend (pid=$(cat apps/api/backend.pid))..."
+          npx wait-on http://localhost:5003/health --timeout 300000 --httpTimeout 10000 --verbose || {
+            echo "=== Backend failed! Full log ==="
+            cat /tmp/backend.log || true
+            echo "=== Process status ==="
+            ps aux | grep main || true
+            echo "=== Curl test ==="
+            curl -v http://localhost:5003/health 2>&1 || true
+            exit 1
+          }
           npx wait-on http://localhost:8080 --timeout 120000
-          echo "=== Backend log after startup ==="
-          tail -20 /tmp/backend.log || true
       
       - name: Run Critical tests (web + admin)
         working-directory: .
