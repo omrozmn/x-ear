@@ -29,7 +29,7 @@ def get_inventory_or_404(db_session: Session, item_id: str, access: UnifiedAcces
             status_code=404,
             detail=ApiError(message="Item not found", code="INVENTORY_ITEM_NOT_FOUND").model_dump(mode="json"),
         )
-    if access.tenant_id and item.tenant_id != access.tenant_id:
+    if access.tenant_id and access.tenant_id != 'system' and not access.is_super_admin and item.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Item not found", code="INVENTORY_ITEM_NOT_FOUND").model_dump(mode="json"),
@@ -58,9 +58,12 @@ def get_all_inventory(
 ):
     """Get all inventory items"""
     query = db.query(InventoryItem)
-    if access.tenant_id:
+    # Super admins (tenant_id='system') should see ALL tenants
+    if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+        pass  # No tenant filter for super admin cross-tenant view
+    elif access.tenant_id:
         query = query.filter_by(tenant_id=access.tenant_id)
-        
+
     # Branch filtering for Tenant Admin (Legacy)
     if access.is_tenant_admin and access.user.role == 'admin':
         user_branch_ids = [b.id for b in getattr(access.user, 'branches', [])]

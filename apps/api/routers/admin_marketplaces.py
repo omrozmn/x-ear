@@ -35,6 +35,25 @@ class IntegrationCreate(BaseModel):
     syncPrices: Optional[bool] = True
     syncOrders: Optional[bool] = True
 
+@router.get("", operation_id="listAdminMarketplaces", response_model=MarketplaceListResponse)
+async def list_marketplaces(
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("marketplaces.read", admin_only=True))
+):
+    """Get list of marketplace integrations (root endpoint alias)"""
+    try:
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(MarketplaceIntegration)
+            if access.is_super_admin and (not access.tenant_id or access.tenant_id == 'system'):
+                pass
+            elif access.tenant_id:
+                query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
+            integrations = query.all()
+        return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i).model_dump(by_alias=True) for i in integrations]}
+    except Exception as e:
+        logger.error(f"List marketplaces error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @router.post("/init-db", operation_id="createAdminMarketplaceInitDb", response_model=ResponseEnvelope)
 async def init_db(
     db: Session = Depends(get_db),

@@ -93,14 +93,11 @@ jobs:
           ENVIRONMENT: test
           SMTP_ENCRYPTION_KEY: 1RRDcoqlZU8KwHa_Y0ylelmteMsSM6Wgl07RJsGL2-k=
         run: |
-          python -c "
-import uvicorn
-uvicorn.run('main:app', host='0.0.0.0', port=5003, log_level='info')
-" > /tmp/backend.log 2>&1 &
+          python main.py > /tmp/backend.log 2>&1 &
           echo $! > backend.pid
-          sleep 10
-          echo "=== Backend startup log (first 50 lines) ==="
-          head -50 /tmp/backend.log || true
+          sleep 15
+          echo "=== Backend startup log ==="
+          cat /tmp/backend.log || true
 
       - name: Start frontend server
         working-directory: apps/web

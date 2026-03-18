@@ -83,16 +83,22 @@ async def create_campaign(
         with unbound_session(reason="admin-cross-tenant"):
             if not data.name:
                 raise HTTPException(status_code=400, detail="Campaign name is required")
-        
+
             user = db.get(User, access.user.id)
-        access.tenant_id = user.tenant_id if user else None
-        
+
+        # Resolve tenant_id: prefer effective_tenant, then user's tenant, fallback to first real tenant
+        resolved_tenant_id = access.effective_tenant_id or (user.tenant_id if user else None) or access.tenant_id
+        if not resolved_tenant_id or resolved_tenant_id == 'system':
+            from core.models.tenant import Tenant
+            first_tenant = db.query(Tenant).first()
+            resolved_tenant_id = first_tenant.id if first_tenant else None
+
         scheduled_at = None
         if data.scheduled_at:
             scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
         
         new_campaign = Campaign(
-            tenant_id=access.tenant_id,
+            tenant_id=resolved_tenant_id,
             name=data.name,
             description=data.description,
             campaign_type=data.campaign_type,
