@@ -110,7 +110,7 @@ interface TabNavigationProps {
 function TabNavigation({ activeTab, onTabChange, isSuperAdmin }: TabNavigationProps) {
   void isSuperAdmin;
   return (
-    <div className="border-b border-gray-200 bg-white rounded-t-lg">
+    <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-lg">
       <nav className="flex -mb-px overflow-x-auto" aria-label="Tabs">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -125,8 +125,8 @@ function TabNavigation({ activeTab, onTabChange, isSuperAdmin }: TabNavigationPr
                 group inline-flex items-center px-4 py-4 border-b-2 font-medium text-sm
                 whitespace-nowrap transition-colors
                 ${isActive
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                 }
               `}
               aria-current={isActive ? 'page' : undefined}
@@ -201,10 +201,10 @@ function TabContentWrapper({ permissions, children }: TabContentWrapperProps) {
       permissions={permissions}
       mode="any"
       fallback={
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 text-center">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Erişim Kısıtlı</h3>
-          <p className="text-gray-500">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Erişim Kısıtlı</h3>
+          <p className="text-gray-500 dark:text-gray-400">
             Bu bölümü görüntülemek için gerekli yetkilere sahip değilsiniz.
           </p>
         </div>
@@ -223,8 +223,8 @@ function AccessDenied() {
     <div className="min-h-[400px] flex items-center justify-center">
       <div className="text-center">
         <AlertTriangle className="h-16 w-16 mx-auto mb-4 text-yellow-500" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Erişim Reddedildi</h2>
-        <p className="text-gray-500 max-w-md">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Erişim Reddedildi</h2>
+        <p className="text-gray-500 dark:text-gray-400 max-w-md">
           AI yönetim paneline erişmek için gerekli yetkilere sahip değilsiniz.
           Lütfen sistem yöneticinize başvurun.
         </p>
@@ -307,8 +307,8 @@ export default function AIManagementPage() {
               <Bot className="h-8 w-8 text-primary-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">AI Yönetimi</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Yönetimi</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 AI özelliklerini yönetin, metrikleri izleyin ve audit loglarını inceleyin
               </p>
             </div>

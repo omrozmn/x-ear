@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useHaptic } from '@/hooks/useHaptic';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from '@tanstack/react-router';
 
 // Sub-components would be imported here or defined in same file for now to keep context
 // For brevity, I'll implement a simple View stack
@@ -16,6 +17,7 @@ export const MobileProfilePage: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>('main');
     const { user, logout } = useAuthStore();
     const { triggerSelection } = useHaptic();
+    const navigate = useNavigate();
 
     const menuItems = [
         {
@@ -82,7 +84,11 @@ export const MobileProfilePage: React.FC = () => {
                             key={item.id}
                             onClick={() => {
                                 triggerSelection();
-                                if (item.id !== 'help') setCurrentView(item.id as View);
+                                if (item.id === 'help') {
+                                    navigate({ to: '/settings', search: { tab: 'support' } });
+                                    return;
+                                }
+                                setCurrentView(item.id as View);
                             }}
                             className={cn(
                                 "w-full flex items-center justify-between p-4 active:bg-muted transition-colors",

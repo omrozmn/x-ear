@@ -191,7 +191,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       ...(canViewInvoices ? ['invoices', 'outgoing-invoices', 'incoming-invoices', 'proformas', 'invoice-summary', 'new-invoice', 'purchases'] : []),
       ...(canViewSgk ? ['sgk-reports', 'sgk-upload', 'sgk-reports-list', 'uts'] : []),
       ...(canViewReports ? ['reports', 'reports-overview', 'reports-cashflow'] : []),
-      ...(canViewSettings ? ['settings', 'settings-company', 'settings-integration', 'settings-parties', 'settings-sgk', 'settings-subscription'] : []),
+      ...(canViewSettings ? ['settings', 'settings-company', 'settings-integration', 'settings-parties', 'settings-sgk', 'settings-subscription', 'settings-support'] : []),
       ...(canViewTeam ? ['settings-team', 'personnel'] : []),
     ];
   }, [hasAnyPermission, hasPermission, isSuperAdmin]);

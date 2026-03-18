@@ -1,9 +1,9 @@
 import { apiClient } from '../lib/api';
 
-const BARCODE_SERVICE_URL = import.meta.env.VITE_BARCODE_SERVICE_URL || 'http://localhost:8090';
+const DEFAULT_BARCODE_SERVICE_URL = import.meta.env.VITE_BARCODE_SERVICE_URL || 'http://localhost:8090';
 
 const barcodeClient = apiClient;
-const barcodeBaseURL = BARCODE_SERVICE_URL;
+let barcodeBaseURL = DEFAULT_BARCODE_SERVICE_URL;
 
 // --- Types ---
 
@@ -87,6 +87,10 @@ export const barcodeService = {
   },
 
   getServiceUrl(): string {
-    return BARCODE_SERVICE_URL;
+    return barcodeBaseURL;
+  },
+
+  setServiceUrl(url: string): void {
+    barcodeBaseURL = url;
   },
 };

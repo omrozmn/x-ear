@@ -21,6 +21,7 @@ import {
   FileSpreadsheet,
   ShieldCheck,
   Briefcase,
+  HelpCircle,
 } from 'lucide-react';
 import { useBreakpoints } from '../../hooks/useMediaQuery';
 
@@ -269,6 +270,13 @@ const menuItems: MenuItem[] = [
         label: 'Abonelik',
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=subscription',
+        exactMatch: true,
+      },
+      {
+        id: 'settings-support',
+        label: 'Destek',
+        icon: <HelpCircle className="w-4 h-4" />,
+        href: '/settings?tab=support',
         exactMatch: true,
       },
     ],

@@ -8,10 +8,11 @@ import TeamSettings from './settings/Team';
 import PartySegmentsSettings from './settings/PartySegmentsSettings';
 import SgkSettings from './settings/SgkSettings';
 import SubscriptionSettings from './settings/Subscription';
+import SupportTicketTab from './settings/SupportTicketTab';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { useTranslation } from 'react-i18next';
 
-type TabId = 'company' | 'integration' | 'team' | 'parties' | 'sgk' | 'subscription';
+type TabId = 'company' | 'integration' | 'team' | 'parties' | 'sgk' | 'subscription' | 'support';
 
 export function DesktopSettingsPage() {
   const { t } = useTranslation('settings_extra');
@@ -20,7 +21,7 @@ export function DesktopSettingsPage() {
 
   // DEBUG: Force render check
   React.useEffect(() => {
-    console.log('🔥 DesktopSettingsPage MOUNTED', { activeTab, search });
+    console.log('DesktopSettingsPage MOUNTED', { activeTab, search });
   }, [activeTab, search]);
 
   const renderTabContent = () => {
@@ -37,6 +38,8 @@ export function DesktopSettingsPage() {
         return <SgkSettings />;
       case 'subscription':
         return <SubscriptionSettings />;
+      case 'support':
+        return <SupportTicketTab />;
       default:
         return <CompanySettings />;
     }
@@ -56,6 +59,8 @@ export function DesktopSettingsPage() {
         return t('sgkSalesSettings', 'SGK & Satış Ayarları');
       case 'subscription':
         return t('subscriptionTitle', 'Abonelik');
+      case 'support':
+        return 'Destek';
       default:
         return t('settings', 'Ayarlar');
     }
